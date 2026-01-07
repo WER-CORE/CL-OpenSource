@@ -672,3 +672,19 @@ may consider it more useful to permit linking proprietary applications with
 the library.  If this is what you want to do, use the GNU Lesser General
 Public License instead of this License.  But first, please read
 <https://www.gnu.org/licenses/why-not-lgpl.html>.
+
+
+====================================================================
+ADDITIONAL TERMS / ДОДАТКОВІ УМОВИ
+====================================================================
+
+Trademark Notice / Примітка про Торгову Марку
+The name "CL Launcher", "Clegendary Launcher" and the project logos are 
+trademarks of the project authors. They are NOT covered by the GPLv3 license. 
+You may fork the code and modify it, but you MUST change the name and 
+branding (icons, images) in your derivative work. You are not allowed to 
+use our brand to distribute your own builds without explicit permission.
+
+(Назва та логотипи є власністю авторів і не підпадають під дію ліцензії GPLv3. 
+Ви можете змінювати код, але зобов'язані змінити назву та іконки у своєму проекті. 
+Заборонено використовувати наш бренд для поширення власних збірок.)
