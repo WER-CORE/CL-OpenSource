@@ -1,6 +1,6 @@
 <div align="center">
 
-# CL-Launcher | CL (Clegendary Launcher) Code
+# CL-Launcher | CL (Clegendary Launcher) Code t
 ### Windows Edition
 
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/WER-CORE/CL-Win-Edition--Update?style=for-the-badge&color=blue)
@@ -90,6 +90,7 @@ This project uses assets and libraries from various sources. We are grateful to 
 <b>Якщо вам подобається цей проект — поставте ⭐️ (Star) цьому репозиторію!</b>
 <i>Це мотивує розвивати український софт.</i>
 </div>
+
 
 
 
