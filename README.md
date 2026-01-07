@@ -1,6 +1,6 @@
 <div align="center">
 
-# CL-Launcher | CL (Clegendary Launcher)
+# CL-Launcher | CL (Clegendary Launcher) Code
 ### Windows Edition
 
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/WER-CORE/CL-Win-Edition--Update?style=for-the-badge&color=blue)
@@ -67,4 +67,5 @@
 
 ⚖️ Disclaimer
 This application is not affiliated with Mojang Studios or Microsoft. Minecraft is a trademark of Mojang Synergies AB.
+
 
