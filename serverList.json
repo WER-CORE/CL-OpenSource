@@ -1,0 +1,20 @@
+{
+  "serverstest": {
+    "bgUrl": "https://github.com/WER-CORE/CL-Win-Edition--Update/blob/main/ServerBG/FonBGServer.png?raw=true",
+    "description": "Top-tier Minecraft Network! 🌍\nSupports both Offline (Cracked) & Premium accounts.\n\nModes: Survival, Skyblock, BedWars, Factions, Earth Towny.\nJoin us for a lag-free experience with a huge community!",
+    "discord": "https://discord.gg/herobrine",
+    "donatelink": "https://hbnetwork.tebex.io/",
+    "sitelink": "https://hbnetwork.tebex.io/",
+    "priority": 100,
+    "borderColor": "#FFA500",
+    "textColor": "#ffffff",
+    "neonEffect": true,
+    "ip": "HBnetwork.xyz",
+    "logoUrl": "https://api.mcsrvstat.us/icon/HBnetwork.xyz",
+    "name": "Herobrine.org",
+    "port": 25565,
+    "type": "MiniGames",
+    "partner": true,
+    "version": "1.8"
+  }
+}
