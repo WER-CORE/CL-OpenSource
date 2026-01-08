@@ -13,7 +13,7 @@ namespace CL_CLegendary_Launcher_.Class
     public class ServerListService
     {
         private readonly CL_Main_ _main;
-        private readonly string _serversUrl = "YOUR_SERVERS_URL_HERE";
+        private readonly string _serversUrl = "https://raw.githubusercontent.com/WER-CORE/CL-OpenSource/refs/heads/main/serverList.json"; // Або вставте своє посилання
 
         private List<(MyItemsServer Item, int Priority)> _tempSortedList = new List<(MyItemsServer, int)>();
         private object _listLock = new object();
