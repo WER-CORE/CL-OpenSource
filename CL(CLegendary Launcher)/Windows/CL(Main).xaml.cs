@@ -2643,7 +2643,7 @@ namespace CL_CLegendary_Launcher_
             try
             {
                 HttpClient client = new HttpClient();
-                string json = await client.GetStringAsync("https://drive.usercontent.google.com/u/0/uc?id=1di7dPobDy4s3Bbm7il90jObmPDS4Bwrf&export=download");
+                string json = await client.GetStringAsync("https://raw.githubusercontent.com/WER-CORE/CL-OpenSource/refs/heads/main/NewsListTest.json"); // або вставте своє посилання
 
                 var newsItems = JsonConvert.DeserializeObject<List<NewsItem>>(json);
 
