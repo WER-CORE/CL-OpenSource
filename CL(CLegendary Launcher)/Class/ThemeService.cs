@@ -132,7 +132,7 @@ namespace CL_CLegendary_Launcher_.Class
 
                         if (!glassDisabled)
                         {
-                            fluentWindow.WindowBackdropType = WindowBackdropType.Mica;
+                            fluentWindow.WindowBackdropType = WindowBackdropType.Acrylic;
                             fluentWindow.Background = Brushes.Transparent;
                         }
                         else

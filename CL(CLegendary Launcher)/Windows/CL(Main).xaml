@@ -1597,49 +1597,6 @@
 
                     <TextBlock x:Name="Loc_Settings_TitleMinecraft" Text="Майнкрафт" Height="40" FontSize="24" HorizontalAlignment="Left" 
                FontFamily="Inter" FontWeight="Bold" Foreground="{DynamicResource MainForegroundBrush}"/>
-                    <Grid Margin="0,0,0,15">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition/>
-                            <ColumnDefinition Width="Auto" MinWidth="218.2"/>
-                        </Grid.ColumnDefinitions>
-
-                        <Border Grid.ColumnSpan="2" BorderThickness="1" CornerRadius="15" Background="{DynamicResource MainBackgroundBrushServer}" Margin="0,0,0,-10"/>
-
-                        <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,15,0">
-                            <TextBlock x:Name="LanguageTitleTXT" Text="Мова інтерфейсу (Language)" Foreground="{DynamicResource MainForegroundBrush}" FontSize="20" FontFamily="Inter" TextWrapping="Wrap" Width="648"/>
-
-                            <TextBlock x:Name="LanguageDescTXT" Text="Оберіть мову для лаунчера. Оновлюється миттєво." Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6" FontSize="12" FontFamily="Inter" Margin="0,2,0,0" TextWrapping="Wrap" Width="648"/>
-
-                            <ui:HyperlinkButton x:Name="HelpTranslateTXT" Content="Як допомогти з перекладом?" NavigateUri="https://uk.crowdin.com/project/clegendary-launcher" Foreground="#FF005DF1" Background="{x:Null}" BorderBrush="{x:Null}" Width="650" HorizontalContentAlignment="Left" />
-                        </StackPanel>
-
-                        <ComboBox Grid.Column="1" x:Name="LanguageComboBox" Height="40" 
-              VerticalAlignment="Top" Margin="2,5,16,0"
-              SelectionChanged="LanguageComboBox_SelectionChanged"
-              Background="{DynamicResource MainBackgroundButton}"
-              Foreground="{DynamicResource MainForegroundBrush}" Cursor="Hand">
-                            <ComboBox.ItemTemplate>
-                                <DataTemplate>
-                                    <StackPanel Orientation="Horizontal" Margin="2">
-                                        <Border CornerRadius="3" ClipToBounds="True" Width="24" Height="16" Margin="0,0,10,0" VerticalAlignment="Center">
-                                            <Image Source="{Binding FlagUrl}" Stretch="UniformToFill" />
-                                        </Border>
-
-                                        <TextBlock Text="{Binding Name}" 
-                                   FontWeight="Medium" 
-                                   VerticalAlignment="Center" 
-                                   Width="100"/>
-
-                                        <TextBlock Text="{Binding Progress, StringFormat=\{0\}%}" 
-                                   Foreground="LightGray" 
-                                   VerticalAlignment="Center" 
-                                   FontSize="11" 
-                                   Opacity="0.7"/>
-                                    </StackPanel>
-                                </DataTemplate>
-                            </ComboBox.ItemTemplate>
-                        </ComboBox>
-                    </Grid>
                     <Grid Height="55" Margin="0,5">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition/>
@@ -1833,6 +1790,49 @@
 
                     <TextBlock x:Name="Loc_Settings_TitleLauncher" Text="Запускач" Height="40" FontSize="24" HorizontalAlignment="Left" Margin="0,10,0,0" 
                FontFamily="Inter" FontWeight="Bold" Foreground="{DynamicResource MainForegroundBrush}"/>
+                    <Grid Margin="0,0,0,15">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition Width="Auto" MinWidth="218.2"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Border Grid.ColumnSpan="2" BorderThickness="1" CornerRadius="15" Background="{DynamicResource MainBackgroundBrushServer}" Margin="0,0,0,-10"/>
+
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,15,0">
+                            <TextBlock x:Name="LanguageTitleTXT" Text="Мова інтерфейсу (Language)" Foreground="{DynamicResource MainForegroundBrush}" FontSize="20" FontFamily="Inter" TextWrapping="Wrap" Width="648"/>
+
+                            <TextBlock x:Name="LanguageDescTXT" Text="Оберіть мову для лаунчера. Оновлюється миттєво." Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6" FontSize="12" FontFamily="Inter" Margin="0,2,0,0" TextWrapping="Wrap" Width="648"/>
+
+                            <ui:HyperlinkButton x:Name="HelpTranslateTXT" Content="Як допомогти з перекладом?" NavigateUri="https://uk.crowdin.com/project/clegendary-launcher" Foreground="#FF005DF1" Background="{x:Null}" BorderBrush="{x:Null}" Width="650" HorizontalContentAlignment="Left" />
+                        </StackPanel>
+
+                        <ComboBox Grid.Column="1" x:Name="LanguageComboBox" Height="40" 
+              VerticalAlignment="Top" Margin="2,5,16,0"
+              SelectionChanged="LanguageComboBox_SelectionChanged"
+              Background="{DynamicResource MainBackgroundButton}"
+              Foreground="{DynamicResource MainForegroundBrush}" Cursor="Hand">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" Margin="2">
+                                        <Border CornerRadius="3" ClipToBounds="True" Width="24" Height="16" Margin="0,0,10,0" VerticalAlignment="Center">
+                                            <Image Source="{Binding FlagUrl}" Stretch="UniformToFill" />
+                                        </Border>
+
+                                        <TextBlock Text="{Binding Name}" 
+                                   FontWeight="Medium" 
+                                   VerticalAlignment="Center" 
+                                   Width="100"/>
+
+                                        <TextBlock Text="{Binding Progress, StringFormat=\{0\}%}" 
+                                   Foreground="LightGray" 
+                                   VerticalAlignment="Center" 
+                                   FontSize="11" 
+                                   Opacity="0.7"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </Grid>
                     <Grid x:Name="_1AprilGird" Height="55" Visibility="Collapsed">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition/>
@@ -1932,31 +1932,37 @@
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
 
-                                <StackPanel Grid.Column="0">
-                                    <TextBlock x:Name="Loc_Settings_ThemeSection" Text="Колір секції" Foreground="{DynamicResource MainForegroundBrush}" FontSize="16" Margin="0,9" FontFamily="Inter"/>
-                                    <TextBlock x:Name="Loc_Settings_ThemeBg" Text="Колір фону" Foreground="{DynamicResource MainForegroundBrush}" FontSize="16" Margin="0,9" FontFamily="Inter"/>
-                                    <TextBlock x:Name="Loc_Settings_ThemeAccent" Text="Додатковий колір" Foreground="{DynamicResource MainForegroundBrush}" FontSize="16" Margin="0,9" FontFamily="Inter"/>
-                                    <TextBlock x:Name="Loc_Settings_ThemeText" Text="Колір тексту" Foreground="{DynamicResource MainForegroundBrush}" FontSize="16" Margin="0,9" FontFamily="Inter"/>
-                                    <TextBlock x:Name="Loc_Settings_ThemeBtn" Text="Колір кнопки" Foreground="{DynamicResource MainForegroundBrush}" FontSize="16" Margin="0,9" FontFamily="Inter"/>
-                                    <TextBlock x:Name="Loc_Settings_ThemeImage" Text="Зображення фону" Foreground="{DynamicResource MainForegroundBrush}" FontSize="16" Margin="0,9" FontFamily="Inter"/>
-                                </StackPanel>
+                                <TextBlock Grid.Row="0" Grid.Column="0" x:Name="Loc_Settings_ThemeSection" Text="Колір секції" Foreground="{DynamicResource MainForegroundBrush}" FontSize="16" VerticalAlignment="Center" Margin="0,5" FontFamily="Inter"/>
+                                <ui:Button Grid.Row="0" Grid.Column="1" x:Name="Section_colourButton" Tag="Section_colour|MainBackgroundBrushServer" Click="OnThemeColorButtonClicked" Content="#" Width="120" Height="32" Margin="5,4" Background="{DynamicResource MainBackgroundButton}" Foreground="{DynamicResource MainForegroundBrush}" BorderBrush="{x:Null}" Cursor="Hand"/>
 
-                                <StackPanel HorizontalAlignment="Left" Grid.ColumnSpan="2" Margin="749,0,0,0" Width="122">
-                                    <ui:Button x:Name="Section_colourButton" Tag="Section_colour|MainBackgroundBrushServer" Click="OnThemeColorButtonClicked" Content="#" Width="119" Height="30" Margin="0,5" Background="{DynamicResource MainBackgroundButton}" Foreground="{DynamicResource MainForegroundBrush}" BorderBrush="{x:Null}" FontFamily="Inter 18pt 18pt" Cursor="Hand"/>
-                                    <ui:Button x:Name="Background_colourButton" Tag="Background_colour|MainBackgroundBrush" Click="OnThemeColorButtonClicked" Content="#" Width="119" Height="30" Margin="0,5" Background="{DynamicResource MainBackgroundButton}" Foreground="{DynamicResource MainForegroundBrush}" BorderBrush="{x:Null}" Cursor="Hand" FontFamily="Inter 18pt 18pt"/>
-                                    <ui:Button x:Name="Additional_colourButton" Tag="Additional_colour|MainBackgroundProgressBar" Click="OnThemeColorButtonClicked" Content="#" Width="119" Height="30" Margin="0,5" Background="{DynamicResource MainBackgroundButton}" Foreground="{DynamicResource MainForegroundBrush}" BorderBrush="{x:Null}" FontFamily="Inter 18pt 18pt" Cursor="Hand"/>
-                                    <ui:Button x:Name="Text_colourButton" Tag="Text_colour|MainForegroundBrush" Click="OnThemeColorButtonClicked" Content="#" Width="119" Height="30" Margin="0,5" Background="{DynamicResource MainBackgroundButton}" Foreground="{DynamicResource MainForegroundBrush}" BorderBrush="{x:Null}" FontFamily="Inter 18pt 18pt" Cursor="Hand"/>
-                                    <ui:Button x:Name="Button_colourButton" Tag="Button_colour|MainBackgroundButton" Click="OnThemeColorButtonClicked" Content="#" Width="119" Height="30" Margin="0,5" Background="{DynamicResource MainBackgroundButton}" Foreground="{DynamicResource MainForegroundBrush}" BorderBrush="{x:Null}" Cursor="Hand" FontFamily="Inter 18pt 18pt"/>
-                                    <ui:Button x:Name="Background_imageButton" Click="Background_imageButton_Click" Content="Файл..." Width="119" Height="30" Margin="0,5" Foreground="{DynamicResource MainForegroundBrush}" Background="{DynamicResource MainBackgroundButton}" BorderBrush="{x:Null}" Cursor="Hand" FontFamily="Inter 18pt 18pt"/>
-                                </StackPanel>
+                                <TextBlock Grid.Row="1" Grid.Column="0" x:Name="Loc_Settings_ThemeBg" Text="Колір фону" Foreground="{DynamicResource MainForegroundBrush}" FontSize="16" VerticalAlignment="Center" Margin="0,5" FontFamily="Inter"/>
+                                <ui:Button Grid.Row="1" Grid.Column="1" x:Name="Background_colourButton" Tag="Background_colour|MainBackgroundBrush" Click="OnThemeColorButtonClicked" Content="#" Width="120" Height="32" Margin="5,4" Background="{DynamicResource MainBackgroundButton}" Foreground="{DynamicResource MainForegroundBrush}" BorderBrush="{x:Null}" Cursor="Hand"/>
+
+                                <TextBlock Grid.Row="2" Grid.Column="0" x:Name="Loc_Settings_ThemeAccent" Text="Додатковий колір" Foreground="{DynamicResource MainForegroundBrush}" FontSize="16" VerticalAlignment="Center" Margin="0,5" FontFamily="Inter"/>
+                                <ui:Button Grid.Row="2" Grid.Column="1" x:Name="Additional_colourButton" Tag="Additional_colour|MainBackgroundProgressBar" Click="OnThemeColorButtonClicked" Content="#" Width="120" Height="32" Margin="5,4" Background="{DynamicResource MainBackgroundButton}" Foreground="{DynamicResource MainForegroundBrush}" BorderBrush="{x:Null}" Cursor="Hand"/>
+
+                                <TextBlock Grid.Row="3" Grid.Column="0" x:Name="Loc_Settings_ThemeText" Text="Колір тексту" Foreground="{DynamicResource MainForegroundBrush}" FontSize="16" VerticalAlignment="Center" Margin="0,5" FontFamily="Inter"/>
+                                <ui:Button Grid.Row="3" Grid.Column="1" x:Name="Text_colourButton" Tag="Text_colour|MainForegroundBrush" Click="OnThemeColorButtonClicked" Content="#" Width="120" Height="32" Margin="5,4" Background="{DynamicResource MainBackgroundButton}" Foreground="{DynamicResource MainForegroundBrush}" BorderBrush="{x:Null}" Cursor="Hand"/>
+
+                                <TextBlock Grid.Row="4" Grid.Column="0" x:Name="Loc_Settings_ThemeBtn" Text="Колір кнопки" Foreground="{DynamicResource MainForegroundBrush}" FontSize="16" VerticalAlignment="Center" Margin="0,5" FontFamily="Inter"/>
+                                <ui:Button Grid.Row="4" Grid.Column="1" x:Name="Button_colourButton" Tag="Button_colour|MainBackgroundButton" Click="OnThemeColorButtonClicked" Content="#" Width="120" Height="32" Margin="5,4" Background="{DynamicResource MainBackgroundButton}" Foreground="{DynamicResource MainForegroundBrush}" BorderBrush="{x:Null}" Cursor="Hand"/>
+
+                                <TextBlock Grid.Row="5" Grid.Column="0" x:Name="Loc_Settings_ThemeImage" Text="Зображення фону" Foreground="{DynamicResource MainForegroundBrush}" FontSize="16" VerticalAlignment="Center" Margin="0,5" FontFamily="Inter"/>
+                                <ui:Button Grid.Row="5" Grid.Column="1" x:Name="Background_imageButton" Click="Background_imageButton_Click" Content="Файл..." Width="120" Height="32" Margin="5,4" Foreground="{DynamicResource MainForegroundBrush}" Background="{DynamicResource MainBackgroundButton}" BorderBrush="{x:Null}" Cursor="Hand"/>
                             </Grid>
 
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,15,0,0">
-                                <ui:Button x:Name="Loc_BtnResetTheme" Content="Скинути" Icon="{ui:SymbolIcon ArrowReset24}" Appearance="Secondary" Click="ResetCustomSetting_Click" Margin="0,0,0,0" Cursor="Hand" ToolTip="Скинути налаштування теми до стандартних"/>
-                            </StackPanel>
+                            <ui:Button x:Name="Loc_BtnResetTheme" Content="Скинути" Icon="{ui:SymbolIcon ArrowReset24}" Appearance="Secondary" Click="ResetCustomSetting_Click" HorizontalAlignment="Right" Margin="0,15,0,0" Cursor="Hand"/>
 
-                            <Border BorderThickness="0,1,0,0" BorderBrush="#33FFFFFF" Margin="0,15,0,0" Padding="0,15,0,0" Background="Transparent">
+                            <Border BorderThickness="0,1,0,0" BorderBrush="#33FFFFFF" Margin="0,15,0,0" Padding="0,15,0,0" Background="{x:Null}">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
@@ -1970,7 +1976,7 @@
 
                                     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Bottom">
                                         <ui:Button x:Name="Loc_BtnCopyTheme" Content="Копіювати" Click="CopyTheme_Click" Width="105" Height="32" Margin="0,0,5,0" Background="{DynamicResource MainBackgroundButton}" Foreground="{DynamicResource MainForegroundBrush}" BorderBrush="{x:Null}" Cursor="Hand"/>
-                                        <ui:Button x:Name="Loc_BtnPasteTheme" Content="Вставити" Click="PasteTheme_Click" Width="105" Height="32" Margin="0,0,0,0" Background="{DynamicResource MainBackgroundButton}" Foreground="{DynamicResource MainForegroundBrush}" BorderBrush="{x:Null}" Cursor="Hand"/>
+                                        <ui:Button x:Name="Loc_BtnPasteTheme" Content="Вставити" Click="PasteTheme_Click" Width="105" Height="32" Background="{DynamicResource MainBackgroundButton}" Foreground="{DynamicResource MainForegroundBrush}" BorderBrush="{x:Null}" Cursor="Hand"/>
                                     </StackPanel>
                                 </Grid>
                             </Border>
@@ -2975,27 +2981,74 @@
                 </ScrollViewer>
             </Border>
         </Grid>
-        <Grid x:Name="SelectCreatePackMinecraft" Width="330" Height="258" Margin="315,142,315,142" Visibility="Collapsed">
-            <Border x:Name="SelectCreatePackMinecraftBorder" BorderThickness="1" Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="14,14,14,14"/>
-            <Border x:Name="SelectModPack"
-        Width="150" Height="150"
-        Margin="15,51,165,57"
-        Background="{DynamicResource MainBackgroundButton}"
-        BorderThickness="1" CornerRadius="8">
-                <Border.RenderTransform>
-                    <MatrixTransform x:Name="matrixTransform"/>
-                </Border.RenderTransform>
-            </Border>
-            <Image x:Name="VanilaPackIcon" HorizontalAlignment="Left" Height="106" Margin="37,65,0,0" VerticalAlignment="Top" Width="106" Source="/Assets/VanilaVersion.png" Stretch="Fill" MouseDown="VanilaPackIcon_MouseDown" Cursor="Hand"/>
-            <Image x:Name="ModPackIcon" HorizontalAlignment="Left" Height="106" Margin="184,65,0,0" VerticalAlignment="Top" Width="106" Source="/Assets/CustomVersion.png" Stretch="Fill" MouseDown="ModPackIcon_MouseDown" Cursor="Hand"/>
-            <TextBlock x:Name="VanilaPackTxt" Text="Ванільна збірка" HorizontalAlignment="Left" Height="30" Margin="15,171,0,0" VerticalAlignment="Top" Width="150" FontFamily="Inter 18pt 18pt" Foreground="{DynamicResource MainForegroundBrush}" Padding="22,0,0,0"/>
-            <TextBlock x:Name="ModPackTxt" Text="Модова збірка" HorizontalAlignment="Left" Height="30" Margin="170,171,0,0" VerticalAlignment="Top" Width="150" FontFamily="Inter 18pt 18pt" Foreground="{DynamicResource MainForegroundBrush}" Padding="22,0,0,0"/>
-            <Border x:Name="TitleBorderPack" BorderThickness="1" HorizontalAlignment="Center" Height="30" Margin="0,3,0,0" VerticalAlignment="Top" Width="318" CornerRadius="8,8,8,8" Background="{DynamicResource MainBackgroundBrush}">
-                <TextBlock x:Name="TitleManegerCollection" Text="Створення збірки" HorizontalAlignment="Center" Height="30" VerticalAlignment="Center" Width="214" Background="{x:Null}" Foreground="{DynamicResource MainForegroundBrush}" FontSize="14" FontFamily="Inter 18pt 18pt" Padding="48,6,0,0"/>
-            </Border>
-            <Border x:Name="BorderCountionCreatePack" BorderThickness="1" HorizontalAlignment="Center" Height="30" Margin="0,224,0,0" VerticalAlignment="Top" Width="318" CornerRadius="8,8,8,8" Background="{DynamicResource MainBackgroundBrush}" MouseDown="BorderCountionCreatePack_MouseDown" Cursor="Hand">
-                <TextBlock x:Name="TitleManegerCollection1" Text="Продовжити" HorizontalAlignment="Center" Height="30" VerticalAlignment="Center" Width="214" Background="{x:Null}" Foreground="{DynamicResource MainForegroundBrush}"  FontSize="14" FontFamily="Inter 18pt 18pt" Cursor="Hand" Padding="68,6,0,0"/>
-            </Border>
+        <Grid x:Name="SelectCreatePackMinecraft" Width="340" Height="270" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed">
+            <Border x:Name="SelectCreatePackMinecraftBorder" 
+            BorderThickness="1" 
+            Background="{DynamicResource MainBackgroundBrushServer}" 
+            CornerRadius="14" 
+            BorderBrush="#33FFFFFF"/>
+
+            <Grid Margin="10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="35"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="40"/>
+                </Grid.RowDefinitions>
+
+                <Border Grid.Row="0" x:Name="TitleBorderPack" CornerRadius="8" Background="{DynamicResource MainBackgroundBrush}" Margin="5,0">
+                    <TextBlock x:Name="TitleManegerCollection" 
+                       Text="Створення збірки" 
+                       Foreground="{DynamicResource MainForegroundBrush}" 
+                       FontSize="14" FontWeight="SemiBold"
+                       HorizontalAlignment="Center" VerticalAlignment="Center" FontFamily="Inter"/>
+                </Border>
+
+                <Grid Grid.Row="1" Margin="0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Border x:Name="SelectModPack" 
+                    Grid.Column="0"
+                    Width="140" Height="140"
+                    Background="{DynamicResource MainBackgroundButton}"
+                    BorderThickness="1" CornerRadius="12"
+                    Visibility="Visible"/>
+
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center" Cursor="Hand" MouseDown="VanilaPackIcon_MouseDown">
+                        <Image x:Name="VanilaPackIcon" 
+                       Height="90" Width="90" 
+                       Source="/Assets/VanilaVersion.png" 
+                       Stretch="Uniform" Margin="0,0,0,10"/>
+                        <TextBlock x:Name="VanilaPackTxt" 
+                           Text="Ванільна збірка" 
+                           Foreground="{DynamicResource MainForegroundBrush}"
+                           HorizontalAlignment="Center" FontFamily="Inter"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Cursor="Hand" MouseDown="ModPackIcon_MouseDown">
+                        <Image x:Name="ModPackIcon" 
+                       Height="90" Width="90" 
+                       Source="/Assets/CustomVersion.png" 
+                       Stretch="Uniform" Margin="0,0,0,10"/>
+                        <TextBlock x:Name="ModPackTxt" 
+                           Text="Модова збірка" 
+                           Foreground="{DynamicResource MainForegroundBrush}"
+                           HorizontalAlignment="Center" FontFamily="Inter"/>
+                    </StackPanel>
+                </Grid>
+
+                <Border Grid.Row="2" x:Name="BorderCountionCreatePack" 
+                CornerRadius="8" Background="{DynamicResource MainBackgroundBrush}" 
+                MouseDown="BorderCountionCreatePack_MouseDown" Cursor="Hand" Margin="5,0">
+                    <TextBlock x:Name="TitleManegerCollection1" 
+                       Text="Продовжити" 
+                       Foreground="{DynamicResource MainForegroundBrush}" 
+                       FontSize="14" FontWeight="Bold"
+                       HorizontalAlignment="Center" VerticalAlignment="Center" FontFamily="Inter"/>
+                </Border>
+            </Grid>
         </Grid>
         <ui:SnackbarPresenter x:Name="SnackbarPresenter" 
                       VerticalAlignment="Top"
