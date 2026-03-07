@@ -27,7 +27,7 @@ namespace CL_CLegendary_Launcher_.Class
             }
             catch (Exception ex)
             {
-                throw new Exception($"Помилка завантаження новин: {ex.Message}");
+                throw new Exception(string.Format(LocalizationManager.GetString("News.DownloadError", "Помилка завантаження новин: {0}"), ex.Message));
             }
         }
     }

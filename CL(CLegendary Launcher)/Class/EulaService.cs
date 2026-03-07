@@ -11,42 +11,49 @@ namespace CL_CLegendary_Launcher_.Class
     public class EulaConfig
     {
         [JsonProperty("last_updated")]
-        public DateTime LastUpdated { get; set; }
+        public string LastUpdatedStr { get; set; }
+
+        [JsonProperty("mascot_message")]
+        public string MascotMessage { get; set; }
 
         [JsonProperty("text")]
         public string Text { get; set; }
+
+        [JsonIgnore]
+        public DateTime LastUpdated
+        {
+            get
+            {
+                if (DateTime.TryParseExact(LastUpdatedStr, "dd.MM.yyyy", null, System.Globalization.DateTimeStyles.None, out DateTime date))
+                    return date;
+                return DateTime.MinValue;
+            }
+        }
     }
 
     public static class EulaService
     {
-        public static async Task<EulaConfig> GetEulaAsync()
+        public static async Task<EulaConfig> GetEulaAsync(string langCode = "uk_UA")
         {
             try
             {
-                using (var client = new HttpClient())
-                {
-                    string url = $"{Secrets.EulaUrl}";
+                using HttpClient client = new HttpClient();
 
-                    string json = await client.GetStringAsync(url);
-
-                    var settings = new JsonSerializerSettings
-                    {
-                        DateFormatString = "dd.MM.yyyy"
-                    };
-
-                    return JsonConvert.DeserializeObject<EulaConfig>(json, settings);
-                }
+                string json = await client.GetStringAsync($"{Secrets.EulaUrl}?v={DateTime.Now.Ticks}");
+                return JsonConvert.DeserializeObject<EulaConfig>(json);
             }
-            catch (Exception ex)
+            catch
             {
-                System.Diagnostics.Debug.WriteLine($"ПОМИЛКА EULA: {ex.Message}");
+                if (langCode != "uk_UA")
+                    return await GetEulaAsync("uk_UA");
+
                 return null;
             }
         }
 
         public static bool IsEulaOutdated(DateTime serverDate)
         {
-            return Settings1.Default.EulaAcceptedDate < serverDate;
+            return SettingsManager.Default.EulaAcceptedDate < serverDate;
         }
     }
 }

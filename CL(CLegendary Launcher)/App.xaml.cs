@@ -1,4 +1,5 @@
-﻿using SevenZip.Compression.LZ;
+﻿using CL_CLegendary_Launcher_.Class;
+using SevenZip.Compression.LZ;
 using System;
 using System.IO;
 using System.Reflection;
@@ -31,11 +32,17 @@ namespace CL_CLegendary_Launcher_
                     $"Message: {ex.Message}\n" +
                     $"StackTrace:\n{ex.StackTrace}\n";
 
+                if (ex.InnerException != null)
+                {
+                    text += $"\n--- Inner Exception ---\n" +
+                            $"Message: {ex.InnerException.Message}\n" +
+                            $"StackTrace:\n{ex.InnerException.StackTrace}\n";
+                }
+
                 File.WriteAllText(logPath, text);
             }
             catch { }
         }
-
         private void App_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
         {
             LogException("Dispatcher", e.Exception);
@@ -46,10 +53,15 @@ namespace CL_CLegendary_Launcher_
         {
             LogException("AppDomain", e.ExceptionObject as Exception);
         }
-
         private void TaskScheduler_UnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
         {
-            LogException("TaskScheduler", e.Exception);
+            Exception realError = e.Exception;
+            if (e.Exception is AggregateException aggEx && aggEx.InnerException != null)
+            {
+                realError = aggEx.GetBaseException();
+            }
+
+            LogException("TaskScheduler", realError);
             e.SetObserved();
         }
     }

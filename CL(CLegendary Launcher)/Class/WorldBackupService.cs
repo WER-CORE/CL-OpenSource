@@ -87,7 +87,7 @@ namespace CL_CLegendary_Launcher_.Class
             }
             catch
             {
-                string globalBackups = Path.Combine(Settings1.Default.PathLacunher, "backups");
+                string globalBackups = Path.Combine(SettingsManager.Default.PathLacunher, "backups");
                 if (!Directory.Exists(globalBackups)) Directory.CreateDirectory(globalBackups);
                 return globalBackups;
             }
@@ -116,7 +116,7 @@ namespace CL_CLegendary_Launcher_.Class
             await Task.Run(() =>
             {
                 DirectoryInfo dirInfo = new DirectoryInfo(worldFolderPath);
-                if (!dirInfo.Exists) throw new DirectoryNotFoundException("Світ не знайдено!");
+                if (!dirInfo.Exists) throw new DirectoryNotFoundException(LocalizationManager.GetString("Backups.WorldNotFound", "Світ не знайдено!"));
 
                 string targetFolder = GetSpecificBackupFolder(worldFolderPath);
                 if (targetFolder == null) return;
@@ -142,7 +142,7 @@ namespace CL_CLegendary_Launcher_.Class
         }
         public static async Task AutoBackupWorldAsync(string worldPath)
         {
-            if (!Settings1.Default.EnableAutoBackup) return;
+            if (!SettingsManager.Default.EnableAutoBackup) return;
 
             await Task.Run(() =>
             {
@@ -179,7 +179,7 @@ namespace CL_CLegendary_Launcher_.Class
                     if (File.Exists(finalZipPath)) File.Delete(finalZipPath);
                     File.Move(tempZipPath, finalZipPath);
 
-                    int maxBackups = Settings1.Default.MaxAutoBackups;
+                    int maxBackups = SettingsManager.Default.MaxAutoBackups;
                     if (maxBackups < 1) maxBackups = 1;
 
                     var allAutoBackups = Directory.GetFiles(targetFolder, "[Auto]*")
@@ -271,7 +271,7 @@ namespace CL_CLegendary_Launcher_.Class
                         }
                         catch (IOException)
                         {
-                            throw new IOException("Не можу замінити файли світу. Можливо, гра ще запущена? Закрийте Minecraft.");
+                            throw new IOException(LocalizationManager.GetString("Backups.WorldRestoreLockError", "Не можу замінити файли світу. Можливо, гра ще запущена? Закрийте Minecraft."));
                         }
                     }
 

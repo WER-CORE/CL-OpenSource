@@ -59,9 +59,38 @@ namespace CL_CLegendary_Launcher_.Windows
             _modDownloadService = modDownloadService;
             _modpackService = modpackService;
 
+            ApplyLocalization();
             AddVersionList();
         }
 
+        private void ApplyLocalization()
+        {
+            this.Title = LocalizationManager.GetString("Modpacks.CreateModpackTitle", "Створення збірки (Forge, Fabric...)");
+            TxtHeaderTitle.Text = LocalizationManager.GetString("Modpacks.CreateModpackTitle", "Створення збірки - Модової збірки (Forge,Fabric,...)");
+
+            TxtModpackName.Text = LocalizationManager.GetString("Modpacks.ModpackNameTitle", "Назва збірки");
+            NameModPackTXT.PlaceholderText = LocalizationManager.GetString("Modpacks.ModpackNamePlaceholder", "Напишіть назву...");
+
+            TxtMcVersion.Text = LocalizationManager.GetString("Modpacks.ModpackMcVersion", "Версія Minecraft");
+            TxtLoaderType.Text = LocalizationManager.GetString("Modpacks.LoaderTypeTitle", "Тип ядра");
+            TxtLoaderVersion.Text = LocalizationManager.GetString("Modpacks.ModpackLoaderVersion", "Версія ядра");
+
+            BtnMods.Content = LocalizationManager.GetString("Modpacks.ModpackEditMods", "Моди");
+            BtnResourcePacks.Content = LocalizationManager.GetString("Modpacks.ModpackEditResourcePacks", "Ресурс-паки");
+            BtnShaders.Content = LocalizationManager.GetString("Modpacks.ModpackEditShaders", "Шейдери");
+
+            SearchSystemModsTXT.PlaceholderText = LocalizationManager.GetString("Modpacks.ModsSearchPlaceholder", "Пошук модів...");
+
+            TxtSearchResults.Text = LocalizationManager.GetString("Modpacks.SearchResultsTitle", "Результати пошуку");
+            TxtSearchLoading.Text = LocalizationManager.GetString("Modpacks.ModsSearchLoading", "Bit-CL шукає потрібні файли...");
+
+            TxtSelectedMods.Text = LocalizationManager.GetString("Modpacks.SelectedModsTitle", "Обрані моди (Ваша збірка)");
+
+            BtnCreatePack.Text = LocalizationManager.GetString("Modpacks.CreateModpackBtn", "СТВОРИТИ ЗБІРКУ");
+
+            TitleModsDowload.Text = LocalizationManager.GetString("Modpacks.ModVersionSelectionTitle", "Вибір версії моду");
+            DowloadTXT.Text = LocalizationManager.GetString("Modpacks.ModAddBtn", "Додати");
+        }
 
         private async void AddVersionList()
         {
@@ -71,7 +100,7 @@ namespace CL_CLegendary_Launcher_.Windows
 
             try
             {
-                var path = new MinecraftPath(Settings1.Default.PathLacunher);
+                var path = new MinecraftPath(SettingsManager.Default.PathLacunher);
                 var launcher = new MinecraftLauncher(path);
 
                 if (LoderNow == "Fabric")
@@ -123,9 +152,10 @@ namespace CL_CLegendary_Launcher_.Windows
             }
             catch (Exception ex)
             {
-                ShowError($"Помилка завантаження версій гри: {ex.Message}");
+                ShowError(string.Format(LocalizationManager.GetString("Modpacks.VersionLoadError", "Помилка завантаження версій гри: {0}"), ex.Message));
             }
         }
+
         public async Task UpdateLoaderVersionsList(string? targetVersionToSelect = null)
         {
             if (VersionVanilBox.SelectedItem == null) return;
@@ -135,7 +165,7 @@ namespace CL_CLegendary_Launcher_.Windows
             LoaderVersionBox.Items.Clear();
             LoaderVersionBox.IsEnabled = false;
 
-            LoaderVersionBox.Text = "Завантаження...";
+            LoaderVersionBox.Text = LocalizationManager.GetString("Generic.Loading", "Завантаження...");
 
             try
             {
@@ -162,7 +192,7 @@ namespace CL_CLegendary_Launcher_.Windows
                 }
                 else if (LoderNow == "NeoForge")
                 {
-                    var path = new MinecraftPath(Settings1.Default.PathLacunher);
+                    var path = new MinecraftPath(SettingsManager.Default.PathLacunher);
                     var launcher = new MinecraftLauncher(path);
                     var versionLoader = new NeoForgeInstaller(launcher);
                     var neoForgeList = await versionLoader.GetForgeVersions(gameVersion);
@@ -188,7 +218,7 @@ namespace CL_CLegendary_Launcher_.Windows
                         LoaderVersionBox.Items.Add(v.Version);
                 }
 
-                LoaderVersionBox.Text = ""; 
+                LoaderVersionBox.Text = "";
 
                 if (LoaderVersionBox.Items.Count > 0)
                 {
@@ -218,16 +248,17 @@ namespace CL_CLegendary_Launcher_.Windows
                 }
                 else
                 {
-                    LoaderVersionBox.Text = "Версій не знайдено";
+                    LoaderVersionBox.Text = LocalizationManager.GetString("Modpacks.VersionsNotFound", "Версій не знайдено");
                 }
             }
             catch (Exception ex)
             {
                 LoaderVersionBox.IsEnabled = true;
-                LoaderVersionBox.Text = "Помилка мережі";
+                LoaderVersionBox.Text = LocalizationManager.GetString("Dialogs.Error", "Помилка мережі");
                 System.Diagnostics.Debug.WriteLine($"UpdateLoaderVersionsList Error: {ex.Message}");
             }
         }
+
         private async void UpdateModsList()
         {
             if (VersionVanilBox.SelectedItem == null) return;
@@ -292,6 +323,7 @@ namespace CL_CLegendary_Launcher_.Windows
                 }
             }
         }
+
         private ModPackItem CreateItemFromSearchResult(ModSearchResult mod)
         {
             var item = new ModPackItem();
@@ -326,12 +358,11 @@ namespace CL_CLegendary_Launcher_.Windows
             return item;
         }
 
-
         private async Task OpenVersionSelector(ModSearchResult mod)
         {
             if (VersionVanilBox.SelectedItem == null)
             {
-                MascotMessageBox.Show("Спочатку оберіть версію Minecraft!", "Увага", MascotEmotion.Alert);
+                MascotMessageBox.Show(LocalizationManager.GetString("Modpacks.NeedMinecraftVersion", "Спочатку оберіть версію Minecraft!"), LocalizationManager.GetString("Dialogs.Alert", "Увага"), MascotEmotion.Alert);
                 return;
             }
 
@@ -363,13 +394,13 @@ namespace CL_CLegendary_Launcher_.Windows
                 }
                 else
                 {
-                    MascotMessageBox.Show("Не знайдено версій для вашої збірки.", "Пусто", MascotEmotion.Confused);
+                    MascotMessageBox.Show(LocalizationManager.GetString("Modpacks.NoVersionsForModpack", "Не знайдено версій для вашої збірки."), LocalizationManager.GetString("Dialogs.EmptyTitle", "Пусто"), MascotEmotion.Confused);
                     MenuInstaller.Visibility = Visibility.Hidden;
                 }
             }
             catch (Exception ex)
             {
-                MascotMessageBox.Show($"Помилка завантаження: {ex.Message}", "Помилка", MascotEmotion.Sad);
+                MascotMessageBox.Show($"{LocalizationManager.GetString("Dialogs.Error", "Помилка")}: {ex.Message}", LocalizationManager.GetString("Dialogs.Error", "Помилка"), MascotEmotion.Sad);
                 MenuInstaller.Visibility = Visibility.Hidden;
             }
         }
@@ -387,7 +418,7 @@ namespace CL_CLegendary_Launcher_.Windows
             {
                 Name = _currentModToInstall.Title,
                 ProjectId = selectedVerInfo.ModId,
-                FileId = selectedVerInfo.VersionId, 
+                FileId = selectedVerInfo.VersionId,
                 Loader = LoderNow,
                 Version = VersionVanilBox.SelectedItem.ToString(),
                 Url = selectedVerInfo.DownloadUrl,
@@ -417,15 +448,18 @@ namespace CL_CLegendary_Launcher_.Windows
                         {
                             if (!_tempModList.Any(m => m.ProjectId == dep.ProjectId))
                             {
-                                _tempModList.Add(dep);  
-                                AddItemToRightList(dep); 
+                                _tempModList.Add(dep);
+                                AddItemToRightList(dep);
                                 addedCount++;
                             }
                         }
 
                         if (addedCount > 0)
                         {
-                            MascotMessageBox.Show($"Автоматично додано {addedCount} залежних модів (наприклад, Sodium/FabricAPI).", "Успіх", MascotEmotion.Happy);
+                            MascotMessageBox.Show(
+                                string.Format(LocalizationManager.GetString("Modpacks.ModpackDepsAdded", "Автоматично додано {0} залежних модів (наприклад, Sodium/FabricAPI)."), addedCount),
+                                LocalizationManager.GetString("Dialogs.Success", "Успіх"),
+                                MascotEmotion.Happy);
                         }
                     }
                 }
@@ -439,6 +473,7 @@ namespace CL_CLegendary_Launcher_.Windows
                 }
             }
         }
+
         private void CloseMenu_MouseDown(object sender, MouseButtonEventArgs e)
         {
             MenuInstaller.Visibility = Visibility.Hidden;
@@ -447,13 +482,14 @@ namespace CL_CLegendary_Launcher_.Windows
         private void VersionMods_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
         }
+
         private void SaveModToModpackJson(ModInfo mod)
         {
             try
             {
                 if (_tempModList.Any(m => m.ProjectId == mod.ProjectId))
                 {
-                    MascotMessageBox.Show("Цей мод вже є в списку.", "Увага", MascotEmotion.Alert);
+                    MascotMessageBox.Show(LocalizationManager.GetString("Modpacks.ModInListAlready", "Цей мод вже є в списку."), LocalizationManager.GetString("Dialogs.Alert", "Увага"), MascotEmotion.Alert);
                     return;
                 }
 
@@ -461,16 +497,17 @@ namespace CL_CLegendary_Launcher_.Windows
 
                 AddItemToRightList(mod);
 
-                MascotMessageBox.Show($"Мод \"{mod.Name}\" додано до черги!", "Успіх", MascotEmotion.Happy);
+                MascotMessageBox.Show(string.Format(LocalizationManager.GetString("Modpacks.ModAddedQueue", "Мод \"{0}\" додано до черги!"), mod.Name), LocalizationManager.GetString("Dialogs.Success", "Успіх"), MascotEmotion.Happy);
 
                 VersionVanilBox.IsEnabled = false;
                 LoaderBox.IsEnabled = false;
             }
             catch (Exception ex)
             {
-                ShowError($"Помилка додавання: {ex.Message}");
+                ShowError(string.Format(LocalizationManager.GetString("Modpacks.ModAddError", "Помилка додавання: {0}"), ex.Message));
             }
         }
+
         private void AddItemToRightList(ModInfo mod)
         {
             AddItemModPack moditem = new AddItemModPack();
@@ -500,6 +537,7 @@ namespace CL_CLegendary_Launcher_.Windows
 
             AddModsInModPackList.Items.Add(moditem);
         }
+
         private void CreateModPacksButtonTXT_MouseDown(object sender, RoutedEventArgs e)
         {
             try
@@ -507,24 +545,24 @@ namespace CL_CLegendary_Launcher_.Windows
                 string modpackName = NameModPackTXT.Text.Trim();
                 if (string.IsNullOrWhiteSpace(modpackName))
                 {
-                    ShowError("Введіть назву збірки!");
+                    ShowError(LocalizationManager.GetString("Modpacks.ModpackNameEmpty", "Введіть назву збірки!"));
                     return;
                 }
 
                 if (_tempModList.Count == 0)
                 {
-                    ShowError("Збірка пуста. Додайте хоча б один мод!");
+                    ShowError(LocalizationManager.GetString("Modpacks.ModpackEmptyError", "Збірка пуста. Додайте хоча б один мод!"));
                     return;
                 }
 
                 string loaderVersion = LoaderVersionBox.SelectedItem?.ToString();
                 if (string.IsNullOrEmpty(loaderVersion))
                 {
-                    ShowError("Дочекайтесь завантаження версії ядра (Loader Version)!");
+                    ShowError(LocalizationManager.GetString("Modpacks.LoaderVersionNotSelected", "Дочекайтесь завантаження версії ядра (Loader Version)!"));
                     return;
                 }
 
-                string basePath = Path.Combine(Settings1.Default.PathLacunher, "CLModpack", modpackName);
+                string basePath = Path.Combine(SettingsManager.Default.PathLacunher, "CLModpack", modpackName);
                 string pathJson = Path.Combine(basePath, "modpack.json");
 
                 Directory.CreateDirectory(basePath);
@@ -548,15 +586,16 @@ namespace CL_CLegendary_Launcher_.Windows
 
                 _modpackService.AddModpack(modpack);
 
-                MascotMessageBox.Show("Збірку успішно створено!", "Успіх", MascotEmotion.Happy);
+                MascotMessageBox.Show(LocalizationManager.GetString("Modpacks.ModpackCreatedSuccess", "Збірку успішно створено!"), LocalizationManager.GetString("Dialogs.Success", "Успіх"), MascotEmotion.Happy);
                 IsModPackCreated = true;
                 this.Close();
             }
             catch (Exception ex)
             {
-                ShowError($"Критична помилка створення: {ex.Message}");
+                ShowError(string.Format(LocalizationManager.GetString("Modpacks.ModpackCreateFatalError", "Критична помилка створення: {0}"), ex.Message));
             }
         }
+
         private void VersionVanil_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (VersionVanilBox.SelectedItem != null)
@@ -606,20 +645,21 @@ namespace CL_CLegendary_Launcher_.Windows
             LoadModsByType("shader");
             UpdateModsList();
         }
+
         private void ModrinthSite_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            if (SiteDowload == "Modrinth") return; 
+            if (SiteDowload == "Modrinth") return;
 
             SiteDowload = "Modrinth";
             _currentPage = 0;
 
-            UpdateProviderUI(); 
+            UpdateProviderUI();
             UpdateModsList();
         }
 
         private void CurseForgeSite_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            if (SiteDowload == "CurseForge") return; 
+            if (SiteDowload == "CurseForge") return;
 
             SiteDowload = "CurseForge";
             _currentPage = 0;
@@ -627,6 +667,7 @@ namespace CL_CLegendary_Launcher_.Windows
             UpdateProviderUI();
             UpdateModsList();
         }
+
         private void UpdateProviderUI()
         {
             if (SiteDowload == "Modrinth")
@@ -640,6 +681,7 @@ namespace CL_CLegendary_Launcher_.Windows
                 CurseForgeSite.Opacity = 1.0;
             }
         }
+
         private void Provider_MouseEnter(object sender, MouseEventArgs e)
         {
             if (sender is System.Windows.Controls.Image img)
@@ -654,6 +696,7 @@ namespace CL_CLegendary_Launcher_.Windows
                 }
             }
         }
+
         private void Provider_MouseLeave(object sender, MouseEventArgs e)
         {
             if (sender is System.Windows.Controls.Image img)
@@ -668,6 +711,7 @@ namespace CL_CLegendary_Launcher_.Windows
                 }
             }
         }
+
         private void LoadModsByType(string type)
         {
             AddModsInModPackList.Items.Clear();
@@ -679,8 +723,11 @@ namespace CL_CLegendary_Launcher_.Windows
                 AddItemToRightList(m);
             }
         }
-        private void ShowError(string msg) => MascotMessageBox.Show(msg, "Помилка", MascotEmotion.Sad);
+
+        private void ShowError(string msg) => MascotMessageBox.Show(msg, LocalizationManager.GetString("Dialogs.Error", "Помилка"), MascotEmotion.Sad);
+
         private void ExitLauncher_MouseDown(object sender, RoutedEventArgs e) => this.Close();
+
         private void Header_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (e.ButtonState == MouseButtonState.Pressed)
@@ -688,6 +735,7 @@ namespace CL_CLegendary_Launcher_.Windows
                 this.DragMove();
             }
         }
+
         private void PrevPageBtn_Click(object sender, RoutedEventArgs e)
         {
             if (_currentPage > 0)
@@ -702,6 +750,7 @@ namespace CL_CLegendary_Launcher_.Windows
             _currentPage++;
             UpdateModsList();
         }
+
         private void Window_Closed(object sender, EventArgs e)
         {
             if (!IsModPackCreated)

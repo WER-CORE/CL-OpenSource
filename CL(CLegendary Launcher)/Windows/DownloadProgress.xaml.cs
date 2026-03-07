@@ -12,11 +12,25 @@ namespace CL_CLegendary_Launcher_.Windows
         public DowloadProgress()
         {
             InitializeComponent();
+            ApplyLocalization();
+        }
+
+        private void ApplyLocalization()
+        {
+            NameWin.Text = LocalizationManager.GetString("DownloadManager.ProgressTitle", "Менеджер завантаження");
+
+            FileTXTName.Text = LocalizationManager.GetString("DownloadManager.FileCheck", "Перевірка файлів...");
+
+            FileTXT.Text = LocalizationManager.GetString("DownloadManager.Preparation", "Підготовка...");
+
+            VersionTXT.Text = LocalizationManager.GetString("DownloadManager.OverallProgress", "Загальний прогрес");
+
+            DowloadTXT.Text = LocalizationManager.GetString("DownloadManager.CancelBtn", "Скасувати");
         }
 
         public void DowloadProgressBarVersion(int progress, object version)
         {
-            VersionTXT.Text = "Завантажується версія " + version;
+            VersionTXT.Text = string.Format(LocalizationManager.GetString("DownloadManager.DownloadingVersion", "Завантажується версія {0}"), version);
             ProgressDowloadVersion.Value = progress;
             ProgressDowloadTXT.Text = progress + "%";
         }
@@ -24,7 +38,7 @@ namespace CL_CLegendary_Launcher_.Windows
         public void DowloadProgressBarFileTask(int filedowload, int filetotaldowload, string namefile)
         {
             FileTXTName.Text = $"{namefile}";
-            FileTXT.Text = $"Завантажено {filetotaldowload} з {filedowload} файлів";
+            FileTXT.Text = string.Format(LocalizationManager.GetString("DownloadManager.DownloadedFilesCount", "Завантажено {0} з {1} файлів"), filetotaldowload, filedowload);
         }
 
         public void DowloadProgressBarFile(int progress)
@@ -38,6 +52,7 @@ namespace CL_CLegendary_Launcher_.Windows
             CTS?.Cancel();
             this.Close();
         }
+
         private void ExitLauncher_MouseEnter(object sender, MouseEventArgs e) { }
         private void ExitLauncher_MouseLeave(object sender, MouseEventArgs e) { }
 

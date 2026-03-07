@@ -40,7 +40,7 @@ namespace CL_CLegendary_Launcher_
                 _searchCts = new CancellationTokenSource();
                 var token = _searchCts.Token;
 
-                await DiscordController.UpdatePresence("Шукає моди...");
+                await DiscordController.UpdatePresence(LocalizationManager.GetString("DiscordRPC.SearchingMods", "Шукає моди..."));
 
                 ModsDowloadList.Visibility = Visibility.Collapsed;
                 ModsSearchLoader.Visibility = Visibility.Visible;
@@ -71,7 +71,7 @@ namespace CL_CLegendary_Launcher_
                 {
                     ModsDowloadList.Items.Add(new TextBlock
                     {
-                        Text = "Пошук не дав результатів (або кінець списку).",
+                        Text = LocalizationManager.GetString("Mods.NotFound", "Пошук не дав результатів (або кінець списку)."),
                         Foreground = Brushes.White,
                         Margin = new Thickness(10),
                         HorizontalAlignment = HorizontalAlignment.Center,
@@ -101,7 +101,7 @@ namespace CL_CLegendary_Launcher_
             catch (OperationCanceledException) { }
             catch (Exception ex)
             {
-                MascotMessageBox.Show($"Помилка пошуку: {ex.Message}", "Помилка", MascotEmotion.Sad);
+                MascotMessageBox.Show($"{LocalizationManager.GetString("Dialogs.Error", "Помилка")}: {ex.Message}", LocalizationManager.GetString("Dialogs.Error", "Помилка"), MascotEmotion.Sad);
             }
             finally
             {
@@ -109,6 +109,7 @@ namespace CL_CLegendary_Launcher_
                 ModsDowloadList.Visibility = Visibility.Visible;
             }
         }
+
         private async void PrevPageBtn_Click(object sender, RoutedEventArgs e)
         {
             if (_currentPage > 0)
@@ -126,9 +127,10 @@ namespace CL_CLegendary_Launcher_
 
         private async void SearchSystemModsTXT_TextChanged(object sender, TextChangedEventArgs e)
         {
-            if (!string.IsNullOrWhiteSpace(SearchSystemModsTXT.Text) && SearchSystemModsTXT.Text != "Пошук")
+            string defaultSearch = LocalizationManager.GetString("Generic.Search", "Пошук...");
+            if (!string.IsNullOrWhiteSpace(SearchSystemModsTXT.Text) && SearchSystemModsTXT.Text != defaultSearch && SearchSystemModsTXT.Text != "Пошук")
             {
-                _currentPage = 0; 
+                _currentPage = 0;
                 await UpdateModsMinecraftAsync();
             }
             else
@@ -136,6 +138,7 @@ namespace CL_CLegendary_Launcher_
                 ModsDowloadList.Items.Clear();
             }
         }
+
         private async void HandleModDownloadClick(ModSearchResult mod)
         {
             if (Version != null) Version.Items.Clear();
@@ -158,8 +161,8 @@ namespace CL_CLegendary_Launcher_
                 if (allReleaseVersions == null || !allReleaseVersions.Any())
                 {
                     MascotMessageBox.Show(
-                        "Дивина! Я перерила усі архіви, але не знайшла жодного файлу для цього проекту.",
-                        "Пусто",
+                        LocalizationManager.GetString("Mods.ArchiveEmptyDesc", "Дивина! Я перерила усі архіви, але не знайшла жодного файлу для цього проекту."),
+                        LocalizationManager.GetString("Mods.ArchiveEmptyTitle", "Пусто"),
                         MascotEmotion.Confused
                     );
                     CloseInstallerMenu();
@@ -184,7 +187,7 @@ namespace CL_CLegendary_Launcher_
                         .SelectMany(v => v.GameVersions)
                         .Distinct()
                         .Where(v => char.IsDigit(v[0]))
-                        .OrderByDescending(v => v)     
+                        .OrderByDescending(v => v)
                         .ToList();
 
                     foreach (var gv in gameVersions) Version.Items.Add(gv);
@@ -194,7 +197,7 @@ namespace CL_CLegendary_Launcher_
             }
             catch (Exception ex)
             {
-                MascotMessageBox.Show($"Помилка підготовки завантаження: {ex.Message}", "Збій", MascotEmotion.Sad);
+                MascotMessageBox.Show($"{LocalizationManager.GetString("Dialogs.Error", "Помилка")}: {ex.Message}", LocalizationManager.GetString("Dialogs.Oops", "Збій"), MascotEmotion.Sad);
                 CloseInstallerMenu();
             }
         }
@@ -204,6 +207,7 @@ namespace CL_CLegendary_Launcher_
             AnimationService.FadeOut(GirdModsDowload, 0.2);
             AnimationService.AnimatePageTransitionExit(MenuInstaller);
         }
+
         private async void DowloadMod_Click(object sender, System.Windows.RoutedEventArgs e)
         {
             if (VersionMods.SelectedItem == null || _currentModVersions == null) return;
@@ -229,7 +233,10 @@ namespace CL_CLegendary_Launcher_
                 }
                 else
                 {
-                    MascotMessageBox.Show("Оберіть збірку!", "Куди качати?", MascotEmotion.Alert);
+                    MascotMessageBox.Show(
+                        LocalizationManager.GetString("Modpacks.SelectTargetDesc", "Оберіть збірку!"),
+                        LocalizationManager.GetString("Modpacks.SelectTargetTitle", "Куди качати?"),
+                        MascotEmotion.Alert);
                     return;
                 }
             }
@@ -258,19 +265,25 @@ namespace CL_CLegendary_Launcher_
                     if (File.Exists(downloadedFile) && Path.GetExtension(downloadedFile).ToLower() == ".zip")
                     {
                         await Task.Run(() => ZipHelper.ExtractMap(downloadedFile, targetPath));
-                        NotificationService.ShowNotification("Успіх!", "Мапа завантажена та розпакована!", SnackbarPresenter);
+                        NotificationService.ShowNotification(
+                            LocalizationManager.GetString("Dialogs.Success", "Успіх!"),
+                            LocalizationManager.GetString("Mods.MapInstalled", "Мапа завантажена та розпакована!"),
+                            SnackbarPresenter);
                     }
                 }
                 else
                 {
-                    NotificationService.ShowNotification("Успіх!", $"Файл встановлено у {Path.GetFileName(targetPath)}!", SnackbarPresenter);
+                    NotificationService.ShowNotification(
+                        LocalizationManager.GetString("Dialogs.Success", "Успіх!"),
+                        string.Format(LocalizationManager.GetString("Mods.FileInstalled", "Файл встановлено у {0}!"), Path.GetFileName(targetPath)),
+                        SnackbarPresenter);
                 }
 
                 CloseInstallerMenu();
             }
             catch (Exception ex)
             {
-                MascotMessageBox.Show($"Помилка: {ex.Message}", "Помилка завантаження", MascotEmotion.Sad);
+                MascotMessageBox.Show($"{LocalizationManager.GetString("Dialogs.Error", "Помилка")}: {ex.Message}", LocalizationManager.GetString("DownloadManager.ErrorTitle", "Помилка завантаження"), MascotEmotion.Sad);
             }
             finally
             {
@@ -278,6 +291,7 @@ namespace CL_CLegendary_Launcher_
             }
 
         }
+
         private void OpenModInBrowser(ModSearchResult mod)
         {
             string baseUrl = mod.Site == "Modrinth" ? "https://modrinth.com" : "https://www.curseforge.com/minecraft";
@@ -287,6 +301,7 @@ namespace CL_CLegendary_Launcher_
 
             WebHelper.OpenUrl($"{baseUrl}/{category}/{mod.Slug}");
         }
+
         private void CollectionList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             VersionMods.Items.Clear();
@@ -322,12 +337,11 @@ namespace CL_CLegendary_Launcher_
             }
             else
             {
-                MascotMessageBox.Show(
-                    $"Ех, не вийде. Я перевірила всі файли, але не знайшла версії мода, яка б підійшла для збірки '{selectedPack.Name}'.\n\n" +
-                    $"Збірка вимагає Minecraft {targetVer} ({targetLoader}), а цей мод, схоже, не оновлено під такі параметри.",
-                    "Несумісність",
-                    MascotEmotion.Sad
-                );
+                string translatedError = string.Format(LocalizationManager.GetString("Modpacks.IncompatibleDesc",
+                    "Ех, не вийде. Я перевірила всі файли, але не знайшла версії мода, яка б підійшла для збірки '{0}'.\n\nЗбірка вимагає Minecraft {1} ({2}), а цей мод, схоже, не оновлено під такі параметри."),
+                    selectedPack.Name, targetVer, targetLoader);
+
+                MascotMessageBox.Show(translatedError, LocalizationManager.GetString("Modpacks.IncompatibleTitle", "Несумісність"), MascotEmotion.Sad);
                 DowloadMod.IsEnabled = false;
             }
         }
@@ -346,7 +360,7 @@ namespace CL_CLegendary_Launcher_
 
             List<ModVersionInfo> filteredFileVersions;
 
-            if (selectmodificed == 0) 
+            if (selectmodificed == 0)
             {
                 filteredFileVersions = _currentModVersions
                     .Where(v => v.GameVersions.Contains(selectedGameVersion) &&
@@ -354,7 +368,7 @@ namespace CL_CLegendary_Launcher_
                     .OrderByDescending(v => v.VersionName)
                     .ToList();
             }
-            else 
+            else
             {
                 filteredFileVersions = _currentModVersions
                     .Where(v => v.GameVersions.Contains(selectedGameVersion))
@@ -371,6 +385,7 @@ namespace CL_CLegendary_Launcher_
             if (VersionMods.Items.Count > 0)
                 VersionMods.SelectedIndex = 0;
         }
+
         private void ModsDowloadList_Loaded(object sender, RoutedEventArgs e)
         {
             if (VirtualizingStackPanel.GetIsVirtualizing(ModsDowloadList) == false)
@@ -387,6 +402,7 @@ namespace CL_CLegendary_Launcher_
                 await ChangeModCategory(categoryId, sender);
             }
         }
+
         private async Task ChangeModCategory(byte categoryId, object senderButton)
         {
             Click();
@@ -402,6 +418,7 @@ namespace CL_CLegendary_Launcher_
             await MemoryCleaner.FlushMemoryAsync(trimWorkingSet: false);
             await UpdateModsMinecraftAsync();
         }
+
         private void CategoriesGrid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             UpdateIndicatorPosition(animate: false);
@@ -443,12 +460,13 @@ namespace CL_CLegendary_Launcher_
                 }
             }
         }
+
         private void DowloadModDepOff_On_MouseDown(object sender, RoutedEventArgs e)
         {
             Click();
-            Settings1.Default.ModDep = !Settings1.Default.ModDep;
-            Settings1.Default.Save();
-            ModDepsToggle.IsChecked = Settings1.Default.ModDep;
+            SettingsManager.Default.ModDep = !SettingsManager.Default.ModDep;
+            SettingsManager.Save();
+            ModDepsToggle.IsChecked = SettingsManager.Default.ModDep;
         }
 
         private void ImportTXT_MouseDown(object sender, MouseButtonEventArgs e)
@@ -457,15 +475,18 @@ namespace CL_CLegendary_Launcher_
             var dowloadModPack = new DowloadModPack(_modpackService);
             dowloadModPack.Show();
         }
+
         private void DowloadModPacks_MouseDown(object sender, MouseButtonEventArgs e)
         {
             Click();
             AnimationService.AnimatePageTransition(GridFormAccountAdd);
             AnimationService.AnimatePageTransition(SelectCreatePackMinecraft);
         }
+
         private void SearchSystemModsTXT1_PreviewMouseDown(object sender, MouseButtonEventArgs e)
         {
-            if (SearchSystemModsTXT1.Text == "Пошук")
+            string defaultSearch = LocalizationManager.GetString("Generic.Search", "Пошук...");
+            if (SearchSystemModsTXT1.Text == defaultSearch || SearchSystemModsTXT1.Text == "Пошук")
             {
                 SearchSystemModsTXT1.Text = "";
             }
@@ -474,8 +495,9 @@ namespace CL_CLegendary_Launcher_
         private void SearchSystemModsTXT1_TextChanged(object sender, TextChangedEventArgs e)
         {
             string query = SearchSystemModsTXT1.Text.Trim().ToLower();
+            string defaultSearch = LocalizationManager.GetString("Generic.Search", "Пошук...").ToLower();
 
-            if (query != "Пошук" && !string.IsNullOrEmpty(query))
+            if (query != defaultSearch && query != "пошук" && !string.IsNullOrEmpty(query))
             {
                 var filtered = allInstalledModpacks
                     .Where(m => !string.IsNullOrWhiteSpace(m.Name) && m.Name.ToLower().Contains(query))
@@ -488,6 +510,7 @@ namespace CL_CLegendary_Launcher_
                 UpdateDisplayedModpacks(allInstalledModpacks);
             }
         }
+
         public void UpdateDisplayedModpacks(List<InstalledModpack> modpacks)
         {
             if (ModsDowloadList1 != null)
@@ -507,6 +530,7 @@ namespace CL_CLegendary_Launcher_
                 ModsDowloadList1.Items.Add(item);
             }
         }
+
         private void OnPlayModpackClicked(InstalledModpack pack)
         {
             Click();
@@ -520,10 +544,13 @@ namespace CL_CLegendary_Launcher_
                 pack.TypeSite
             );
         }
+
         private void OnDeleteModpackClicked(InstalledModpack pack)
         {
             Click();
-            if (MascotMessageBox.Ask($"Видалити збірку {pack.Name}?", "Видалення", MascotEmotion.Alert) == true)
+            if (MascotMessageBox.Ask(
+                string.Format(LocalizationManager.GetString("Dialogs.DeleteConfirm", "Видалити {0}?"), pack.Name),
+                LocalizationManager.GetString("Dialogs.DeleteConfirmTitle", "Видалення"), MascotEmotion.Alert) == true)
             {
                 allInstalledModpacks.Remove(pack);
                 _modpackService.DeleteModpack(pack.Name);
@@ -531,6 +558,7 @@ namespace CL_CLegendary_Launcher_
                 UpdateDisplayedModpacks(allInstalledModpacks);
             }
         }
+
         private void OnOpenModpackFolder(InstalledModpack pack)
         {
             Click();
@@ -540,16 +568,20 @@ namespace CL_CLegendary_Launcher_
             }
             else
             {
-                MascotMessageBox.Show("Папка збірки не знайдена!", "Помилка", MascotEmotion.Confused);
+                MascotMessageBox.Show(
+                    LocalizationManager.GetString("Dialogs.FolderOpenError", "Папка збірки не знайдена!"),
+                    LocalizationManager.GetString("Dialogs.Error", "Помилка"),
+                    MascotEmotion.Confused);
             }
         }
+
         private void OnEditModpackClicked(InstalledModpack pack)
         {
             Click();
 
             var editWindow = new CLModPackEdit();
 
-            editWindow.NameWin.Text = $"Налаштування збірки {pack.Name}";
+            editWindow.NameWin.Text = $"{LocalizationManager.GetString("Sidebar.Settings", "Налаштування")} {pack.Name}";
 
             editWindow.PathJsonModPack = pack.PathJson;
 
@@ -595,6 +627,7 @@ namespace CL_CLegendary_Launcher_
 
             editWindow.Show();
         }
+
         private void OnExportModpackClicked(InstalledModpack pack)
         {
             Click();
@@ -612,7 +645,10 @@ namespace CL_CLegendary_Launcher_
                 {
                     if (!Directory.Exists(pack.Path))
                     {
-                        MascotMessageBox.Show("Папка збірки не знайдена!", "Помилка", MascotEmotion.Confused);
+                        MascotMessageBox.Show(
+                            LocalizationManager.GetString("Dialogs.FolderOpenError", "Папка збірки не знайдена!"),
+                            LocalizationManager.GetString("Dialogs.Error", "Помилка"),
+                            MascotEmotion.Confused);
                         return;
                     }
 
@@ -653,14 +689,18 @@ namespace CL_CLegendary_Launcher_
                         true
                     );
 
-                    NotificationService.ShowNotification("Успіх!", "Збірку експортовано з новим маніфестом!", SnackbarPresenter);
+                    NotificationService.ShowNotification(
+                        LocalizationManager.GetString("Dialogs.Success", "Успіх!"),
+                        LocalizationManager.GetString("Modpacks.ExportSuccess", "Збірку експортовано з новим маніфестом!"),
+                        SnackbarPresenter);
                 }
                 catch (Exception ex)
                 {
-                    MascotMessageBox.Show($"Помилка: {ex.Message}", "Ой", MascotEmotion.Sad);
+                    MascotMessageBox.Show($"{LocalizationManager.GetString("Dialogs.Error", "Помилка")}: {ex.Message}", LocalizationManager.GetString("Dialogs.Oops", "Ой"), MascotEmotion.Sad);
                 }
             }
         }
+
         private async void OnModProviderClicked(object sender, MouseButtonEventArgs e)
         {
             Click();
@@ -674,6 +714,7 @@ namespace CL_CLegendary_Launcher_
                 await UpdateModsMinecraftAsync();
             }
         }
+
         private async void OnLoaderTypeClicked(object sender, MouseButtonEventArgs e)
         {
             Click();

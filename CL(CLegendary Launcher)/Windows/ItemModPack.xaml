@@ -105,20 +105,10 @@
                         Height="21" CornerRadius="6" Margin="0,0,0,5"
                         Background="{DynamicResource MainBackgroundBrushServer}"
                         Cursor="Hand">
-                    <TextBlock Text="Експортувати ZIP" 
+                    <TextBlock x:Name="ExportTXT" Text="Експортувати ZIP" 
                                Foreground="{DynamicResource MainForegroundBrush}" 
                                HorizontalAlignment="Center" VerticalAlignment="Center" 
                                FontSize="10"/>
-                </Border>
-
-                <Border x:Name="ExportBorder" BorderThickness="1" 
-                        Height="21" CornerRadius="6" Margin="0,0,0,5"
-                        Background="{DynamicResource MainBackgroundBrushServer}"
-                        Cursor="Hand" Visibility="Collapsed" >
-                    <TextBlock x:Name="ExportTXT" Text="Експорт (ZIP)" 
-                               Foreground="{DynamicResource MainForegroundBrush}" 
-                               HorizontalAlignment="Center" VerticalAlignment="Center" 
-                               FontSize="10" FontFamily="Inter"/>
                 </Border>
 
                 <Border x:Name="SettingBorder" BorderThickness="1" 

@@ -4,10 +4,9 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:CL_CLegendary_Launcher_"
-             mc:Ignorable="d" Height="108" Width="885" Foreground="White">
+             mc:Ignorable="d" Height="108" Width="885" Foreground="White" FontFamily="Inter">
 
     <Grid x:Name="MainGirdItem4">
-
         <Border x:Name="BG" 
                 CornerRadius="15"
                 BorderBrush="{Binding BorderBrush, ElementName=UserContorl5}"       
@@ -35,7 +34,7 @@
                    HorizontalAlignment="Left" Margin="110,10,0,0" VerticalAlignment="Top" 
                    Width="470" Height="28"
                    Foreground="{DynamicResource MainForegroundBrush}" 
-                   FontFamily="Inter" FontSize="20" FontWeight="Bold" 
+                   FontSize="20" FontWeight="Bold" 
                    TextTrimming="CharacterEllipsis">
             <TextBlock.Effect>
                 <DropShadowEffect ShadowDepth="1" BlurRadius="2" Opacity="0.8" Color="Black"/>
@@ -46,7 +45,7 @@
                    HorizontalAlignment="Left" Margin="110,42,0,0" VerticalAlignment="Top" 
                    Width="460" Height="56"
                    Foreground="{DynamicResource MainForegroundBrush}" 
-                   FontFamily="Inter" FontSize="14" TextWrapping="Wrap" 
+                   FontSize="14" TextWrapping="Wrap" 
                    TextTrimming="CharacterEllipsis" Opacity="0.9">
             <TextBlock.Effect>
                 <DropShadowEffect ShadowDepth="1" BlurRadius="2" Opacity="0.8" Color="Black"/>
@@ -56,37 +55,41 @@
         <Border x:Name="OpenInfoServerPanel" BorderThickness="1" HorizontalAlignment="Left" 
                 Height="24" Margin="581,50,0,0" VerticalAlignment="Top" Width="294" 
                 Background="{DynamicResource MainBackgroundButton}" CornerRadius="6"
-                Cursor="Hand" ToolTip="Інформація про сервер">
+                Cursor="Hand">
             <TextBlock x:Name="OpenInfoServerTXT" Text="Перейти на сторінку" 
                        HorizontalAlignment="Center" VerticalAlignment="Center"
-                       Foreground="{DynamicResource MainForegroundBrush}"/>
+                       Foreground="{DynamicResource MainForegroundBrush}" 
+                       FontSize="12"/>
         </Border>
 
         <Border x:Name="OnlinePlayerPanel" BorderThickness="1" HorizontalAlignment="Left" 
                 Height="24" Margin="581,79,0,0" VerticalAlignment="Top" Width="75" 
                 Background="{DynamicResource MainBackgroundButton}" CornerRadius="6"
-                Cursor="Hand" ToolTip="Онлайн">
+                Cursor="Hand">
             <TextBlock x:Name="OnlinePlayerTXT" Text="5/50" 
                        HorizontalAlignment="Center" VerticalAlignment="Center"
-                       Foreground="{DynamicResource MainForegroundBrush}"/>
+                       Foreground="{DynamicResource MainForegroundBrush}" 
+                       FontSize="12"/>
         </Border>
 
         <Border x:Name="IPServerPanel" BorderThickness="1" HorizontalAlignment="Left" 
                 Height="24" Margin="661,79,0,0" VerticalAlignment="Top" Width="132" 
                 Background="{DynamicResource MainBackgroundButton}" CornerRadius="6"
-                Cursor="Hand" ToolTip="Натисніть щоб скопіювати" MouseDown="IPServerTXT_MouseDown">
+                Cursor="Hand" MouseDown="IPServerTXT_MouseDown">
             <TextBlock x:Name="IPServerTXT" Text="bober.fun" 
                        HorizontalAlignment="Center" VerticalAlignment="Center"
-                       Foreground="{DynamicResource MainForegroundBrush}" TextTrimming="CharacterEllipsis"/>
+                       Foreground="{DynamicResource MainForegroundBrush}" 
+                       FontSize="12" TextTrimming="CharacterEllipsis"/>
         </Border>
 
         <Border x:Name="PlayServerPanel1" BorderThickness="1" HorizontalAlignment="Left" 
                 Height="24" Margin="800,79,0,0" VerticalAlignment="Top" Width="75" 
                 Background="{DynamicResource MainBackgroundButton}" CornerRadius="6"
-                Cursor="Hand" ToolTip="Натисніть щоб почати грати">
+                Cursor="Hand">
             <TextBlock x:Name="PlayServerTXT1" Text="Грати" 
                        HorizontalAlignment="Center" VerticalAlignment="Center"
-                       Foreground="{DynamicResource MainForegroundBrush}"/>
+                       Foreground="{DynamicResource MainForegroundBrush}" 
+                       FontSize="12"/>
         </Border>
 
     </Grid>

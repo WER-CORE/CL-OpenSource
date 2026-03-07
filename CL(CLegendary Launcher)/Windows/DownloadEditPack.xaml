@@ -159,7 +159,7 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
-                <TextBlock Text="До черги:" FontWeight="SemiBold" Margin="0,0,0,5" Foreground="{DynamicResource MainForegroundBrush}"/>
+                <TextBlock x:Name="TxtQueue" Text="До черги:" FontWeight="SemiBold" Margin="0,0,0,5" Foreground="{DynamicResource MainForegroundBrush}"/>
                 <Border Grid.Row="1" Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="6">
                     <ui:ListView x:Name="AddModsInModPackList" 
                                  d:ItemsSource="{d:SampleData ItemCount=3}" 
@@ -194,7 +194,7 @@
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <TextBlock Text="Встановлення мода" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center"/>
+                    <TextBlock x:Name="TxtInstallMod" Text="Встановлення мода" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center"/>
 
                     <TextBlock Grid.Row="1" x:Name="TitleModsDowload" 
                                Text="Оберіть версію файлу:" 

@@ -51,7 +51,7 @@ namespace CL_CLegendary_Launcher_.Class
         public void InitializeTheme()
         {
             EnsureCustomThemeFileExists();
-            ApplyTheme(Settings1.Default.Them);
+            ApplyTheme(SettingsManager.Default.Them);
             LoadBackgroundImage();
             SetColourButtons();
         }
@@ -71,8 +71,8 @@ namespace CL_CLegendary_Launcher_.Class
                 switch (theme)
                 {
                     case "Dark":
-                        Settings1.Default.bgImage = "";
-                        Settings1.Default.Save();
+                        SettingsManager.Default.bgImage = "";
+                        SettingsManager.Save();
 
                         dictionariesToAdd.Add(new ResourceDictionary { Source = new Uri("Them/DarkTheme.xaml", UriKind.Relative) });
                         dictionariesToAdd.Add(new ResourceDictionary { Source = new Uri("Them/DarkThemeSerLisAndUpdMinecraft.xaml", UriKind.Relative) });
@@ -81,8 +81,8 @@ namespace CL_CLegendary_Launcher_.Class
                         break;
 
                     case "Light":
-                        Settings1.Default.bgImage = "";
-                        Settings1.Default.Save();
+                        SettingsManager.Default.bgImage = "";
+                        SettingsManager.Save();
 
                         dictionariesToAdd.Add(new ResourceDictionary { Source = new Uri("Them/LightTheme.xaml", UriKind.Relative) });
                         dictionariesToAdd.Add(new ResourceDictionary { Source = new Uri("Them/LightThemeSerLisAndUpdMinecraft.xaml", UriKind.Relative) });
@@ -123,7 +123,7 @@ namespace CL_CLegendary_Launcher_.Class
                     mergedDicts.Add(dict);
                 }
 
-                bool glassDisabled = Settings1.Default.DisableGlassEffect;
+                bool glassDisabled = SettingsManager.Default.DisableGlassEffect;
                 foreach (Window window in Application.Current.Windows)
                 {
                     if (window is Wpf.Ui.Controls.FluentWindow fluentWindow)
@@ -132,7 +132,7 @@ namespace CL_CLegendary_Launcher_.Class
 
                         if (!glassDisabled)
                         {
-                            fluentWindow.WindowBackdropType = WindowBackdropType.Mica; 
+                            fluentWindow.WindowBackdropType = WindowBackdropType.Mica;
                             fluentWindow.Background = Brushes.Transparent;
                         }
                         else
@@ -149,7 +149,7 @@ namespace CL_CLegendary_Launcher_.Class
             }
             catch (Exception ex)
             {
-                MascotMessageBox.Show($"Помилка теми: {ex.Message}");
+                MascotMessageBox.Show(string.Format(LocalizationManager.GetString("ThemesCustomization.ThemeError", "Помилка теми: {0}"), ex.Message));
                 return;
             }
 
@@ -162,15 +162,15 @@ namespace CL_CLegendary_Launcher_.Class
             EnsureCustomThemeFileExists();
             _main.Click();
 
-            Settings1.Default.bgImage = "";
+            SettingsManager.Default.bgImage = "";
 
-            Settings1.Default.Button_colour = "#FF202020";
-            Settings1.Default.Section_colour = "#303030";
-            Settings1.Default.Background_colour = "#FF202020";
-            Settings1.Default.Additional_colour = "#FF1863C9";
-            Settings1.Default.Text_colour = "#FFFFFF";
-            Settings1.Default.Them = "Dark";
-            Settings1.Default.Save();
+            SettingsManager.Default.Button_colour = "#FF202020";
+            SettingsManager.Default.Section_colour = "#303030";
+            SettingsManager.Default.Background_colour = "#FF202020";
+            SettingsManager.Default.Additional_colour = "#FF1863C9";
+            SettingsManager.Default.Text_colour = "#FFFFFF";
+            SettingsManager.Default.Them = "Dark";
+            SettingsManager.Save();
 
             UpdateColorForElement(_customThemePath, "MainBackgroundBrushServer", "#303030");
             UpdateColorForElement(_customThemePath, "MainBackgroundBrush", "#FF202020");
@@ -226,7 +226,7 @@ namespace CL_CLegendary_Launcher_.Class
         {
             try
             {
-                bool isDisabled = Settings1.Default.DisableGlassEffect;
+                bool isDisabled = SettingsManager.Default.DisableGlassEffect;
                 Application.Current.Resources["GlassBlurRadius"] = isDisabled ? 0.0 : 20.0;
                 Application.Current.Resources["GlassVisibility"] = isDisabled ? Visibility.Collapsed : Visibility.Visible;
 
@@ -248,8 +248,8 @@ namespace CL_CLegendary_Launcher_.Class
 
         public void ToggleGlassEffect(bool shouldDisable)
         {
-            Settings1.Default.DisableGlassEffect = shouldDisable;
-            Settings1.Default.Save();
+            SettingsManager.Default.DisableGlassEffect = shouldDisable;
+            SettingsManager.Save();
 
             ApplyTheme(currentTheme);
             LoadBackgroundImage();
@@ -279,10 +279,10 @@ namespace CL_CLegendary_Launcher_.Class
         }
         public void LoadBackgroundImage()
         {
-            string bg = Settings1.Default.bgImage;
+            string bg = SettingsManager.Default.bgImage;
             if (string.IsNullOrWhiteSpace(bg) || !File.Exists(bg))
             {
-                Settings1.Default.bgImage = "";
+                SettingsManager.Default.bgImage = "";
                 return;
             }
 
@@ -303,7 +303,7 @@ namespace CL_CLegendary_Launcher_.Class
                     img.UriSource = uri;
                     img.DecodePixelWidth = 1080;
                     img.DecodePixelHeight = 1920;
-                    img.CacheOption = BitmapCacheOption.OnLoad; 
+                    img.CacheOption = BitmapCacheOption.OnLoad;
                     img.EndInit();
                     _main.Bg.Source = img;
                 }
@@ -311,42 +311,41 @@ namespace CL_CLegendary_Launcher_.Class
             }
             catch
             {
-                Settings1.Default.bgImage = "";
+                SettingsManager.Default.bgImage = "";
                 ApplyTheme(currentTheme);
             }
         }
 
         public void SetColourButtons()
         {
-            _main.Section_colourButton.Content = CreateColorButtonContent(Settings1.Default.Section_colour);
-            _main.Background_colourButton.Content = CreateColorButtonContent(Settings1.Default.Background_colour);
-            _main.Additional_colourButton.Content = CreateColorButtonContent(Settings1.Default.Additional_colour);
-            _main.Text_colourButton.Content = CreateColorButtonContent(Settings1.Default.Text_colour);
-            _main.Button_colourButton.Content = CreateColorButtonContent(Settings1.Default.Button_colour);
+            _main.Section_colourButton.Content = CreateColorButtonContent(SettingsManager.Default.Section_colour);
+            _main.Background_colourButton.Content = CreateColorButtonContent(SettingsManager.Default.Background_colour);
+            _main.Additional_colourButton.Content = CreateColorButtonContent(SettingsManager.Default.Additional_colour);
+            _main.Text_colourButton.Content = CreateColorButtonContent(SettingsManager.Default.Text_colour);
+            _main.Button_colourButton.Content = CreateColorButtonContent(SettingsManager.Default.Button_colour);
         }
         public void HandleBackgroundImageClick()
         {
-            if (Settings1.Default.Them != "Custom")
+            if (SettingsManager.Default.Them != "Custom")
             {
                 MascotMessageBox.Show(
-                    "Змінювати фон можна тільки коли обрана тема 'Кастомна'!\n" +
-                    "Будь ласка, перемкни тему у списку вище, щоб поставити свою картинку.",
-                    "Обмеження",
-                    MascotEmotion.Confused 
+                    LocalizationManager.GetString("ThemesCustomization.CustomThemeRequiredDesc", "Змінювати фон можна тільки коли обрана тема 'Кастомна'!\nБудь ласка, перемкни тему у списку вище, щоб поставити свою картинку."),
+                    LocalizationManager.GetString("ThemesCustomization.CustomThemeRequiredTitle", "Обмеження"),
+                    MascotEmotion.Confused
                 );
-                return; 
+                return;
             }
 
             var openFileDialog = new Microsoft.Win32.OpenFileDialog
             {
                 Filter = "Image files (*.png;*.jpg;*.gif)|*.png;*.jpg;*.gif",
-                Title = "Виберіть фон"
+                Title = LocalizationManager.GetString("ThemesCustomization.SelectBackgroundTitle", "Виберіть фон")
             };
 
             if (openFileDialog.ShowDialog() == true)
             {
-                Settings1.Default.bgImage = openFileDialog.FileName;
-                Settings1.Default.Save();
+                SettingsManager.Default.bgImage = openFileDialog.FileName;
+                SettingsManager.Save();
                 LoadBackgroundImage();
             }
         }
@@ -361,8 +360,8 @@ namespace CL_CLegendary_Launcher_.Class
 
                     UpdateColorForElement(_customThemePath, resourceKey, colorHex);
 
-                    Settings1.Default[settingKey] = colorHex;
-                    Settings1.Default.Save();
+                    SettingsManager.Default[settingKey] = colorHex;
+                    SettingsManager.Save();
 
                     if (currentTheme == "Custom")
                     {
@@ -372,7 +371,10 @@ namespace CL_CLegendary_Launcher_.Class
             }
             catch (Exception ex)
             {
-                MascotMessageBox.Show($"Не змогла змінити колір.\n{ex.Message}", "Помилка", MascotEmotion.Sad);
+                MascotMessageBox.Show(
+                    string.Format(LocalizationManager.GetString("ThemesCustomization.ColorChangeErrorDesc", "Не змогла змінити колір.\n{0}"), ex.Message),
+                    LocalizationManager.GetString("ThemesCustomization.ColorChangeErrorTitle", "Помилка"),
+                    MascotEmotion.Sad);
             }
         }
 
@@ -380,8 +382,8 @@ namespace CL_CLegendary_Launcher_.Class
         {
             currentTheme = "Custom";
             ApplyTheme("Custom");
-            Settings1.Default.Them = "Custom";
-            Settings1.Default.Save();
+            SettingsManager.Default.Them = "Custom";
+            SettingsManager.Save();
         }
         private string ShowColorDialog()
         {
@@ -410,7 +412,10 @@ namespace CL_CLegendary_Launcher_.Class
             }
             catch (Exception ex)
             {
-                MascotMessageBox.Show($"Ой, щось не так з кольором.\n{ex.Message}", "Збій", MascotEmotion.Confused);
+                MascotMessageBox.Show(
+                    string.Format(LocalizationManager.GetString("ThemesCustomization.ColorUpdateErrorDesc", "Ой, щось не так з кольором.\n{0}"), ex.Message),
+                    LocalizationManager.GetString("ThemesCustomization.ColorUpdateErrorTitle", "Збій"),
+                    MascotEmotion.Confused);
             }
         }
 
@@ -425,7 +430,10 @@ namespace CL_CLegendary_Launcher_.Class
             }
             catch (Exception ex)
             {
-                MascotMessageBox.Show($"Не вдалося зберегти налаштування теми.\n{ex.Message}", "Помилка", MascotEmotion.Sad);
+                MascotMessageBox.Show(
+                    string.Format(LocalizationManager.GetString("ThemesCustomization.ThemeSaveErrorDesc", "Не вдалося зберегти налаштування теми.\n{0}"), ex.Message),
+                    LocalizationManager.GetString("ThemesCustomization.ThemeSaveErrorTitle", "Помилка"),
+                    MascotEmotion.Sad);
             }
         }
 
@@ -440,7 +448,10 @@ namespace CL_CLegendary_Launcher_.Class
             }
             catch (Exception ex)
             {
-                MascotMessageBox.Show($"Не можу прочитати файл теми.\n{ex.Message}", "Помилка", MascotEmotion.Sad);
+                MascotMessageBox.Show(
+                    string.Format(LocalizationManager.GetString("ThemeSaveErrorTitle.ThemeLoadErrorDesc", "Не можу прочитати файл теми.\n{0}"), ex.Message),
+                    LocalizationManager.GetString("ThemeSaveErrorTitle.ThemeLoadErrorTitle", "Помилка"),
+                    MascotEmotion.Sad);
                 return null;
             }
         }
@@ -451,11 +462,11 @@ namespace CL_CLegendary_Launcher_.Class
 
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
-                Settings1.Default.LoadScreenBackground = openFileDialog.FileName;
-                Settings1.Default.Save();
+                SettingsManager.Default.LoadScreenBackground = openFileDialog.FileName;
+                SettingsManager.Save();
                 NotificationService.ShowNotification(
-                            "Вау! Тепер завантаження виглядатиме стильно.\nФон успішно оновлено! ",
-                            "Новий стиль",
+                            LocalizationManager.GetString("ThemeLoadErrorTitle.LoadScreenBgUpdatedDesc", "Вау! Тепер завантаження виглядатиме стильно.\nФон успішно оновлено!"),
+                            LocalizationManager.GetString("ThemeLoadErrorTitle.LoadScreenBgUpdatedTitle", "Новий стиль"),
                             _main.SnackbarPresenter,
                             default,
                             default,
@@ -472,27 +483,10 @@ namespace CL_CLegendary_Launcher_.Class
 
             if (!File.Exists(phrasesPath))
             {
-                var defaultPhrases = new List<string>
-                {
-            "Сніг приємно рипить під ногами...",
-            "Запарюємо какао з маршмелоу...",
-            "Homka ліпить ідеального сніговика...",
-            "Deeplay ловить сніжинки на камеру ❄️...",
-            "Мороз малює візерунки на вікнах...",
-            "Час закутатись у теплий плед...",
-            "Пахне мандаринами та ялинкою...",
-            "Вулиці сяють святковими вогнями...",
-            "Данило перевіряє запаси феєрверків...",
-            "WER_Clegendary шукає подарунки під ялинкою...",
-            "Зимова казка вже за вікном...",
-            "Гріємо руки об горнятко чаю...",
-            "Сніжинки танцюють у світлі ліхтарів...",
-            "Час передивлятися 'Сам у дома'...",
-            "Крижане повітря бадьорить...",
-            "Готуємось до новорічного дива...",
-            "Всі чекають на перший сніг (або вже копають)...",
-            "Холодно на вулиці, тепло на душі..."
-                };
+                string rawPhrases = LocalizationManager.GetString("ThemesCustomization.DefaultLoadingPhrases", "Перша зелена травичка пробивається крізь землю...\nЗаварюємо свіжий фруктовий чай...\nHomka саджає перші весняні квіти...\nDeeplay фотографує цвітіння сакур на камеру 🌸...\nТеплий весняний дощик стукає по вікнах...\nЧас ховати зимові куртки далеко в шафу...\nПахне свіжоскошеною травою та бузком...\nДерева вкриваються ніжним білим цвітом...\nДанило готує мангал для перших шашликів...\nWER_Clegendary шукає ідеальне місце для пікніка...\nПрирода нарешті прокидається за вікном...\nМружимося від яскравого весняного сонечка...\nПелюстки вишень кружляють у теплому повітрі...\nЧас виходити на довгі вечірні прогулянки...\nСвіже весняне повітря надихає на пригоди...\nГотуємось до теплих травневих вихідних...\nВсі чекають на потепління (або вже садять картоплю)...\nТепло на вулиці, сонячно на душі...");
+
+                var defaultPhrases = new List<string>(rawPhrases.Split(new[] { "\n", "\r\n" }, StringSplitOptions.RemoveEmptyEntries));
+
                 File.WriteAllLines(phrasesPath, defaultPhrases);
             }
 
@@ -503,8 +497,8 @@ namespace CL_CLegendary_Launcher_.Class
             catch (Exception ex)
             {
                 MascotMessageBox.Show(
-                            $"Ой! Не вдалося відкрити файл із фразами.\nМожливо, у тебе немає Блокнота або файл хтось тримає?\n\nТехнічні деталі: {ex.Message}",
-                            "Халепа з файлом",
+                            string.Format(LocalizationManager.GetString("ThemesCustomization.PhrasesFileOpenErrorDesc", "Ой! Не вдалося відкрити файл із фразами.\nМожливо, у тебе немає Блокнота або файл хтось тримає?\n\nТехнічні деталі: {0}"), ex.Message),
+                            LocalizationManager.GetString("ThemesCustomization.PhrasesFileOpenErrorTitle", "Халепа з файлом"),
                             MascotEmotion.Sad
                         );
             }
@@ -519,29 +513,28 @@ namespace CL_CLegendary_Launcher_.Class
                 var c = colorDialog.Color;
                 string hexColor = $"#{c.R:X2}{c.G:X2}{c.B:X2}";
 
-                Settings1.Default.LoadScreenBarColor = hexColor;
-                Settings1.Default.Save();
+                SettingsManager.Default.LoadScreenBarColor = hexColor;
+                SettingsManager.Save();
 
                 if (previewButton != null)
                 {
                     previewButton.Content = CreateColorButtonContent(hexColor);
-
                 }
             }
         }
         public void HandleResetLoadScreenClick(Button previewButton)
         {
             var result = MascotMessageBox.Ask(
-                "Хочеш повернути все як було?\nЦе скине твій фон та колір смужки на стандартні налаштування.",
-                "Генеральне прибирання",
+                LocalizationManager.GetString("ThemesCustomization.ResetLoadScreenDesc", "Хочеш повернути все як було?\nЦе скине твій фон та колір смужки на стандартні налаштування."),
+                LocalizationManager.GetString("ThemesCustomization.ResetLoadScreenTitle", "Генеральне прибирання"),
                 MascotEmotion.Confused
             );
 
             if (result == true)
             {
-                Settings1.Default.LoadScreenBackground = "";
-                Settings1.Default.LoadScreenBarColor = "";
-                Settings1.Default.Save();
+                SettingsManager.Default.LoadScreenBackground = "";
+                SettingsManager.Default.LoadScreenBarColor = "";
+                SettingsManager.Save();
 
                 if (previewButton != null)
                 {
@@ -550,8 +543,8 @@ namespace CL_CLegendary_Launcher_.Class
                 }
 
                 NotificationService.ShowNotification(
-                    "Готово!",
-                    "Екран завантаження тепер чистий, як перший сніг.",
+                    LocalizationManager.GetString("ThemesCustomization.ResetLoadScreenSuccessTitle", "Готово!"),
+                    LocalizationManager.GetString("ThemesCustomization.ResetLoadScreenSuccessDesc", "Екран завантаження тепер чистий, як перший сніг."),
                     _main.SnackbarPresenter
                 );
             }
@@ -560,12 +553,12 @@ namespace CL_CLegendary_Launcher_.Class
         {
             var config = new MainThemeConfig
             {
-                SectionColor = Settings1.Default.Section_colour,
-                BackgroundColor = Settings1.Default.Background_colour,
-                AdditionalColor = Settings1.Default.Additional_colour,
-                TextColor = Settings1.Default.Text_colour,
-                ButtonColor = Settings1.Default.Button_colour,
-                BackgroundImage = Settings1.Default.bgImage
+                SectionColor = SettingsManager.Default.Section_colour,
+                BackgroundColor = SettingsManager.Default.Background_colour,
+                AdditionalColor = SettingsManager.Default.Additional_colour,
+                TextColor = SettingsManager.Default.Text_colour,
+                ButtonColor = SettingsManager.Default.Button_colour,
+                BackgroundImage = SettingsManager.Default.bgImage
             };
             string json = JsonConvert.SerializeObject(config);
 
@@ -578,7 +571,10 @@ namespace CL_CLegendary_Launcher_.Class
             {
                 if (!code.StartsWith("CL_THEME|"))
                 {
-                    NotificationService.ShowNotification("Цей код не підходить для Основної Теми.\nЦе точно не для екрану завантаження?", "Помилка формату", _main.SnackbarPresenter, default, default, Wpf.Ui.Controls.ControlAppearance.Danger);
+                    NotificationService.ShowNotification(
+                        LocalizationManager.GetString("ThemesCustomization.ImportMainThemeFormatErrorDesc", "Цей код не підходить для Основної Теми.\nЦе точно не для екрану завантаження?"),
+                        LocalizationManager.GetString("ThemesCustomization.ImportMainThemeFormatErrorTitle", "Помилка формату"),
+                        _main.SnackbarPresenter, default, default, Wpf.Ui.Controls.ControlAppearance.Danger);
                     return;
                 }
 
@@ -586,15 +582,15 @@ namespace CL_CLegendary_Launcher_.Class
                 string json = Encoding.UTF8.GetString(Convert.FromBase64String(cleanCode));
                 var config = JsonConvert.DeserializeObject<MainThemeConfig>(json);
 
-                Settings1.Default.Section_colour = config.SectionColor;
-                Settings1.Default.Background_colour = config.BackgroundColor;
-                Settings1.Default.Additional_colour = config.AdditionalColor;
-                Settings1.Default.Text_colour = config.TextColor;
-                Settings1.Default.Button_colour = config.ButtonColor;
-                Settings1.Default.bgImage = config.BackgroundImage;
+                SettingsManager.Default.Section_colour = config.SectionColor;
+                SettingsManager.Default.Background_colour = config.BackgroundColor;
+                SettingsManager.Default.Additional_colour = config.AdditionalColor;
+                SettingsManager.Default.Text_colour = config.TextColor;
+                SettingsManager.Default.Button_colour = config.ButtonColor;
+                SettingsManager.Default.bgImage = config.BackgroundImage;
 
-                Settings1.Default.Them = "Custom";
-                Settings1.Default.Save();
+                SettingsManager.Default.Them = "Custom";
+                SettingsManager.Save();
 
                 GenerateAndSaveCustomXaml(config);
 
@@ -604,17 +600,22 @@ namespace CL_CLegendary_Launcher_.Class
 
                 SetColourButtons();
 
-                MascotMessageBox.Show("Тема успішно імпортована!", "Успіх", MascotEmotion.Happy);
+                MascotMessageBox.Show(
+                    LocalizationManager.GetString("ThemesCustomization.ImportThemeSuccessDesc", "Тема успішно імпортована!"),
+                    LocalizationManager.GetString("ThemesCustomization.ImportThemeSuccessTitle", "Успіх"),
+                    MascotEmotion.Happy);
             }
             catch (Exception ex)
             {
-                MascotMessageBox.Show($"Помилка імпорту: {ex.Message}", "Помилка", MascotEmotion.Sad);
+                MascotMessageBox.Show(
+                    string.Format(LocalizationManager.GetString("ThemesCustomization.ImportErrorDesc", "Помилка імпорту: {0}"), ex.Message),
+                    LocalizationManager.GetString("ThemesCustomization.ImportErrorTitle", "Помилка"),
+                    MascotEmotion.Sad);
             }
         }
         private void GenerateAndSaveCustomXaml(MainThemeConfig config)
         {
             EnsureCustomThemeFileExists();
-
 
             string newXamlContent = $@"<ResourceDictionary xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
                                       xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml"">
@@ -632,15 +633,15 @@ namespace CL_CLegendary_Launcher_.Class
             }
             catch (Exception ex)
             {
-                MascotMessageBox.Show($"Не вдалося зберегти файл теми:\n{ex.Message}");
+                MascotMessageBox.Show(string.Format(LocalizationManager.GetString("ImportThemeSuccessDesc.CustomXamlSaveError", "Не вдалося зберегти файл теми:\n{0}"), ex.Message));
             }
         }
         public string ExportLoadScreen()
         {
             var config = new LoadScreenConfig
             {
-                LoadScreenColor = Settings1.Default.LoadScreenBarColor,
-                LoadScreenBg = Settings1.Default.LoadScreenBackground
+                LoadScreenColor = SettingsManager.Default.LoadScreenBarColor,
+                LoadScreenBg = SettingsManager.Default.LoadScreenBackground
             };
             string json = JsonConvert.SerializeObject(config);
             return "CL_LOAD|" + Convert.ToBase64String(Encoding.UTF8.GetBytes(json));
@@ -652,7 +653,10 @@ namespace CL_CLegendary_Launcher_.Class
             {
                 if (!code.StartsWith("CL_LOAD|"))
                 {
-                    NotificationService.ShowNotification("Цей код не підходить для Екрану Завантаження.\nМожливо, це код для Основної Теми?", "Помилка формату", _main.SnackbarPresenter, default, default, Wpf.Ui.Controls.ControlAppearance.Danger);
+                    NotificationService.ShowNotification(
+                        LocalizationManager.GetString("ThemesCustomization.ImportLoadScreenFormatErrorDesc", "Цей код не підходить для Екрану Завантаження.\nМожливо, це код для Основної Теми?"),
+                        LocalizationManager.GetString("ThemesCustomization.ImportLoadScreenFormatErrorTitle", "Помилка формату"),
+                        _main.SnackbarPresenter, default, default, Wpf.Ui.Controls.ControlAppearance.Danger);
                     return;
                 }
 
@@ -660,17 +664,19 @@ namespace CL_CLegendary_Launcher_.Class
                 string json = Encoding.UTF8.GetString(Convert.FromBase64String(cleanCode));
                 var config = JsonConvert.DeserializeObject<LoadScreenConfig>(json);
 
-                Settings1.Default.LoadScreenBarColor = config.LoadScreenColor;
-                Settings1.Default.LoadScreenBackground = config.LoadScreenBg;
-                Settings1.Default.Save();
+                SettingsManager.Default.LoadScreenBarColor = config.LoadScreenColor;
+                SettingsManager.Default.LoadScreenBackground = config.LoadScreenBg;
+                SettingsManager.Save();
 
-                MascotMessageBox.Show("Екран завантаження оновлено!\nПерезапустіть лаунчер, щоб побачити зміни.", "Успіх", MascotEmotion.Happy);
+                MascotMessageBox.Show(
+                    LocalizationManager.GetString("ThemesCustomization.ImportLoadScreenSuccessDesc", "Екран завантаження оновлено!\nПерезапустіть лаунчер, щоб побачити зміни."),
+                    LocalizationManager.GetString("ThemesCustomization.ImportLoadScreenSuccessTitle", "Успіх"),
+                    MascotEmotion.Happy);
             }
             catch (Exception ex)
             {
-                MascotMessageBox.Show($"Помилка імпорту LoadScreen: {ex.Message}");
+                MascotMessageBox.Show(string.Format(LocalizationManager.GetString("ThemesCustomization.ImportLoadScreenError", "Помилка імпорту LoadScreen: {0}"), ex.Message));
             }
         }
-
     }
 }

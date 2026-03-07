@@ -56,7 +56,7 @@
                 <Rectangle VerticalAlignment="Bottom" Height="120">
                     <Rectangle.Fill>
                         <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                            <GradientStop Color="Transparent" Offset="0"/>
+                            <GradientStop Color="Transparent" Offset="0.253"/>
                             <GradientStop Color="#E6000000" Offset="1"/>
                         </LinearGradientBrush>
                     </Rectangle.Fill>
@@ -77,12 +77,12 @@
                                    FontWeight="Black" 
                                    HorizontalAlignment="Center" FontFamily="Inter 18pt 18pt">
                             <TextBlock.Effect>
-                                <DropShadowEffect Color="#FF00BEFF" BlurRadius="20" ShadowDepth="0" Opacity="0.5"/>
+                                <DropShadowEffect Color="#A1DD70" BlurRadius="20" ShadowDepth="0" Opacity="0.5"/>
                             </TextBlock.Effect>
                         </TextBlock>
 
                         <TextBlock Text="Win Edition" 
-                                   Foreground="#FF00BEFF" 
+                                   Foreground="#A1DD70" 
                                    FontSize="14" 
                                    FontWeight="SemiBold" 
                                    HorizontalAlignment="Center" 
@@ -143,7 +143,7 @@
                                      Foreground="#FF00BEFF"
                                      IsIndeterminate="True">
                             <ProgressBar.Effect>
-                                <DropShadowEffect Color="#FF00BEFF" BlurRadius="10" ShadowDepth="0" Opacity="0.8"/>
+                                <DropShadowEffect Color="#4ADE80" BlurRadius="10" ShadowDepth="0" Opacity="0.8"/>
                             </ProgressBar.Effect>
                         </ProgressBar>
                     </Border>

@@ -31,7 +31,14 @@ namespace CL_CLegendary_Launcher_.Windows
         public ItemManegerPack()
         {
             InitializeComponent();
+            ApplyLocalization();
         }
+
+        private void ApplyLocalization()
+        {
+            DowloadTXT.Text = LocalizationManager.GetString("Mods.ItemManagerDeleteBtn", "Видалити");
+        }
+
         public void Off_OnMods_Click(object sender, RoutedEventArgs e)
         {
             if (string.IsNullOrEmpty(pathmods) || !File.Exists(pathmods))
@@ -39,11 +46,14 @@ namespace CL_CLegendary_Launcher_.Windows
                 string altPath = Off_OnMod ? pathmods + ".disabled" : pathmods.Replace(".disabled", "");
                 if (File.Exists(altPath))
                 {
-                    pathmods = altPath; 
+                    pathmods = altPath;
                 }
                 else
                 {
-                    MessageBox.Show($"Файл мода не знайдено:\n{pathmods}", "Помилка");
+                    MascotMessageBox.Show(
+                        string.Format(LocalizationManager.GetString("Mods.FileNotFound", "Файл мода не знайдено:\n{0}"), pathmods),
+                        LocalizationManager.GetString("Dialogs.Error", "Помилка"),
+                        MascotEmotion.Sad);
                     return;
                 }
             }
@@ -58,13 +68,13 @@ namespace CL_CLegendary_Launcher_.Windows
                 {
                     newPath = System.IO.Path.Combine(directory, fileName.Replace(".disabled", ""));
                     Off_OnMod = true;
-                    Description.Text = "Активний";
+                    Description.Text = LocalizationManager.GetString("Modpacks.ModStateActive", "Активний");
                 }
                 else
                 {
                     newPath = pathmods + ".disabled";
                     Off_OnMod = false;
-                    Description.Text = "Вимкнено";
+                    Description.Text = LocalizationManager.GetString("Modpacks.ModStateDisabled", "Вимкнено");
                 }
 
                 File.Move(pathmods, newPath);
@@ -72,10 +82,14 @@ namespace CL_CLegendary_Launcher_.Windows
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Не вдалося змінити статус мода.\n{ex.Message}", "Помилка");
+                MascotMessageBox.Show(
+                    string.Format(LocalizationManager.GetString("Mods.StatusChangeError", "Не вдалося змінити статус мода.\n{0}"), ex.Message),
+                    LocalizationManager.GetString("Dialogs.Error", "Помилка"),
+                    MascotEmotion.Sad);
                 IsOnOffSwitch.IsChecked = !IsOnOffSwitch.IsChecked;
             }
         }
+
         private void DowloadTXT_MouseDown(object sender, MouseButtonEventArgs e)
         {
             if (string.IsNullOrEmpty(pathmods) || !File.Exists(pathmods))
@@ -84,7 +98,10 @@ namespace CL_CLegendary_Launcher_.Windows
                 else if (File.Exists(pathmods.Replace(".disabled", ""))) pathmods = pathmods.Replace(".disabled", "");
                 else
                 {
-                    MessageBox.Show("Файл не знайдено для видалення.", "Помилка");
+                    MascotMessageBox.Show(
+                        LocalizationManager.GetString("Mods.DeleteFileNotFound", "Файл не знайдено для видалення."),
+                        LocalizationManager.GetString("Dialogs.Error", "Помилка"),
+                        MascotEmotion.Sad);
                     return;
                 }
             }
@@ -93,7 +110,7 @@ namespace CL_CLegendary_Launcher_.Windows
             {
                 string fileNameToDelete = System.IO.Path.GetFileName(pathmods).Replace(".disabled", "");
 
-                File.Delete(pathmods); 
+                File.Delete(pathmods);
 
                 if (IsModPack && CurrentModpack != null && !string.IsNullOrEmpty(CurrentModpack.PathJson))
                 {
@@ -165,7 +182,7 @@ namespace CL_CLegendary_Launcher_.Windows
                 }
 
                 var parentList = FindParent<ItemsControl>(this);
-                if (parentList != null && parentList.ItemsSource == null) 
+                if (parentList != null && parentList.ItemsSource == null)
                 {
                     parentList.Items.Remove(this);
                 }
@@ -176,9 +193,13 @@ namespace CL_CLegendary_Launcher_.Windows
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Помилка видалення: {ex.Message}", "Помилка");
+                MascotMessageBox.Show(
+                    string.Format(LocalizationManager.GetString("Mods.DeleteError", "Помилка видалення: {0}"), ex.Message),
+                    LocalizationManager.GetString("Dialogs.Error", "Помилка"),
+                    MascotEmotion.Sad);
             }
         }
+
         public static T FindParent<T>(DependencyObject child) where T : DependencyObject
         {
             DependencyObject parentObject = VisualTreeHelper.GetParent(child);

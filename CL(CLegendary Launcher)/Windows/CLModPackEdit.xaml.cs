@@ -13,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Management;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Windows;
@@ -23,13 +24,12 @@ using System.Windows.Input;
 using System.Windows.Media;
 using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;
-
+using Button = System.Windows.Controls.Button;
 using ContextMenu = System.Windows.Controls.ContextMenu;
 using MenuItem = System.Windows.Controls.MenuItem;
-using Separator = System.Windows.Controls.Separator;
-using Button = System.Windows.Controls.Button;
 using MessageBox = System.Windows.MessageBox;
 using Path = System.IO.Path;
+using Separator = System.Windows.Controls.Separator;
 
 namespace CL_CLegendary_Launcher_.Windows
 {
@@ -48,7 +48,43 @@ namespace CL_CLegendary_Launcher_.Windows
         {
             InitializeComponent();
             ApplicationThemeManager.Apply(this);
+            ApplyLocalization();
         }
+
+        private void ApplyLocalization()
+        {
+            this.Title = LocalizationManager.GetString("Modpacks.ModpackEditTitle", "Налаштування збірки");
+            NameWin.Text = LocalizationManager.GetString("Modpacks.ModpackEditTitle", "Налаштування збірки");
+
+            TxtMods.Text = LocalizationManager.GetString("Modpacks.ModpackEditMods", "Моди");
+            TxtResourcePacks.Text = LocalizationManager.GetString("Modpacks.ModpackEditResourcePacks", "Ресурспаки");
+            TxtShaders.Text = LocalizationManager.GetString("Modpacks.ModpackEditShaders", "Шейдери");
+            TxtOptions.Text = LocalizationManager.GetString("Modpacks.ModpackEditOptions", "Опції");
+
+            SearchSystem.PlaceholderText = LocalizationManager.GetString("Modpacks.ModpackSearchPlaceholder", "Пошук файлів...");
+            DownloadAddMod.Content = LocalizationManager.GetString("Modpacks.ModpackDownloadBtn", "Завантажити");
+            AddFileInPack.Content = LocalizationManager.GetString("Modpacks.ModpackAddFileBtn", "Додати файл");
+
+            TxtVersionTitle.Text = LocalizationManager.GetString("Modpacks.ModpackVersionTitle", "Версія");
+            TxtMcVersion.Text = LocalizationManager.GetString("Modpacks.ModpackMcVersion", "Версія Minecraft");
+            IconMcVersionLock.ToolTip = LocalizationManager.GetString("Modpacks.ModpackMcVersionTooltip", "Версію гри змінювати не можна");
+            TxtLoaderVersion.Text = LocalizationManager.GetString("Modpacks.ModpackLoaderVersion", "Версія Ядра");
+            BtnChangeLoader.Content = LocalizationManager.GetString("Modpacks.ModpackChangeBtn", "Змінити");
+
+            TxtSystemTitle.Text = LocalizationManager.GetString("Modpacks.ModpackSystemTitle", "Система");
+            TxtLogs.Text = LocalizationManager.GetString("Modpacks.ModpackLogs", "Консоль розробника (Logs)");
+            TxtRam.Text = LocalizationManager.GetString("Modpacks.ModpackRam", "Оперативна пам’ять");
+
+            TxtGameTitle.Text = LocalizationManager.GetString("Modpacks.ModpackGameTitle", "Гра");
+            TxtWindowSize.Text = LocalizationManager.GetString("Modpacks.ModpackWindowSize", "Розмір вікна");
+            TxtAutoJoin.Text = LocalizationManager.GetString("Modpacks.ModpackAutoJoin", "Авто-вхід на сервер");
+
+            if (IPAdressServer.Text == "IP Сервера" || IPAdressServer.Text == "Server IP")
+            {
+                IPAdressServer.Text = LocalizationManager.GetString("Modpacks.ModpackServerIp", "IP Сервера");
+            }
+        }
+
         void Click()
         {
             Task.Run(() =>
@@ -79,7 +115,11 @@ namespace CL_CLegendary_Launcher_.Windows
             WdithTXT.Text = CurrentModpack.Wdith.ToString();
             HeghitTXT.Text = CurrentModpack.Height.ToString();
 
-            IPAdressServer.Text = CurrentModpack.ServerIP?.ToString();
+            if (!string.IsNullOrEmpty(CurrentModpack.ServerIP) && CurrentModpack.ServerIP != "IP Сервера" && CurrentModpack.ServerIP != "Server IP")
+                IPAdressServer.Text = CurrentModpack.ServerIP.ToString();
+            else
+                IPAdressServer.Text = LocalizationManager.GetString("Modpacks.ModpackServerIp", "IP Сервера");
+
             DebugOff_On.IsChecked = CurrentModpack.IsConsoleLogOpened;
             OnJoinServerOff_On.IsChecked = CurrentModpack.EnterInServer;
             IPAdressServer.IsEnabled = CurrentModpack.EnterInServer;
@@ -90,7 +130,7 @@ namespace CL_CLegendary_Launcher_.Windows
             {
                 LoaderVersionPanel.Visibility = Visibility.Collapsed;
                 PackLoaderVersionText.Text = "Vanilla";
-                selectmodPack = 1; 
+                selectmodPack = 1;
             }
             else
             {
@@ -112,7 +152,7 @@ namespace CL_CLegendary_Launcher_.Windows
 
             btn.IsEnabled = false;
             object originalContent = btn.Content;
-            btn.Content = "Пошук...";
+            btn.Content = LocalizationManager.GetString("Modpacks.LoaderSearch", "Пошук...");
 
             try
             {
@@ -120,13 +160,16 @@ namespace CL_CLegendary_Launcher_.Windows
 
                 if (versions.Count == 0)
                 {
-                    MascotMessageBox.Show($"Не знайдено версій {CurrentModpack.LoaderType} для {CurrentModpack.MinecraftVersion}.", "Упс", MascotEmotion.Confused);
+                    MascotMessageBox.Show(
+                        string.Format(LocalizationManager.GetString("Modpacks.LoaderNotFoundDesc", "Не знайдено версій {0} для {1}."), CurrentModpack.LoaderType, CurrentModpack.MinecraftVersion),
+                        LocalizationManager.GetString("Dialogs.Oops", "Упс"),
+                        MascotEmotion.Confused);
                     return;
                 }
 
                 ContextMenu menu = new ContextMenu();
 
-                MenuItem header = new MenuItem { Header = "Оберіть версію:", IsEnabled = false, FontWeight = FontWeights.Bold };
+                MenuItem header = new MenuItem { Header = LocalizationManager.GetString("Modpacks.LoaderSelectHeader", "Оберіть версію:"), IsEnabled = false, FontWeight = FontWeights.Bold };
                 menu.Items.Add(header);
                 menu.Items.Add(new Separator());
 
@@ -170,7 +213,7 @@ namespace CL_CLegendary_Launcher_.Windows
             }
             catch (Exception ex)
             {
-                MascotMessageBox.Show($"Помилка: {ex.Message}", "Помилка", MascotEmotion.Sad);
+                MascotMessageBox.Show($"{LocalizationManager.GetString("Dialogs.Error", "Помилка")}: {ex.Message}", LocalizationManager.GetString("Dialogs.Error", "Помилка"), MascotEmotion.Sad);
             }
             finally
             {
@@ -207,7 +250,7 @@ namespace CL_CLegendary_Launcher_.Windows
                 }
                 else if (loaderType == "NeoForge")
                 {
-                    var path = new MinecraftPath(Settings1.Default.PathLacunher);
+                    var path = new MinecraftPath(SettingsManager.Default.PathLacunher);
                     var launcher = new MinecraftLauncher(path);
                     var versionLoader = new NeoForgeInstaller(launcher);
                     var neoForgeList = await versionLoader.GetForgeVersions(mcVersion);
@@ -254,7 +297,10 @@ namespace CL_CLegendary_Launcher_.Windows
                     PackLoaderVersionText.Text = $"{CurrentModpack.LoaderType} {newVersion}";
                 }
 
-                MascotMessageBox.Show($"Версію успішно змінено на {newVersion}!\nЯдро завантажиться при наступному запуску.", "Успіх", MascotEmotion.Happy);
+                MascotMessageBox.Show(
+                    string.Format(LocalizationManager.GetString("Modpacks.LoaderChangedDesc", "Версію успішно змінено на {0}!\nЯдро завантажиться при наступному запуску."), newVersion),
+                    LocalizationManager.GetString("Modpacks.LoaderChangedTitle", "Успіх"),
+                    MascotEmotion.Happy);
             }
         }
         private async Task UpdateModsList()
@@ -293,15 +339,17 @@ namespace CL_CLegendary_Launcher_.Windows
 
                 var item = new ItemManegerPack();
                 item.Title.Text = fileName.Replace(".disabled", "");
-                item.Description.Text = isEnabled ? "Активний" : "Вимкнено";
+                item.Description.Text = isEnabled
+                    ? LocalizationManager.GetString("Modpacks.ModStateActive", "Активний")
+                    : LocalizationManager.GetString("Modpacks.ModStateDisabled", "Вимкнено");
                 item.pathmods = file;
                 item.CurrentModpack = this.CurrentModpack;
                 item.IsModPack = true;
                 item.Off_OnMod = isEnabled;
 
-                item.IsOnOffSwitch.Click -= item.Off_OnMods_Click; 
+                item.IsOnOffSwitch.Click -= item.Off_OnMods_Click;
                 item.IsOnOffSwitch.IsChecked = isEnabled;
-                item.IsOnOffSwitch.Click += item.Off_OnMods_Click; 
+                item.IsOnOffSwitch.Click += item.Off_OnMods_Click;
 
                 ModsManegerList.Items.Add(item);
             }
@@ -335,7 +383,10 @@ namespace CL_CLegendary_Launcher_.Windows
             }
             catch (Exception ex)
             {
-                MascotMessageBox.Show($"Помилка збереження: {ex.Message}", "Помилка", MascotEmotion.Sad);
+                MascotMessageBox.Show(
+                    string.Format(LocalizationManager.GetString("Modpacks.ModpackSaveError", "Помилка збереження: {0}"), ex.Message),
+                    LocalizationManager.GetString("Dialogs.Error", "Помилка"),
+                    MascotEmotion.Sad);
                 return false;
             }
         }
@@ -353,7 +404,7 @@ namespace CL_CLegendary_Launcher_.Windows
 
         private void ShowError(string message)
         {
-            MascotMessageBox.Show(message, "Увага", MascotEmotion.Sad);
+            MascotMessageBox.Show(message, LocalizationManager.GetString("Dialogs.Alert", "Увага"), MascotEmotion.Sad);
         }
         private async void SearchSystem_TextChanged(object sender, TextChangedEventArgs e)
         {
@@ -410,14 +461,14 @@ namespace CL_CLegendary_Launcher_.Windows
         }
         private async void ModsPack_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            if (IsVanillaVersion()) { ShowError("Ванільна версія не підтримує моди."); return; }
+            if (IsVanillaVersion()) { ShowError(LocalizationManager.GetString("Modpacks.VanillaNoMods", "Ванільна версія не підтримує моди.")); return; }
             await SwitchTab(0, 0);
         }
 
         private async void Resource_packPack_MouseDown(object sender, MouseButtonEventArgs e) => await SwitchTab(1, 40);
         private async void ShaderPack_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            if (IsVanillaVersion()) { ShowError("Ванільна версія не підтримує шейдери."); return; }
+            if (IsVanillaVersion()) { ShowError(LocalizationManager.GetString("Modpacks.VanillaNoShaders", "Ванільна версія не підтримує шейдери.")); return; }
             await SwitchTab(2, 80);
         }
         private void SettingPack_MouseDown(object sender, MouseButtonEventArgs e) => _ = SwitchTab(3, 120);
@@ -429,7 +480,7 @@ namespace CL_CLegendary_Launcher_.Windows
 
             AnimationService.AnimateBorderObject(0, positionY, PanelSelectNowSiteMods, true);
 
-            if (index == 3) 
+            if (index == 3)
             {
                 ManegerPack.Visibility = Visibility.Hidden;
                 SettingPack_Mod.Visibility = Visibility.Visible;

@@ -3,7 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.IO;
-using System.Windows.Controls; 
+using System.Windows.Controls;
 
 namespace CL_CLegendary_Launcher_.Class
 {
@@ -53,9 +53,9 @@ namespace CL_CLegendary_Launcher_.Class
 
         public async void NavigateToHome()
         {
-            await NavigateToPage(_main.GirdPanelFooter, 0, "В головному вікні", async () =>
+            await NavigateToPage(_main.GirdPanelFooter, 0, LocalizationManager.GetString("DiscordRPC.InHome", "В головному вікні"), async () =>
             {
-                if (_main.PartnerServer.Items.Count == 0)
+                if (_main.PartnerServer.Items.Count == 0 && !SettingsManager.Default.OfflineModLauncher)
                 {
                     await _main._serverListService.InitializeServersAsync(false);
                 }
@@ -64,7 +64,7 @@ namespace CL_CLegendary_Launcher_.Class
 
         public async void NavigateToMods()
         {
-            await NavigateToPage(_main.ListModsGird, 190, "Шукає моди", async () =>
+            await NavigateToPage(_main.ListModsGird, 190, LocalizationManager.GetString("DiscordRPC.SearchingMods", "Шукає моди"), async () =>
             {
                 if (_main.ModsDowloadList.Items.Count == 0)
                 {
@@ -75,7 +75,7 @@ namespace CL_CLegendary_Launcher_.Class
 
         public async void NavigateToModPacks()
         {
-            await NavigateToPage(_main.ListModsBuild, 95, "Дивиться збірки", async () =>
+            await NavigateToPage(_main.ListModsBuild, 95, LocalizationManager.GetString("DiscordRPC.ViewingModpacks", "Дивиться збірки"), async () =>
             {
                 _main.ModsDowloadList1.Items.Clear();
 
@@ -89,7 +89,7 @@ namespace CL_CLegendary_Launcher_.Class
 
         public async void NavigateToServers()
         {
-            await NavigateToPage(_main.ServerName, 285, "Дивиться список серверів", async () =>
+            await NavigateToPage(_main.ServerName, 285, LocalizationManager.GetString("DiscordRPC.ViewingServers", "Дивиться список серверів"), async () =>
             {
                 if (_main.ServerList.Items.Count == 0)
                 {
@@ -100,7 +100,7 @@ namespace CL_CLegendary_Launcher_.Class
 
         public async void NavigateToGallery()
         {
-            await NavigateToPage(_main.GalleryContainer, 385, "Переглядає галерею", () =>
+            await NavigateToPage(_main.GalleryContainer, 385, LocalizationManager.GetString("DiscordRPC.ViewingGallery", "Переглядає галерею"), () =>
             {
                 _main.InitializeGallery();
                 return Task.CompletedTask;

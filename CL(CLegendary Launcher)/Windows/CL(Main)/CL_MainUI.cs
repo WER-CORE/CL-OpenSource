@@ -25,28 +25,28 @@ namespace CL_CLegendary_Launcher_
 
         private async void CL_CLegendary_Launcher__Loaded_1(object sender, RoutedEventArgs e)
         {
-            if (!Settings1.Default.TutorialComplete) { AnimationService.AnimatePageTransition(TutorialGrid); }
+            if (!SettingsManager.Default.TutorialComplete) { AnimationService.AnimatePageTransition(TutorialGrid); }
             else { TutorialGrid.Visibility = Visibility.Collapsed; }
 
-            if (Settings1.Default.width != 0 && Settings1.Default.height != 0)
+            if (SettingsManager.Default.width != 0 && SettingsManager.Default.height != 0)
             {
-                Width.Text = Settings1.Default.width.ToString();
-                Height.Text = Settings1.Default.height.ToString();
-                MincraftWindowSize.Content = $"{Settings1.Default.width}x{Settings1.Default.height}";
+                Width.Text = SettingsManager.Default.width.ToString();
+                Height.Text = SettingsManager.Default.height.ToString();
+                MincraftWindowSize.Content = $"{SettingsManager.Default.width}x{SettingsManager.Default.height}";
             }
             else
             {
-                Settings1.Default.width = 800;
-                Settings1.Default.height = 600;
-                Settings1.Default.Save();
+                SettingsManager.Default.width = 800;
+                SettingsManager.Default.height = 600;
+                SettingsManager.Save();
                 Width.Text = "800";
                 Height.Text = "600";
                 MincraftWindowSize.Content = "800x600";
             }
 
-            int savedType = Settings1.Default.LastSelectedType;
-            string savedVer = Settings1.Default.LastSelectedVersion;
-            string savedModVer = Settings1.Default.LastSelectedModVersion;
+            int savedType = SettingsManager.Default.LastSelectedType;
+            string savedVer = SettingsManager.Default.LastSelectedVersion;
+            string savedModVer = SettingsManager.Default.LastSelectedModVersion;
 
             if (savedType != 0 && !string.IsNullOrEmpty(savedVer))
             {
@@ -55,17 +55,17 @@ namespace CL_CLegendary_Launcher_
                 if (savedType == 5 && !string.IsNullOrEmpty(savedModVer))
                 {
                     IconSelectVersion.Source = IconSelectVersion_Optifine.Source;
-                    PlayTXT.Text = $"ГРАТИ В ({savedModVer})";
+                    PlayTXT.Text = string.Format(LocalizationManager.GetString("GameLaunch.PlayBtnPlayIn", "ГРАТИ В ({0})"), savedModVer);
                 }
                 else if (savedType == 1)
                 {
                     IconSelectVersion.Source = IconSelectVersion_Копировать.Source;
-                    PlayTXT.Text = $"ГРАТИ В ({savedVer})";
+                    PlayTXT.Text = string.Format(LocalizationManager.GetString("GameLaunch.PlayBtnPlayIn", "ГРАТИ В ({0})"), savedVer);
                 }
             }
             else
             {
-                PlayTXT.Text = "ОБЕРІТЬ ВЕРСІЮ";
+                PlayTXT.Text = LocalizationManager.GetString("GameLaunch.PlayBtnSelect", "ОБЕРІТЬ ВЕРСІЮ");
             }
 
             LoadCustomSettings();
@@ -74,6 +74,7 @@ namespace CL_CLegendary_Launcher_
                 MemoryCleaner.FlushMemoryAsync(true);
             });
         }
+
         private void CL_CLegendary_Launcher__Closed(object sender, EventArgs e)
         {
             DiscordController.Deinitialize();
@@ -85,18 +86,43 @@ namespace CL_CLegendary_Launcher_
         }
         public void Click()
         {
+            bool isJokeEnabled = MemToggle.IsChecked == true;
+
             Task.Run(() =>
             {
-                var Click = new NAudio.Vorbis.VorbisWaveReader(Resource2.click);
-                using (var waveOut = new NAudio.Wave.WaveOutEvent())
+                try
                 {
-                    waveOut.Volume = 0.1f;
-                    waveOut.Init(Click);
-                    waveOut.Play();
-                    while (waveOut.PlaybackState == PlaybackState.Playing)
+                    DateTime today = DateTime.Now;
+                    bool isAprilFoolsWeek = today.Month == 4 && today.Day >= 1 && today.Day <= 7;
+
+                    string currentLang = SettingsManager.Default.LanguageCode ?? "";
+                    bool isUkrainian = currentLang.StartsWith("uk");
+
+                    System.IO.Stream audioResource = (isAprilFoolsWeek && isUkrainian && isJokeEnabled)
+                                        ? (System.IO.Stream)Resource2.astanavites
+                                        : (System.IO.Stream)Resource2.click;
+
+                    audioResource.Position = 0;
+
+                    using (var reader = new NAudio.Vorbis.VorbisWaveReader(audioResource))
+                    using (var waveOut = new NAudio.Wave.WaveOutEvent())
                     {
-                        System.Threading.Thread.Sleep(10);
+                        waveOut.Volume = 0.1f;
+                        waveOut.Init(reader);
+                        waveOut.Play();
+
+                        while (waveOut.PlaybackState == PlaybackState.Playing)
+                        {
+                            System.Threading.Thread.Sleep(10);
+                        }
                     }
+                }
+                catch (Exception ex)
+                {
+                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        System.Windows.MessageBox.Show($"Помилка звуку: {ex.Message}", "Дебаг");
+                    });
                 }
             });
         }
@@ -104,8 +130,8 @@ namespace CL_CLegendary_Launcher_
         {
             Click();
             if (PanelInfoServer.Visibility == Visibility.Visible) { AnimationService.AnimatePageTransitionExit(PanelInfoServer); AnimationService.AnimatePageTransition(ServerName); }
-
         }
+
         public BitmapImage ConvertBitmapToBitmapImage(System.Drawing.Bitmap bitmap)
         {
             using (MemoryStream memory = new MemoryStream())
@@ -122,6 +148,7 @@ namespace CL_CLegendary_Launcher_
                 return bitmapImage;
             }
         }
+
         public async Task HideAllPages()
         {
             var allPages = new List<FrameworkElement>
@@ -181,10 +208,12 @@ namespace CL_CLegendary_Launcher_
         {
             Click();
             await HideAllPages();
+            await Task.Delay(200);
 
             AnimationService.AnimatePageTransition(SettingPanelMinecraft, 0.3);
             AnimationService.AnimatePageTransition(ScrollSetting, 0.2);
         }
+
         private void FolderPanel_MouseDown(object sender, MouseButtonEventArgs e)
         {
             if (e.ChangedButton == MouseButton.Left)
@@ -196,6 +225,62 @@ namespace CL_CLegendary_Launcher_
                 }
             }
         }
+
+        private string GetBaseMinecraftPath()
+        {
+            return LauncherFloderButton.Content.ToString();
+        }
+
+        private void OpenOrCreateFolder(string path)
+        {
+            try
+            {
+                if (!Directory.Exists(path))
+                {
+                    Directory.CreateDirectory(path);
+                }
+                Process.Start(new ProcessStartInfo("explorer.exe", path));
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Не вдалося відкрити папку {path}. Помилка: {ex.Message}");
+            }
+        }
+
+        private void OpenRootFolder_Click(object sender, RoutedEventArgs e)
+        {
+            OpenOrCreateFolder(AppDomain.CurrentDomain.BaseDirectory);
+        }
+
+        private void OpenMinecraftFolder_Click(object sender, RoutedEventArgs e)
+        {
+            OpenOrCreateFolder(GetBaseMinecraftPath());
+        }
+
+        private void OpenModsFolder_Click(object sender, RoutedEventArgs e)
+        {
+            string path = Path.Combine(GetBaseMinecraftPath(), "mods");
+            OpenOrCreateFolder(path);
+        }
+
+        private void OpenResourcePacksFolder_Click(object sender, RoutedEventArgs e)
+        {
+            string path = Path.Combine(GetBaseMinecraftPath(), "resourcepacks");
+            OpenOrCreateFolder(path);
+        }
+
+        private void OpenShaderPacksFolder_Click(object sender, RoutedEventArgs e)
+        {
+            string path = Path.Combine(GetBaseMinecraftPath(), "shaderpacks");
+            OpenOrCreateFolder(path);
+        }
+
+        private void OpenCLModpackFolder_Click(object sender, RoutedEventArgs e)
+        {
+            string path = Path.Combine(GetBaseMinecraftPath(), "CLModpack");
+            OpenOrCreateFolder(path);
+        }
+
         private void InfoPanel_MouseDown(object sender, MouseButtonEventArgs e)
         {
             if (e.ChangedButton == MouseButton.Left)
@@ -207,11 +292,12 @@ namespace CL_CLegendary_Launcher_
                 }
             }
         }
+
         private void OpenFolder_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                string path = Settings1.Default.PathLacunher;
+                string path = SettingsManager.Default.PathLacunher;
 
                 if (Directory.Exists(path))
                 {
@@ -225,9 +311,12 @@ namespace CL_CLegendary_Launcher_
             }
             catch (Exception ex)
             {
-                MascotMessageBox.Show($"Не вдалося відкрити папку:\n{ex.Message}", "Помилка", MascotEmotion.Sad);
+                MascotMessageBox.Show(
+                    string.Format(LocalizationManager.GetString("Dialogs.FolderOpenError", "Не вдалося відкрити папку:\n{0}"), ex.Message),
+                    LocalizationManager.GetString("Dialogs.Error", "Помилка"), MascotEmotion.Sad);
             }
         }
+
         private void OpenGlobalBackups_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -237,9 +326,12 @@ namespace CL_CLegendary_Launcher_
             }
             catch (Exception ex)
             {
-                MascotMessageBox.Show($"Не вдалося відкрити список світів:\n{ex.Message}", "Помилка", MascotEmotion.Sad);
+                MascotMessageBox.Show(
+                    string.Format(LocalizationManager.GetString("Dialogs.FolderOpenError", "Не вдалося відкрити список світів:\n{0}"), ex.Message),
+                    LocalizationManager.GetString("Dialogs.Error", "Помилка"), MascotEmotion.Sad);
             }
         }
+
         private void BackMainWindow_MouseDown(object sender, MouseButtonEventArgs e)
         {
             Click();
@@ -251,20 +343,21 @@ namespace CL_CLegendary_Launcher_
                 AnimationService.FadeOut(ServerList, 0.3);
             }
         }
+
         private void YesQuestionTutorialButton_MouseDown(object sender, RoutedEventArgs e)
         {
-            Settings1.Default.TutorialComplete = true;
-            Settings1.Default.IsDocsTutorialShown = true;
+            SettingsManager.Default.TutorialComplete = true;
+            SettingsManager.Default.IsDocsTutorialShown = true;
             WebHelper.OpenUrl("https://github.com/WER-CORE/CL-OpenSource");
-            Settings1.Default.Save();
+            SettingsManager.Save();
             AnimationService.AnimatePageTransitionExit(TutorialBorder);
             AnimationService.AnimatePageTransitionExit(TutorialGrid);
         }
 
         private void NoQuestionTutorialButton_MouseDown(object sender, RoutedEventArgs e)
         {
-            Settings1.Default.TutorialComplete = true;
-            Settings1.Default.Save();
+            SettingsManager.Default.TutorialComplete = true;
+            SettingsManager.Save();
 
             AnimationService.AnimatePageTransitionExit(TutorialBorder);
             AnimationService.AnimatePageTransitionExit(TutorialGrid);
@@ -276,10 +369,11 @@ namespace CL_CLegendary_Launcher_
         {
             _tutorialService.CloseTutorial(() =>
             {
-                Settings1.Default.IsDocsTutorialShown = true;
-                Settings1.Default.Save();
+                SettingsManager.Default.IsDocsTutorialShown = true;
+                SettingsManager.Save();
             });
         }
+
         private async void LoadScreenshots()
         {
             ScreenshotsList.Items.Clear();
@@ -301,7 +395,7 @@ namespace CL_CLegendary_Launcher_
 
         public void InitializeGallery()
         {
-            var sources = _screenshotService.GetScreenshotSources(Settings1.Default.PathLacunher);
+            var sources = _screenshotService.GetScreenshotSources(SettingsManager.Default.PathLacunher);
 
             SourceSelector.ItemsSource = sources;
             SourceSelector.DisplayMemberPath = "Name";
@@ -370,7 +464,9 @@ namespace CL_CLegendary_Launcher_
                 }
                 else
                 {
-                    MascotMessageBox.Show("Не вдалося видалити файл.");
+                    MascotMessageBox.Show(
+                        LocalizationManager.GetString("Dialogs.DeleteError", "Не вдалося видалити файл."),
+                        LocalizationManager.GetString("Dialogs.Error", "Помилка"), MascotEmotion.Sad);
                 }
             }
         }

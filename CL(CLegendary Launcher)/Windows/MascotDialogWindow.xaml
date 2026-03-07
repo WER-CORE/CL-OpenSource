@@ -53,9 +53,9 @@
                                Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,0,10"/>
 
                     <ui:TextBox x:Name="MessageTxt" Text="Тут буде текст повідомлення від маскота..." 
-                               FontFamily="Inter 18pt 18pt" FontSize="14" 
-                               Foreground="{DynamicResource MainForegroundBrush}" TextWrapping="Wrap" 
-                               Grid.Row="1" VerticalAlignment="Center" IsReadOnly="True" Background="{x:Null}" BorderBrush="{x:Null}" SelectionTextBrush="{x:Null}" SelectionBrush="{DynamicResource MainBackgroundProgressBar}" Height="141"/>
+                                FontFamily="Inter 18pt 18pt" FontSize="14" 
+                                Foreground="{DynamicResource MainForegroundBrush}" TextWrapping="Wrap" 
+                                Grid.Row="1" VerticalAlignment="Center" IsReadOnly="True" Background="{x:Null}" BorderBrush="{x:Null}" SelectionTextBrush="{x:Null}" SelectionBrush="{DynamicResource MainBackgroundProgressBar}" Height="141" VerticalScrollBarVisibility="Visible"/>
 
                     <StackPanel Orientation="Horizontal" Grid.Row="2" HorizontalAlignment="Right">
 
@@ -90,7 +90,7 @@
 
                         <Button x:Name="BtnOK" Content="Зрозуміло" 
                                 Click="BtnOK_Click"
-                                Width="120" Height="35"
+                                Width="120" Height="35" Margin="15,0,0,0"
                                 Foreground="White" BorderThickness="0" Cursor="Hand">
                             <Button.Style>
                                 <Style TargetType="Button">
@@ -122,9 +122,6 @@
                         </Button>
                     </StackPanel>
                 </Grid>
-
-                <TextBlock Text="✕" Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Top" 
-                           Foreground="#55FFFFFF" Margin="0,10,10,0" Cursor="Hand" MouseDown="Close_MouseDown" FontSize="14"/>
             </Grid>
         </Border>
     </Grid>

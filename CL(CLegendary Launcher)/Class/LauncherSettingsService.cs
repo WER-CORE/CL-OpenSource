@@ -13,7 +13,7 @@ namespace CL_CLegendary_Launcher_.Class
 {
     public class LauncherSettingsService
     {
-        private readonly CL_Main_ _main; 
+        private readonly CL_Main_ _main;
 
         public LauncherSettingsService(CL_Main_ main)
         {
@@ -28,7 +28,7 @@ namespace CL_CLegendary_Launcher_.Class
 
         private void InitLauncherPath()
         {
-            if (string.IsNullOrWhiteSpace(Settings1.Default.PathLacunher))
+            if (string.IsNullOrWhiteSpace(SettingsManager.Default.PathLacunher))
             {
                 string basePath;
 
@@ -49,19 +49,19 @@ namespace CL_CLegendary_Launcher_.Class
                     basePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".clminecraft");
                 }
 
-                Settings1.Default.PathLacunher = basePath;
-                Settings1.Default.Save();
+                SettingsManager.Default.PathLacunher = basePath;
+                SettingsManager.Save();
             }
 
-            _main.LauncherFloderButton.Content = Settings1.Default.PathLacunher;
+            _main.LauncherFloderButton.Content = SettingsManager.Default.PathLacunher;
         }
 
         private void InitMemorySlider()
         {
             double totalMemoryInMB = GetTotalMemoryInMB() / 2;
             _main.OPSlider.Maximum = (int)totalMemoryInMB;
-            _main.OPSlider.Value = Settings1.Default.OP;
-            _main.SliderOPTXT.Content = $"{Settings1.Default.OP:0}MB";
+            _main.OPSlider.Value = SettingsManager.Default.OP;
+            _main.SliderOPTXT.Content = $"{SettingsManager.Default.OP:0}MB";
         }
 
         private double GetTotalMemoryInMB()
@@ -74,10 +74,10 @@ namespace CL_CLegendary_Launcher_.Class
             catch (Exception ex)
             {
                 MascotMessageBox.Show(
-                                    $"Я намагалася дізнатися, скільки у тебе оперативної пам'яті, але не вийшло.\n" +
-                                    $"Тому я встановила 2 ГБ як безпечний варіант.\n\nПомилка: {ex.Message}",
-                                    "Скільки пам'яті?",
-                                    MascotEmotion.Confused); return 2048; 
+                    string.Format(LocalizationManager.GetString("GameLaunch.MemoryCheckErrorDesc", "Я намагалася дізнатися, скільки у тебе оперативної пам'яті, але не вийшло.\nТому я встановила 2 ГБ як безпечний варіант.\n\nПомилка: {0}"), ex.Message),
+                    LocalizationManager.GetString("GameLaunch.MemoryCheckErrorTitle", "Скільки пам'яті?"),
+                    MascotEmotion.Confused);
+                return 2048;
             }
         }
         public async void HandleChangePathClick()
@@ -86,17 +86,20 @@ namespace CL_CLegendary_Launcher_.Class
 
             using (var openFileDlg = new System.Windows.Forms.FolderBrowserDialog())
             {
-                openFileDlg.Description = "Виберіть новий шлях для теки .ClMinecraft";
+                openFileDlg.Description = LocalizationManager.GetString("GameLaunch.SelectFolderDesc", "Виберіть новий шлях для теки .ClMinecraft");
 
                 if (openFileDlg.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                 {
-                    string oldPath = Settings1.Default.PathLacunher;
+                    string oldPath = SettingsManager.Default.PathLacunher;
                     string selectedPath = openFileDlg.SelectedPath;
                     string newPath = Path.Combine(selectedPath, ".ClMinecraft");
 
                     if (string.Equals(Path.GetFullPath(oldPath).TrimEnd('\\'), Path.GetFullPath(newPath).TrimEnd('\\'), StringComparison.OrdinalIgnoreCase))
                     {
-                        MascotMessageBox.Show("Ви вибрали ту саму папку!", "Увага", MascotEmotion.Confused);
+                        MascotMessageBox.Show(
+                            LocalizationManager.GetString("GameLaunch.SameFolderDesc", "Ви вибрали ту саму папку!"),
+                            LocalizationManager.GetString("GameLaunch.SameFolderTitle", "Увага"),
+                            MascotEmotion.Confused);
                         return;
                     }
 
@@ -118,8 +121,8 @@ namespace CL_CLegendary_Launcher_.Class
                             UpdateModpacksJsonV2(oldPath, newPath);
                         });
 
-                        Settings1.Default.PathLacunher = newPath;
-                        Settings1.Default.Save();
+                        SettingsManager.Default.PathLacunher = newPath;
+                        SettingsManager.Save();
 
                         _main.LauncherFloderButton.Content = newPath;
                         _main._versionService = new VersionService(newPath);
@@ -128,20 +131,22 @@ namespace CL_CLegendary_Launcher_.Class
                         {
                             Task.Run(() =>
                             {
-                                try { Directory.Delete(oldPath, true); } catch {  }
+                                try { Directory.Delete(oldPath, true); } catch { }
                             });
                         }
 
-                        MascotMessageBox.Show("Теку успішно переміщено!", "Успіх", MascotEmotion.Happy);
+                        MascotMessageBox.Show(
+                            LocalizationManager.GetString("GameLaunch.FolderMovedDesc", "Теку успішно переміщено!"),
+                            LocalizationManager.GetString("GameLaunch.FolderMovedTitle", "Успіх!"),
+                            MascotEmotion.Happy);
                     }
                     catch (Exception ex)
                     {
                         try { if (Directory.Exists(newPath)) Directory.Delete(newPath, true); } catch { }
 
                         MascotMessageBox.Show(
-                            $"Ой! Я не змогла перемістити теку лаунчера.\n" +
-                            $"Деталі: {ex.Message}",
-                            "Помилка переміщення",
+                            string.Format(LocalizationManager.GetString("GameLaunch.FolderMoveErrorDesc", "Ой! Я не змогла перемістити теку лаунчера.\nДеталі: {0}"), ex.Message),
+                            LocalizationManager.GetString("GameLaunch.FolderMoveErrorTitle", "Помилка переміщення"),
                             MascotEmotion.Sad);
                     }
                     finally
@@ -185,7 +190,7 @@ namespace CL_CLegendary_Launcher_.Class
                     string normalizedOld = oldBasePath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
                     string normalizedNew = newBasePath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
 
-                    bool hasChanges = false; 
+                    bool hasChanges = false;
 
                     foreach (var pack in modpacks)
                     {
@@ -242,17 +247,20 @@ namespace CL_CLegendary_Launcher_.Class
                 defaultPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".ClMinecraft");
             }
 
-            string currentPath = Settings1.Default.PathLacunher;
+            string currentPath = SettingsManager.Default.PathLacunher;
 
             if (string.Equals(Path.GetFullPath(currentPath).TrimEnd('\\'), Path.GetFullPath(defaultPath).TrimEnd('\\'), StringComparison.OrdinalIgnoreCase))
             {
-                MascotMessageBox.Show("Шлях вже встановлено за замовчуванням!", "Інфо", MascotEmotion.Normal);
+                MascotMessageBox.Show(
+                    LocalizationManager.GetString("GameLaunch.PathAlreadyDefaultDesc", "Шлях вже встановлено за замовчуванням!"),
+                    LocalizationManager.GetString("Dialogs.Alert", "Інфо"),
+                    MascotEmotion.Normal);
                 return;
             }
 
             bool confirm = MascotMessageBox.Ask(
-                $"Ви впевнені, що хочете скинути шлях?\n\nВсі файли будуть переміщені з:\n{currentPath}\n\nВ стандартну папку:\n{defaultPath}",
-                "Почекайте!",
+                string.Format(LocalizationManager.GetString("GameLaunch.PathResetConfirmDesc", "Ви впевнені, що хочете скинути шлях?\n\nВсі файли будуть переміщені з:\n{0}\n\nВ стандартну папку:\n{1}"), currentPath, defaultPath),
+                LocalizationManager.GetString("GameLaunch.PathResetConfirmTitle", "Почекайте!"),
                 MascotEmotion.Confused);
 
             if (!confirm) return;
@@ -275,8 +283,8 @@ namespace CL_CLegendary_Launcher_.Class
                     UpdateModpacksJsonV2(currentPath, defaultPath);
                 });
 
-                Settings1.Default.PathLacunher = defaultPath;
-                Settings1.Default.Save();
+                SettingsManager.Default.PathLacunher = defaultPath;
+                SettingsManager.Save();
 
                 _main.LauncherFloderButton.Content = defaultPath;
                 _main._versionService = new VersionService(defaultPath);
@@ -285,19 +293,22 @@ namespace CL_CLegendary_Launcher_.Class
                 {
                     await Task.Run(() =>
                     {
-                        try { Directory.Delete(currentPath, true); } catch {  }
+                        try { Directory.Delete(currentPath, true); } catch { }
                     });
                 }
 
-                MascotMessageBox.Show("Шлях скинуто, файли успішно переміщено додому!", "Успіх!", MascotEmotion.Happy);
+                MascotMessageBox.Show(
+                    LocalizationManager.GetString("GameLaunch.PathResetSuccessDesc", "Шлях скинуто, файли успішно переміщено додому!"),
+                    LocalizationManager.GetString("GameLaunch.FolderMovedTitle", "Успіх!"),
+                    MascotEmotion.Happy);
             }
             catch (Exception ex)
             {
                 try { if (Directory.Exists(defaultPath)) Directory.Delete(defaultPath, true); } catch { }
 
                 MascotMessageBox.Show(
-                    $"Не вдалося перемістити файли назад.\nДеталі: {ex.Message}",
-                    "Йой! Якась помилка з переміщеням файлів",
+                    string.Format(LocalizationManager.GetString("GameLaunch.PathResetErrorDesc", "Не вдалося перемістити файли назад.\nДеталі: {0}"), ex.Message),
+                    LocalizationManager.GetString("GameLaunch.PathResetErrorTitle", "Йой! Якась помилка з переміщенням файлів"),
                     MascotEmotion.Sad);
             }
             finally
@@ -311,8 +322,8 @@ namespace CL_CLegendary_Launcher_.Class
             _main.OPSlider.Value = 2048;
             _main.SliderOPTXT.Content = "2048MB";
 
-            Settings1.Default.OP = 2048;
-            Settings1.Default.Save();
+            SettingsManager.Default.OP = 2048;
+            SettingsManager.Save();
         }
 
         public void HandleResetResolutionClick()
@@ -322,9 +333,9 @@ namespace CL_CLegendary_Launcher_.Class
             _main.Height.Text = "600";
             _main.MincraftWindowSize.Content = "800x600";
 
-            Settings1.Default.width = 800;
-            Settings1.Default.height = 600;
-            Settings1.Default.Save();
+            SettingsManager.Default.width = 800;
+            SettingsManager.Default.height = 600;
+            SettingsManager.Save();
         }
     }
 }

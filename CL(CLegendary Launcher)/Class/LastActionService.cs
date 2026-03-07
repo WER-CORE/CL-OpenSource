@@ -39,7 +39,7 @@ namespace CL_CLegendary_Launcher_.Class
 
                         foreach (var action in actions)
                         {
-                            _main.AddActionToList(action); 
+                            _main.AddActionToList(action);
                         }
                     }
                 }
@@ -47,10 +47,9 @@ namespace CL_CLegendary_Launcher_.Class
             catch (Exception ex)
             {
                 MascotMessageBox.Show(
-                                    $"Не вдалося згадати, що ми робили минулого разу.\n" +
-                                    $"Файл історії, схоже, пошкоджений.\n\nДеталі: {ex.Message}",
-                                    "Забудькуватість",
-                                    MascotEmotion.Sad);
+                    string.Format(LocalizationManager.GetString("GameLaunch.HistoryLoadErrorDesc", "Не вдалося згадати, що ми робили минулого разу.\nФайл історії, схоже, пошкоджений.\n\nДеталі: {0}"), ex.Message),
+                    LocalizationManager.GetString("GameLaunch.HistoryLoadErrorTitle", "Забудькуватість"),
+                    MascotEmotion.Sad);
             }
         }
 
@@ -87,14 +86,14 @@ namespace CL_CLegendary_Launcher_.Class
             catch (Exception ex)
             {
                 MascotMessageBox.Show(
-                                    $"Ой! Я намагалася записати цю дію в історію, але щось пішло не так.\n{ex.Message}",
-                                    "Помилка запису",
-                                    MascotEmotion.Confused);
+                    string.Format(LocalizationManager.GetString("GameLaunch.HistorySaveErrorDesc", "Ой! Я намагалася записати цю дію в історію, але щось пішло не так.\n{0}"), ex.Message),
+                    LocalizationManager.GetString("GameLaunch.HistorySaveErrorTitle", "Помилка запису"),
+                    MascotEmotion.Confused);
             }
             finally
             {
                 _fileLock.Release();
             }
         }
-    } 
+    }
 }

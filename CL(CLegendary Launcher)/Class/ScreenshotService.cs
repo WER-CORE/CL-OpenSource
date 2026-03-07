@@ -18,7 +18,7 @@ namespace CL_CLegendary_Launcher_.Class
             {
                 new ScreenshotSourceItem
                 {
-                    Name = "Глобальні (.ClMinecraft)",
+                    Name = LocalizationManager.GetString("Modpacks.GlobalFolder", "Глобальні (.ClMinecraft)"),
                     FullScreenshotsPath = Path.Combine(launcherPath, "screenshots")
                 }
             };
@@ -46,7 +46,7 @@ namespace CL_CLegendary_Launcher_.Class
                         {
                             sources.Add(new ScreenshotSourceItem
                             {
-                                Name = $"{pack.Name} (Збірка)",
+                                Name = string.Format(LocalizationManager.GetString("Modpacks.ModpackFolder", "{0} (Збірка)"), pack.Name),
                                 FullScreenshotsPath = finalPath
                             });
                         }
@@ -75,7 +75,7 @@ namespace CL_CLegendary_Launcher_.Class
 
                 foreach (var fileInfo in files)
                 {
-                    string resolution = "Unknown";
+                    string resolution = LocalizationManager.GetString("Generic.Unknown", "Unknown");
                     try
                     {
                         using (var stream = new FileStream(fileInfo.FullName, FileMode.Open, FileAccess.Read, FileShare.Read))

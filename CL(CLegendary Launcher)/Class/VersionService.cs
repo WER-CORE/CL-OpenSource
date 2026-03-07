@@ -43,7 +43,6 @@ namespace CL_CLegendary_Launcher_.Class
                 .Select(v => v.Name)
                 .ToList();
         }
-
         public async Task<List<string>> GetOptifineVersionsAsync(string mcVersion)
         {
             var installer = new OptifineInstaller(new HttpClient());

@@ -28,7 +28,7 @@ namespace CL_CLegendary_Launcher_.Windows
 
         private List<ModInfo> _tempResourcePacks = new List<ModInfo>();
 
-        protected byte SelectMod = 2; 
+        protected byte SelectMod = 2;
         private string SiteDowload = "Modrinth";
         public bool IsModPackCreated = false;
 
@@ -51,13 +51,38 @@ namespace CL_CLegendary_Launcher_.Windows
             _modDownloadService = modDownloadService;
             _modpackService = modpackService;
 
+            ApplyLocalization();
             AddVersionList();
-
             UpdateWindowBackdrop();
         }
+
+        private void ApplyLocalization()
+        {
+            this.Title = LocalizationManager.GetString("Modpacks.CreateVanillaWindowName", "CL - Створення ванільної збірки");
+            TxtHeaderTitle.Text = LocalizationManager.GetString("Modpacks.CreateVanillaTitle", "Створення збірки - Ванільної збірки (Ваніла)");
+
+            TxtModpackName.Text = LocalizationManager.GetString("Modpacks.ModpackNameTitle", "Назва збірки");
+            NameModPackTXT.PlaceholderText = LocalizationManager.GetString("Modpacks.ModpackNamePlaceholder", "Напишіть назву...");
+
+            TxtMcVersion.Text = LocalizationManager.GetString("Modpacks.ModpackMcVersion", "Версія Minecraft");
+
+            TxtResourcePacksOpt.Text = LocalizationManager.GetString("Modpacks.ResourcePacksOptionalTitle", "Ресурс-паки (Опціонально)");
+            SearchSystemModsTXT.PlaceholderText = LocalizationManager.GetString("Modpacks.SearchResourcePacksPlaceholder", "Пошук ресурс-паків...");
+
+            TxtFoundResourcePacks.Text = LocalizationManager.GetString("Modpacks.FoundResourcePacksTitle", "Знайдені ресурс-паки");
+            TxtSearchLoading.Text = LocalizationManager.GetString("Modpacks.ModsSearchLoading", "Bit-CL шукає потрібні файли...");
+
+            TxtSelectedPacks.Text = LocalizationManager.GetString("Modpacks.SelectedPacksTitle", "Обрані паки");
+
+            BtnCreatePack.Text = LocalizationManager.GetString("Modpacks.CreateModpackBtn", "СТВОРИТИ ЗБІРКУ");
+
+            TitleModsDowload.Text = LocalizationManager.GetString("Modpacks.SelectVersionGeneric", "Вибір версії");
+            DowloadTXT.Text = LocalizationManager.GetString("Modpacks.ModAddBtn", "Додати");
+        }
+
         private void UpdateWindowBackdrop()
         {
-            bool glassDisabled = Settings1.Default.DisableGlassEffect;
+            bool glassDisabled = SettingsManager.Default.DisableGlassEffect;
             if (!glassDisabled)
             {
                 this.WindowBackdropType = WindowBackdropType.Mica;
@@ -75,7 +100,7 @@ namespace CL_CLegendary_Launcher_.Windows
 
             try
             {
-                var path = new MinecraftPath(Settings1.Default.PathLacunher);
+                var path = new MinecraftPath(SettingsManager.Default.PathLacunher);
                 var launcher = new MinecraftLauncher(path);
                 var allVersions = await launcher.GetAllVersionsAsync();
 
@@ -93,7 +118,7 @@ namespace CL_CLegendary_Launcher_.Windows
             }
             catch (Exception ex)
             {
-                ShowError($"Помилка завантаження версій: {ex.Message}");
+                ShowError(string.Format(LocalizationManager.GetString("Modpacks.VersionLoadError", "Помилка завантаження версій гри: {0}"), ex.Message));
             }
         }
 
@@ -116,7 +141,8 @@ namespace CL_CLegendary_Launcher_.Windows
             try
             {
                 string searchText = SearchSystemModsTXT.Text;
-                if (searchText == "Пошук ресурс-паків...") searchText = "";
+                if (searchText == LocalizationManager.GetString("Modpacks.SearchResourcePacksPlaceholder", "Пошук ресурс-паків..."))
+                    searchText = "";
 
                 int offset = _currentPage * ITEMS_PER_PAGE;
 
@@ -192,7 +218,7 @@ namespace CL_CLegendary_Launcher_.Windows
         {
             if (VersionVanilBox.SelectedItem == null)
             {
-                MascotMessageBox.Show("Спочатку оберіть версію Minecraft!", "Увага", MascotEmotion.Alert);
+                MascotMessageBox.Show(LocalizationManager.GetString("Modpacks.NeedMinecraftVersion", "Спочатку оберіть версію Minecraft!"), LocalizationManager.GetString("Dialogs.Alert", "Увага"), MascotEmotion.Alert);
                 return;
             }
 
@@ -222,13 +248,13 @@ namespace CL_CLegendary_Launcher_.Windows
                 }
                 else
                 {
-                    MascotMessageBox.Show("Не знайдено ресурс-паків для цієї версії гри.", "Пусто", MascotEmotion.Confused);
+                    MascotMessageBox.Show(LocalizationManager.GetString("Modpacks.NoResourcePacksFound", "Не знайдено ресурс-паків для цієї версії гри."), LocalizationManager.GetString("Dialogs.EmptyTitle", "Пусто"), MascotEmotion.Confused);
                     MenuInstaller.Visibility = Visibility.Hidden;
                 }
             }
             catch (Exception ex)
             {
-                MascotMessageBox.Show($"Помилка: {ex.Message}", "Помилка", MascotEmotion.Sad);
+                MascotMessageBox.Show($"{LocalizationManager.GetString("Dialogs.Error", "Помилка")}: {ex.Message}", LocalizationManager.GetString("Dialogs.Error", "Помилка"), MascotEmotion.Sad);
                 MenuInstaller.Visibility = Visibility.Hidden;
             }
         }
@@ -269,20 +295,20 @@ namespace CL_CLegendary_Launcher_.Windows
             {
                 if (_tempResourcePacks.Any(m => m.ProjectId == mod.ProjectId))
                 {
-                    MascotMessageBox.Show("Цей ресурс-пак вже є в списку.", "Увага", MascotEmotion.Alert);
+                    MascotMessageBox.Show(LocalizationManager.GetString("Modpacks.ResourcePackInListAlready", "Цей ресурс-пак вже є в списку."), LocalizationManager.GetString("Dialogs.Alert", "Увага"), MascotEmotion.Alert);
                     return;
                 }
 
                 _tempResourcePacks.Add(mod);
                 AddItemToRightList(mod);
 
-                MascotMessageBox.Show($"Ресурс-пак \"{mod.Name}\" додано!", "Успіх", MascotEmotion.Happy);
+                MascotMessageBox.Show(string.Format(LocalizationManager.GetString("Modpacks.ResourcePackAdded", "Ресурс-пак \"{0}\" додано!"), mod.Name), LocalizationManager.GetString("Dialogs.Success", "Успіх"), MascotEmotion.Happy);
 
                 VersionVanilBox.IsEnabled = false;
             }
             catch (Exception ex)
             {
-                ShowError($"Помилка додавання: {ex.Message}");
+                ShowError(string.Format(LocalizationManager.GetString("Modpacks.ModAddError", "Помилка додавання: {0}"), ex.Message));
             }
         }
         private void AddItemToRightList(ModInfo mod)
@@ -316,11 +342,11 @@ namespace CL_CLegendary_Launcher_.Windows
                 string modpackName = NameModPackTXT.Text.Trim();
                 if (string.IsNullOrWhiteSpace(modpackName))
                 {
-                    ShowError("Введіть назву збірки!");
+                    ShowError(LocalizationManager.GetString("Modpacks.ModpackNameEmpty", "Введіть назву збірки!"));
                     return;
                 }
 
-                string basePath = Path.Combine(Settings1.Default.PathLacunher, "CLModpack", modpackName);
+                string basePath = Path.Combine(SettingsManager.Default.PathLacunher, "CLModpack", modpackName);
                 string pathJson = Path.Combine(basePath, "modpack.json");
 
                 Directory.CreateDirectory(basePath);
@@ -344,13 +370,13 @@ namespace CL_CLegendary_Launcher_.Windows
 
                 _modpackService.AddModpack(modpack);
 
-                MascotMessageBox.Show("Ванільну збірку створено!", "Успіх", MascotEmotion.Happy);
+                MascotMessageBox.Show(LocalizationManager.GetString("Modpacks.VanillaPackCreatedSuccess", "Ванільну збірку створено!"), LocalizationManager.GetString("Dialogs.Success", "Успіх"), MascotEmotion.Happy);
                 IsModPackCreated = true;
                 this.Close();
             }
             catch (Exception ex)
             {
-                ShowError($"Помилка створення: {ex.Message}");
+                ShowError(string.Format(LocalizationManager.GetString("Modpacks.ModpackCreateFatalError", "Критична помилка створення: {0}"), ex.Message));
             }
         }
         private void VersionVanil_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -451,11 +477,14 @@ namespace CL_CLegendary_Launcher_.Windows
             if (e.ButtonState == MouseButtonState.Pressed) this.DragMove();
         }
 
-        private void ShowError(string msg) => MascotMessageBox.Show(msg, "Помилка", MascotEmotion.Sad);
+        private void ShowError(string msg) => MascotMessageBox.Show(msg, LocalizationManager.GetString("Dialogs.Error", "Помилка"), MascotEmotion.Sad);
         private void ExitLauncher_MouseDown(object sender, RoutedEventArgs e) => this.Close();
 
         private void Window_Closed(object sender, EventArgs e)
         {
+            if (!IsModPackCreated)
+            {
+            }
         }
     }
 }

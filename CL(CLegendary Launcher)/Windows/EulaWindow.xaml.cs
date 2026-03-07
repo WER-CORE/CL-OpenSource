@@ -1,22 +1,9 @@
 ﻿using CL_CLegendary_Launcher_.Class;
-using Newtonsoft.Json;
+using CL_CLegendary_Launcher_.Models;
 using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 using Wpf.Ui.Appearance;
-using Wpf.Ui.Controls;
 
 namespace CL_CLegendary_Launcher_.Windows
 {
@@ -28,19 +15,86 @@ namespace CL_CLegendary_Launcher_.Windows
         {
             InitializeComponent();
             ApplicationThemeManager.Apply(this);
+
+            ApplyLocalization();
+
             if (config != null)
             {
-                MascotMessageText.Text = "Привіт! Я оновила правила нашої Спільноти. Перед тим як ми продовжимо, будь ласка, прочитай і підтвердь їх, щоб ми були на одній хвилі! (´• ω •`)";
+                MascotMessageText.Text = LocalizationManager.GetString("Eula.UpdateMessage", "Привіт! Я оновила правила нашої Спільноти. Перед тим як ми продовжимо, будь ласка, прочитай і підтвердь їх, щоб ми були на одній хвилі! (´• ω •`)");
                 EulaContentText.Text = config.Text;
                 _versionDate = config.LastUpdated;
             }
             else
             {
-                MascotMessageText.Text = "Ой, я не змогла завантажити актуальні правила з інтернету. Але ось локальна копія.";
-                EulaContentText.Text = "Перезавантажіть запускач";
+                MascotMessageText.Text = LocalizationManager.GetString("Eula.LoadFailMessage", "Ой, я не змогла завантажити актуальні правила з інтернету. Але ось локальна копія.");
+                EulaContentText.Text = LocalizationManager.GetString("Eula.RestartRequired", "Перезавантажіть запускач");
                 _versionDate = DateTime.Now;
             }
         }
+        private async void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            var languages = await LocalizationFetcher.GetAvailableLanguagesAsync();
+            LanguageComboBox.ItemsSource = languages;
+
+            string currentLangCode = SettingsManager.Default.LanguageCode ?? "uk_UA";
+            foreach (LanguageItem item in LanguageComboBox.Items)
+            {
+                if (item.Code == currentLangCode)
+                {
+                    LanguageComboBox.SelectionChanged -= LanguageComboBox_SelectionChanged;
+                    LanguageComboBox.SelectedItem = item;
+                    LanguageComboBox.SelectionChanged += LanguageComboBox_SelectionChanged;
+                    break;
+                }
+            }
+        }
+        private async void LanguageComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (!IsLoaded || LanguageComboBox.SelectedItem is not LanguageItem selectedLang) return;
+
+            if (LocalizationManager.CurrentLanguage != selectedLang.Code)
+            {
+                LanguageComboBox.IsEnabled = false;
+
+                bool success = await LocalizationFetcher.DownloadLanguageAsync(selectedLang);
+
+                if (success)
+                {
+                    LocalizationManager.LoadLanguage(selectedLang.Code);
+                    SettingsManager.Default.LanguageCode = selectedLang.Code;
+                    SettingsManager.Save();
+
+                    ApplyLocalization();
+
+                    var newConfig = await EulaService.GetEulaAsync(selectedLang.Code);
+                    if (newConfig != null)
+                    {
+                        EulaContentText.Text = newConfig.Text;
+                        MascotMessageText.Text = newConfig.MascotMessage;
+                        _versionDate = newConfig.LastUpdated;
+                    }
+                }
+                else
+                {
+                    MascotMessageBox.Show(
+                        LocalizationManager.GetString("Dialogs.Error", "Не вдалося завантажити мову."),
+                        "Error", MascotEmotion.Sad);
+                }
+
+                LanguageComboBox.IsEnabled = true;
+            }
+        }
+        private void ApplyLocalization()
+        {
+            this.Title = LocalizationManager.GetString("Eula.WindowTitle", "Угода");
+            TxtMascotName.Text = LocalizationManager.GetString("Eula.MascotName", "Сіель");
+            TxtMascotRole.Text = LocalizationManager.GetString("Eula.MascotRole", "Головний адміністратор");
+            BtnDecline.Content = LocalizationManager.GetString("Eula.DeclineBtn", "Я не згоден (Вихід)");
+            BtnAccept.Content = LocalizationManager.GetString("Eula.AcceptBtn", "Згода!");
+
+            MascotMessageText.Text = LocalizationManager.GetString("Eula.UpdateMessage", MascotMessageText.Text);
+        }
+
         private void MascotImage_ImageFailed(object sender, ExceptionRoutedEventArgs e)
         {
             HideMascot();
@@ -49,13 +103,13 @@ namespace CL_CLegendary_Launcher_.Windows
         private void HideMascot()
         {
             MascotPanel.Visibility = Visibility.Collapsed;
-
             MascotColumn.Width = new GridLength(0);
         }
+
         private void Accept_Click(object sender, RoutedEventArgs e)
         {
-            Settings1.Default.EulaAcceptedDate = _versionDate;
-            Settings1.Default.Save();
+            SettingsManager.Default.EulaAcceptedDate = _versionDate;
+            SettingsManager.Save();
 
             this.DialogResult = true;
             this.Close();

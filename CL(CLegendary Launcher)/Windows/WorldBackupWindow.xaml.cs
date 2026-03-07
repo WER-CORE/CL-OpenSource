@@ -12,6 +12,8 @@ using System.Windows.Input;
 using System.Windows.Media.Imaging;
 using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;
+using Button = Wpf.Ui.Controls.Button;
+using TextBlock = Wpf.Ui.Controls.TextBlock;
 
 namespace CL_CLegendary_Launcher_.Windows
 {
@@ -35,31 +37,51 @@ namespace CL_CLegendary_Launcher_.Windows
     public partial class WorldBackupWindow : FluentWindow
     {
         private WorldListItem _currentWorld;
-
+        public string CreateBackupBtnText => LocalizationManager.GetString("Backups.CreateBtn", "СТВОРИТИ НОВИЙ БЕКАП");
+        public string ZipArchiveText => " • " + LocalizationManager.GetString("Backups.ZipArchiveSuffix", "zip архів");
+        public string RestoreBtnText => LocalizationManager.GetString("Backups.RestoreBtn", "Відновити");
+        public string DeleteBtnText => LocalizationManager.GetString("Backups.DeleteBtn", "🗑");
         public WorldBackupWindow()
         {
             InitializeComponent();
             ApplicationThemeManager.Apply(this);
+
+            ApplyLocalization();
+
             LoadSources();
         }
+
+        private void ApplyLocalization()
+        {
+            string windowTitle = LocalizationManager.GetString("Backups.ManagerTitle", "Менеджер бекапів світів");
+            this.Title = windowTitle;
+            TxtHeader.Text = windowTitle;
+
+            TxtSourceLabel.Text = LocalizationManager.GetString("Backups.SourceLabel", "Джерело світів:");
+            TxtWorldsList.Text = LocalizationManager.GetString("Backups.ListTitle", "Список світів");
+            NoWorldsTxt.Text = LocalizationManager.GetString("Backups.NoWorldsFound", "У цій папці світів немає");
+
+            TxtPlaceholder1.Text = LocalizationManager.GetString("Backups.PlaceholderText", "⬅ Виберіть світ зі списку зліва,");
+
+            TxtHistoryTitle.Text = LocalizationManager.GetString("Backups.History", "Історія відновлення");
+            NoBackupsTxt.Text = LocalizationManager.GetString("Backups.NoBackupsForWorld", "Для цього світу ще немає копій");
+        }
+
         private void LoadSources()
         {
             var sources = new List<BackupSource>();
-            string rootPath = Settings1.Default.PathLacunher;
+            string rootPath = SettingsManager.Default.PathLacunher;
 
-            string globalSaves = Path.Combine(rootPath, "saves");
             sources.Add(new BackupSource
             {
-                Name = "📂 Глобальні світи (Global)",
-                Path = globalSaves
+                Name = LocalizationManager.GetString("Backups.GlobalWorlds", "📂 Глобальні світи (Global)"),
+                Path = Path.Combine(rootPath, "saves")
             });
 
             string versionsPath = Path.Combine(rootPath, "CLModpack");
-
             if (Directory.Exists(versionsPath))
             {
                 var dirs = Directory.GetDirectories(versionsPath);
-
                 foreach (var dir in dirs)
                 {
                     var dirInfo = new DirectoryInfo(dir);
@@ -78,10 +100,9 @@ namespace CL_CLegendary_Launcher_.Windows
                         {
                             sources.Add(new BackupSource
                             {
-                                Name = $"📦 Збірка: {verName}",
+                                Name = string.Format(LocalizationManager.GetString("Backups.ModpackWorlds", "📦 Збірка: {0}"), verName),
                                 Path = path
                             });
-
                             break;
                         }
                     }
@@ -124,16 +145,13 @@ namespace CL_CLegendary_Launcher_.Windows
                     BitmapImage bmp = null;
                     try
                     {
-                        if (File.Exists(iconPath) || iconPath.StartsWith("pack:"))
-                        {
-                            bmp = new BitmapImage();
-                            bmp.BeginInit();
-                            bmp.UriSource = new Uri(iconPath);
-                            bmp.CacheOption = BitmapCacheOption.OnLoad;
-                            bmp.EndInit();
-                        }
+                        bmp = new BitmapImage();
+                        bmp.BeginInit();
+                        bmp.UriSource = new Uri(iconPath);
+                        bmp.CacheOption = BitmapCacheOption.OnLoad;
+                        bmp.EndInit();
                     }
-                    catch { }
+                    catch { bmp = null; }
 
                     string version = GetVersionFromLevelDat(levelDatPath);
                     string wId = WorldBackupService.GetWorldID(dir);
@@ -143,10 +161,9 @@ namespace CL_CLegendary_Launcher_.Windows
                         Name = dirInfo.Name,
                         FolderName = dirInfo.Name,
                         FullPath = dir,
-                        IconPath = iconPath,
                         IconBitmap = bmp,
                         Version = version,
-                        WorldId = wId 
+                        WorldId = wId
                     });
                 }
             }
@@ -173,25 +190,18 @@ namespace CL_CLegendary_Launcher_.Windows
                         {
                             int lenIndex = i + 7;
                             if (lenIndex + 1 >= data.Length) break;
-
                             short strLen = (short)((data[lenIndex] << 8) | data[lenIndex + 1]);
 
                             if (strLen > 0 && lenIndex + 2 + strLen <= data.Length)
                             {
                                 string ver = Encoding.UTF8.GetString(data, lenIndex + 2, strLen);
-                                if (char.IsDigit(ver[0]) || ver.Length < 30)
-                                {
-                                    return ver;
-                                }
+                                if (char.IsDigit(ver[0]) || ver.Length < 30) return ver;
                             }
                         }
                     }
                 }
             }
-            catch
-            {
-                return "Unknown";
-            }
+            catch { return "Unknown"; }
             return "?";
         }
 
@@ -204,8 +214,8 @@ namespace CL_CLegendary_Launcher_.Windows
                 ContentPanel.Visibility = Visibility.Visible;
 
                 SelectedName.Text = world.Name;
-                SelectedVersionText.Text = "Версія:" + world.Version.ToString();
-                SelectedFolder.Text = $"Папка: {world.FolderName}";
+                SelectedVersionText.Text = string.Format(LocalizationManager.GetString("Backups.SelectedWorldVersion", "Версія: {0}"), world.Version);
+                SelectedFolder.Text = string.Format(LocalizationManager.GetString("Backups.SelectedWorldFolder", "Папка: {0}"), world.FolderName);
                 SelectedIcon.Source = world.IconBitmap;
 
                 RefreshBackups();
@@ -215,9 +225,7 @@ namespace CL_CLegendary_Launcher_.Windows
         private void RefreshBackups()
         {
             if (_currentWorld == null) return;
-
             var backups = WorldBackupService.GetBackupsForWorld(_currentWorld.FullPath);
-
             BackupsList.ItemsSource = backups;
             NoBackupsTxt.Visibility = backups.Count == 0 ? Visibility.Visible : Visibility.Hidden;
         }
@@ -231,11 +239,17 @@ namespace CL_CLegendary_Launcher_.Windows
             {
                 await WorldBackupService.CreateWorldBackupAsync(_currentWorld.FullPath);
                 RefreshBackups();
-                MascotMessageBox.Show("Бекап створено успішно!", "Успіх", MascotEmotion.Happy);
+                MascotMessageBox.Show(
+                    LocalizationManager.GetString("Backups.CreatedSuccess", "Бекап створено успішно!"),
+                    LocalizationManager.GetString("Dialogs.Success", "Успіх"),
+                    MascotEmotion.Happy);
             }
             catch (Exception ex)
             {
-                MascotMessageBox.Show($"Помилка створення: {ex.Message}", "Ой", MascotEmotion.Sad);
+                MascotMessageBox.Show(
+                    string.Format(LocalizationManager.GetString("Backups.CreateError", "Помилка створення: {0}"), ex.Message),
+                    LocalizationManager.GetString("Dialogs.Error", "Ой"),
+                    MascotEmotion.Sad);
             }
             finally
             {
@@ -246,30 +260,32 @@ namespace CL_CLegendary_Launcher_.Windows
         private async void Restore_Click(object sender, RoutedEventArgs e)
         {
             var btn = sender as System.Windows.Controls.Button;
-            var backup = btn.Tag as WorldBackupInfo;
+            var backup = btn?.Tag as WorldBackupInfo;
+            if (backup == null) return;
 
-            if (MascotMessageBox.Ask(
-                $"Відновити світ '{_currentWorld.Name}' до стану від {backup.CreationTime:dd.MM HH:mm}?\n\n" +
-                "⚠️ Поточний прогрес буде втрачено!",
-                "Відновлення", MascotEmotion.Alert))
+            string confirmMsg = string.Format(LocalizationManager.GetString("Backups.RestoreConfirm", "Відновити світ '{0}' до стану від {1:dd.MM HH:mm}?\n\n⚠️ Поточний прогрес буде втрачено!"), _currentWorld.Name, backup.CreationTime);
+
+            if (MascotMessageBox.Ask(confirmMsg, LocalizationManager.GetString("Backups.RestoreConfirmTitle", "Відновлення"), MascotEmotion.Alert))
             {
                 this.IsEnabled = false;
                 try
                 {
                     string savesRoot = Directory.GetParent(_currentWorld.FullPath).FullName;
-
                     await WorldBackupService.RestoreWorldBackupAsync(backup.FullPath, savesRoot);
 
-                    MascotMessageBox.Show("Світ відновлено!", "Готово", MascotEmotion.Happy);
+                    MascotMessageBox.Show(
+                        LocalizationManager.GetString("Backups.RestoreSuccess", "Світ відновлено!"),
+                        LocalizationManager.GetString("Dialogs.Success", "Готово"),
+                        MascotEmotion.Happy);
 
-                    if (SourceCombo.SelectedItem is BackupSource source)
-                    {
-                        LoadWorlds(source.Path);
-                    }
+                    if (SourceCombo.SelectedItem is BackupSource source) LoadWorlds(source.Path);
                 }
                 catch (Exception ex)
                 {
-                    MascotMessageBox.Show($"Помилка: {ex.Message}", "Біда", MascotEmotion.Sad);
+                    MascotMessageBox.Show(
+                        string.Format(LocalizationManager.GetString("Backups.RestoreError", "Помилка: {0}"), ex.Message),
+                        LocalizationManager.GetString("Dialogs.Error", "Біда"),
+                        MascotEmotion.Sad);
                 }
                 finally
                 {
@@ -281,9 +297,13 @@ namespace CL_CLegendary_Launcher_.Windows
         private void Delete_Click(object sender, RoutedEventArgs e)
         {
             var btn = sender as System.Windows.Controls.Button;
-            var backup = btn.Tag as WorldBackupInfo;
+            var backup = btn?.Tag as WorldBackupInfo;
+            if (backup == null) return;
 
-            if (MascotMessageBox.Ask("Видалити цей архів?", "Видалення", MascotEmotion.Normal))
+            if (MascotMessageBox.Ask(
+                LocalizationManager.GetString("Backups.DeleteConfirm", "Видалити цей архів?"),
+                LocalizationManager.GetString("Dialogs.DeleteConfirmTitle", "Видалення"),
+                MascotEmotion.Normal))
             {
                 try
                 {
@@ -292,7 +312,7 @@ namespace CL_CLegendary_Launcher_.Windows
                 }
                 catch (Exception ex)
                 {
-                    MascotMessageBox.Show(ex.Message, "Помилка", MascotEmotion.Sad);
+                    MascotMessageBox.Show(ex.Message, LocalizationManager.GetString("Dialogs.Error", "Помилка"), MascotEmotion.Sad);
                 }
             }
         }
@@ -303,5 +323,29 @@ namespace CL_CLegendary_Launcher_.Windows
         }
 
         private void Close_Click(object sender, RoutedEventArgs e) => Close();
+
+        private void RestoreText_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (sender is TextBlock txt)
+            {
+                txt.Text = LocalizationManager.GetString("Backups.RestoreBtn", "Відновити");
+            }
+        }
+
+        private void DeleteBtn_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn)
+            {
+                btn.Content = LocalizationManager.GetString("Backups.DeleteBtn", "🗑");
+            }
+        }
+
+        private void ZipArchiveText_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (sender is Wpf.Ui.Controls.TextBlock txt)
+            {
+                txt.Text = " • " + LocalizationManager.GetString("Backups.ZipArchiveSuffix", "zip архів");
+            }
+        }
     }
 }

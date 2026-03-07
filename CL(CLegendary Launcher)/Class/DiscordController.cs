@@ -10,7 +10,7 @@ namespace CL_CLegendary_Launcher_.Class
 
         public static async Task Initialize(string textDetails)
         {
-            if (Settings1.Default.OfflineModLauncher) { return; }
+            if (SettingsManager.Default.OfflineModLauncher) { return; }
 
             try
             {
@@ -21,7 +21,7 @@ namespace CL_CLegendary_Launcher_.Class
                 clientdsc.SetPresence(new RichPresence()
                 {
                     State = textDetails,
-                    Details = "Український лаунчер майнкрафт",
+                    Details = LocalizationManager.GetString("DiscordRPC.Details", "Український лаунчер майнкрафт"),
                     Timestamps = Timestamps.Now,
                     Assets = new Assets()
                     {
@@ -38,7 +38,7 @@ namespace CL_CLegendary_Launcher_.Class
 
         public static async Task UpdatePresence(string textDetails)
         {
-            if (Settings1.Default.OfflineModLauncher) { return; }
+            if (SettingsManager.Default.OfflineModLauncher) { return; }
 
             if (clientdsc == null)
             {
@@ -51,7 +51,7 @@ namespace CL_CLegendary_Launcher_.Class
                 clientdsc.SetPresence(new RichPresence()
                 {
                     State = textDetails,
-                    Details = "Український лаунчер майнкрафт",
+                    Details = LocalizationManager.GetString("DiscordRPC.Details", "Український лаунчер майнкрафт"),
                     Timestamps = Timestamps.Now,
                     Assets = new Assets()
                     {
@@ -68,7 +68,7 @@ namespace CL_CLegendary_Launcher_.Class
 
         public static void Deinitialize()
         {
-            if (Settings1.Default.OfflineModLauncher) { return; }
+            if (SettingsManager.Default.OfflineModLauncher) { return; }
 
             try
             {

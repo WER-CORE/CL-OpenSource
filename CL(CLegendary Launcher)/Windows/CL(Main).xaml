@@ -203,8 +203,8 @@
                      ScrollViewer.VerticalScrollBarVisibility="Visible" 
                      ScrollViewer.HorizontalScrollBarVisibility="Disabled">
 
-                    <ListBox.ItemContainerStyle>
-                        <Style TargetType="ListBoxItem">
+                    <ui:ListView.ItemContainerStyle>
+                        <Style TargetType="{x:Type ListBoxItem}">
                             <Setter Property="HorizontalContentAlignment" Value="Center" />
                             <Setter Property="HorizontalAlignment" Value="Stretch" />
                             <Setter Property="Padding" Value="5" />
@@ -221,7 +221,7 @@
                                 </Trigger>
                             </Style.Triggers>
                         </Style>
-                    </ListBox.ItemContainerStyle>
+                    </ui:ListView.ItemContainerStyle>
                 </ui:ListView>
 
                 <TextBlock x:Name="AddProfile" 
@@ -335,13 +335,13 @@
                             <TextBlock Grid.Column="1" VerticalAlignment="Center" 
                                        FontFamily="Inter" FontSize="14" 
                                        Foreground="{DynamicResource MainForegroundBrush}">
-                                <Run Text="Зміни в "/>
+                                <Run Text="{Binding Path=Tag, ElementName=VersionMinecraftChangeLog}"/>
+                                <Run Text=" "/>
                                 <Run Text="{Binding VersionId}" FontWeight="Medium"/>
                             </TextBlock>
 
                             <ui:SymbolIcon Grid.Column="2" Symbol="Open24" FontSize="14" Opacity="0.5" 
-                                           Foreground="{DynamicResource MainForegroundBrush}" 
-                                           ToolTip="Читати на Вікі"/>
+                                           Foreground="{DynamicResource MainForegroundBrush}"/>
                         </Grid>
                     </DataTemplate>
                 </ui:ListView.ItemTemplate>
@@ -363,22 +363,62 @@
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0">
                                     <Path Width="20" Height="20" Stretch="Uniform" Fill="{DynamicResource MainForegroundBrush}"
                                   Data="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/>
-                                    <TextBlock Text="Налаштування" FontFamily="Inter" FontSize="16" Foreground="{DynamicResource MainForegroundBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                                    <TextBlock x:Name="Loc_SettingsMenu" Text="Налаштування" FontFamily="Inter" FontSize="16" Foreground="{DynamicResource MainForegroundBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/>
                                 </StackPanel>
                             </Grid>
 
                             <Grid Height="40" Margin="5,2" Cursor="Hand" MouseDown="FolderPanel_MouseDown" Background="Transparent">
                                 <Grid.ContextMenu>
                                     <ContextMenu x:Name="FilesContextMenu" Placement="Top">
-                                        <MenuItem Header="Відкрити папку лаунчера" Click="OpenFolder_Click">
+                                        <MenuItem x:Name="Loc_MenuOpenFolder" Header="Відкрити папку...">
                                             <MenuItem.Icon>
-                                                <ui:SymbolIcon Symbol="Folder48"></ui:SymbolIcon>
+                                                <ui:SymbolIcon Symbol="Folder48"/>
                                             </MenuItem.Icon>
+
+                                            <MenuItem x:Name="Loc_MenuRootFolder" Header="Коренева папка (Лаунчер)" Click="OpenRootFolder_Click">
+                                                <MenuItem.Icon>
+                                                    <ui:SymbolIcon Symbol="FolderZip24"/>
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+
+                                            <MenuItem x:Name="Loc_MenuGameFolder" Header="Папка гри (Minecraft)" Click="OpenMinecraftFolder_Click">
+                                                <MenuItem.Icon>
+                                                    <ui:SymbolIcon Symbol="FolderOpen24"/>
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+
+                                            <Separator/>
+
+                                            <MenuItem x:Name="Loc_MenuModsFolder" Header="Моди (mods)" Click="OpenModsFolder_Click">
+                                                <MenuItem.Icon>
+                                                    <ui:SymbolIcon Symbol="PuzzlePiece24"/>
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+
+                                            <MenuItem x:Name="Loc_MenuResourcePacksFolder" Header="Ресурспаки (resourcepacks)" Click="OpenResourcePacksFolder_Click">
+                                                <MenuItem.Icon>
+                                                    <ui:SymbolIcon Symbol="PaintBrush24"/>
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+
+                                            <MenuItem x:Name="Loc_MenuShadersFolder" Header="Шейдери (shaderpacks)" Click="OpenShaderPacksFolder_Click">
+                                                <MenuItem.Icon>
+                                                    <ui:SymbolIcon Symbol="WeatherSunny24"/>
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+
+                                            <Separator/>
+
+                                            <MenuItem x:Name="Loc_MenuModpacksFolder" Header="Збірки (CLModpack)" Click="OpenCLModpackFolder_Click">
+                                                <MenuItem.Icon>
+                                                    <ui:SymbolIcon Symbol="Box24"/>
+                                                </MenuItem.Icon>
+                                            </MenuItem>
                                         </MenuItem>
                                         <Separator/>
-                                        <MenuItem Header="Менеджер світів (Backups)" Click="OpenGlobalBackups_Click">
+                                        <MenuItem x:Name="Loc_MenuBackupsFolder" Header="Менеджер світів (Backups)" Click="OpenGlobalBackups_Click">
                                             <MenuItem.Icon>
-                                                <ui:SymbolIcon Symbol="Save28"></ui:SymbolIcon>
+                                                <ui:SymbolIcon Symbol="Save28"/>
                                             </MenuItem.Icon>
                                         </MenuItem>
                                     </ContextMenu>
@@ -388,7 +428,7 @@
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0">
                                     <Path Width="20" Height="20" Stretch="Uniform" Fill="{DynamicResource MainForegroundBrush}"
                                   Data="M10,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V8C22,6.89 21.1,6 20,6H12L10,4Z"/>
-                                    <TextBlock Text="Файли та Бекапи" FontFamily="Inter" FontSize="16" Foreground="{DynamicResource MainForegroundBrush}" VerticalAlignment="Center" Margin="12,0,0,0" Width="164"/>
+                                    <TextBlock x:Name="Loc_FilesMenu" Text="Файли та Бекапи" FontFamily="Inter" FontSize="16" Foreground="{DynamicResource MainForegroundBrush}" VerticalAlignment="Center" Margin="12,0,0,0" Width="164"/>
                                     <TextBlock Text="▲" Margin="8,2,0,0" FontSize="10" VerticalAlignment="Center" Opacity="0.6" Foreground="{DynamicResource MainForegroundBrush}" Width="12"/>
                                 </StackPanel>
                             </Grid>
@@ -398,19 +438,19 @@
                                 <Grid.ContextMenu>
                                     <ContextMenu x:Name="InfoContextMenu" Placement="Top">
 
-                                        <MenuItem Header="Повідомити про баг" Click="BugReport_Click">
+                                        <MenuItem x:Name="Loc_MenuReportBug" Header="Повідомити про баг" Click="BugReport_Click">
                                             <MenuItem.Icon>
                                                 <ui:SymbolIcon Symbol="Bug24"/>
                                             </MenuItem.Icon>
                                         </MenuItem>
 
-                                        <MenuItem Header="Новини запускача" Click="NewsUpdateLauncher_Click">
+                                        <MenuItem x:Name="Loc_MenuLauncherNews" Header="Новини запускача" Click="NewsUpdateLauncher_Click">
                                             <MenuItem.Icon>
                                                 <ui:SymbolIcon Symbol="News24"/>
                                             </MenuItem.Icon>
                                         </MenuItem>
 
-                                        <MenuItem Header="Документація (Wiki)" Click="TutorialYoutube_Click">
+                                        <MenuItem x:Name="Loc_MenuWiki" Header="Документація (Wiki)" Click="TutorialYoutube_Click">
                                             <MenuItem.Icon>
                                                 <ui:SymbolIcon Symbol="Book24"/>
                                             </MenuItem.Icon>
@@ -418,12 +458,36 @@
 
                                         <Separator/>
 
-                                        <MenuItem Header="GitHub (Код)" Click="GitHub_Click">
+                                        <MenuItem x:Name="Loc_MenuGithub" Header="GitHub (Код)" Click="GitHub_Click">
                                             <MenuItem.Icon>
                                                 <ui:SymbolIcon Symbol="Code24"/>
                                             </MenuItem.Icon>
                                         </MenuItem>
 
+                                        <Separator/>
+
+                                        <MenuItem x:Name="Loc_MenuCredits" Header="Подяки (Автори та Перекладачі)" Click="OpenCredits_Click" Foreground="{DynamicResource MainForegroundBrush}">
+                                            <MenuItem.Icon>
+                                                <ui:SymbolIcon Symbol="Star24"/>
+                                            </MenuItem.Icon>
+                                        </MenuItem>
+
+                                        <Separator/>
+
+                                        <MenuItem x:Name="Loc_MenuSupportProject" Header="Підтримати проект" Click="SupportProject_Click" Foreground="{DynamicResource MainForegroundBrush}">
+                                            <MenuItem.Icon>
+                                                <ui:SymbolIcon Symbol="Heart24"/>
+                                            </MenuItem.Icon>
+                                        </MenuItem>
+
+                                        <MenuItem Click="Support3OSHBr_Click">
+                                            <MenuItem.Header>
+                                                <TextBlock x:Name="Loc_MenuSupportBrigade" Text="Підтримати 3 ОШБр" Foreground="#FFB74D" FontWeight="SemiBold"/>
+                                            </MenuItem.Header>
+                                            <MenuItem.Icon>
+                                                <ui:SymbolIcon Symbol="Shield24" Foreground="#FFB74D"/>
+                                            </MenuItem.Icon>
+                                        </MenuItem>
                                     </ContextMenu>
                                 </Grid.ContextMenu>
                                 <Border x:Name="InfoLauncherPanel" CornerRadius="12" Background="{DynamicResource MainBackgroundButton}" Opacity="0.5"/>
@@ -431,7 +495,7 @@
                                     <Path Width="20" Height="20" Stretch="Uniform" Fill="{DynamicResource MainForegroundBrush}"
               Data="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,17H13V11H11V17Z"/>
 
-                                    <TextBlock Text="Інформація" FontFamily="Inter" FontSize="16" Foreground="{DynamicResource MainForegroundBrush}" VerticalAlignment="Center" Margin="12,0,0,0" Width="163"/>
+                                    <TextBlock x:Name="Loc_InfoMenu" Text="Інформація" FontFamily="Inter" FontSize="16" Foreground="{DynamicResource MainForegroundBrush}" VerticalAlignment="Center" Margin="12,0,0,0" Width="163"/>
                                     <TextBlock Text="▲" Margin="8,2,0,0" FontSize="10" VerticalAlignment="Center" Opacity="0.6" Foreground="{DynamicResource MainForegroundBrush}" Width="17"/>
                                 </StackPanel>
                             </Grid>
@@ -464,12 +528,12 @@
                    VerticalAlignment="Top" HorizontalAlignment="Left" 
                    Margin="9,23,0,0" Width="176" Height="29" 
                    FontFamily="Inter 18pt 18pt" FontSize="10" Foreground="White" Background="{x:Null}"
-                   PreviewMouseDown="PlayTXT_MouseDown" Text="ОБЕРІТЬ ВЕРСІЮ" Padding="53,10,0,0"/>
+                   PreviewMouseDown="PlayTXT_MouseDown" Text="ОБЕРІТЬ ВЕРСІЮ" Padding="53,10,0,0" Cursor="Hand"/>
 
                 <Image x:Name="IconSelectVersion" Source="/Assets/VanilaVersion.png" 
                HorizontalAlignment="Right" VerticalAlignment="Top" 
                Margin="0,22,32,0" Height="31" Width="30" 
-               RenderOptions.BitmapScalingMode="LowQuality" Cursor="Arrow" Stretch="Fill" ToolTip="ГРАТИ"/>
+               RenderOptions.BitmapScalingMode="LowQuality" Cursor="Arrow" Stretch="Fill" ToolTip=""/>
 
                 <Border x:Name="Line" BorderThickness="1" Background="#FF16951B" 
                 HorizontalAlignment="Right" VerticalAlignment="Top" 
@@ -501,7 +565,7 @@
             HorizontalAlignment="Right" VerticalAlignment="Top" 
             Margin="0,50,17,0" Height="17">
                 <ui:SymbolIcon Symbol="PeopleCommunity24" FontSize="12" Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,5,0"/>
-                <TextBlock Text="Партнери" 
+                <TextBlock x:Name="Loc_PartnersTitle" Text="Партнери" 
                FontFamily="Inter 18pt 18pt" FontSize="10" 
                Foreground="{DynamicResource MainForegroundBrush}"/>
             </StackPanel>
@@ -536,13 +600,13 @@
                      HorizontalContentAlignment="Center" 
                      VerticalContentAlignment="Center">
 
-                    <ListBox.ItemsPanel>
+                    <ui:ListView.ItemsPanel>
                         <ItemsPanelTemplate>
                             <Grid />
                         </ItemsPanelTemplate>
-                    </ListBox.ItemsPanel>
+                    </ui:ListView.ItemsPanel>
 
-                    <ListBox.ItemContainerStyle>
+                    <ui:ListView.ItemContainerStyle>
                         <Style TargetType="{x:Type ListBoxItem}">
                             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
                             <Setter Property="VerticalContentAlignment" Value="Stretch"/>
@@ -556,7 +620,7 @@
                                 </Trigger>
                             </Style.Triggers>
                         </Style>
-                    </ListBox.ItemContainerStyle>
+                    </ui:ListView.ItemContainerStyle>
                 </ui:ListView>
             </Border>
 
@@ -732,13 +796,13 @@
       HorizontalAlignment="Left"
       VerticalAlignment="Center"
       Margin="8,0,0,0"/>
-                                <TextBlock Text="Встановити..." 
+                                <TextBlock x:Name="Loc_InstallModsTxt" Text="Встановити..." 
                                            FontFamily="Inter" FontWeight="Bold"
                                            HorizontalAlignment="Left" VerticalAlignment="Top" 
                                            FontSize="12" Foreground="{DynamicResource MainForegroundBrush}" 
                                            Margin="38,4,0,0"/>
 
-                                <TextBlock Text="Forge / Fabric" 
+                                <TextBlock x:Name="Loc_ForgeFabricTxt" Text="Forge / Fabric" 
                                            FontFamily="Inter"
                                            HorizontalAlignment="Left" VerticalAlignment="Bottom" 
                                            FontSize="10" Opacity="0.8" Foreground="{DynamicResource MainForegroundBrush}" 
@@ -807,10 +871,10 @@
                                 <CheckBox x:Name="Snapshots" Content="Снапшоти" FontSize="10" Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,0,5" Click="Snapshots_Click" Background="{DynamicResource MainBackgroundBrushServer}"/>
                                 <CheckBox x:Name="Beta" Content="Бета" FontSize="10" Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,0,5" Click="Beta_Click" Background="{DynamicResource MainBackgroundBrushServer}"/>
                                 <CheckBox x:Name="Alpha" Content="Альфа" FontSize="10" Foreground="{DynamicResource MainForegroundBrush}" Click="Alpha_Click" Background="{DynamicResource MainBackgroundBrushServer}"/>
-                                <CheckBox x:Name="Infdev" Content="Infdev" FontSize="10" Foreground="{DynamicResource MainForegroundBrush}" Background="{DynamicResource MainBackgroundBrushServer}" Click="Infdev_Click" Visibility="Hidden"/>
-                                <CheckBox x:Name="Indev" Content="Indev" FontSize="10" Foreground="{DynamicResource MainForegroundBrush}" Background="{DynamicResource MainBackgroundBrushServer}" Click="Indev_Click" Visibility="Hidden"/>
-                                <CheckBox x:Name="Classic" Content="Classic" FontSize="10" Foreground="{DynamicResource MainForegroundBrush}" Background="{DynamicResource MainBackgroundBrushServer}" Click="Classic_Click" Visibility="Hidden"/>
-                                <CheckBox x:Name="Pre_classic" Content="Pre-classic" FontSize="10" Foreground="{DynamicResource MainForegroundBrush}" Background="{DynamicResource MainBackgroundBrushServer}" Click="Pre_classic_Click" Visibility="Hidden"/>
+                                <CheckBox x:Name="Infdev" Content="Infdev" FontSize="10" Foreground="{DynamicResource MainForegroundBrush}" Background="{DynamicResource MainBackgroundBrushServer}" Click="Infdev_Click" Visibility="Collapsed"/>
+                                <CheckBox x:Name="Indev" Content="Indev" FontSize="10" Foreground="{DynamicResource MainForegroundBrush}" Background="{DynamicResource MainBackgroundBrushServer}" Click="Indev_Click" Visibility="Collapsed"/>
+                                <CheckBox x:Name="Classic" Content="Classic" FontSize="10" Foreground="{DynamicResource MainForegroundBrush}" Background="{DynamicResource MainBackgroundBrushServer}" Click="Classic_Click" Visibility="Collapsed"/>
+                                <CheckBox x:Name="Pre_classic" Content="Pre-classic" FontSize="10" Foreground="{DynamicResource MainForegroundBrush}" Background="{DynamicResource MainBackgroundBrushServer}" Click="Pre_classic_Click" Visibility="Collapsed"/>
                             </StackPanel>
                         </Grid>
                     </Grid>
@@ -889,8 +953,9 @@
                     <BlurEffect Radius="{DynamicResource GlassBlurRadius}"/>
                 </Border.Effect>
             </Border>
+            <Border CornerRadius="12" Background="{DynamicResource GlassTintBrush}"/>
 
-            <Border CornerRadius="12" Background="{DynamicResource GlassTintBrush}" Opacity="0.85"/>
+            <Border Background="{DynamicResource GlassTintBrush}" Opacity="0.6"/>
 
             <Grid MaxWidth="920" Margin="20,100,20,20">
                 <Grid.RowDefinitions>
@@ -926,8 +991,8 @@
 
                     <Border Grid.Column="2" Background="#15FFFFFF" CornerRadius="10" Padding="4" Visibility="Collapsed">
                         <StackPanel Orientation="Horizontal">
-                            <RadioButton Content="Звичайні" IsChecked="True" Style="{DynamicResource SegmentedRadioStyle}" Width="100"/>
-                            <RadioButton Content="Модові" Style="{DynamicResource SegmentedRadioStyle}" Width="100"/>
+                            <RadioButton x:Name="Loc_RadioNormalServers" Content="Звичайні" IsChecked="True" Style="{DynamicResource SegmentedRadioStyle}" Width="100"/>
+                            <RadioButton x:Name="Loc_RadioModdedServers" Content="Модові" Style="{DynamicResource SegmentedRadioStyle}" Width="100"/>
                         </StackPanel>
                     </Border>
                 </Grid>
@@ -940,8 +1005,7 @@
                                  BorderThickness="0"
                                  ScrollViewer.CanContentScroll="True"
                                  VirtualizingPanel.IsVirtualizing="True"
-                                 Foreground="{DynamicResource MainForegroundBrush}">
-                    </ui:ListView>
+                                 Foreground="{DynamicResource MainForegroundBrush}"/>
 
                     <StackPanel x:Name="ServerSearchLoader" 
                                 VerticalAlignment="Center" 
@@ -952,7 +1016,7 @@
                                          Width="60" Height="60" 
                                          Foreground="{DynamicResource MainBackgroundProgressBar}"/>
 
-                        <TextBlock Text="Bit-CL шукає сервери..." 
+                        <TextBlock x:Name="Loc_TxtSearchingServers" Text="Bit-CL шукає сервери..." 
                                    Margin="0,20,0,0"
                                    FontSize="16" 
                                    FontFamily="Inter"
@@ -1051,7 +1115,7 @@
                                 </WrapPanel>
                             </StackPanel>
 
-                            <ui:Button Grid.Column="2" VerticalAlignment="Top"
+                            <ui:Button x:Name="Loc_BtnCloseServerInfo" Grid.Column="2" VerticalAlignment="Top"
                                        Icon="{ui:SymbolIcon Dismiss24}" Appearance="Secondary"
                                        Width="35" Height="35" CornerRadius="18"
                                        ToolTip="Закрити" Click="BackMainWindow_MouseDown" Background="{DynamicResource MainBackgroundButton}" BorderBrush="{x:Null}" Foreground="{DynamicResource MainForegroundBrush}" Cursor="Hand"/>
@@ -1105,15 +1169,16 @@
         <Grid x:Name="ListModsGird" Background="Transparent" Visibility="Collapsed">
 
             <Border Visibility="{DynamicResource GlassVisibility}">
-                <Border.Effect>
-                    <BlurEffect Radius="{DynamicResource GlassBlurRadius}"/>
-                </Border.Effect>
                 <Border.Background>
                     <VisualBrush Visual="{Binding ElementName=MainBackgroundContainer}" Stretch="None"/>
                 </Border.Background>
+                <Border.Effect>
+                    <BlurEffect Radius="{DynamicResource GlassBlurRadius}"/>
+                </Border.Effect>
             </Border>
+            <Border CornerRadius="12" Background="{DynamicResource GlassTintBrush}"/>
 
-            <Border Background="{DynamicResource GlassTintBrush}" Opacity="0.9"/>
+            <Border Background="{DynamicResource GlassTintBrush}" Opacity="0.6"/>
 
             <Grid Margin="20,85,20,20">
                 <Grid.ColumnDefinitions>
@@ -1125,21 +1190,21 @@
                     <StackPanel Orientation="Vertical">
 
                         <StackPanel.Resources>
-                            <Style TargetType="StackPanel" x:Key="MenuItemPanel">
+                            <Style TargetType="{x:Type StackPanel}" x:Key="MenuItemPanel">
                                 <Setter Property="Orientation" Value="Horizontal"/>
                                 <Setter Property="Height" Value="40"/>
                                 <Setter Property="Cursor" Value="Hand"/>
                                 <Setter Property="Background" Value="Transparent"/>
                                 <Setter Property="Margin" Value="0,2"/>
                             </Style>
-                            <Style TargetType="Image" x:Key="MenuIcon">
+                            <Style TargetType="{x:Type Image}" x:Key="MenuIcon">
                                 <Setter Property="Width" Value="20"/>
                                 <Setter Property="Height" Value="20"/>
                                 <Setter Property="RenderOptions.BitmapScalingMode" Value="HighQuality"/>
                                 <Setter Property="Margin" Value="15,0,10,0"/>
                                 <Setter Property="VerticalAlignment" Value="Center"/>
                             </Style>
-                            <Style TargetType="TextBlock" x:Key="MenuText">
+                            <Style TargetType="{x:Type TextBlock}" x:Key="MenuText">
                                 <Setter Property="FontFamily" Value="Inter"/>
                                 <Setter Property="FontSize" Value="14"/>
                                 <Setter Property="FontWeight" Value="SemiBold"/>
@@ -1148,7 +1213,7 @@
                             </Style>
                         </StackPanel.Resources>
 
-                        <TextBlock Text="Джерело" Foreground="#80FFFFFF" FontSize="12" Margin="5,0,0,5" FontWeight="Bold"/>
+                        <TextBlock x:Name="Loc_SourceTitle" Text="Джерело" Foreground="#80FFFFFF" FontSize="12" Margin="5,0,0,5" FontWeight="Bold"/>
                         <Grid x:Name="GirdSiteMods" Height="90" Margin="0,0,0,20">
                             <Border x:Name="BorderSiteMods" BorderThickness="1" BorderBrush="#20FFFFFF" CornerRadius="12" Background="{DynamicResource MainBackgroundBrushServer}"/>
 
@@ -1166,16 +1231,16 @@
                             <StackPanel VerticalAlignment="Top" Margin="0,4,0,0">
                                 <StackPanel Tag="Modrinth" Style="{StaticResource MenuItemPanel}" MouseLeftButtonDown="OnModProviderClicked">
                                     <Image Source="/Assets/1200-818013157 1.png" Style="{StaticResource MenuIcon}"/>
-                                    <TextBlock Text="Modrinth" Style="{StaticResource MenuText}"/>
+                                    <TextBlock x:Name="Loc_TxtModrinth" Text="Modrinth" Style="{StaticResource MenuText}"/>
                                 </StackPanel>
                                 <StackPanel Tag="CurseForge" Style="{StaticResource MenuItemPanel}" MouseLeftButtonDown="OnModProviderClicked">
                                     <Image Source="/Assets/curseforge-logo-3499974474.png" Style="{StaticResource MenuIcon}"/>
-                                    <TextBlock Text="CurseForge" Style="{StaticResource MenuText}"/>
+                                    <TextBlock x:Name="Loc_TxtCurseForge" Text="CurseForge" Style="{StaticResource MenuText}"/>
                                 </StackPanel>
                             </StackPanel>
                         </Grid>
 
-                        <TextBlock Text="Завантажувач" Foreground="#80FFFFFF" FontSize="12" Margin="5,0,0,5" FontWeight="Bold"/>
+                        <TextBlock x:Name="Loc_LoaderTitle" Text="Завантажувач" Foreground="#80FFFFFF" FontSize="12" Margin="5,0,0,5" FontWeight="Bold"/>
                         <Grid x:Name="GirdVersionType" Height="178" Margin="0,0,0,20">
                             <Border x:Name="BorderVersionType" BorderThickness="1" BorderBrush="#20FFFFFF" CornerRadius="12" Background="{DynamicResource MainBackgroundBrushServer}"/>
 
@@ -1193,24 +1258,24 @@
                             <StackPanel VerticalAlignment="Top" Margin="0,4,0,0">
                                 <StackPanel Tag="Fabric" Style="{StaticResource MenuItemPanel}" MouseLeftButtonDown="OnLoaderTypeClicked">
                                     <Image Source="/Assets/fabric.png" Style="{StaticResource MenuIcon}"/>
-                                    <TextBlock Text="Fabric" Style="{StaticResource MenuText}"/>
+                                    <TextBlock x:Name="Loc_TxtFabric" Text="Fabric" Style="{StaticResource MenuText}"/>
                                 </StackPanel>
                                 <StackPanel Tag="Forge" Style="{StaticResource MenuItemPanel}" MouseLeftButtonDown="OnLoaderTypeClicked">
                                     <Image Source="/Assets/ForgeIcon.jpg" Style="{StaticResource MenuIcon}"/>
-                                    <TextBlock Text="Forge" Style="{StaticResource MenuText}"/>
+                                    <TextBlock x:Name="Loc_TxtForge" Text="Forge" Style="{StaticResource MenuText}"/>
                                 </StackPanel>
                                 <StackPanel Tag="Quilt" Style="{StaticResource MenuItemPanel}" MouseLeftButtonDown="OnLoaderTypeClicked">
                                     <Image Source="/Assets/images.png" Style="{StaticResource MenuIcon}"/>
-                                    <TextBlock Text="Quilt" Style="{StaticResource MenuText}"/>
+                                    <TextBlock x:Name="Loc_TxtQuilt" Text="Quilt" Style="{StaticResource MenuText}"/>
                                 </StackPanel>
                                 <StackPanel Tag="NeoForge" Style="{StaticResource MenuItemPanel}" MouseLeftButtonDown="OnLoaderTypeClicked">
                                     <Image Source="/Assets/IconNeoForge.png" Style="{StaticResource MenuIcon}"/>
-                                    <TextBlock Text="NeoForge" Style="{StaticResource MenuText}"/>
+                                    <TextBlock x:Name="Loc_TxtNeoForge" Text="NeoForge" Style="{StaticResource MenuText}"/>
                                 </StackPanel>
                             </StackPanel>
                         </Grid>
 
-                        <TextBlock Text="Режим" Foreground="#80FFFFFF" FontSize="12" Margin="5,0,0,5" FontWeight="Bold"/>
+                        <TextBlock x:Name="Loc_ModeTitle" Text="Режим" Foreground="#80FFFFFF" FontSize="12" Margin="5,0,0,5" FontWeight="Bold"/>
                         <Grid x:Name="GirdModsType" Height="90">
                             <Border x:Name="ModsTypeBorder" BorderThickness="1" BorderBrush="#20FFFFFF" CornerRadius="12" Background="{DynamicResource MainBackgroundBrushServer}"/>
 
@@ -1227,10 +1292,10 @@
 
                             <StackPanel VerticalAlignment="Top" Margin="0,4,0,0">
                                 <Border Height="40" Cursor="Hand" Background="Transparent" MouseLeftButtonDown="ModsDowloadTypeTXT_MouseDown">
-                                    <TextBlock Text="У збірку" Style="{StaticResource MenuText}" HorizontalAlignment="Center"/>
+                                    <TextBlock x:Name="Loc_ModeModpack" Text="У збірку" Style="{StaticResource MenuText}" HorizontalAlignment="Center"/>
                                 </Border>
                                 <Border Height="40" Cursor="Hand" Background="Transparent" MouseLeftButtonDown="ModsManegerTypeTXT_MouseDown">
-                                    <TextBlock Text="Окремо" Style="{StaticResource MenuText}" HorizontalAlignment="Center"/>
+                                    <TextBlock x:Name="Loc_ModeSeparate" Text="Окремо" Style="{StaticResource MenuText}" HorizontalAlignment="Center"/>
                                 </Border>
                             </StackPanel>
                         </Grid>
@@ -1261,16 +1326,9 @@
                         </Border>
 
                         <Grid x:Name="CategoriesGrid" SizeChanged="CategoriesGrid_SizeChanged">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
 
                             <Grid.Resources>
-                                <Style TargetType="TextBlock">
+                                <Style TargetType="{x:Type TextBlock}">
                                     <Setter Property="FontFamily" Value="Inter"/>
                                     <Setter Property="FontSize" Value="14"/>
                                     <Setter Property="FontWeight" Value="SemiBold"/>
@@ -1279,11 +1337,19 @@
                                     <Setter Property="VerticalAlignment" Value="Center"/>
                                     <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
                                 </Style>
-                                <Style TargetType="Border">
+                                <Style TargetType="{x:Type Border}">
                                     <Setter Property="Background" Value="Transparent"/>
                                     <Setter Property="Cursor" Value="Hand"/>
                                 </Style>
                             </Grid.Resources>
+
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
 
                             <Border Grid.Column="0" Tag="0" MouseLeftButtonDown="OnModCategoryClicked">
                                 <TextBlock x:Name="ModsTXT" Text="Моди"/>
@@ -1324,7 +1390,7 @@
                               ScrollViewer.VerticalScrollBarVisibility="Auto" 
                               Foreground="{DynamicResource MainForegroundBrush}">
                                 <ListView.ItemContainerStyle>
-                                    <Style TargetType="ListViewItem">
+                                    <Style TargetType="{x:Type ListViewItem}">
                                         <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
                                         <Setter Property="Padding" Value="0"/>
                                         <Setter Property="Margin" Value="0,2"/>
@@ -1339,7 +1405,7 @@
                                 HorizontalAlignment="Center"
                                 Orientation="Vertical" Visibility="Collapsed">
                                 <ui:ProgressRing IsIndeterminate="True" Width="60" Height="60" Foreground="{DynamicResource MainBackgroundProgressBar}"/>
-                                <TextBlock Text="Bit-CL шукає потрібні файли..." Margin="0,20,0,0" FontSize="16" FontFamily="Inter" FontWeight="Medium" Foreground="{DynamicResource MainForegroundBrush}" HorizontalAlignment="Center" TextAlignment="Center"/>
+                                <TextBlock x:Name="Loc_TxtSearchingMods" Text="Bit-CL шукає потрібні файли..." Margin="0,20,0,0" FontSize="16" FontFamily="Inter" FontWeight="Medium" Foreground="{DynamicResource MainForegroundBrush}" HorizontalAlignment="Center" TextAlignment="Center"/>
                             </StackPanel>
                         </Grid>
                     </Border>
@@ -1393,7 +1459,7 @@
                       Background="{DynamicResource MainBackgroundBrushServer}" 
                       CornerRadius="12"/>
 
-                    <TextBlock Text="Фільтр Збірок" 
+                    <TextBlock x:Name="Loc_TxtModpackFilterTitle" Text="Фільтр Збірок" 
                       HorizontalAlignment="Center" 
                       VerticalAlignment="Top" 
                       Margin="0,10,0,0"
@@ -1420,18 +1486,18 @@
                     Background="{DynamicResource MainBackgroundBrushServer}"
                     Margin="0,0,0,15">
                         <ui:TextBox x:Name="SearchSystemModsTXT1" 
-                            PlaceholderText="Пошук..." 
-                            IconPlacement="Left" 
-                            Icon="{ui:SymbolIcon Search48}" 
-                            Background="{x:Null}" 
-                            Foreground="{DynamicResource MainForegroundBrush}" 
-                            BorderBrush="{x:Null}" 
-                            CaretBrush="White" 
-                            VerticalContentAlignment="Center" 
-                            FontSize="12" 
-                            BorderThickness="0"
-                            TextChanged="SearchSystemModsTXT1_TextChanged" 
-                            PreviewMouseDown="SearchSystemModsTXT1_PreviewMouseDown"/>
+            PlaceholderText="Пошук..." 
+            IconPlacement="Left" 
+            Icon="{ui:SymbolIcon Search48}" 
+            Background="{x:Null}" 
+            Foreground="{DynamicResource MainForegroundBrush}" 
+            BorderBrush="{x:Null}" 
+            CaretBrush="White" 
+            VerticalContentAlignment="Center" 
+            FontSize="12" 
+            BorderThickness="0"
+            TextChanged="SearchSystemModsTXT1_TextChanged" 
+            PreviewMouseDown="SearchSystemModsTXT1_PreviewMouseDown"/>
                     </Border>
 
                     <Grid Grid.Row="1" Margin="0,0,0,15" Height="40">
@@ -1500,9 +1566,7 @@
                                 <TextBlock x:Name="CreateModPacksTXT" 
                                            FontFamily="Inter 18pt 18pt" 
                                            FontSize="16" 
-                                           Foreground="{DynamicResource MainForegroundBrush}">
-                                    <Run Language="uk-ua" Text="Створити нову"/>
-                                </TextBlock>
+                                           Foreground="{DynamicResource MainForegroundBrush}"><Run x:Name="Loc_RunCreateNew" Language="uk-ua" Text="Створити нову"/></TextBlock>
                             </StackPanel>
                         </Border>
                     </Grid>
@@ -1516,7 +1580,7 @@
                          Foreground="White" 
                          Loaded="ModsDowloadList_Loaded"
                          ScrollViewer.CanContentScroll="True"
-                         VirtualizingPanel.IsVirtualizing="True"        
+                         VirtualizingPanel.IsVirtualizing="True"       
                          VirtualizingPanel.VirtualizationMode="Recycling"/>
                 </Grid>
             </Grid>
@@ -1531,10 +1595,52 @@
 
                 <StackPanel Orientation="Vertical" Margin="20,65,20,20">
 
-                    <TextBlock Text="Майнкрафт" Height="40" FontSize="24" HorizontalAlignment="Left" 
+                    <TextBlock x:Name="Loc_Settings_TitleMinecraft" Text="Майнкрафт" Height="40" FontSize="24" HorizontalAlignment="Left" 
                FontFamily="Inter" FontWeight="Bold" Foreground="{DynamicResource MainForegroundBrush}"/>
+                    <Grid Margin="0,0,0,15">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition Width="Auto" MinWidth="218.2"/>
+                        </Grid.ColumnDefinitions>
 
-                    <Grid Height="55" Margin="0,5" ToolTip="Показує консоль розробника під час гри.">
+                        <Border Grid.ColumnSpan="2" BorderThickness="1" CornerRadius="15" Background="{DynamicResource MainBackgroundBrushServer}" Margin="0,0,0,-10"/>
+
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,15,0">
+                            <TextBlock x:Name="LanguageTitleTXT" Text="Мова інтерфейсу (Language)" Foreground="{DynamicResource MainForegroundBrush}" FontSize="20" FontFamily="Inter" TextWrapping="Wrap" Width="648"/>
+
+                            <TextBlock x:Name="LanguageDescTXT" Text="Оберіть мову для лаунчера. Оновлюється миттєво." Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6" FontSize="12" FontFamily="Inter" Margin="0,2,0,0" TextWrapping="Wrap" Width="648"/>
+
+                            <ui:HyperlinkButton x:Name="HelpTranslateTXT" Content="Як допомогти з перекладом?" NavigateUri="https://uk.crowdin.com/project/clegendary-launcher" Foreground="#FF005DF1" Background="{x:Null}" BorderBrush="{x:Null}" Width="650" HorizontalContentAlignment="Left" />
+                        </StackPanel>
+
+                        <ComboBox Grid.Column="1" x:Name="LanguageComboBox" Height="40" 
+              VerticalAlignment="Top" Margin="2,5,16,0"
+              SelectionChanged="LanguageComboBox_SelectionChanged"
+              Background="{DynamicResource MainBackgroundButton}"
+              Foreground="{DynamicResource MainForegroundBrush}" Cursor="Hand">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" Margin="2">
+                                        <Border CornerRadius="3" ClipToBounds="True" Width="24" Height="16" Margin="0,0,10,0" VerticalAlignment="Center">
+                                            <Image Source="{Binding FlagUrl}" Stretch="UniformToFill" />
+                                        </Border>
+
+                                        <TextBlock Text="{Binding Name}" 
+                                   FontWeight="Medium" 
+                                   VerticalAlignment="Center" 
+                                   Width="100"/>
+
+                                        <TextBlock Text="{Binding Progress, StringFormat=\{0\}%}" 
+                                   Foreground="LightGray" 
+                                   VerticalAlignment="Center" 
+                                   FontSize="11" 
+                                   Opacity="0.7"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </Grid>
+                    <Grid Height="55" Margin="0,5">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition/>
                             <ColumnDefinition Width="Auto" MinWidth="63.2"/>
@@ -1542,8 +1648,8 @@
                         <Border Grid.ColumnSpan="2" BorderThickness="1" CornerRadius="15" Background="{DynamicResource MainBackgroundBrushServer}"/>
 
                         <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="15,0,0,0">
-                            <TextBlock Text="Логи (Консоль розробника)" Foreground="{DynamicResource MainForegroundBrush}" FontSize="20" FontFamily="Inter"/>
-                            <TextBlock Text="Відкриває вікно з технічною інформацією під час гри" Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6" FontSize="12" FontFamily="Inter" Margin="0,2,0,0"/>
+                            <TextBlock x:Name="Loc_Settings_DevConsoleTitle" Text="Логи (Консоль розробника)" Foreground="{DynamicResource MainForegroundBrush}" FontSize="20" FontFamily="Inter"/>
+                            <TextBlock x:Name="Loc_Settings_DevConsoleDesc" Text="Відкриває вікно з технічною інформацією під час гри" Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6" FontSize="12" FontFamily="Inter" Margin="0,2,0,0"/>
                         </StackPanel>
 
                         <ui:ToggleSwitch Grid.Column="1" x:Name="DebugToggle" 
@@ -1551,7 +1657,7 @@
                          Click="DebugOff_On_Click" Height="30" Cursor="Hand" />
                     </Grid>
 
-                    <Grid Height="55" Margin="0,5" ToolTip="Гра буде запускатися на весь монітор.">
+                    <Grid Height="55" Margin="0,5">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition/>
                             <ColumnDefinition Width="Auto" MinWidth="63.2"/>
@@ -1559,8 +1665,8 @@
                         <Border Grid.ColumnSpan="2" BorderThickness="1" CornerRadius="15" Background="{DynamicResource MainBackgroundBrushServer}"/>
 
                         <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="15,0,0,0">
-                            <TextBlock Text="Повноекраний режим" Foreground="{DynamicResource MainForegroundBrush}" FontSize="20" FontFamily="Inter"/>
-                            <TextBlock Text="Запускає гру на весь монітор без рамок вікна" Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6" FontSize="12" FontFamily="Inter" Margin="0,2,0,0"/>
+                            <TextBlock x:Name="Loc_Settings_FullScreenTitle" Text="Повноекраний режим" Foreground="{DynamicResource MainForegroundBrush}" FontSize="20" FontFamily="Inter"/>
+                            <TextBlock x:Name="Loc_Settings_FullScreenDesc" Text="Запускає гру на весь монітор без рамок вікна" Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6" FontSize="12" FontFamily="Inter" Margin="0,2,0,0"/>
                         </StackPanel>
 
                         <ui:ToggleSwitch Grid.Column="1" x:Name="FullScreenToggle" 
@@ -1568,7 +1674,7 @@
                          Click="FullScreenOff_On_MouseDown" Height="30" Cursor="Hand" />
                     </Grid>
 
-                    <StackPanel ToolTip="Розмір вікна гри.">
+                    <StackPanel>
                         <Grid Height="55" Margin="0,5">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -1577,14 +1683,14 @@
                             <Border Grid.ColumnSpan="2" BorderThickness="1" CornerRadius="15" Background="{DynamicResource MainBackgroundBrushServer}"/>
 
                             <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="15,0,0,0">
-                                <TextBlock Text="Роздільна здатність екрану" Foreground="{DynamicResource MainForegroundBrush}" FontSize="20" FontFamily="Inter"/>
-                                <TextBlock Text="Розмір вікна гри." Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6" FontSize="12" FontFamily="Inter" Margin="0,2,0,0"/>
+                                <TextBlock x:Name="Loc_Settings_ResolutionTitle" Text="Роздільна здатність екрану" Foreground="{DynamicResource MainForegroundBrush}" FontSize="20" FontFamily="Inter"/>
+                                <TextBlock x:Name="Loc_Settings_ResolutionDesc" Text="Розмір вікна гри." Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6" FontSize="12" FontFamily="Inter" Margin="0,2,0,0"/>
                             </StackPanel>
 
                             <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="0,0,15,0" VerticalAlignment="Center">
                                 <ui:Button x:Name="MincraftWindowSize" Content="1920х1080" Width="110" Height="30" 
-                           Click="MincraftWindowSize_Click" Background="{DynamicResource MainBackgroundButton}" 
-                           Foreground="{DynamicResource MainForegroundBrush}" BorderBrush="{x:Null}" Margin="0,0,10,0" Cursor="Hand"/>
+                            Click="MincraftWindowSize_Click" Background="{DynamicResource MainBackgroundButton}" 
+                            Foreground="{DynamicResource MainForegroundBrush}" BorderBrush="{x:Null}" Margin="0,0,10,0" Cursor="Hand"/>
 
                                 <Path Data="M17.65,6.35C16.2,4.9 14.21,4 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20C15.73,20 18.84,17.45 19.73,14H17.65C16.83,16.33 14.61,18 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6C13.66,6 15.14,6.69 16.22,7.78L13,11H20V4L17.65,6.35Z"
                       Fill="{DynamicResource MainForegroundBrush}" Stretch="Uniform" Width="20" Height="20"
@@ -1614,7 +1720,7 @@
                         </Grid>
                     </StackPanel>
 
-                    <Grid Height="55" Margin="0,5" ToolTip="Скільки пам'яті виділити Java.">
+                    <Grid Height="55" Margin="0,5">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
@@ -1622,8 +1728,8 @@
                         <Border Grid.ColumnSpan="2" BorderThickness="1" CornerRadius="15" Background="{DynamicResource MainBackgroundBrushServer}"/>
 
                         <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="15,0,0,0">
-                            <TextBlock Text="Оперативна пам’ять (RAM)" Foreground="{DynamicResource MainForegroundBrush}" FontSize="20" FontFamily="Inter"/>
-                            <TextBlock Text="Пам'ять для Java. Рекомендовано 4096 MB. Не ставте максимум!" Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6" FontSize="12" FontFamily="Inter" Margin="0,2,0,0"/>
+                            <TextBlock x:Name="Loc_Settings_RamTitle" Text="Оперативна пам’ять (RAM)" Foreground="{DynamicResource MainForegroundBrush}" FontSize="20" FontFamily="Inter"/>
+                            <TextBlock x:Name="Loc_Settings_RamDesc" Text="Пам'ять для Java. Рекомендовано 4096 MB. Не ставте максимум!" Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6" FontSize="12" FontFamily="Inter" Margin="0,2,0,0"/>
                         </StackPanel>
 
                         <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="0,0,15,0" VerticalAlignment="Center">
@@ -1639,7 +1745,7 @@
                         </StackPanel>
                     </Grid>
 
-                    <Grid Height="55" Margin="0,5" ToolTip="Папка з файлами гри.">
+                    <Grid Height="55" Margin="0,5">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
@@ -1648,8 +1754,8 @@
                         <Border Grid.ColumnSpan="3" BorderThickness="1" CornerRadius="15" Background="{DynamicResource MainBackgroundBrushServer}"/>
 
                         <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="15,0,10,0">
-                            <TextBlock Text="Шлях папки для лаунчера" Foreground="{DynamicResource MainForegroundBrush}" FontSize="20" FontFamily="Inter"/>
-                            <TextBlock Text="Місце зберігання світів, модів та налаштувань" Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6" FontSize="12" FontFamily="Inter" Margin="0,2,0,0"/>
+                            <TextBlock x:Name="Loc_Settings_PathTitle" Text="Шлях папки для лаунчера" Foreground="{DynamicResource MainForegroundBrush}" FontSize="20" FontFamily="Inter"/>
+                            <TextBlock x:Name="Loc_Settings_PathDesc" Text="Місце зберігання світів, модів та налаштувань" Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6" FontSize="12" FontFamily="Inter" Margin="0,2,0,0"/>
                         </StackPanel>
 
                         <ui:Button Grid.Column="1" x:Name="LauncherFloderButton" Content="C:\" Height="30" HorizontalAlignment="Stretch" Margin="0,0,10,0" VerticalAlignment="Center"
@@ -1669,8 +1775,8 @@
                                 </Grid.ColumnDefinitions>
 
                                 <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                    <TextBlock Text="Автоматичні бекапи світів" Foreground="{DynamicResource MainForegroundBrush}" FontSize="20" FontFamily="Inter"/>
-                                    <TextBlock Text="Створює копію світу перед кожним запуском гри" Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6" FontSize="12" FontFamily="Inter" Margin="0,2,0,0"/>
+                                    <TextBlock x:Name="Loc_Settings_BackupTitle" Text="Автоматичні бекапи світів" Foreground="{DynamicResource MainForegroundBrush}" FontSize="20" FontFamily="Inter"/>
+                                    <TextBlock x:Name="Loc_Settings_BackupDesc" Text="Створює копію світу перед кожним запуском гри" Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6" FontSize="12" FontFamily="Inter" Margin="0,2,0,0"/>
                                 </StackPanel>
 
                                 <ui:ToggleSwitch Grid.Column="1" x:Name="AutoBackupToggle" 
@@ -1698,8 +1804,8 @@
                                 </Grid.ColumnDefinitions>
 
                                 <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                    <TextBlock Text="Кількість копій" Foreground="{DynamicResource MainForegroundBrush}" FontSize="16" FontFamily="Inter"/>
-                                    <TextBlock Text="Максимальна кількість архівів. Старі будуть видалятися" Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6" FontSize="12" FontFamily="Inter" Margin="0,2,0,0"/>
+                                    <TextBlock x:Name="Loc_Settings_BackupCountTitle" Text="Кількість копій" Foreground="{DynamicResource MainForegroundBrush}" FontSize="16" FontFamily="Inter"/>
+                                    <TextBlock x:Name="Loc_Settings_BackupCountDesc" Text="Максимальна кількість архівів. Старі будуть видалятися" Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6" FontSize="12" FontFamily="Inter" Margin="0,2,0,0"/>
                                 </StackPanel>
 
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" Background="{DynamicResource MainBackgroundButton}" x:Name="CounterPanel">
@@ -1725,8 +1831,25 @@
                         </StackPanel>
                     </Border>
 
-                    <TextBlock Text="Запускач" Height="40" FontSize="24" HorizontalAlignment="Left" Margin="0,10,0,0" 
+                    <TextBlock x:Name="Loc_Settings_TitleLauncher" Text="Запускач" Height="40" FontSize="24" HorizontalAlignment="Left" Margin="0,10,0,0" 
                FontFamily="Inter" FontWeight="Bold" Foreground="{DynamicResource MainForegroundBrush}"/>
+                    <Grid x:Name="_1AprilGird" Height="55" Visibility="Collapsed">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition Width="Auto" MinWidth="63.2"/>
+                        </Grid.ColumnDefinitions>
+                        <Border Grid.ColumnSpan="2" BorderThickness="1" CornerRadius="15" Background="{DynamicResource MainBackgroundBrushServer}"/>
+
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="15,0,0,0">
+                            <TextBlock x:Name="Loc_Settings_April" Text="Зупиніться!" Foreground="{DynamicResource MainForegroundBrush}" FontSize="20" FontFamily="Inter"/>
+                            <TextBlock x:Name="Loc_Settings_AprilDesc" Text="Замінює звук інтерфейсу на дещо більш легітимне. Працює лише на початку квітня." Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6" FontSize="12" FontFamily="Inter" Margin="0,2,0,0"/>
+                        </StackPanel>
+
+                        <ui:ToggleSwitch Grid.Column="1" x:Name="MemToggle" 
+                            VerticalAlignment="Center" Margin="0,0,20,0"
+                            Click="MemToggle_Click" Height="30" Cursor="Hand" />
+                    </Grid>
+
                     <Grid Height="55" Margin="0,5">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition/>
@@ -1735,8 +1858,8 @@
                         <Border Grid.ColumnSpan="2" BorderThickness="1" CornerRadius="15" Background="{DynamicResource MainBackgroundBrushServer}"/>
 
                         <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="15,0,0,0">
-                            <TextBlock Text="Закриття лаунчера під час гри" Foreground="{DynamicResource MainForegroundBrush}" FontSize="20" FontFamily="Inter"/>
-                            <TextBlock Text="Економить ресурси ПК, закриваючи меню після старту" Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6" FontSize="12" FontFamily="Inter" Margin="0,2,0,0"/>
+                            <TextBlock x:Name="Loc_Settings_CloseLaunchTitle" Text="Закриття лаунчера під час гри" Foreground="{DynamicResource MainForegroundBrush}" FontSize="20" FontFamily="Inter"/>
+                            <TextBlock x:Name="Loc_Settings_CloseLaunchDesc" Text="Економить ресурси ПК, закриваючи меню після старту" Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6" FontSize="12" FontFamily="Inter" Margin="0,2,0,0"/>
                         </StackPanel>
 
                         <ui:ToggleSwitch Grid.Column="1" x:Name="CloseLauncherToggle" 
@@ -1751,8 +1874,8 @@
                         <Border Grid.ColumnSpan="2" BorderThickness="1" CornerRadius="15" Background="{DynamicResource MainBackgroundBrushServer}"/>
 
                         <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="15,0,0,0">
-                            <TextBlock Text="Автозавантаження залежностей" Foreground="{DynamicResource MainForegroundBrush}" FontSize="16" FontFamily="Inter"/>
-                            <TextBlock Text="Автоматично додає потрібні бібліотеки (API) до модів" Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6" FontSize="12" FontFamily="Inter" Margin="0,2,0,0"/>
+                            <TextBlock x:Name="Loc_Settings_AutoDepTitle" Text="Автозавантаження залежностей" Foreground="{DynamicResource MainForegroundBrush}" FontSize="16" FontFamily="Inter"/>
+                            <TextBlock x:Name="Loc_Settings_AutoDepDesc" Text="Автоматично додає потрібні бібліотеки (API) до модів" Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6" FontSize="12" FontFamily="Inter" Margin="0,2,0,0"/>
                         </StackPanel>
 
                         <ui:ToggleSwitch Grid.Column="1" x:Name="ModDepsToggle" 
@@ -1767,8 +1890,8 @@
                         <Border Grid.ColumnSpan="2" BorderThickness="1" CornerRadius="15" Background="{DynamicResource MainBackgroundBrushServer}"/>
 
                         <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="15,0,0,0">
-                            <TextBlock Text="Ефект прозорості (Скло)" Foreground="{DynamicResource MainForegroundBrush}" FontSize="20" FontFamily="Inter"/>
-                            <TextBlock Text="Напівпрозорий фон вікна (Mica). Вимкніть, якщо лагає" Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6" FontSize="12" FontFamily="Inter" Margin="0,2,0,0"/>
+                            <TextBlock x:Name="Loc_Settings_GlassTitle" Text="Ефект прозорості (Скло)" Foreground="{DynamicResource MainForegroundBrush}" FontSize="20" FontFamily="Inter"/>
+                            <TextBlock x:Name="Loc_Settings_GlassDesc" Text="Напівпрозорий фон вікна (Mica). Вимкніть, якщо лагає" Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6" FontSize="12" FontFamily="Inter" Margin="0,2,0,0"/>
                         </StackPanel>
 
                         <ui:ToggleSwitch Grid.Column="1" x:Name="GlassEffectToggle" 
@@ -1788,8 +1911,8 @@
                                 </Grid.ColumnDefinitions>
 
                                 <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,15,0">
-                                    <TextBlock Text="Тема інтерфейсу" Foreground="{DynamicResource MainForegroundBrush}" FontSize="24" FontWeight="Bold" FontFamily="Inter" TextWrapping="Wrap"/>
-                                    <TextBlock Text="Оберіть готовий стиль або створіть власний та поділіться ним" Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6" FontSize="12" FontFamily="Inter" Margin="0,2,0,0" TextWrapping="Wrap"/>
+                                    <TextBlock x:Name="Loc_Settings_ThemeTitle" Text="Тема інтерфейсу" Foreground="{DynamicResource MainForegroundBrush}" FontSize="24" FontWeight="Bold" FontFamily="Inter" TextWrapping="Wrap"/>
+                                    <TextBlock x:Name="Loc_Settings_ThemeDesc" Text="Оберіть готовий стиль або створіть власний та поділіться ним" Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6" FontSize="12" FontFamily="Inter" Margin="0,2,0,0" TextWrapping="Wrap"/>
                                 </StackPanel>
 
                                 <ComboBox Grid.Column="1" x:Name="ThemeComboBox" 
@@ -1798,9 +1921,9 @@
                       SelectionChanged="ThemeComboBox_SelectionChanged"
                       Background="{DynamicResource MainBackgroundButton}"
                       Foreground="{DynamicResource MainForegroundBrush}" Cursor="Hand">
-                                    <ComboBoxItem Content="Темна" Tag="Dark" />
-                                    <ComboBoxItem Content="Світла" Tag="Light" />
-                                    <ComboBoxItem Content="Кастомна" Tag="Custom" />
+                                    <ComboBoxItem x:Name="Loc_ThemeDark" Content="Темна" Tag="Dark" />
+                                    <ComboBoxItem x:Name="Loc_ThemeLight" Content="Світла" Tag="Light" />
+                                    <ComboBoxItem x:Name="Loc_ThemeCustom" Content="Кастомна" Tag="Custom" />
                                 </ComboBox>
                             </Grid>
 
@@ -1811,12 +1934,12 @@
                                 </Grid.ColumnDefinitions>
 
                                 <StackPanel Grid.Column="0">
-                                    <TextBlock Text="Колір секції" Foreground="{DynamicResource MainForegroundBrush}" FontSize="16" Margin="0,9" FontFamily="Inter"/>
-                                    <TextBlock Text="Колір фону" Foreground="{DynamicResource MainForegroundBrush}" FontSize="16" Margin="0,9" FontFamily="Inter"/>
-                                    <TextBlock Text="Додатковий колір" Foreground="{DynamicResource MainForegroundBrush}" FontSize="16" Margin="0,9" FontFamily="Inter"/>
-                                    <TextBlock Text="Колір тексту" Foreground="{DynamicResource MainForegroundBrush}" FontSize="16" Margin="0,9" FontFamily="Inter"/>
-                                    <TextBlock Text="Колір кнопки" Foreground="{DynamicResource MainForegroundBrush}" FontSize="16" Margin="0,9" FontFamily="Inter"/>
-                                    <TextBlock Text="Зображення фону" Foreground="{DynamicResource MainForegroundBrush}" FontSize="16" Margin="0,9" FontFamily="Inter"/>
+                                    <TextBlock x:Name="Loc_Settings_ThemeSection" Text="Колір секції" Foreground="{DynamicResource MainForegroundBrush}" FontSize="16" Margin="0,9" FontFamily="Inter"/>
+                                    <TextBlock x:Name="Loc_Settings_ThemeBg" Text="Колір фону" Foreground="{DynamicResource MainForegroundBrush}" FontSize="16" Margin="0,9" FontFamily="Inter"/>
+                                    <TextBlock x:Name="Loc_Settings_ThemeAccent" Text="Додатковий колір" Foreground="{DynamicResource MainForegroundBrush}" FontSize="16" Margin="0,9" FontFamily="Inter"/>
+                                    <TextBlock x:Name="Loc_Settings_ThemeText" Text="Колір тексту" Foreground="{DynamicResource MainForegroundBrush}" FontSize="16" Margin="0,9" FontFamily="Inter"/>
+                                    <TextBlock x:Name="Loc_Settings_ThemeBtn" Text="Колір кнопки" Foreground="{DynamicResource MainForegroundBrush}" FontSize="16" Margin="0,9" FontFamily="Inter"/>
+                                    <TextBlock x:Name="Loc_Settings_ThemeImage" Text="Зображення фону" Foreground="{DynamicResource MainForegroundBrush}" FontSize="16" Margin="0,9" FontFamily="Inter"/>
                                 </StackPanel>
 
                                 <StackPanel HorizontalAlignment="Left" Grid.ColumnSpan="2" Margin="749,0,0,0" Width="122">
@@ -1830,7 +1953,7 @@
                             </Grid>
 
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,15,0,0">
-                                <ui:Button Content="Скинути" Icon="{ui:SymbolIcon ArrowReset24}" Appearance="Secondary" Click="ResetCustomSetting_Click" Margin="0,0,0,0" Cursor="Hand" ToolTip="Скинути налаштування теми до стандартних"/>
+                                <ui:Button x:Name="Loc_BtnResetTheme" Content="Скинути" Icon="{ui:SymbolIcon ArrowReset24}" Appearance="Secondary" Click="ResetCustomSetting_Click" Margin="0,0,0,0" Cursor="Hand" ToolTip="Скинути налаштування теми до стандартних"/>
                             </StackPanel>
 
                             <Border BorderThickness="0,1,0,0" BorderBrush="#33FFFFFF" Margin="0,15,0,0" Padding="0,15,0,0" Background="Transparent">
@@ -1841,13 +1964,13 @@
                                     </Grid.ColumnDefinitions>
 
                                     <StackPanel Grid.Column="0" Margin="0,0,10,0">
-                                        <TextBlock Text="Код теми (Для головного вікна)" Foreground="{DynamicResource MainForegroundBrush}" FontSize="12" FontFamily="Inter" Margin="0,0,0,5"/>
+                                        <TextBlock x:Name="Loc_Settings_ThemeCodeTitle" Text="Код теми (Для головного вікна)" Foreground="{DynamicResource MainForegroundBrush}" FontSize="12" FontFamily="Inter" Margin="0,0,0,5"/>
                                         <TextBox x:Name="ThemeCodeBox" Height="32" Background="{DynamicResource MainBackgroundButton}" Foreground="{DynamicResource MainForegroundBrush}" BorderThickness="0" Padding="8,0" VerticalContentAlignment="Center" IsReadOnly="True" Cursor="No"/>
                                     </StackPanel>
 
                                     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Bottom">
-                                        <ui:Button Content="Копіювати" Click="CopyTheme_Click" Width="105" Height="32" Margin="0,0,5,0" Background="{DynamicResource MainBackgroundButton}" Foreground="{DynamicResource MainForegroundBrush}" BorderBrush="{x:Null}" Cursor="Hand"/>
-                                        <ui:Button Content="Вставити" Click="PasteTheme_Click" Width="105" Height="32" Margin="0,0,0,0" Background="{DynamicResource MainBackgroundButton}" Foreground="{DynamicResource MainForegroundBrush}" BorderBrush="{x:Null}" Cursor="Hand"/>
+                                        <ui:Button x:Name="Loc_BtnCopyTheme" Content="Копіювати" Click="CopyTheme_Click" Width="105" Height="32" Margin="0,0,5,0" Background="{DynamicResource MainBackgroundButton}" Foreground="{DynamicResource MainForegroundBrush}" BorderBrush="{x:Null}" Cursor="Hand"/>
+                                        <ui:Button x:Name="Loc_BtnPasteTheme" Content="Вставити" Click="PasteTheme_Click" Width="105" Height="32" Margin="0,0,0,0" Background="{DynamicResource MainBackgroundButton}" Foreground="{DynamicResource MainForegroundBrush}" BorderBrush="{x:Null}" Cursor="Hand"/>
                                     </StackPanel>
                                 </Grid>
                             </Border>
@@ -1860,8 +1983,8 @@
         HorizontalAlignment="Stretch" VerticalAlignment="Top">
                         <StackPanel>
                             <StackPanel Margin="0,0,0,15">
-                                <TextBlock Text="Завантажувальний екран" Foreground="{DynamicResource MainForegroundBrush}" FontSize="24" FontWeight="Bold" FontFamily="Inter" TextWrapping="Wrap"/>
-                                <TextBlock Text="Налаштуйте вигляд вікна запуску (Splash Screen) та поділіться своїм стилем" Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6" FontSize="12" FontFamily="Inter" Margin="0,2,0,0" TextWrapping="Wrap"/>
+                                <TextBlock x:Name="Loc_Settings_LoadScreenTitle" Text="Завантажувальний екран" Foreground="{DynamicResource MainForegroundBrush}" FontSize="24" FontWeight="Bold" FontFamily="Inter" TextWrapping="Wrap"/>
+                                <TextBlock x:Name="Loc_Settings_LoadScreenDesc" Text="Налаштуйте вигляд вікна запуску (Splash Screen) та поділіться своїм стилем" Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6" FontSize="12" FontFamily="Inter" Margin="0,2,0,0" TextWrapping="Wrap"/>
                             </StackPanel>
 
                             <Grid>
@@ -1871,9 +1994,9 @@
                                 </Grid.ColumnDefinitions>
 
                                 <StackPanel Grid.Column="0">
-                                    <TextBlock Text="Зображення фону" Foreground="{DynamicResource MainForegroundBrush}" FontSize="16" Margin="0,9" FontFamily="Inter"/>
-                                    <TextBlock Text="Колір смужки завантаження" Foreground="{DynamicResource MainForegroundBrush}" FontSize="16" Margin="0,9" FontFamily="Inter"/>
-                                    <TextBlock Text="Кастомні фрази" Foreground="{DynamicResource MainForegroundBrush}" FontSize="16" Margin="0,9" FontFamily="Inter" ToolTip="Відкриває текстовий файл..."/>
+                                    <TextBlock x:Name="Loc_Settings_LoadScreenBg" Text="Зображення фону" Foreground="{DynamicResource MainForegroundBrush}" FontSize="16" Margin="0,9" FontFamily="Inter"/>
+                                    <TextBlock x:Name="Loc_Settings_LoadScreenColor" Text="Колір смужки завантаження" Foreground="{DynamicResource MainForegroundBrush}" FontSize="16" Margin="0,9" FontFamily="Inter"/>
+                                    <TextBlock x:Name="Loc_Settings_LoadScreenPhrases" Text="Кастомні фрази" Foreground="{DynamicResource MainForegroundBrush}" FontSize="16" Margin="0,9" FontFamily="Inter" ToolTip="Відкриває текстовий файл..."/>
                                 </StackPanel>
 
                                 <StackPanel Grid.Column="1" HorizontalAlignment="Center" Width="100">
@@ -1884,7 +2007,7 @@
                             </Grid>
 
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
-                                <ui:Button Content="Скинути" Icon="{ui:SymbolIcon ArrowReset24}" Appearance="Secondary" Click="ResetLoadScreen_Click" Cursor="Hand" ToolTip="Скинути налаштування екрану завантаження"/>
+                                <ui:Button x:Name="Loc_BtnResetLoadScreen" Content="Скинути" Icon="{ui:SymbolIcon ArrowReset24}" Appearance="Secondary" Click="ResetLoadScreen_Click" Cursor="Hand" ToolTip="Скинути налаштування екрану завантаження"/>
                             </StackPanel>
 
                             <Border BorderThickness="0,1,0,0" BorderBrush="#33FFFFFF" Margin="0,15,0,0" Padding="0,15,0,0" Background="Transparent">
@@ -1895,13 +2018,13 @@
                                     </Grid.ColumnDefinitions>
 
                                     <StackPanel Grid.Column="0" Margin="0,0,10,0">
-                                        <TextBlock Text="Код теми (Завантажувального екрану)" Foreground="{DynamicResource MainForegroundBrush}" FontSize="12" FontFamily="Inter" Margin="0,0,0,5"/>
+                                        <TextBlock x:Name="Loc_Settings_LoadScreenCodeTitle" Text="Код теми (Завантажувального екрану)" Foreground="{DynamicResource MainForegroundBrush}" FontSize="12" FontFamily="Inter" Margin="0,0,0,5"/>
                                         <TextBox x:Name="LoadScreenCodeBox" Height="32" Background="{DynamicResource MainBackgroundButton}" Foreground="{DynamicResource MainForegroundBrush}" BorderThickness="0" Padding="8,0" VerticalContentAlignment="Center" IsReadOnly="True" Cursor="No"/>
                                     </StackPanel>
 
                                     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Bottom">
-                                        <ui:Button Content="Копіювати" Click="CopyLoadScreen_Click" Width="102" Height="32" Margin="0,0,5,0" Background="{DynamicResource MainBackgroundButton}" Foreground="{DynamicResource MainForegroundBrush}" BorderBrush="{x:Null}" Cursor="Hand"/>
-                                        <ui:Button Content="Вставити" Click="PasteLoadScreen_Click" Width="97" Height="32" Margin="0,0,0,0" Background="{DynamicResource MainBackgroundButton}" Foreground="{DynamicResource MainForegroundBrush}" BorderBrush="{x:Null}" Cursor="Hand"/>
+                                        <ui:Button x:Name="Loc_BtnCopyLoadScreen" Content="Копіювати" Click="CopyLoadScreen_Click" Width="102" Height="32" Margin="0,0,5,0" Background="{DynamicResource MainBackgroundButton}" Foreground="{DynamicResource MainForegroundBrush}" BorderBrush="{x:Null}" Cursor="Hand"/>
+                                        <ui:Button x:Name="Loc_BtnPasteLoadScreen" Content="Вставити" Click="PasteLoadScreen_Click" Width="97" Height="32" Margin="0,0,0,0" Background="{DynamicResource MainBackgroundButton}" Foreground="{DynamicResource MainForegroundBrush}" BorderBrush="{x:Null}" Cursor="Hand"/>
                                     </StackPanel>
                                 </Grid>
                             </Border>
@@ -1965,16 +2088,16 @@
                  ScrollViewer.VerticalScrollBarVisibility="Auto"
                  SelectionMode="Single"
                  ScrollViewer.CanContentScroll="True"
-                 VirtualizingPanel.IsVirtualizing="True"        
+                 VirtualizingPanel.IsVirtualizing="True"       
                  VirtualizingPanel.VirtualizationMode="Recycling">
 
-                <ListView.ItemsPanel>
+                <ui:ListView.ItemsPanel>
                     <ItemsPanelTemplate>
                         <WrapPanel Orientation="Horizontal" HorizontalAlignment="Center" />
                     </ItemsPanelTemplate>
-                </ListView.ItemsPanel>
+                </ui:ListView.ItemsPanel>
 
-                <ListView.ItemContainerStyle>
+                <ui:ListView.ItemContainerStyle>
                     <Style TargetType="{x:Type ListViewItem}">
                         <Setter Property="HorizontalAlignment" Value="Left"/>
                         <Setter Property="Margin" Value="10"/>
@@ -1990,9 +2113,27 @@
                             </Trigger>
                         </Style.Triggers>
                     </Style>
-                </ListView.ItemContainerStyle>
+                </ui:ListView.ItemContainerStyle>
 
             </ui:ListView>
+            <StackPanel x:Name="NewsLoader" 
+                VerticalAlignment="Center" 
+                HorizontalAlignment="Center"
+                Orientation="Vertical" Visibility="Collapsed">
+
+                <ui:ProgressRing IsIndeterminate="True" 
+                    Width="60" Height="60" 
+                    Foreground="{DynamicResource MainBackgroundProgressBar}"/>
+
+                <TextBlock x:Name="Loc_TxtSearchingNews" Text="Bit-CL шукає новини по CL..." 
+                    Margin="0,20,0,0"
+                    FontSize="16" 
+                    FontFamily="Inter"
+                    FontWeight="Medium"
+                    Foreground="{DynamicResource MainForegroundBrush}"
+                    HorizontalAlignment="Center"
+                    TextAlignment="Center"/>
+            </StackPanel>
         </Grid>
         <Grid x:Name="GalleryContainer" Margin="0,0,0,-10" Visibility="Collapsed">
 
@@ -2103,16 +2244,13 @@
 
                         <ui:ListView.ItemTemplate>
                             <DataTemplate>
-                                <Border Width="220" Height="175" Margin="8" CornerRadius="12" Cursor="Hand" ToolTip="{Binding FilePath}">
-                                    <Border.Background>
-                                        <SolidColorBrush Color="#10FFFFFF"/>
-                                    </Border.Background>
+                                <Border Width="220" Height="175" Margin="8" CornerRadius="12" Cursor="Hand" ToolTip="{Binding FilePath}" Background="#10FFFFFF">
                                     <Border.Effect>
                                         <DropShadowEffect BlurRadius="15" ShadowDepth="4" Opacity="0.15" Direction="270"/>
                                     </Border.Effect>
 
                                     <Border.Style>
-                                        <Style TargetType="Border">
+                                        <Style TargetType="{x:Type Border}">
                                             <Setter Property="BorderThickness" Value="1"/>
                                             <Setter Property="BorderBrush" Value="#20FFFFFF"/>
                                             <Style.Triggers>
@@ -2167,8 +2305,8 @@
                         HorizontalAlignment="Center" VerticalAlignment="Center" 
                         Visibility="Collapsed" Opacity="0.6">
                         <ui:SymbolIcon Symbol="ImageSearch24" FontSize="48" Margin="0,0,0,15" Foreground="{DynamicResource MainForegroundBrush}"/>
-                        <TextBlock Text="Тут поки що пусто" FontSize="18" FontWeight="SemiBold" HorizontalAlignment="Center" Foreground="{DynamicResource MainForegroundBrush}"/>
-                        <TextBlock Text="Зробіть скріншот у грі (F2), щоб він з'явився тут" FontSize="14" Opacity="0.7" HorizontalAlignment="Center" Foreground="{DynamicResource MainForegroundBrush}"/>
+                        <TextBlock x:Name="Loc_TxtGalleryEmptyTitle" Text="Тут поки що пусто" FontSize="18" FontWeight="SemiBold" HorizontalAlignment="Center" Foreground="{DynamicResource MainForegroundBrush}"/>
+                        <TextBlock x:Name="Loc_TxtGalleryEmptyDesc" Text="Зробіть скріншот у грі (F2), щоб він з'явився тут" FontSize="14" Opacity="0.7" HorizontalAlignment="Center" Foreground="{DynamicResource MainForegroundBrush}"/>
                     </StackPanel>
 
                     <Border x:Name="ActionPanel" Visibility="Hidden"
@@ -2184,7 +2322,7 @@
 
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <StackPanel VerticalAlignment="Center" Margin="0,0,20,0">
-                                <TextBlock Text="ВИБРАНО" FontSize="10" Opacity="0.5" FontWeight="Bold" Foreground="{DynamicResource MainForegroundBrush}"/>
+                                <TextBlock x:Name="Loc_TxtGallerySelected" Text="ВИБРАНО" FontSize="10" Opacity="0.5" FontWeight="Bold" Foreground="{DynamicResource MainForegroundBrush}"/>
                                 <TextBlock x:Name="SelectedFileNameText" Text="screenshot.png" FontWeight="SemiBold" MaxWidth="180" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource MainForegroundBrush}"/>
                             </StackPanel>
 
@@ -2268,7 +2406,7 @@
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                             <Path Data="M10,20V14H14V20H19V12H22L12,3L2,12H5V20H10Z" 
                       Fill="{DynamicResource MainForegroundBrush}" Stretch="Uniform" Height="16" Width="16" Margin="0,0,8,0"/>
-                            <TextBlock Text="Головна" FontFamily="Inter" FontSize="14" FontWeight="Medium" Foreground="{DynamicResource MainForegroundBrush}" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="Loc_MenuBtnMain" Text="Головна" FontFamily="Inter" FontSize="14" FontWeight="Medium" Foreground="{DynamicResource MainForegroundBrush}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Border>
 
@@ -2279,7 +2417,7 @@
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                             <Path Data="M21,16.5C21,16.88 20.79,17.21 20.47,17.38L12.57,21.82C12.41,21.94 12.21,22 12,22C11.79,22 11.59,21.94 11.43,21.82L3.53,17.38C3.21,17.21 3,16.88 3,16.5V7.5C3,7.12 3.21,6.79 3.53,6.62L11.43,2.18C11.59,2.06 11.79,2 12,2C12.21,2 12.41,2.06 12.57,2.18L20.47,6.62C20.79,6.79 21,7.12 21,7.5V16.5M12,4.15L6.04,7.5L12,10.85L17.96,7.5L12,4.15M5,15.91L11,19.29V12.58L5,9.21V15.91M19,15.91V9.21L13,12.58V19.29L19,15.91Z" 
                       Fill="{DynamicResource MainForegroundBrush}" Stretch="Uniform" Height="15" Width="15" Margin="0,0,8,0"/>
-                            <TextBlock Text="Збірки" FontFamily="Inter" FontSize="14" FontWeight="Medium" Foreground="{DynamicResource MainForegroundBrush}" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="Loc_MenuBtnModpacks" Text="Збірки" FontFamily="Inter" FontSize="14" FontWeight="Medium" Foreground="{DynamicResource MainForegroundBrush}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Border>
 
@@ -2290,7 +2428,7 @@
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                             <Path Data="M20.5,11H19V7C19,5.89 18.1,5 17,5H13V3.5A2.5,2.5 0 0,0 10.5,1A2.5,2.5 0 0,0 8,3.5V5H4A2,2 0 0,0 2,7V11H3.5A2.5,2.5 0 0,1 6,13.5A2.5,2.5 0 0,1 3.5,16H2V20A2,2 0 0,0 4,22H8V20.5A2.5,2.5 0 0,1 10.5,18A2.5,2.5 0 0,1 13,20.5V22H17A2,2 0 0,0 19,20V16H20.5A2.5,2.5 0 0,0 23,13.5A2.5,2.5 0 0,0 20.5,11M10.5,3A1,1 0 0,1 11.5,4A1,1 0 0,1 10.5,5A1,1 0 0,1 9.5,4A1,1 0 0,1 10.5,3M13,19.5A1,1 0 0,0 12,20.5A1,1 0 0,0 13,21.5A1,1 0 0,0 14,20.5A1,1 0 0,0 13,19.5M5,13.5A1,1 0 0,0 4,14.5A1,1 0 0,0 5,15.5A1,1 0 0,0 6,14.5A1,1 0 0,0 5,13.5M20.5,15A1,1 0 0,1 19.5,14A1,1 0 0,1 20.5,13A1,1 0 0,1 21.5,14A1,1 0 0,1 20.5,15Z" 
                       Fill="{DynamicResource MainForegroundBrush}" Stretch="Uniform" Height="16" Width="16" Margin="0,0,8,0"/>
-                            <TextBlock Text="Моди" FontFamily="Inter" FontSize="14" FontWeight="Medium" Foreground="{DynamicResource MainForegroundBrush}" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="Loc_MenuBtnMods" Text="Моди" FontFamily="Inter" FontSize="14" FontWeight="Medium" Foreground="{DynamicResource MainForegroundBrush}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Border>
 
@@ -2301,7 +2439,7 @@
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                             <Path Data="M17.9,17.39C17.64,16.59 16.89,16 16,16H15V13A1,1 0 0,0 14,12H8V10H10A1,1 0 0,0 11,9V7H13A2,2 0 0,0 15,5V4.59C17.93,5.77 20,8.64 20,12C20,14.08 19.2,15.97 17.9,17.39M11,19.93C7.05,19.44 4,16.08 4,12C4,11.38 4.08,10.78 4.21,10.21L9,15V16A2,2 0 0,0 11,18M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z" 
                       Fill="{DynamicResource MainForegroundBrush}" Stretch="Uniform" Height="16" Width="16" Margin="0,0,8,0"/>
-                            <TextBlock Text="Сервери" FontFamily="Inter" FontSize="14" FontWeight="Medium" Foreground="{DynamicResource MainForegroundBrush}" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="Loc_MenuBtnServers" Text="Сервери" FontFamily="Inter" FontSize="14" FontWeight="Medium" Foreground="{DynamicResource MainForegroundBrush}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Border>
 
@@ -2312,7 +2450,7 @@
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                             <Path Data="M8.5,13.5L11,16.5L14.5,12L19,18H5M21,19V5C21,3.89 20.1,3 19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19Z" 
                       Fill="{DynamicResource MainForegroundBrush}" Stretch="Uniform" Height="16" Width="16" Margin="0,0,8,0"/>
-                            <TextBlock Text="Галерея" FontFamily="Inter" FontSize="14" FontWeight="Medium" Foreground="{DynamicResource MainForegroundBrush}" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="Loc_MenuBtnGallery" Text="Галерея" FontFamily="Inter" FontSize="14" FontWeight="Medium" Foreground="{DynamicResource MainForegroundBrush}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Border>
 
@@ -2413,7 +2551,7 @@
             <Border BorderThickness="1" Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="14"/>
 
             <Border x:Name="VersionVanilBorder" 
-                    BorderThickness="1" HorizontalAlignment="Left" Height="83" Margin="15,76,0,0" VerticalAlignment="Top" Width="70" CornerRadius="8" 
+                    BorderThickness="1" HorizontalAlignment="Left" Height="118" Margin="15,41,0,0" VerticalAlignment="Top" Width="70" CornerRadius="8" 
                     Background="{DynamicResource MainBackgroundBrush}">
 
                 <ui:ListView x:Name="Version" 
@@ -2434,7 +2572,7 @@
             </Border>
 
             <Border x:Name="CollectionListBorder" 
-                    BorderBrush="Black" BorderThickness="1" HorizontalAlignment="Left" Height="83" Margin="15,76,0,0" VerticalAlignment="Top" Width="70" CornerRadius="8" 
+                    BorderBrush="Black" BorderThickness="1" HorizontalAlignment="Left" Height="118" Margin="15,41,0,0" VerticalAlignment="Top" Width="70" CornerRadius="8" 
                     Visibility="Hidden" 
                     Background="{DynamicResource MainBackgroundBrush}">
 
@@ -2454,7 +2592,7 @@
 
                 </ui:ListView>
             </Border>
-            <Border BorderBrush="Black" BorderThickness="1" HorizontalAlignment="Left" Height="83" Margin="96,76,0,0" VerticalAlignment="Top" Width="149" CornerRadius="8" Background="{DynamicResource MainBackgroundBrush}">
+            <Border BorderBrush="Black" BorderThickness="1" HorizontalAlignment="Left" Height="118" Margin="96,41,0,0" VerticalAlignment="Top" Width="149" CornerRadius="8" Background="{DynamicResource MainBackgroundBrush}">
                 <ui:ListView x:Name="VersionMods" 
              d:ItemsSource="{d:SampleData ItemCount=5}" 
              Background="Transparent" 
@@ -2470,20 +2608,6 @@
                     </ui:ListView.ItemContainerStyle>
 
                 </ui:ListView>
-            </Border>
-
-            <Border BorderBrush="Black" BorderThickness="1" HorizontalAlignment="Left" Height="30" Margin="15,41,0,0" VerticalAlignment="Top" Width="70" CornerRadius="8" Background="{DynamicResource MainBackgroundBrush}">
-                <TextBlock x:Name="GameVersionMinecraft" Text="Гра" 
-                    Foreground="{DynamicResource MainForegroundBrush}"
-                    HorizontalAlignment="Center" VerticalAlignment="Center"
-                    FontSize="14" FontFamily="Inter"/>
-            </Border>
-
-            <Border BorderBrush="Black" BorderThickness="1" HorizontalAlignment="Left" Height="30" Margin="96,41,0,0" VerticalAlignment="Top" Width="149" CornerRadius="8" Background="{DynamicResource MainBackgroundBrush}">
-                <TextBlock x:Name="GameVersionMinecraft_Копировать" Text="Мод" 
-                    Foreground="{DynamicResource MainForegroundBrush}"
-                    HorizontalAlignment="Center" VerticalAlignment="Center"
-                    FontSize="14" FontFamily="Inter"/>
             </Border>
 
             <Border BorderBrush="Black" BorderThickness="1" HorizontalAlignment="Center" Height="30" Margin="0,6,0,0" VerticalAlignment="Top" Width="234" CornerRadius="8" Background="{DynamicResource MainBackgroundBrush}">
@@ -2523,7 +2647,7 @@
                 CornerRadius="14"
                 Padding="15" Visibility="Collapsed">
             <StackPanel>
-                <TextBlock Text="Офлайн акаунт" 
+                <TextBlock x:Name="Loc_TxtOfflineAccountTitle" Text="Офлайн акаунт" 
                            HorizontalAlignment="Center" Margin="0,0,0,15"
                            Foreground="{DynamicResource MainForegroundBrush}" 
                            FontSize="14" FontWeight="SemiBold"/>
@@ -2541,7 +2665,7 @@
                            Appearance="Secondary"
                            Click="CreateAccount_Offline_Click"
                            Background="{DynamicResource MainBackgroundButton}" 
-                           Foreground="{DynamicResource MainForegroundBrush}"/>
+                           Foreground="{DynamicResource MainForegroundBrush}" Cursor="Hand"/>
             </StackPanel>
         </Border>
 
@@ -2555,7 +2679,7 @@
                 Visibility="Collapsed">
 
             <StackPanel>
-                <TextBlock Text="LittleSkin акаунт" 
+                <TextBlock x:Name="Loc_TxtLittleSkinTitle" Text="LittleSkin акаунт" 
                            HorizontalAlignment="Center" Margin="0,0,0,15"
                            Foreground="{DynamicResource MainForegroundBrush}" 
                            FontSize="14" FontWeight="SemiBold"/>
@@ -2586,7 +2710,7 @@
                            Appearance="Secondary"
                            Click="LoginAccountLittleSkin_Click"
                            Background="{DynamicResource MainBackgroundButton}" 
-                           Foreground="{DynamicResource MainForegroundBrush}"/>
+                           Foreground="{DynamicResource MainForegroundBrush}" Cursor="Hand"/>
             </StackPanel>
         </Border>
 
@@ -2600,7 +2724,7 @@
                 Visibility="Collapsed">
 
             <StackPanel>
-                <TextBlock Text="Microsoft-онлайн акаунт" 
+                <TextBlock x:Name="Loc_TxtMicrosoftTitle" Text="Microsoft-онлайн акаунт" 
                            HorizontalAlignment="Center" Margin="0,0,0,15"
                            Foreground="{DynamicResource MainForegroundBrush}" 
                            FontSize="14" FontWeight="SemiBold"/>
@@ -2613,7 +2737,7 @@
                            Appearance="Secondary"
                            Click="MicrosoftLoginButton_Click"
                            Background="{DynamicResource MainBackgroundButton}" 
-                           Foreground="{DynamicResource MainForegroundBrush}"/>
+                           Foreground="{DynamicResource MainForegroundBrush}" Cursor="Hand"/>
             </StackPanel>
         </Border>
         <Grid x:Name="GridSelectAccountType" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,81,0,0" Width="260" Visibility="Collapsed">
@@ -2622,7 +2746,7 @@
 
                     <Border CornerRadius="5" Padding="5" Cursor="Hand" MouseDown="MicrosoftAccount_MouseDown" ToolTip="Microsoft Account" Background="Transparent">
                         <Border.Style>
-                            <Style TargetType="Border">
+                            <Style TargetType="{x:Type Border}">
                                 <Style.Triggers>
                                     <Trigger Property="IsMouseOver" Value="True">
                                         <Setter Property="Background" Value="#33FFFFFF"/>
@@ -2635,7 +2759,7 @@
 
                     <Border CornerRadius="5" Padding="5" Cursor="Hand" MouseDown="OfflineAccount_MouseDown" Margin="20,0" ToolTip="Offline Account" Background="Transparent">
                         <Border.Style>
-                            <Style TargetType="Border">
+                            <Style TargetType="{x:Type Border}">
                                 <Style.Triggers>
                                     <Trigger Property="IsMouseOver" Value="True">
                                         <Setter Property="Background" Value="#33FFFFFF"/>
@@ -2648,7 +2772,7 @@
 
                     <Border CornerRadius="5" Padding="5" Cursor="Hand" MouseDown="LittleSkinAccount_MouseDown" ToolTip="LittleSkin Account" Background="Transparent">
                         <Border.Style>
-                            <Style TargetType="Border">
+                            <Style TargetType="{x:Type Border}">
                                 <Style.Triggers>
                                     <Trigger Property="IsMouseOver" Value="True">
                                         <Setter Property="Background" Value="#33FFFFFF"/>
@@ -2660,6 +2784,78 @@
                     </Border>
 
                 </StackPanel>
+            </Border>
+        </Grid>
+        <Grid x:Name="FundraiserOverlay" Panel.ZIndex="998" MouseDown="FundraiserOverlay_MouseDown" Visibility="Collapsed">
+            <Grid>
+                <Border CornerRadius="12" Visibility="{DynamicResource GlassVisibility}">
+                    <Border.Background>
+                        <VisualBrush Visual="{Binding ElementName=MainBackgroundContainer}" 
+                                         Stretch="None"
+                                         AlignmentX="Center"
+                                         AlignmentY="Bottom"/>
+                    </Border.Background>
+                    <Border.Effect>
+                        <BlurEffect Radius="{DynamicResource GlassBlurRadius}"/>
+                    </Border.Effect>
+
+                </Border>
+
+                <Border CornerRadius="12" Background="{DynamicResource GlassTintBrush}"/>
+            </Grid>
+
+            <Border Width="380" MaxHeight="550" Background="{DynamicResource MainBackgroundBrushServer}"
+                    CornerRadius="16" BorderBrush="#FFB74D" BorderThickness="1" Padding="20"
+                    HorizontalAlignment="Center" VerticalAlignment="Center" MouseDown="FundraiserCard_MouseDown">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="30" ShadowDepth="5" Opacity="0.5" Color="Black"/>
+                </Border.Effect>
+
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <Grid Grid.Row="0" Margin="0,0,0,15">
+                        <TextBlock x:Name="Loc_TxtFundTitle" Text="АКТУАЛЬНІ ЗБОРИ" Foreground="#FFB74D" FontWeight="Bold" FontSize="18" VerticalAlignment="Center"/>
+                        <ui:Button Icon="{ui:SymbolIcon Dismiss24}" Appearance="Transparent" Foreground="{DynamicResource MainForegroundBrush}"
+                                   HorizontalAlignment="Right" VerticalAlignment="Center" Click="CloseFundraiser_Click" Cursor="Hand" Padding="0"/>
+                    </Grid>
+
+                    <ui:ProgressRing Grid.Row="1" IsIndeterminate="True" Width="40" Height="40" Foreground="#FFB74D" x:Name="FundLoader" VerticalAlignment="Center"/>
+                    <TextBlock Grid.Row="1" x:Name="NoActiveFundsTXT" Text="Наразі немає активних зборів." Foreground="White" Opacity="0.7" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"/>
+
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="0,0,-10,0" Padding="0,0,10,0">
+                        <ItemsControl x:Name="FundraisersList">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="#111111" CornerRadius="12" Margin="0,0,0,15" Padding="15" BorderBrush="#33FFFFFF" BorderThickness="1">
+                                        <StackPanel>
+                                            <Border CornerRadius="8" ClipToBounds="True" Height="140" Margin="0,0,0,10" Background="#222222">
+                                                <Image Source="{Binding ImageBitmap}" Stretch="Uniform"/>
+                                            </Border>
+
+                                            <TextBlock Text="{Binding title}" Foreground="White" FontWeight="Bold" FontSize="16" Margin="0,0,0,15" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center"/>
+
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="10"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+
+                                                <ui:Button x:Name="Loc_BtnFundSupport" Grid.Column="0" Content="{Binding SupportText}" Background="#FF9800" Foreground="Black" FontWeight="Bold" HorizontalAlignment="Stretch" Height="36" Click="BtnFund_Click" Tag="{Binding fundUrl}" Cursor="Hand" BorderThickness="0"/>
+
+                                                <ui:Button x:Name="Loc_BtnFundDetails" Grid.Column="2" Content="{Binding DetailsText}" Background="Transparent" BorderBrush="#FF9800" Foreground="#FFB74D" BorderThickness="1" HorizontalAlignment="Stretch" Height="36" Click="BtnDetails_Click" Tag="{Binding detailsUrl}" Cursor="Hand"/>
+                                            </Grid>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
             </Border>
         </Grid>
         <Grid x:Name="TutorialGrid" Visibility="Collapsed">
@@ -2706,7 +2902,7 @@
                         </Grid.RowDefinitions>
 
                         <StackPanel>
-                            <TextBlock Text="Привіт, я Сіель!" 
+                            <TextBlock x:Name="TutorialHelloText" Text="Привіт, я Сіель!" 
                            FontSize="24" FontWeight="Bold" 
                            Foreground="{DynamicResource MainForegroundBrush}" 
                            FontFamily="Inter 18pt 18pt" 
@@ -2742,6 +2938,43 @@
                 </Border>
             </Grid>
         </Grid>
+        <Grid x:Name="TutorialOverlay" Panel.ZIndex="999" Visibility="Collapsed">
+
+            <Path Fill="#CC000000" Stretch="None" HorizontalAlignment="Left" VerticalAlignment="Top">
+                <Path.Data>
+                    <CombinedGeometry GeometryCombineMode="Exclude">
+                        <CombinedGeometry.Geometry1>
+                            <RectangleGeometry x:Name="OverlayScreenRect" Rect="0,0,2000,2000" />
+                        </CombinedGeometry.Geometry1>
+
+                        <CombinedGeometry.Geometry2>
+                            <RectangleGeometry x:Name="OverlayHoleRect" Rect="0,0,0,0" RadiusX="5" RadiusY="5"/>
+                        </CombinedGeometry.Geometry2>
+                    </CombinedGeometry>
+                </Path.Data>
+            </Path>
+
+            <Border x:Name="TutorialMessageParams" 
+        HorizontalAlignment="Left" VerticalAlignment="Top"
+        Background="White" CornerRadius="8" Padding="15" 
+        Width="300">
+                <Border.Effect>
+                    <DropShadowEffect Color="Black" Direction="315" ShadowDepth="5" BlurRadius="15" Opacity="0.4" />
+                </Border.Effect>
+
+                <ScrollViewer VerticalScrollBarVisibility="Auto" BorderThickness="0" Padding="0,0,5,0">
+                    <StackPanel>
+                        <TextBlock x:Name="TutorialTitleText" Text="Довідка тут!" FontWeight="Bold" FontSize="16" Foreground="Black" Margin="0,0,0,5"/>
+                        <TextBlock x:Name="TutorialBodyText" 
+                        Text="Якщо що, я (документація) завжди поряд з вами! Звертайтесь, якщо потрібно, натиснувши на цю кнопку. &quot;Інформація&quot;&gt;&quot;Документація&quot;" 
+                        TextWrapping="Wrap" Foreground="#555" Margin="0,0,0,15"/>
+
+                        <ui:Button x:Name="Loc_BtnUnderstood" Content="Зрозуміло, далі" Click="CloseTutorial_Click" 
+           HorizontalAlignment="Right" Padding="15,5" Background="{DynamicResource MainBackgroundButton}" Foreground="{DynamicResource MainForegroundBrush}" BorderBrush="{x:Null}" PressedForeground="{DynamicResource MainForegroundBrush}" Appearance="Info"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
         <Grid x:Name="SelectCreatePackMinecraft" Width="330" Height="258" Margin="315,142,315,142" Visibility="Collapsed">
             <Border x:Name="SelectCreatePackMinecraftBorder" BorderThickness="1" Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="14,14,14,14"/>
             <Border x:Name="SelectModPack"
@@ -2776,46 +3009,8 @@
                 </TransformGroup>
             </ui:SnackbarPresenter.RenderTransform>
         </ui:SnackbarPresenter>
-        <Grid x:Name="TutorialOverlay" Panel.ZIndex="999" Visibility="Collapsed">
-
-            <Path Fill="#CC000000" Stretch="None" HorizontalAlignment="Left" VerticalAlignment="Top">
-                <Path.Data>
-                    <CombinedGeometry GeometryCombineMode="Exclude">
-                        <CombinedGeometry.Geometry1>
-                            <RectangleGeometry x:Name="OverlayScreenRect" Rect="0,0,2000,2000" />
-                        </CombinedGeometry.Geometry1>
-
-                        <CombinedGeometry.Geometry2>
-                            <RectangleGeometry x:Name="OverlayHoleRect" Rect="0,0,0,0" RadiusX="5" RadiusY="5"/>
-                        </CombinedGeometry.Geometry2>
-                    </CombinedGeometry>
-                </Path.Data>
-            </Path>
-
-            <Border x:Name="TutorialMessageParams" 
-        HorizontalAlignment="Left" VerticalAlignment="Top"
-        Background="White" CornerRadius="8" Padding="15" 
-        Width="300">
-                <Border.Effect>
-                    <DropShadowEffect Color="Black" Direction="315" ShadowDepth="5" BlurRadius="15" Opacity="0.4" />
-                </Border.Effect>
-
-                <ScrollViewer VerticalScrollBarVisibility="Auto" BorderThickness="0" Padding="0,0,5,0">
-                    <StackPanel>
-                        <TextBlock x:Name="TutorialTitleText" Text="Довідка тут!" FontWeight="Bold" FontSize="16" Foreground="Black" Margin="0,0,0,5"/>
-                        <TextBlock x:Name="TutorialBodyText" 
-                        Text="Якщо що, я (документація) завжди поряд з вами! Звертайтесь, якщо потрібно, натиснувши на цю кнопку. &quot;Інформація&quot;&gt;&quot;Документація&quot;" 
-                        TextWrapping="Wrap" Foreground="#555" Margin="0,0,0,15"/>
-
-                        <ui:Button Content="Зрозуміло, далі" Click="CloseTutorial_Click" 
-                    HorizontalAlignment="Right" Padding="15,5" Background="{DynamicResource MainBackgroundButton}" Foreground="{DynamicResource MainForegroundBrush}" BorderBrush="{x:Null}" PressedForeground="{DynamicResource MainForegroundBrush}" Appearance="Info"/>
-                    </StackPanel>
-                </ScrollViewer>
-            </Border>
-        </Grid>
         <ui:TitleBar
     x:Name="MainTitleBar"
-    Title="CL - Головне вікно"
     Grid.Row="0"
     Height="30"
     VerticalAlignment="Top"

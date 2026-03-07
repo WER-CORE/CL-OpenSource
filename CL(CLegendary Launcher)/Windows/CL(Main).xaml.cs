@@ -47,6 +47,9 @@ namespace CL_CLegendary_Launcher_
         byte selectmodificed = 0;
         byte SelectModPackCreate = 0;
 
+        private string currentFundUrl = "https://ab3.support/";
+        private string currentDetailsUrl = "https://ab3.support/";
+
         private int _currentPage = 0;
         private const int ITEMS_PER_PAGE = 10; 
         private CancellationTokenSource _searchCts;
@@ -72,8 +75,21 @@ namespace CL_CLegendary_Launcher_
         private NewsService _newsService;
         public CL_Main_()
         {
+            DateTime today = DateTime.Now;
+
+            LocalizationManager.LoadLanguage(SettingsManager.Default.LanguageCode);
+            InitializeLanguagesAsync();
+
             InitializeComponent();
-            this.AllowDrop = false;
+            bool isAprilFoolsWeek = today.Month == 4 && today.Day >= 1 && today.Day <= 7;
+
+            if (SettingsManager.Default.LanguageCode == "uk_UA" && isAprilFoolsWeek)
+            {
+                _1AprilGird.Visibility = System.Windows.Visibility.Visible;
+            }
+            else { _1AprilGird.Visibility = System.Windows.Visibility.Collapsed; }
+
+            UpdateLocalization();
             CheckAndCreateDefaultPath();
             InitializeServices();
 
@@ -98,7 +114,7 @@ namespace CL_CLegendary_Launcher_
         {
             loginHandler = JELoginHandlerBuilder.BuildDefault();
 
-            _versionService = new VersionService(Settings1.Default.PathLacunher);
+            _versionService = new VersionService(SettingsManager.Default.PathLacunher);
 
             _tutorialService = new TutorialOverlayService(
                 this, TutorialOverlay, OverlayHoleRect, OverlayScreenRect, TutorialMessageParams, TutorialTitleText, TutorialBodyText
@@ -114,7 +130,7 @@ namespace CL_CLegendary_Launcher_
             _serverListService = new ServerListService(this);
             _lastActionService = new LastActionService(this);
             _gameLaunchService = new GameLaunchService(this, _gameSessionManager, _lastActionService);
-            _modDownloadService = new ModDownloadService(this);
+            _modDownloadService = new ModDownloadService();
 
             _modpackService = new ModpackService(this, _gameSessionManager, _gameLaunchService,_modDownloadService);
             _screenshotService = new ScreenshotService();
@@ -122,15 +138,15 @@ namespace CL_CLegendary_Launcher_
 
         private void CheckAndCreateDefaultPath()
         {
-            if (string.IsNullOrWhiteSpace(Settings1.Default.PathLacunher))
+            if (string.IsNullOrWhiteSpace(SettingsManager.Default.PathLacunher))
             {
                 string defaultPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".ClMinecraft");
                 if (!Directory.Exists(defaultPath))
                 {
                     Directory.CreateDirectory(defaultPath);
                 }
-                Settings1.Default.PathLacunher = defaultPath;
-                Settings1.Default.Save();
+                SettingsManager.Default.PathLacunher = defaultPath;
+                SettingsManager.Save();
             }
         }
         private async void MainTitleBar_MinimizeClicked(TitleBar sender, System.Windows.RoutedEventArgs args)

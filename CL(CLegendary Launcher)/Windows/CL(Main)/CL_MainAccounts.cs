@@ -20,8 +20,8 @@ namespace CL_CLegendary_Launcher_
 
             if (profiles == null || profiles.Count == 0)
             {
-                Settings1.Default.SelectIndexAccount = -1;
-                Settings1.Default.Save();
+                SettingsManager.Default.SelectIndexAccount = -1;
+                SettingsManager.Save();
                 return;
             }
 
@@ -40,43 +40,98 @@ namespace CL_CLegendary_Launcher_
                 ListAccount.Items.Add(uiItem);
             }
 
-            int savedIndex = Settings1.Default.SelectIndexAccount;
+            int savedIndex = SettingsManager.Default.SelectIndexAccount;
             if (savedIndex >= 0 && savedIndex < profiles.Count)
             {
                 OnSelectProfileClicked(profiles[savedIndex]);
             }
         }
 
+        private void IconAccount_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            try
+            {
+                Click();
+
+                if (PanelManegerAccount.Visibility == Visibility.Visible)
+                {
+                    IconRotateTransform.Angle = 0;
+                    AnimationService.AnimatePageTransitionExit(PanelManegerAccount, -20);
+
+                    ListAccount.Items?.Clear();
+                }
+                else
+                {
+                    IconRotateTransform.Angle = 180;
+                    AnimationService.AnimatePageTransition(PanelManegerAccount, -20);
+
+                    if (PanelListStats.Visibility == Visibility.Visible)
+                    {
+                        AnimationService.FadeOut(PanelListStats, 0.3);
+                    }
+
+                    _ = LoadProfilesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                MascotMessageBox.Show(
+                    string.Format(LocalizationManager.GetString("Accounts.MenuError", "Помилка меню акаунтів: {0}"), ex.Message),
+                    LocalizationManager.GetString("Dialogs.Error", "Помилка"),
+                    MascotEmotion.Sad);
+            }
+        }
+
         private void OnDeleteProfileClicked(ProfileItem profile)
         {
-            var result = MascotMessageBox.Ask($"Видалити {profile.NameAccount}?", "Видалення", MascotEmotion.Alert);
+            var result = MascotMessageBox.Ask(
+                string.Format(LocalizationManager.GetString("Dialogs.DeleteConfirm", "Видалити {0}?"), profile.NameAccount),
+                LocalizationManager.GetString("Dialogs.DeleteConfirmTitle", "Видалення"), MascotEmotion.Alert);
+
             if (result != true) return;
 
-            _accountService.DeleteProfile(profile);
-
-            var itemToRemove = ListAccount.Items.OfType<ItemManegerProfile>()
-                                                .FirstOrDefault(x => x.UUID == profile.UUID);
-
-            if (itemToRemove != null)
+            try
             {
-                ListAccount.Items.Remove(itemToRemove);
-            }
+                _accountService.DeleteProfile(profile);
 
-            if (NameNik.Text == profile.NameAccount)
+                var itemToRemove = ListAccount.Items.OfType<FrameworkElement>()
+                                                    .FirstOrDefault(x => (x.Tag as ProfileItem)?.UUID == profile.UUID);
+
+                if (itemToRemove != null)
+                {
+                    ListAccount.Items.Remove(itemToRemove);
+                }
+
+                if (NameNik.Text == profile.NameAccount)
+                {
+                    ResetCurrentAccountUI();
+                }
+                else
+                {
+                    UpdateSavedIndex();
+                }
+
+                NotificationService.ShowNotification(
+                    LocalizationManager.GetString("Dialogs.Success", "Успіх!"),
+                    LocalizationManager.GetString("Accounts.ProfileDeleted", "Профіль стерто."), SnackbarPresenter, 3);
+            }
+            catch (Exception ex)
             {
-                NameNik.Text = "Відсутній акаунт";
-                IconAccount.Source = null;
-                selectAccountNow = 0;
-
-                Settings1.Default.SelectIndexAccount = -1;
-                Settings1.Default.Save();
+                MascotMessageBox.Show(
+                    string.Format(LocalizationManager.GetString("Accounts.DeleteFailed", "Не вдалося видалити: {0}"), ex.Message),
+                    LocalizationManager.GetString("Dialogs.Error", "Помилка"),
+                    MascotEmotion.Sad);
             }
-            else
-            {
-                UpdateSavedIndex();
-            }
+        }
 
-            NotificationService.ShowNotification("Успіх", "Профіль стерто.", SnackbarPresenter, 3);
+        private void ResetCurrentAccountUI()
+        {
+            NameNik.Text = LocalizationManager.GetString("Accounts.NoAccount", "Відсутній акаунт");
+            IconAccount.Source = null;
+            selectAccountNow = 0;
+
+            SettingsManager.Default.SelectIndexAccount = -1;
+            SettingsManager.Save();
         }
 
         private async void OnSelectProfileClicked(ProfileItem profile)
@@ -88,28 +143,7 @@ namespace CL_CLegendary_Launcher_
                 NameNik.Text = profile.NameAccount;
                 selectAccountNow = profile.TypeAccount;
 
-                if (!string.IsNullOrEmpty(profile.ImageUrl))
-                {
-                    try
-                    {
-                        var image = new BitmapImage();
-                        image.BeginInit();
-                        image.UriSource = new Uri(profile.ImageUrl, UriKind.RelativeOrAbsolute);
-                        image.CacheOption = BitmapCacheOption.OnLoad;
-                        image.DecodePixelWidth = 64;
-                        image.EndInit();
-                        image.Freeze();
-                        IconAccount.Source = image;
-                    }
-                    catch
-                    {
-                        IconAccount.Source = null;
-                    }
-                }
-                else
-                {
-                    IconAccount.Source = null;
-                }
+                SetAccountImage(profile.ImageUrl);
 
                 UpdateSavedIndex(profile);
 
@@ -117,7 +151,35 @@ namespace CL_CLegendary_Launcher_
             }
             catch (Exception ex)
             {
-                MascotMessageBox.Show(ex.Message, "Помилка входу", MascotEmotion.Sad);
+                MascotMessageBox.Show(
+                    ex.Message,
+                    LocalizationManager.GetString("Accounts.LoginLittleSkinErrorTitle", "Помилка входу"),
+                    MascotEmotion.Sad);
+            }
+        }
+
+        private void SetAccountImage(string imageUrl)
+        {
+            if (string.IsNullOrEmpty(imageUrl))
+            {
+                IconAccount.Source = null;
+                return;
+            }
+
+            try
+            {
+                var image = new BitmapImage();
+                image.BeginInit();
+                image.UriSource = new Uri(imageUrl, UriKind.RelativeOrAbsolute);
+                image.CacheOption = BitmapCacheOption.OnLoad;
+                image.DecodePixelWidth = 64;
+                image.EndInit();
+                image.Freeze();
+                IconAccount.Source = image;
+            }
+            catch
+            {
+                IconAccount.Source = null;
             }
         }
 
@@ -131,73 +193,82 @@ namespace CL_CLegendary_Launcher_
             }
 
             int index = allProfiles.FindIndex(p => p.UUID == currentProfile.UUID);
-            Settings1.Default.SelectIndexAccount = index;
-            Settings1.Default.Save();
+            if (index != SettingsManager.Default.SelectIndexAccount)
+            {
+                SettingsManager.Default.SelectIndexAccount = index;
+                SettingsManager.Save();
+            }
         }
+
         private async void CreateAccount_Offline_Click(object sender, RoutedEventArgs e)
         {
-            Click(); 
-
+            Click();
             if (string.IsNullOrWhiteSpace(NameNikManeger.Text)) return;
 
             try
             {
                 await _accountService.AddOfflineAccountAsync(NameNikManeger.Text);
-
                 NameNikManeger.Text = null;
+
                 CloseAccountSelectionUI();
 
-                await LoadProfilesAsync();
+                if (PanelManegerAccount.Visibility == Visibility.Visible)
+                    await LoadProfilesAsync();
             }
             catch (Exception ex)
             {
-                MascotMessageBox.Show($"Не вдалося створити профіль: {ex.Message}", "Помилка", MascotEmotion.Sad);
+                MascotMessageBox.Show(
+                    string.Format(LocalizationManager.GetString("Accounts.ProfileCreateError", "Не вдалося створити профіль: {0}"), ex.Message),
+                    LocalizationManager.GetString("Dialogs.Error", "Помилка"),
+                    MascotEmotion.Sad);
             }
         }
+
         private async void MicrosoftLoginButton_Click(object sender, RoutedEventArgs e)
         {
             Click();
             try
             {
+                CloseAccountSelectionUI();
+
                 await _accountService.AddMicrosoftAccountAsync();
 
-                Settings1.Default.MicrosoftAccount = true;
-                Settings1.Default.Save();
+                SettingsManager.Default.MicrosoftAccount = true;
+                SettingsManager.Save();
 
                 await LoadProfilesAsync();
-                MascotMessageBox.Show("Вхід успішний!", "Ура", MascotEmotion.Happy);
+                MascotMessageBox.Show(
+                    LocalizationManager.GetString("Accounts.LoginSuccess", "Вхід успішний!"),
+                    LocalizationManager.GetString("Accounts.LoginSuccessTitle", "Ура"),
+                    MascotEmotion.Happy);
             }
             catch (Exception ex)
             {
-                MascotMessageBox.Show(ex.Message, "Помилка", MascotEmotion.Sad);
-            }
-            finally
-            {
-                CloseAccountSelectionUI();
+                MascotMessageBox.Show(
+                    ex.Message,
+                    LocalizationManager.GetString("Dialogs.Error", "Помилка"),
+                    MascotEmotion.Sad);
             }
         }
+
         private async void LoginAccountLittleSkin_Click(object sender, RoutedEventArgs e)
         {
             Click();
-
             try
             {
-                await _accountService.AddLittleSkinAccountAsync(Login_LittleSkin.Text, PasswordLittleSkin.Password); 
+                await _accountService.AddLittleSkinAccountAsync(Login_LittleSkin.Text, PasswordLittleSkin.Password);
 
                 Login_LittleSkin.Text = null;
                 PasswordLittleSkin.Password = null;
 
                 CloseAccountSelectionUI();
-
                 await LoadProfilesAsync();
             }
             catch (Exception ex)
             {
                 MascotMessageBox.Show(
-                    $"Ех, біда! Не вдалося підключитися до LittleSkin.\n" +
-                    $"Ти впевнений, що ввів правильний логін та пароль?\n\n" +
-                    $"Ось що пішло не так: {ex.Message}",
-                    "Помилка LittleSkin",
+                    string.Format(LocalizationManager.GetString("Accounts.LittleSkinError", "Ех, біда! Не вдалося підключитися до LittleSkin.\nДеталі: {0}"), ex.Message),
+                    LocalizationManager.GetString("Accounts.LittleSkinErrorTitle", "Помилка LittleSkin"),
                     MascotEmotion.Sad
                 );
             }
@@ -205,7 +276,7 @@ namespace CL_CLegendary_Launcher_
 
         private void CloseAccountSelectionUI()
         {
-            AnimationService.FadeOut(GridOfflineMode, 0.2); 
+            AnimationService.FadeOut(GridOfflineMode, 0.2);
             AnimationService.FadeOut(GridOnlineMode, 0.2);
             AnimationService.FadeOut(GridFormAccountAdd, 0.2);
             AnimationService.FadeOut(GridSelectAccountType, 0.2);
@@ -215,91 +286,60 @@ namespace CL_CLegendary_Launcher_
         private void AddProfile_MouseDown(object sender, MouseButtonEventArgs e)
         {
             Click();
-
             AnimationService.AnimatePageTransition(GridFormAccountAdd);
             AnimationService.AnimatePageTransition(GridOfflineMode);
             AnimationService.AnimatePageTransition(GridSelectAccountType);
-
-            string directoryPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data");
-            if (!System.IO.Directory.Exists(directoryPath))
-            {
-                System.IO.Directory.CreateDirectory(directoryPath);
-            }
         }
 
         private void GirdFormAccountAdd_MouseDown(object sender, MouseButtonEventArgs e)
         {
             Click();
-            if (GridSelectAccountType.Visibility == Visibility.Visible)
-            {
-                CloseAccountSelectionUI();
-            }
+            CloseAccountSelectionUI();
+
             if (SelectCreatePackMinecraft.Visibility == Visibility.Visible)
             {
                 AnimationService.AnimatePageTransitionExit(SelectCreatePackMinecraft);
                 AnimationService.AnimatePageTransitionExit(GridFormAccountAdd);
             }
         }
+
         private void MicrosoftAccount_MouseDown(object sender, MouseButtonEventArgs e)
         {
             Click();
-            AnimationService.AnimatePageTransitionExit(GridLittleSkinMode, default, 0.2);
-            AnimationService.AnimatePageTransitionExit(GridOfflineMode, default, 0.2);
-            AnimationService.AnimatePageTransition(GridOnlineMode);
+            SwitchAccountAddTab(GridOnlineMode);
         }
 
         private void OfflineAccount_MouseDown(object sender, MouseButtonEventArgs e)
         {
             Click();
-            AnimationService.AnimatePageTransitionExit(GridLittleSkinMode, default, 0.2);
-            AnimationService.AnimatePageTransitionExit(GridOnlineMode, default, 0.2);
-            AnimationService.AnimatePageTransition(GridOfflineMode);
+            SwitchAccountAddTab(GridOfflineMode);
         }
 
         private void LittleSkinAccount_MouseDown(object sender, MouseButtonEventArgs e)
         {
             Click();
-            AnimationService.AnimatePageTransitionExit(GridOfflineMode, default, 0.2);
-            AnimationService.AnimatePageTransitionExit(GridOnlineMode, default, 0.2);
-            AnimationService.AnimatePageTransition(GridLittleSkinMode);
+            SwitchAccountAddTab(GridLittleSkinMode);
         }
 
-        private void IconAccount_MouseDown(object sender, MouseButtonEventArgs e)
+        private async void SwitchAccountAddTab(UIElement targetGrid)
         {
-            try
-            {
-                LoadProfilesAsync();
+            AnimationService.AnimatePageTransitionExit(GridLittleSkinMode, default, 0.2);
+            AnimationService.AnimatePageTransitionExit(GridOfflineMode, default, 0.2);
+            AnimationService.AnimatePageTransitionExit(GridOnlineMode, default, 0.2);
 
-                if (PanelManegerAccount.Visibility == Visibility.Visible)
-                {
-                    IconRotateTransform.Angle = 0;
-                    AnimationService.AnimatePageTransitionExit(PanelManegerAccount, -20);
-                    ListAccount.Items?.Clear();
-                }
-                else
-                {
-                    IconRotateTransform.Angle = 180;
-                    AnimationService.AnimatePageTransition(PanelManegerAccount, -20);
-                }
+            await Task.Delay(300);
 
-                if (PanelListStats.Visibility == Visibility.Visible)
-                {
-                    AnimationService.FadeOut(PanelListStats, 0.3);
-                }
-
-                Click();
-            }
-            catch (Exception ex)
-            {
-                MascotMessageBox.Show($"Помилка меню акаунтів: {ex.Message}", "Помилка", MascotEmotion.Sad);
-            }
+            AnimationService.AnimatePageTransition(targetGrid);
         }
 
         private void StatsTextOpen_MouseDown(object sender, MouseButtonEventArgs e)
         {
             Click();
             TextStatsGameMinecraft.Text = _gameSessionManager.GetFormattedStats();
+
             AnimationService.AnimatePageTransitionExit(PanelManegerAccount, -20, 0.2);
+            IconRotateTransform.Angle = 0;
+
             AnimationService.AnimatePageTransition(PanelListStats, 20);
         }
     }

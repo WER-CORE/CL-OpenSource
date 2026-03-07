@@ -4,17 +4,16 @@ using CurseForge.APIClient.Models.Files;
 using CurseForge.APIClient.Models.Mods;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Serialization;
 using System;
+using System.Buffers;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows; 
-using File = System.IO.File;
+using System.Windows;
 
 namespace CL_CLegendary_Launcher_.Class
 {
@@ -32,7 +31,6 @@ namespace CL_CLegendary_Launcher_.Class
         public string Site { get; set; }
         public int CF_FileId { get; set; }
     }
-
     public class ModVersionInfo
     {
         [JsonProperty("project_id")] public string ModId { get; set; }
@@ -45,30 +43,25 @@ namespace CL_CLegendary_Launcher_.Class
         [JsonProperty("loaders")] public List<string> Loaders { get; set; } = new List<string>();
         [JsonProperty("version_type")] public string VersionType { get; set; }
     }
+    public record DownloadProgressInfo(string FileName, int Percent, int FilesCompleted, int TotalFiles);
 
     public class ModDownloadService
     {
-        public CL_Main_ _main;
         private static readonly HttpClient _httpClient = new HttpClient { Timeout = TimeSpan.FromMinutes(10) };
-        private static ApiClient _cfApiClient;
+        private static readonly ApiClient _cfApiClient = new ApiClient(Secrets.CurseForgeKey);
+
         private static readonly SemaphoreSlim _downloadSemaphore = new SemaphoreSlim(3);
         private readonly JsonSerializerSettings _modrinthSettings;
 
         static ModDownloadService()
         {
-            _cfApiClient = new ApiClient(Secrets.CurseForgeKey);
+            _httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("CL-Legendary-Launcher/1.0");
         }
 
-        public ModDownloadService(CL_Main_ main)
+        public ModDownloadService()
         {
-            if (_httpClient.DefaultRequestHeaders.UserAgent.Count == 0)
-            {
-                _httpClient.DefaultRequestHeaders.UserAgent.ParseAdd($"CL-Legendary-Launcher/1.0");
-            }
-
             _modrinthSettings = new JsonSerializerSettings();
             _modrinthSettings.Converters.Add(new ModrinthVersionConverter());
-            _main = main;
         }
 
         public string GetTargetFolderPath(InstalledModpack pack, byte modType)
@@ -81,7 +74,7 @@ namespace CL_CLegendary_Launcher_.Class
                 4 => "datapacks",
                 _ => "mods"
             };
-            return Path.Combine(pack.Path, folderName); 
+            return Path.Combine(pack.Path, folderName);
         }
 
         public async Task<List<ModSearchResult>> SearchModsAsync(string query, string site, string loader, int modType, int offset = 0)
@@ -102,156 +95,177 @@ namespace CL_CLegendary_Launcher_.Class
             string? customDestinationPath = null)
         {
             DowloadProgress progressWindow = null;
-            CancellationTokenSource cts = new CancellationTokenSource();
+            var cts = new CancellationTokenSource();
 
             Application.Current.Dispatcher.Invoke(() =>
             {
                 progressWindow = new DowloadProgress();
-                progressWindow.CTS = cts; 
+                progressWindow.CTS = cts;
                 progressWindow.Show();
                 progressWindow.DowloadProgressBarVersion(0, version.VersionName);
-                progressWindow.DowloadProgressBarFileTask(0, 0, "Аналіз залежностей...");
+                progressWindow.DowloadProgressBarFileTask(0, 0, LocalizationManager.GetString("DownloadManager.AnalyzingDependencies", "Аналіз залежностей..."));
+            });
+
+            var progressReporter = new Progress<DownloadProgressInfo>(info =>
+            {
+                if (progressWindow == null) return;
+
+                progressWindow.FileTXTName.Text = info.FileName;
+                progressWindow.DowloadProgressBarFile(info.Percent);
+
+                if (info.TotalFiles > 0)
+                {
+                    int totalPercent = (int)((double)info.FilesCompleted / info.TotalFiles * 100);
+                    progressWindow.DowloadProgressBarVersion(totalPercent, version.VersionName);
+                    progressWindow.DowloadProgressBarFileTask(info.TotalFiles, info.FilesCompleted, info.FileName);
+                }
             });
 
             try
             {
                 string modsFolder = string.IsNullOrEmpty(customDestinationPath)
-                    ? Path.Combine(Settings1.Default.PathLacunher, modType switch { 1 => "shaderpacks", 2 => "resourcepacks", _ => "mods" })
+                    ? Path.Combine(SettingsManager.Default.PathLacunher, modType switch { 1 => "shaderpacks", 2 => "resourcepacks", _ => "mods" })
                     : customDestinationPath;
 
                 Directory.CreateDirectory(modsFolder);
 
-                var filesToDownload = new List<string> { version.DownloadUrl };
+                var filesToDownload = new HashSet<string> { version.DownloadUrl };
 
-                if (modType == 0 && Settings1.Default.ModDep)
+                if (modType == 0 && SettingsManager.Default.ModDep)
                 {
                     var deps = await GetDependencyUrlsAsync(version);
-                    if (deps != null) filesToDownload.AddRange(deps.Distinct());
+                    if (deps != null)
+                    {
+                        foreach (var dep in deps) filesToDownload.Add(dep);
+                    }
                 }
 
                 int totalFiles = filesToDownload.Count;
-                int downloadedFiles = 0;
+                int downloadedCount = 0;
 
-                Application.Current.Dispatcher.Invoke(() =>
-                    progressWindow.DowloadProgressBarFileTask(totalFiles, 0, "Початок завантаження..."));
+                ((IProgress<DownloadProgressInfo>)progressReporter).Report(new DownloadProgressInfo("Start", 0, 0, totalFiles));
 
-                foreach (var url in filesToDownload)
+                var tasks = filesToDownload.Select(async url =>
                 {
-                    if (cts.Token.IsCancellationRequested) break;
-
-                    string fileName = Path.GetFileName(new Uri(url).AbsolutePath);
-                    string filePath = Path.Combine(modsFolder, fileName);
-
-                    Application.Current.Dispatcher.Invoke(() =>
-                        progressWindow.FileTXTName.Text = fileName); 
-                    if (!File.Exists(filePath))
+                    await _downloadSemaphore.WaitAsync(cts.Token);
+                    try
                     {
-                        var fileProgress = new Progress<int>(percent =>
-                        {
-                            Application.Current.Dispatcher.Invoke(() =>
-                                progressWindow.DowloadProgressBarFile(percent));
-                        });
+                        string fileName = Path.GetFileName(new Uri(url).AbsolutePath);
+                        string filePath = Path.Combine(modsFolder, fileName);
 
-                        await _downloadSemaphore.WaitAsync(cts.Token);
-                        try
+                        if (!System.IO.File.Exists(filePath))
                         {
-                            await DownloadFileHelperAsync(url, filePath, cts.Token, fileProgress);
+                            await DownloadFileHelperAsync(url, filePath, cts.Token, percent =>
+                            {
+                                ((IProgress<DownloadProgressInfo>)progressReporter).Report(
+                                    new DownloadProgressInfo(fileName, percent, downloadedCount, totalFiles));
+                            });
                         }
-                        finally
-                        {
-                            _downloadSemaphore.Release();
-                        }
+
+                        Interlocked.Increment(ref downloadedCount);
+
+                        ((IProgress<DownloadProgressInfo>)progressReporter).Report(
+                            new DownloadProgressInfo(fileName, 100, downloadedCount, totalFiles));
                     }
-
-                    downloadedFiles++;
-
-                    int totalPercent = (int)((double)downloadedFiles / totalFiles * 100);
-                    Application.Current.Dispatcher.Invoke(() =>
+                    finally
                     {
-                        progressWindow.DowloadProgressBarVersion(totalPercent, version.VersionName);
-                        progressWindow.DowloadProgressBarFileTask(totalFiles, downloadedFiles, fileName);
-                    });
-                }
+                        _downloadSemaphore.Release();
+                    }
+                });
+
+                await Task.WhenAll(tasks);
             }
             catch (OperationCanceledException)
             {
             }
             catch (Exception ex)
             {
-                MascotMessageBox.Show($"Помилка: {ex.Message}", "Помилка завантаження", MascotEmotion.Sad);
+                MascotMessageBox.Show(
+                    string.Format(LocalizationManager.GetString("DownloadManager.ErrorDesc", "Помилка: {0}"), ex.Message),
+                    LocalizationManager.GetString("DownloadManager.ErrorTitle", "Помилка завантаження"),
+                    MascotEmotion.Sad);
             }
             finally
             {
                 Application.Current.Dispatcher.Invoke(() => progressWindow?.Close());
+                cts.Dispose();
             }
         }
 
-        private async Task DownloadFileHelperAsync(string url, string path, CancellationToken token, IProgress<int> progress)
+        private async Task DownloadFileHelperAsync(string url, string path, CancellationToken token, Action<int> onProgress)
         {
             int maxRetries = 3;
-            int delay = 2000;
+            byte[] buffer = ArrayPool<byte>.Shared.Rent(8192);
 
-            for (int i = 0; i < maxRetries; i++)
+            try
             {
-                try
+                for (int i = 0; i < maxRetries; i++)
                 {
-                    using var response = await _httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, token);
-
-                    if (response.StatusCode == System.Net.HttpStatusCode.ServiceUnavailable ||
-                        response.StatusCode == (System.Net.HttpStatusCode)429)
+                    try
                     {
-                        if (i == maxRetries - 1) response.EnsureSuccessStatusCode(); 
-                        await Task.Delay(delay * (i + 1), token);
-                        continue;
-                    }
+                        using var response = await _httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, token);
 
-                    response.EnsureSuccessStatusCode();
-
-                    long? totalBytes = response.Content.Headers.ContentLength;
-                    using var contentStream = await response.Content.ReadAsStreamAsync(token);
-
-                    string tempPath = path + ".tmp";
-                    var buffer = new byte[8192];
-
-                    using (var fileStream = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true))
-                    {
-                        long totalRead = 0;
-                        int bytesRead;
-                        long lastReportedBytes = 0;
-
-                        while ((bytesRead = await contentStream.ReadAsync(buffer, 0, buffer.Length, token)) > 0)
+                        if (response.StatusCode == System.Net.HttpStatusCode.ServiceUnavailable ||
+                            response.StatusCode == (System.Net.HttpStatusCode)429)
                         {
-                            await fileStream.WriteAsync(buffer, 0, bytesRead, token);
-                            totalRead += bytesRead;
+                            if (i == maxRetries - 1) response.EnsureSuccessStatusCode();
+                            await Task.Delay(2000 * (i + 1), token);
+                            continue;
+                        }
 
-                            if (progress != null && totalBytes.HasValue)
+                        response.EnsureSuccessStatusCode();
+
+                        long? totalBytes = response.Content.Headers.ContentLength;
+                        using var contentStream = await response.Content.ReadAsStreamAsync(token);
+
+                        string tempPath = path + ".tmp";
+
+                        using (var fileStream = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true))
+                        {
+                            long totalRead = 0;
+                            int bytesRead;
+                            long lastReportedBytes = 0;
+
+                            while ((bytesRead = await contentStream.ReadAsync(buffer, 0, buffer.Length, token)) > 0)
                             {
-                                if (totalRead - lastReportedBytes > 102400 || totalRead == totalBytes)
+                                await fileStream.WriteAsync(buffer, 0, bytesRead, token);
+                                totalRead += bytesRead;
+
+                                if (totalBytes.HasValue)
                                 {
-                                    lastReportedBytes = totalRead;
-                                    int percent = (int)((double)totalRead / totalBytes.Value * 100);
-                                    progress.Report(percent);
+                                    if (totalRead - lastReportedBytes > 102400 || totalRead == totalBytes)
+                                    {
+                                        lastReportedBytes = totalRead;
+                                        int percent = (int)((double)totalRead / totalBytes.Value * 100);
+                                        onProgress?.Invoke(percent);
+                                    }
                                 }
                             }
                         }
-                    }
 
-                    if (File.Exists(path)) File.Delete(path);
-                    File.Move(tempPath, path);
-                    return; 
-                }
-                catch (HttpRequestException)
-                {
-                    if (i == maxRetries - 1) throw; 
-                    await Task.Delay(1000, token);
-                }
-                catch (Exception)
-                {
-                    if (File.Exists(path + ".tmp")) File.Delete(path + ".tmp");
-                    throw;
+                        if (System.IO.File.Exists(path)) System.IO.File.Delete(path);
+                        System.IO.File.Move(tempPath, path);
+                        return;
+                    }
+                    catch (HttpRequestException)
+                    {
+                        if (i == maxRetries - 1) throw;
+                        await Task.Delay(1000, token);
+                    }
+                    catch (Exception)
+                    {
+                        if (System.IO.File.Exists(path + ".tmp"))
+                            System.IO.File.Delete(path + ".tmp");
+                        throw;
+                    }
                 }
             }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(buffer);
+            }
         }
+
         #region Modrinth Logic
         private async Task<List<ModSearchResult>> SearchModrinthAsync(string query, string loader, int modType, int offset = 0)
         {
@@ -260,7 +274,7 @@ namespace CL_CLegendary_Launcher_.Class
                 1 => "shader",
                 2 => "resourcepack",
                 3 => null,
-                4 => "datapacks", 
+                4 => "datapacks",
                 _ => "mod"
             };
 
@@ -278,25 +292,13 @@ namespace CL_CLegendary_Launcher_.Class
             if (projectType == "mod" && !string.IsNullOrEmpty(loader) && modType != 4)
             {
                 string loaderLower = loader.ToLower();
-
-                if (loaderLower == "quilt")
-                {
-                    facets.Add("[\"categories:quilt\",\"categories:fabric\"]");
-                }
-                else if (loaderLower == "neoforge")
-                {
-                    facets.Add("[\"categories:neoforge\",\"categories:forge\"]");
-                }
-                else
-                {
-                    facets.Add($"[\"categories:{loaderLower}\"]");
-                }
+                if (loaderLower == "quilt") facets.Add("[\"categories:quilt\",\"categories:fabric\"]");
+                else if (loaderLower == "neoforge") facets.Add("[\"categories:neoforge\",\"categories:forge\"]");
+                else facets.Add($"[\"categories:{loaderLower}\"]");
             }
 
             string facetsJson = "[" + string.Join(",", facets) + "]";
-
             string index = string.IsNullOrWhiteSpace(query) ? "downloads" : "relevance";
-
             string url = $"https://api.modrinth.com/v2/search?query={Uri.EscapeDataString(query)}&index={index}&offset={offset}&facets={facetsJson}&limit=10";
 
             try
@@ -331,18 +333,26 @@ namespace CL_CLegendary_Launcher_.Class
                 return new List<ModSearchResult>();
             }
         }
+
         private async Task<List<ModVersionInfo>> GetModrinthVersionsAsync(string modId)
         {
             string url = $"https://api.modrinth.com/v2/project/{modId}/version";
-            var response = await _httpClient.GetStringAsync(url);
+            try
+            {
+                var response = await _httpClient.GetStringAsync(url);
+                var versions = JsonConvert.DeserializeObject<List<ModVersionInfo>>(response, _modrinthSettings);
 
-            var versions = JsonConvert.DeserializeObject<List<ModVersionInfo>>(response, _modrinthSettings);
+                if (versions == null) return new List<ModVersionInfo>();
 
-            if (versions == null) return new List<ModVersionInfo>();
-
-            return versions
-                .Where(v => v.VersionType == "release" || v.VersionType == "beta")
-                .ToList();
+                return versions
+                    .Where(v => v.VersionType == "release" || v.VersionType == "beta")
+                    .ToList();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Modrinth Versions Error: {ex.Message}");
+                return new List<ModVersionInfo>();
+            }
         }
         #endregion
 
@@ -350,7 +360,6 @@ namespace CL_CLegendary_Launcher_.Class
         private async Task<List<ModSearchResult>> SearchCurseForgeAsync(string query, string loader, int modType, int offset = 0)
         {
             ModLoaderType? targetLoaderType = null;
-
             if (modType == 0)
             {
                 targetLoaderType = loader switch
@@ -372,10 +381,7 @@ namespace CL_CLegendary_Launcher_.Class
                 _ => 6
             };
 
-            var sortField = string.IsNullOrWhiteSpace(query)
-                ? ModsSearchSortField.Popularity
-                : ModsSearchSortField.Featured;
-
+            var sortField = string.IsNullOrWhiteSpace(query) ? ModsSearchSortField.Popularity : ModsSearchSortField.Featured;
             string cleanQuery = query?.Trim();
 
             try
@@ -417,44 +423,61 @@ namespace CL_CLegendary_Launcher_.Class
                 return new List<ModSearchResult>();
             }
         }
+
         private async Task<List<ModVersionInfo>> GetCurseForgeVersionsAsync(int modId)
         {
-            var response = await _cfApiClient.GetModFilesAsync(modId);
-            var list = new List<ModVersionInfo>();
-            if (response?.Data == null) return list;
-
-            var releaseFiles = response.Data
-                .Where(file => file.ReleaseType == FileReleaseType.Release ||
-                               file.ReleaseType == FileReleaseType.Beta);
-
-            foreach (var file in releaseFiles)
+            try
             {
-                list.Add(new ModVersionInfo
+                var response = await _cfApiClient.GetModFilesAsync(modId);
+                var list = new List<ModVersionInfo>();
+                if (response?.Data == null) return list;
+
+                var releaseFiles = response.Data
+                    .Where(file => file.ReleaseType == FileReleaseType.Release ||
+                                   file.ReleaseType == FileReleaseType.Beta);
+
+                foreach (var file in releaseFiles)
                 {
-                    ModId = modId.ToString(),
-                    VersionId = file.Id.ToString(),
-                    VersionName = file.DisplayName,
-                    FileName = file.FileName,
-                    DownloadUrl = file.DownloadUrl,
-                    Site = "CurseForge",
-                    GameVersions = file.GameVersions.ToList(),
-                    Loaders = file.GameVersions
-                                  .Where(gv => gv == "Forge" || gv == "Fabric" || gv == "Quilt" || gv == "NeoForge")
-                                  .Select(l => l.ToLower()).ToList(),
-                    VersionType = file.ReleaseType.ToString()
-                });
+                    list.Add(new ModVersionInfo
+                    {
+                        ModId = modId.ToString(),
+                        VersionId = file.Id.ToString(),
+                        VersionName = file.DisplayName,
+                        FileName = file.FileName,
+                        DownloadUrl = file.DownloadUrl,
+                        Site = "CurseForge",
+                        GameVersions = file.GameVersions.ToList(),
+                        Loaders = file.GameVersions
+                                      .Where(gv => gv == "Forge" || gv == "Fabric" || gv == "Quilt" || gv == "NeoForge")
+                                      .Select(l => l.ToLower()).ToList(),
+                        VersionType = file.ReleaseType.ToString()
+                    });
+                }
+                return list;
             }
-            return list;
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"CurseForge Versions Error: {ex.Message}");
+                return new List<ModVersionInfo>();
+            }
         }
         #endregion
 
         #region Dependency Logic
         private async Task<List<string>> GetDependencyUrlsAsync(ModVersionInfo parentMod)
         {
-            if (parentMod.Site == "Modrinth")
-                return await GetModrinthDependencyUrls(parentMod);
-            else
-                return await GetCurseForgeDependencyUrls(parentMod);
+            try
+            {
+                if (parentMod.Site == "Modrinth")
+                    return await GetModrinthDependencyUrls(parentMod);
+                else
+                    return await GetCurseForgeDependencyUrls(parentMod);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Global Dependency Error: {ex.Message}");
+                return new List<string>();
+            }
         }
 
         private async Task<List<string>> GetModrinthDependencyUrls(ModVersionInfo parentMod)
@@ -463,42 +486,41 @@ namespace CL_CLegendary_Launcher_.Class
             string gameVersion = parentMod.GameVersions.FirstOrDefault();
             string loader = parentMod.Loaders.FirstOrDefault();
 
-            if (string.IsNullOrEmpty(loader) || string.IsNullOrEmpty(gameVersion))
-                return urls;
+            if (string.IsNullOrEmpty(loader) || string.IsNullOrEmpty(gameVersion)) return urls;
 
             string url = $"https://api.modrinth.com/v2/version/{parentMod.VersionId}";
-            var response = await _httpClient.GetStringAsync(url);
-            var versionData = JObject.Parse(response);
-
-            var dependencies = versionData["dependencies"] as JArray;
-            if (dependencies == null) return urls;
-
-            foreach (var dep in dependencies)
+            try
             {
-                if (dep["dependency_type"]?.ToString() == "required")
+                var response = await _httpClient.GetStringAsync(url);
+                var versionData = JObject.Parse(response);
+                var dependencies = versionData["dependencies"] as JArray;
+
+                if (dependencies != null)
                 {
-                    string depProjectId = dep["project_id"]?.ToString();
-                    if (depProjectId == null) continue;
-
-                    string depUrl = $"https://api.modrinth.com/v2/project/{depProjectId}/version?loaders=[%22{loader}%22]&game_versions=[%22{gameVersion}%22]";
-                    try
+                    foreach (var dep in dependencies)
                     {
-                        var depResponse = await _httpClient.GetStringAsync(depUrl);
-                        var depVersions = JArray.Parse(depResponse);
-
-                        if (depVersions.Count > 0)
+                        if (dep["dependency_type"]?.ToString() == "required")
                         {
-                            var fileUrl = depVersions.OfType<JObject>()
-                                .SelectMany(v => v["files"] as JArray ?? new JArray())
-                                .FirstOrDefault(f => f["url"] != null)?["url"]?.ToString();
+                            string depProjectId = dep["project_id"]?.ToString();
+                            if (depProjectId == null) continue;
 
-                            if (fileUrl != null)
-                                urls.Add(fileUrl);
+                            string depUrl = $"https://api.modrinth.com/v2/project/{depProjectId}/version?loaders=[%22{loader}%22]&game_versions=[%22{gameVersion}%22]";
+                            var depResponse = await _httpClient.GetStringAsync(depUrl);
+                            var depVersions = JArray.Parse(depResponse);
+
+                            if (depVersions.Count > 0)
+                            {
+                                var fileUrl = depVersions.OfType<JObject>()
+                                    .SelectMany(v => v["files"] as JArray ?? new JArray())
+                                    .FirstOrDefault(f => f["url"] != null)?["url"]?.ToString();
+
+                                if (fileUrl != null) urls.Add(fileUrl);
+                            }
                         }
                     }
-                    catch { }
                 }
             }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Modrinth Deps Error: {ex.Message}"); }
             return urls;
         }
 
@@ -506,140 +528,116 @@ namespace CL_CLegendary_Launcher_.Class
         {
             var urls = new List<string>();
             string gameVersion = parentMod.GameVersions.FirstOrDefault(v => v.StartsWith("1."));
-
             if (string.IsNullOrEmpty(gameVersion)) return urls;
-
-            var fileData = await _cfApiClient.GetModFileAsync(int.Parse(parentMod.ModId), int.Parse(parentMod.VersionId));
-            if (fileData?.Data?.Dependencies == null) return urls;
-
-            foreach (var dep in fileData.Data.Dependencies)
-            {
-                if (dep.RelationType == FileRelationType.RequiredDependency)
-                {
-                    try
-                    {
-                        string loader = parentMod.Loaders.FirstOrDefault();
-
-                        var depFiles = (!string.IsNullOrEmpty(loader))
-                            ? await _cfApiClient.GetModFilesAsync(
-                                modId: dep.ModId,
-                                gameVersion: gameVersion,
-                                modLoaderType: (ModLoaderType)Enum.Parse(typeof(ModLoaderType), loader, true)
-                            )
-                            : await _cfApiClient.GetModFilesAsync(
-                                modId: dep.ModId,
-                                gameVersion: gameVersion
-                            );
-                        if (depFiles?.Data?.Count > 0)
-                        {
-                            var latestFile = depFiles.Data
-                                .Where(f => f.ReleaseType == FileReleaseType.Release || f.ReleaseType == FileReleaseType.Beta)
-                                .OrderByDescending(f => f.FileDate)
-                                .FirstOrDefault();
-
-                            if (latestFile?.DownloadUrl != null)
-                                urls.Add(latestFile.DownloadUrl);
-                        }
-                    }
-                    catch { }
-                }
-            }
-            return urls;
-        }
-        #endregion
-        #region Logic ModPack
-        public async Task<List<ModInfo>> GetDependenciesModInfoAsync(ModVersionInfo parentMod, string loaderType, int modTypeInt)
-        {
-            var dependenciesList = new List<ModInfo>();
-
-            if (modTypeInt != 0) return dependenciesList;
-
-            string typeStr = "mod"; 
-
-            if (parentMod.Site == "Modrinth")
-            {
-                return await GetModrinthDependenciesInfo(parentMod, loaderType, typeStr);
-            }
-            else
-            {
-                return await GetCurseForgeDependenciesInfo(parentMod, loaderType, typeStr);
-            }
-        }
-
-        private async Task<List<ModInfo>> GetModrinthDependenciesInfo(ModVersionInfo parentMod, string loader, string typeStr)
-        {
-            var list = new List<ModInfo>();
-
-            string gameVersion = parentMod.GameVersions.FirstOrDefault();
-
-            if (string.IsNullOrEmpty(loader) || string.IsNullOrEmpty(gameVersion)) return list;
-
-            string url = $"https://api.modrinth.com/v2/version/{parentMod.VersionId}";
 
             try
             {
-                var response = await _httpClient.GetStringAsync(url);
-                var versionData = JObject.Parse(response);
-                var dependencies = versionData["dependencies"] as JArray;
-
-                if (dependencies == null) return list;
-
-                foreach (var dep in dependencies)
+                var fileData = await _cfApiClient.GetModFileAsync(int.Parse(parentMod.ModId), int.Parse(parentMod.VersionId));
+                if (fileData?.Data?.Dependencies != null)
                 {
-                    if (dep["dependency_type"]?.ToString() == "required")
+                    foreach (var dep in fileData.Data.Dependencies)
                     {
-                        string depProjectId = dep["project_id"]?.ToString();
-
-                        if (string.IsNullOrEmpty(depProjectId)) continue;
-
-                        string projectUrl = $"https://api.modrinth.com/v2/project/{depProjectId}";
-                        var projResponse = await _httpClient.GetStringAsync(projectUrl);
-                        var projData = JObject.Parse(projResponse);
-
-                        string depName = projData["title"]?.ToString();
-                        string depIcon = projData["icon_url"]?.ToString();
-
-                        string verUrl = $"https://api.modrinth.com/v2/project/{depProjectId}/version?loaders=[%22{loader.ToLower()}%22]&game_versions=[%22{gameVersion}%22]";
-                        var verResponse = await _httpClient.GetStringAsync(verUrl);
-                        var verArray = JArray.Parse(verResponse);
-
-                        if (verArray.Count > 0)
+                        if (dep.RelationType == FileRelationType.RequiredDependency)
                         {
-                            var bestVer = verArray[0];
+                            string loader = parentMod.Loaders.FirstOrDefault();
+                            var depFiles = (!string.IsNullOrEmpty(loader))
+                                ? await _cfApiClient.GetModFilesAsync(modId: dep.ModId, gameVersion: gameVersion, modLoaderType: (ModLoaderType)Enum.Parse(typeof(ModLoaderType), loader, true))
+                                : await _cfApiClient.GetModFilesAsync(modId: dep.ModId, gameVersion: gameVersion);
 
-                            var fileObj = (bestVer["files"] as JArray)?.FirstOrDefault(f => f["primary"]?.Value<bool>() == true)
-                                          ?? (bestVer["files"] as JArray)?.FirstOrDefault();
-
-                            if (fileObj != null)
+                            if (depFiles?.Data?.Count > 0)
                             {
-                                list.Add(new ModInfo
-                                {
-                                    Name = depName,
-                                    ProjectId = depProjectId,
-                                    FileId = bestVer["id"]?.ToString(), 
-                                    Loader = loader,
-                                    Version = gameVersion,
-                                    Url = fileObj["url"]?.ToString(),
-                                    LoaderType = loader,
-                                    Type = typeStr,
-                                    ImageURL = depIcon
-                                });
+                                var latestFile = depFiles.Data
+                                    .Where(f => f.ReleaseType == FileReleaseType.Release || f.ReleaseType == FileReleaseType.Beta)
+                                    .OrderByDescending(f => f.FileDate)
+                                    .FirstOrDefault();
+
+                                if (latestFile?.DownloadUrl != null) urls.Add(latestFile.DownloadUrl);
                             }
                         }
                     }
                 }
             }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Modrinth Dependency Error: {ex.Message}");
-            }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"CurseForge Deps Error: {ex.Message}"); }
+            return urls;
+        }
+        #endregion
 
+        #region Logic ModPack (Dependencies Info)
+        public async Task<List<ModInfo>> GetDependenciesModInfoAsync(ModVersionInfo parentMod, string loaderType, int modTypeInt)
+        {
+            var dependenciesList = new List<ModInfo>();
+            if (modTypeInt != 0) return dependenciesList;
+            string typeStr = "mod";
+
+            if (parentMod.Site == "Modrinth") return await GetModrinthDependenciesInfo(parentMod, loaderType, typeStr);
+            else return await GetCurseForgeDependenciesInfo(parentMod, loaderType, typeStr);
+        }
+
+        private async Task<List<ModInfo>> GetModrinthDependenciesInfo(ModVersionInfo parentMod, string loader, string typeStr)
+        {
+            var list = new List<ModInfo>();
+            string gameVersion = parentMod.GameVersions.FirstOrDefault();
+            if (string.IsNullOrEmpty(loader) || string.IsNullOrEmpty(gameVersion)) return list;
+
+            try
+            {
+                string url = $"https://api.modrinth.com/v2/version/{parentMod.VersionId}";
+                var response = await _httpClient.GetStringAsync(url);
+                var versionData = JObject.Parse(response);
+                var dependencies = versionData["dependencies"] as JArray;
+
+                if (dependencies != null)
+                {
+                    foreach (var dep in dependencies)
+                    {
+                        if (dep["dependency_type"]?.ToString() == "required")
+                        {
+                            string depProjectId = dep["project_id"]?.ToString();
+                            if (string.IsNullOrEmpty(depProjectId)) continue;
+
+                            string projectUrl = $"https://api.modrinth.com/v2/project/{depProjectId}";
+                            var projResponse = await _httpClient.GetStringAsync(projectUrl);
+                            var projData = JObject.Parse(projResponse);
+                            string depName = projData["title"]?.ToString();
+                            string depIcon = projData["icon_url"]?.ToString();
+
+                            string verUrl = $"https://api.modrinth.com/v2/project/{depProjectId}/version?loaders=[%22{loader.ToLower()}%22]&game_versions=[%22{gameVersion}%22]";
+                            var verResponse = await _httpClient.GetStringAsync(verUrl);
+                            var verArray = JArray.Parse(verResponse);
+
+                            if (verArray.Count > 0)
+                            {
+                                var bestVer = verArray[0];
+                                var fileObj = (bestVer["files"] as JArray)?.FirstOrDefault(f => f["primary"]?.Value<bool>() == true)
+                                              ?? (bestVer["files"] as JArray)?.FirstOrDefault();
+
+                                if (fileObj != null)
+                                {
+                                    list.Add(new ModInfo
+                                    {
+                                        Name = depName,
+                                        ProjectId = depProjectId,
+                                        FileId = bestVer["id"]?.ToString(),
+                                        Loader = loader,
+                                        Version = gameVersion,
+                                        Url = fileObj["url"]?.ToString(),
+                                        LoaderType = loader,
+                                        Type = typeStr,
+                                        ImageURL = depIcon
+                                    });
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Modrinth ModPack Error: {ex.Message}"); }
             return list;
         }
+
         private async Task<List<ModInfo>> GetCurseForgeDependenciesInfo(ModVersionInfo parentMod, string loader, string typeStr)
         {
             var list = new List<ModInfo>();
-
             string gameVersion = parentMod.GameVersions.FirstOrDefault(v => v.StartsWith("1."));
             if (string.IsNullOrEmpty(gameVersion)) return list;
 
@@ -660,31 +658,18 @@ namespace CL_CLegendary_Launcher_.Class
 
                         string depName = modInfo.Data.Name;
                         string depIcon = modInfo.Data.Logo?.Url;
-
                         CurseForge.APIClient.Models.Files.File latestFile = null;
 
-                        var depFilesResponse = await _cfApiClient.GetModFilesAsync(
-                             modId: dep.ModId,
-                             gameVersion: gameVersion,
-                             modLoaderType: cfLoaderType
-                        );
+                        var depFilesResponse = await _cfApiClient.GetModFilesAsync(modId: dep.ModId, gameVersion: gameVersion, modLoaderType: cfLoaderType);
 
                         if ((depFilesResponse?.Data == null || depFilesResponse.Data.Count == 0) && gameVersion.Count(c => c == '.') == 2)
                         {
-                            string majorVersion = gameVersion.Substring(0, gameVersion.LastIndexOf('.')); 
-                            depFilesResponse = await _cfApiClient.GetModFilesAsync(
-                                 modId: dep.ModId,
-                                 gameVersion: majorVersion,
-                                 modLoaderType: cfLoaderType
-                            );
+                            string majorVersion = gameVersion.Substring(0, gameVersion.LastIndexOf('.'));
+                            depFilesResponse = await _cfApiClient.GetModFilesAsync(modId: dep.ModId, gameVersion: majorVersion, modLoaderType: cfLoaderType);
                         }
-
                         if (depFilesResponse?.Data == null || depFilesResponse.Data.Count == 0)
                         {
-                            depFilesResponse = await _cfApiClient.GetModFilesAsync(
-                                modId: dep.ModId,
-                                modLoaderType: cfLoaderType
-                           );
+                            depFilesResponse = await _cfApiClient.GetModFilesAsync(modId: dep.ModId, modLoaderType: cfLoaderType);
                         }
 
                         if (depFilesResponse?.Data != null && depFilesResponse.Data.Count > 0)
@@ -712,13 +697,9 @@ namespace CL_CLegendary_Launcher_.Class
                     }
                 }
             }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"CurseForge Dependency Error: {ex.Message}");
-            }
-
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"CurseForge ModPack Error: {ex.Message}"); }
             return list;
-        }        
+        }
         #endregion
     }
 
@@ -727,10 +708,8 @@ namespace CL_CLegendary_Launcher_.Class
         public override ModVersionInfo ReadJson(JsonReader reader, Type objectType, ModVersionInfo existingValue, bool hasExistingValue, JsonSerializer serializer)
         {
             if (reader.TokenType == JsonToken.Null) return null;
-
             JObject item = JObject.Load(reader);
             var versionInfo = new ModVersionInfo();
-
             serializer.Populate(item.CreateReader(), versionInfo);
 
             var files = item["files"] as JArray;
@@ -738,29 +717,21 @@ namespace CL_CLegendary_Launcher_.Class
             {
                 string foundUrl = null;
                 string foundFileName = null;
-
                 foreach (JObject file in files)
                 {
                     string url = file["url"]?.ToString();
                     if (string.IsNullOrEmpty(url)) continue;
-
                     string filename = file["filename"]?.ToString();
                     bool isPrimary = file["primary"]?.Value<bool>() ?? false;
-
                     if (isPrimary)
                     {
-                        foundUrl = url;
-                        foundFileName = filename;
-                        break;
+                        foundUrl = url; foundFileName = filename; break;
                     }
-
                     if (foundUrl == null)
                     {
-                        foundUrl = url;
-                        foundFileName = filename;
+                        foundUrl = url; foundFileName = filename;
                     }
                 }
-
                 versionInfo.DownloadUrl = foundUrl;
                 versionInfo.FileName = foundFileName;
             }
@@ -772,16 +743,10 @@ namespace CL_CLegendary_Launcher_.Class
                     versionInfo.FileName = Path.GetFileName(uri.AbsolutePath);
                 }
             }
-
             versionInfo.Site = "Modrinth";
             return versionInfo;
         }
-
         public override bool CanWrite => false;
-
-        public override void WriteJson(JsonWriter writer, ModVersionInfo value, JsonSerializer serializer)
-        {
-            throw new NotImplementedException();
-        }
+        public override void WriteJson(JsonWriter writer, ModVersionInfo value, JsonSerializer serializer) => throw new NotImplementedException();
     }
 }

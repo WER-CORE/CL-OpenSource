@@ -3,6 +3,7 @@ using CL_CLegendary_Launcher_.Models;
 using CL_CLegendary_Launcher_.Windows;
 using CmlLib.Core;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -11,7 +12,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using Wpf.Ui.Controls; 
+using Wpf.Ui.Controls;
 
 namespace CL_CLegendary_Launcher_
 {
@@ -24,14 +25,39 @@ namespace CL_CLegendary_Launcher_
             try
             {
                 string search = SearchSystemTXT1.Text.ToLower().Trim();
-                var list = await _versionService.GetFilteredVersionsAsync(
-                    search, Relesed.IsChecked == true, Snapshots.IsChecked == true,
-                    Beta.IsChecked == true, Alpha.IsChecked == true);
-
                 VersionList.Items.Clear();
-                list.ForEach(v => VersionList.Items.Add(v));
 
-                SearchSystemTXT1.ItemsSource = string.IsNullOrEmpty(search) ? null : list;
+                bool isOffline = SettingsManager.Default.OfflineModLauncher || !System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable();
+
+                if (isOffline)
+                {
+                    var localVersions = GetLocalVersions(search);
+
+                    var vanillaLocals = localVersions.Where(v =>
+                        !v.ToLower().Contains("forge") &&
+                        !v.ToLower().Contains("fabric") &&
+                        !v.ToLower().Contains("quilt") &&
+                        !v.ToLower().Contains("optifine")).ToList();
+
+                    if (vanillaLocals.Count > 0)
+                    {
+                        vanillaLocals.ForEach(v => VersionList.Items.Add(v));
+                    }
+                    else
+                    {
+                        VersionList.Items.Add(LocalizationManager.GetString("GameLaunch.OfflineNoVersions", "В офлайні немає завантажених версій"));
+                    }
+                    SearchSystemTXT1.ItemsSource = string.IsNullOrEmpty(search) ? null : vanillaLocals;
+                }
+                else
+                {
+                    var list = await _versionService.GetFilteredVersionsAsync(
+                        search, Relesed.IsChecked == true, Snapshots.IsChecked == true,
+                        Beta.IsChecked == true, Alpha.IsChecked == true);
+
+                    list.ForEach(v => VersionList.Items.Add(v));
+                    SearchSystemTXT1.ItemsSource = string.IsNullOrEmpty(search) ? null : list;
+                }
             }
             catch (Exception) { }
         }
@@ -43,17 +69,61 @@ namespace CL_CLegendary_Launcher_
                 VersionListVanila.Items.Clear();
                 string searchText = SearchSystemTXT2.Text.ToLower().Trim();
 
-                var versions = await _versionService.GetFilteredVersionsAsync(searchText, true, false, false, false);
-                var filteredVersions = versions.Where(v => v != "1.6.4").ToArray();
+                bool isOffline = SettingsManager.Default.OfflineModLauncher || !System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable();
 
-                foreach (var v in filteredVersions) VersionListVanila.Items.Add(v);
+                if (isOffline)
+                {
+                    var localVersions = GetLocalVersions(searchText);
 
-                SearchSystemTXT2.ItemsSource = string.IsNullOrEmpty(searchText) ? null : filteredVersions;
+                    var optifineLocals = localVersions.Where(v => v.ToLower().Contains("optifine")).ToList();
+
+                    if (optifineLocals.Count > 0)
+                    {
+                        foreach (var v in optifineLocals) VersionListVanila.Items.Add(v);
+                    }
+                    else
+                    {
+                        VersionListVanila.Items.Add(LocalizationManager.GetString("GameLaunch.OptifineNoVersions", "Завантажених Optifine немає"));
+                    }
+                    SearchSystemTXT2.ItemsSource = string.IsNullOrEmpty(searchText) ? null : optifineLocals;
+                }
+                else
+                {
+                    var versions = await _versionService.GetFilteredVersionsAsync(searchText, true, false, false, false);
+                    var filteredVersions = versions.Where(v => v != "1.6.4").ToArray();
+
+                    foreach (var v in filteredVersions) VersionListVanila.Items.Add(v);
+                    SearchSystemTXT2.ItemsSource = string.IsNullOrEmpty(searchText) ? null : filteredVersions;
+                }
             }
             catch (Exception ex)
             {
-                MascotMessageBox.Show($"Помилка: {ex.Message}", "Помилка Optifine", MascotEmotion.Sad);
+                MascotMessageBox.Show(
+                    $"{LocalizationManager.GetString("Dialogs.Error", "Помилка")}: {ex.Message}",
+                    LocalizationManager.GetString("GameLaunch.OptifineErrorTitle", "Помилка Optifine"),
+                    MascotEmotion.Sad);
             }
+        }
+
+        private List<string> GetLocalVersions(string keyword = null)
+        {
+            var localVersions = new List<string>();
+            var path = new CmlLib.Core.MinecraftPath(SettingsManager.Default.PathLacunher);
+
+            if (System.IO.Directory.Exists(path.Versions))
+            {
+                var dirs = System.IO.Directory.GetDirectories(path.Versions);
+                foreach (var dir in dirs)
+                {
+                    string verName = System.IO.Path.GetFileName(dir);
+
+                    if (string.IsNullOrEmpty(keyword) || verName.ToLower().Contains(keyword.ToLower()))
+                    {
+                        localVersions.Add(verName);
+                    }
+                }
+            }
+            return localVersions;
         }
 
         private async void AddVersionModeVersion()
@@ -69,6 +139,15 @@ namespace CL_CLegendary_Launcher_
             {
                 VersionListMod.Items.Clear();
 
+                bool isOffline = SettingsManager.Default.OfflineModLauncher || !System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable();
+
+                if (isOffline || selectedVersion.ToLower().Contains("optifine"))
+                {
+                    VersionListMod.Items.Add(LocalizationManager.GetString("GameLaunch.LocalBuiltIn", "Вбудовано (Локально)"));
+                    VersionListMod.SelectedIndex = 0;
+                    return;
+                }
+
                 var modVersions = await _versionService.GetLoaderVersionsAsync(VersionSelect, selectedVersion);
 
                 if (token.IsCancellationRequested) return;
@@ -76,23 +155,14 @@ namespace CL_CLegendary_Launcher_
                 if (modVersions.Count > 0)
                     foreach (var v in modVersions) VersionListMod.Items.Add(v);
                 else
-                    VersionListMod.Items.Add("Немає доступних версій");
+                    VersionListMod.Items.Add(LocalizationManager.GetString("GameLaunch.NoAvailableVersions", "Немає доступних версій:("));
             }
             catch (Exception ex)
             {
-                VersionListMod.Items.Add($"Помилка: {ex.Message}");
+                VersionListMod.Items.Add($"{LocalizationManager.GetString("Dialogs.Error", "Помилка")}: {ex.Message}");
             }
         }
 
-        //async Task DownloadOmni(string versionName, string downloadUrl, string server, int? serverport)
-        //{
-        //    Settings1.Default.LastSelectedModVersion = null;
-        //    Settings1.Default.LastSelectedVersion = versionName;
-        //    Settings1.Default.LastSelectedType = 1;
-        //    Settings1.Default.Save();
-
-        //    await _gameLaunchService.LaunchGameAsync(LoaderType.OmniArchive, versionName, downloadUrl, server, serverport);
-        //}
         private async void DownloadVersionOptifine(string effectiveVersion = null, string effectiveVersionMod = null)
         {
             string mcVersion = !string.IsNullOrEmpty(effectiveVersion)
@@ -103,22 +173,22 @@ namespace CL_CLegendary_Launcher_
                 ? effectiveVersionMod
                 : VersionListMod.SelectedItem?.ToString();
 
-            if (string.IsNullOrEmpty(mcVersion) || string.IsNullOrEmpty(optifineVersion))
+            bool isOfflinePrepacked = mcVersion != null && mcVersion.ToLower().Contains("optifine");
+
+            if (string.IsNullOrEmpty(mcVersion) || (!isOfflinePrepacked && string.IsNullOrEmpty(optifineVersion)))
             {
                 MascotMessageBox.Show(
-                    "Секундочку! А що саме ми запускаємо?\n" +
-                    "Ти забув обрати версію Minecraft та OptiFine у списках.\n\n" +
-                    "Тицьни на потрібні версії, і погнали!",
-                    "Не обрано версію",
+                    LocalizationManager.GetString("GameLaunch.OptifineNotSelectedDesc", "Секундочку! А що саме ми запускаємо?\nТи забув обрати версію Minecraft та OptiFine у списках.\n\nТицьни на потрібні версії, і погнали!"),
+                    LocalizationManager.GetString("GameLaunch.NoVersionSelectedTitle", "Версія не обрана"),
                     MascotEmotion.Alert
                 );
                 return;
             }
 
-            Settings1.Default.LastSelectedVersion = mcVersion;
-            Settings1.Default.LastSelectedModVersion = optifineVersion;
-            Settings1.Default.LastSelectedType = 5;
-            Settings1.Default.Save();
+            SettingsManager.Default.LastSelectedVersion = mcVersion;
+            SettingsManager.Default.LastSelectedModVersion = optifineVersion ?? "";
+            SettingsManager.Default.LastSelectedType = 5;
+            SettingsManager.Save();
 
             await _gameLaunchService.LaunchGameAsync(LoaderType.Optifine, mcVersion, optifineVersion);
         }
@@ -127,19 +197,23 @@ namespace CL_CLegendary_Launcher_
         {
             string effectiveVersion = version ?? VersionRelesedVanilLast.Text.ToString();
 
-            Settings1.Default.LastSelectedModVersion = null;
-            Settings1.Default.LastSelectedVersion = effectiveVersion;
-            Settings1.Default.LastSelectedType = 1;
-            Settings1.Default.Save();
+            SettingsManager.Default.LastSelectedModVersion = null;
+            SettingsManager.Default.LastSelectedVersion = effectiveVersion;
+            SettingsManager.Default.LastSelectedType = 1;
+            SettingsManager.Save();
 
             await _gameLaunchService.LaunchGameAsync(LoaderType.Vanilla, effectiveVersion, null, server, serverport);
         }
+
         private async void PlayTXT_MouseDown(object sender, MouseButtonEventArgs e)
         {
             Click();
-            if (NameNik.Text == "Відсутній акаунт")
+            if (NameNik.Text == LocalizationManager.GetString("Accounts.NoAccount", "Відсутній акаунт") || NameNik.Text == "Відсутній акаунт" || NameNik.Text == "No account")
             {
-                MascotMessageBox.Show("Агов! Будь ласка, оберіть акаунт перед початком гри!", "Акаунт не обраний", MascotEmotion.Alert);
+                MascotMessageBox.Show(
+                    LocalizationManager.GetString("GameLaunch.NoAccountSelectedDesc", "Агов! Будь ласка, оберіть акаунт перед початком гри!"),
+                    LocalizationManager.GetString("GameLaunch.NoAccountSelectedTitle", "Акаунт не обраний"),
+                    MascotEmotion.Alert);
                 return;
             }
 
@@ -156,19 +230,22 @@ namespace CL_CLegendary_Launcher_
             {
                 if (VersionSelect == 0)
                 {
-                    VersionSelect = (byte)Settings1.Default.LastSelectedType;
+                    VersionSelect = (byte)SettingsManager.Default.LastSelectedType;
                 }
 
                 if (VersionSelect == 0)
                 {
-                    MascotMessageBox.Show("Агов! Будь ласка, оберіть версію перед початком гри!", "Версія не обрана", MascotEmotion.Alert);
+                    MascotMessageBox.Show(
+                        LocalizationManager.GetString("GameLaunch.NoVersionSelectedDesc", "Агов! Будь ласка, оберіть версію перед початком гри!"),
+                        LocalizationManager.GetString("GameLaunch.NoVersionSelectedTitle", "Версія не обрана"),
+                        MascotEmotion.Alert);
                     await Task.Delay(200);
                     RestoreButtonColor();
                     return;
                 }
 
-                string ver = Settings1.Default.LastSelectedVersion;
-                string modVer = Settings1.Default.LastSelectedModVersion;
+                string ver = SettingsManager.Default.LastSelectedVersion;
+                string modVer = SettingsManager.Default.LastSelectedModVersion;
 
                 switch (VersionSelect)
                 {
@@ -219,9 +296,10 @@ namespace CL_CLegendary_Launcher_
             process.BeginOutputReadLine();
             process.BeginErrorReadLine();
         }
+
         private async void LoadChangeLogMinecraft()
         {
-            if (Settings1.Default.OfflineModLauncher) { return; }
+            if (SettingsManager.Default.OfflineModLauncher) { return; }
 
             try
             {
@@ -240,10 +318,8 @@ namespace CL_CLegendary_Launcher_
             catch (Exception ex)
             {
                 MascotMessageBox.Show(
-                    $"Вибач, але я не змогла дістати свіжий випуск новин (Changelog).\n" +
-                    $"Можливо, інтернет зник або сервери Mojang втомилися відповідати.\n\n" +
-                    $"Ось що трапилося: {ex.Message}",
-                    "Немає новин",
+                    string.Format(LocalizationManager.GetString("MainScreen.ChangelogErrorDesc", "Вибач, але я не змогла дістати свіжий випуск новин (Changelog).\nМожливо, інтернет зник або сервери Mojang втомилися відповідати.\n\nОсь що трапилося: {0}"), ex.Message),
+                    LocalizationManager.GetString("MainScreen.ChangelogErrorTitle", "Немає новин"),
                     MascotEmotion.Sad
                 );
             }
@@ -272,7 +348,10 @@ namespace CL_CLegendary_Launcher_
             }
             catch (Exception ex)
             {
-                MascotMessageBox.Show($"Не вдалося відкрити браузер.\n{ex.Message}", "Помилка", MascotEmotion.Sad);
+                MascotMessageBox.Show(
+                    string.Format(LocalizationManager.GetString("Dialogs.UrlOpenErrorDesc", "Не вдалося відкрити браузер.\n{0}"), ex.Message),
+                    LocalizationManager.GetString("Dialogs.UrlOpenErrorTitle", "Помилка браузера"),
+                    MascotEmotion.Sad);
             }
         }
 
@@ -288,6 +367,7 @@ namespace CL_CLegendary_Launcher_
             Click();
             isMouseClickSelection = true;
         }
+
         private void SearchSystem1_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
         {
             if (!this.IsLoaded) return;
@@ -331,6 +411,7 @@ namespace CL_CLegendary_Launcher_
                 }
             }
         }
+
         private async void CheckMarkVersionSelect_MouseDown(object sender, MouseButtonEventArgs e)
         {
             Click();
@@ -343,21 +424,21 @@ namespace CL_CLegendary_Launcher_
                     AnimationService.AnimatePageTransitionExit(SelectVersionTypeGird, 20);
                     AnimationService.AnimatePageTransitionExit(SelectVersionMod, 20);
 
-                    int savedType = Settings1.Default.LastSelectedType;
-                    string savedVer = Settings1.Default.LastSelectedVersion;
-                    string savedModVer = Settings1.Default.LastSelectedModVersion;
+                    int savedType = SettingsManager.Default.LastSelectedType;
+                    string savedVer = SettingsManager.Default.LastSelectedVersion;
+                    string savedModVer = SettingsManager.Default.LastSelectedModVersion;
 
                     if (savedType != 0 && !string.IsNullOrEmpty(savedVer))
                     {
                         VersionSelect = (byte)savedType;
                         if (savedType == 5 && !string.IsNullOrEmpty(savedModVer))
-                            PlayTXT.Text = $"ГРАТИ В ({savedModVer})";
+                            PlayTXT.Text = string.Format(LocalizationManager.GetString("GameLaunch.PlayBtnPlayIn", "ГРАТИ В ({0})"), savedModVer);
                         else
-                            PlayTXT.Text = $"ГРАТИ В ({savedVer})";
+                            PlayTXT.Text = string.Format(LocalizationManager.GetString("GameLaunch.PlayBtnPlayIn", "ГРАТИ В ({0})"), savedVer);
                     }
                     else
                     {
-                        PlayTXT.Text = "ОБЕРІТЬ ВЕРСІЮ";
+                        PlayTXT.Text = LocalizationManager.GetString("GameLaunch.PlayBtnSelect", "ОБЕРІТЬ ВЕРСІЮ");
                         VersionSelect = 0;
                     }
                 }
@@ -366,7 +447,7 @@ namespace CL_CLegendary_Launcher_
                     IconVersionRotateTransform.Angle = 0;
                     AnimationService.AnimatePageTransition(SelectVersionTypeGird);
 
-                    var path = new MinecraftPath(Settings1.Default.PathLacunher);
+                    var path = new MinecraftPath(SettingsManager.Default.PathLacunher);
                     var launcher = new MinecraftLauncher(path);
                     var versions = await launcher.GetAllVersionsAsync();
 
@@ -375,6 +456,7 @@ namespace CL_CLegendary_Launcher_
                 }
             }
         }
+
         private void SelectVersionVanila_MouseDown(object sender, MouseButtonEventArgs e)
         {
             Click();
@@ -384,9 +466,10 @@ namespace CL_CLegendary_Launcher_
             VersionSelect = 1;
             IconSelectVersion.Source = IconSelectVersion_Копировать.Source;
         }
+
         private void SelectVersionOptifine_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            PlayTXT.Text = "ГРАТИ";
+            PlayTXT.Text = LocalizationManager.GetString("GameLaunch.PlayBtnPlay", "ГРАТИ");
             VersionListMod.Items.Clear();
             Click();
             AddVersionOptifine();
@@ -394,6 +477,7 @@ namespace CL_CLegendary_Launcher_
             VersionSelect = 5;
             IconSelectVersion.Source = IconSelectVersion_Optifine.Source;
         }
+
         private async void SelectVersionRedirect_MouseDown(object sender, MouseButtonEventArgs e)
         {
             Click();
@@ -407,16 +491,14 @@ namespace CL_CLegendary_Launcher_
             {
                 _tutorialService.ShowTutorial(
                     CreateModPacksTXT,
-                    "Де Forge? Та інші лоудери.",
-                    "Ми використовуємо професійну систему!\n\n" +
-                    "Модифіковані версії (Forge, Fabric, ...) створюються як окремі 'Збірки'. " +
-                    "Це захищає ваші моди від конфліктів і крашів.\n\n" +
-                    "Натисніть кнопку 'Створити', щоб встановити Forge або Fabric та інші.",
+                    LocalizationManager.GetString("Mods.WhereIsForgeTitle", "Де Forge? Та інші лоудери."),
+                    LocalizationManager.GetString("Mods.WhereIsForgeDesc", "Ми використовуємо професійну систему!\n\nМодифіковані версії (Forge, Fabric, ...) створюються як окремі 'Збірки'. Це захищає ваші моди від конфліктів і крашів.\n\nНатисніть кнопку 'Створити', щоб встановити Forge або Fabric та інші."),
                     null,
                     -120
                 );
             }
         }
+
         private void VersionList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             Click();
@@ -424,11 +506,11 @@ namespace CL_CLegendary_Launcher_
             {
                 string selectedVer = VersionList.SelectedItem.ToString();
                 VersionRelesedVanilLast.Text = selectedVer;
-                PlayTXT.Text = $"ГРАТИ В ({selectedVer})";
+                PlayTXT.Text = string.Format(LocalizationManager.GetString("GameLaunch.PlayBtnPlayIn", "ГРАТИ В ({0})"), selectedVer);
 
-                Settings1.Default.LastSelectedVersion = selectedVer;
-                Settings1.Default.LastSelectedType = VersionSelect;
-                Settings1.Default.Save();
+                SettingsManager.Default.LastSelectedVersion = selectedVer;
+                SettingsManager.Default.LastSelectedType = VersionSelect;
+                SettingsManager.Save();
             }
         }
 
@@ -440,10 +522,10 @@ namespace CL_CLegendary_Launcher_
 
                 if (VersionSelect == 2)
                 {
-                    Settings1.Default.LastSelectedVersion = selectedVer;
-                    Settings1.Default.LastSelectedType = 2;
-                    Settings1.Default.Save();
-                    PlayTXT.Text = $"ГРАТИ В ({selectedVer})";
+                    SettingsManager.Default.LastSelectedVersion = selectedVer;
+                    SettingsManager.Default.LastSelectedType = 2;
+                    SettingsManager.Save();
+                    PlayTXT.Text = string.Format(LocalizationManager.GetString("GameLaunch.PlayBtnPlayIn", "ГРАТИ В ({0})"), selectedVer);
                 }
 
                 if (VersionSelect == 5)
@@ -464,12 +546,15 @@ namespace CL_CLegendary_Launcher_
                     string mcVer = VersionListVanila.SelectedItem.ToString();
                     string modVer = VersionListMod.SelectedItem.ToString();
 
-                    PlayTXT.Text = $"ГРАТИ В ({modVer})";
+                    if (mcVer.ToLower().Contains("optifine"))
+                        PlayTXT.Text = string.Format(LocalizationManager.GetString("GameLaunch.PlayBtnPlayIn", "ГРАТИ В ({0})"), mcVer);
+                    else
+                        PlayTXT.Text = string.Format(LocalizationManager.GetString("GameLaunch.PlayBtnPlayIn", "ГРАТИ В ({0})"), modVer);
 
-                    Settings1.Default.LastSelectedVersion = mcVer;
-                    Settings1.Default.LastSelectedModVersion = modVer;
-                    Settings1.Default.LastSelectedType = 5;
-                    Settings1.Default.Save();
+                    SettingsManager.Default.LastSelectedVersion = mcVer;
+                    SettingsManager.Default.LastSelectedModVersion = modVer;
+                    SettingsManager.Default.LastSelectedType = 5;
+                    SettingsManager.Save();
                 }
             }
         }

@@ -26,7 +26,7 @@ namespace CL_CLegendary_Launcher_.Class
                 _defaultAvatar.UriSource = new Uri("pack://application:,,,/Assets/big-steve-face-2002298922 2.png");
                 _defaultAvatar.CacheOption = BitmapCacheOption.OnLoad;
                 _defaultAvatar.EndInit();
-                _defaultAvatar.Freeze(); 
+                _defaultAvatar.Freeze();
             }
             catch
             {
@@ -41,7 +41,7 @@ namespace CL_CLegendary_Launcher_.Class
         )
         {
             string type = action.ContainsKey("type") ? action["type"] : "other";
-            string name = action.ContainsKey("name") ? action["name"] : "Unknown";
+            string name = action.ContainsKey("name") ? action["name"] : LocalizationManager.GetString("Servers.UnknownServer", "Unknown");
             string version = action.ContainsKey("version") ? action["version"] : "";
             string ip = action.ContainsKey("ip") ? action["ip"] : "";
             string portStr = action.ContainsKey("port") ? action["port"] : "25565";
@@ -51,11 +51,13 @@ namespace CL_CLegendary_Launcher_.Class
             string displayText;
             if (type == "server")
             {
-                displayText = $"{name} : {version} ({loader}{(string.IsNullOrEmpty(loaderVersion) ? "" : " " + loaderVersion)}) : Server";
+                string serverStr = LocalizationManager.GetString("MainScreen.HistoryServer", "Сервер");
+                displayText = $"{name} : {version} ({loader}{(string.IsNullOrEmpty(loaderVersion) ? "" : " " + loaderVersion)}) : {serverStr}";
             }
             else if (type == "version")
             {
-                displayText = $"{name} : {version} ({loader}{(string.IsNullOrEmpty(loaderVersion) ? "" : " " + loaderVersion)}) : Version";
+                string versionStr = LocalizationManager.GetString("MainScreen.HistoryVersion", "Версія");
+                displayText = $"{name} : {version} ({loader}{(string.IsNullOrEmpty(loaderVersion) ? "" : " " + loaderVersion)}) : {versionStr}";
             }
             else
             {
@@ -97,11 +99,11 @@ namespace CL_CLegendary_Launcher_.Class
           Action<string, string, int> onPlayClick,
           Action<PartherItem, Dictionary<string, object>> onInfoClick)
         {
-            var serverName = serverData.ContainsKey("name") ? serverData["name"].ToString() : "Unknown Server";
+            var serverName = serverData.ContainsKey("name") ? serverData["name"].ToString() : LocalizationManager.GetString("Servers.UnknownServer", "Невідомий сервер");
             int port = serverData.ContainsKey("port") ? Convert.ToInt32(serverData["port"]) : 25565;
             string ip = serverData.ContainsKey("ip") ? serverData["ip"].ToString() : "";
-            string version = serverData["version"].ToString();
-            string type = serverData["type"].ToString();
+            string version = serverData.ContainsKey("version") ? serverData["version"].ToString() : "";
+            string type = serverData.ContainsKey("type") ? serverData["type"].ToString() : "";
 
             int priority = 0;
             if (serverData.TryGetValue("priority", out object priorityVal)) int.TryParse(priorityVal?.ToString(), out priority);
@@ -114,7 +116,7 @@ namespace CL_CLegendary_Launcher_.Class
             var item = new PartherItem
             {
                 _Title = serverName,
-                _description = $"Тип: {type}\nВерсія: {version}",
+                _description = string.Format(LocalizationManager.GetString("Servers.TypeVersionFormat", "Тип: {0}\nВерсія: {1}"), type, version),
                 IPServerTXT = { Text = ip },
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 VerticalAlignment = VerticalAlignment.Stretch,
@@ -166,9 +168,11 @@ namespace CL_CLegendary_Launcher_.Class
           Action<MyItemsServer, Dictionary<string, object>> onInfoClick
         )
         {
-            var serverName = serverData.ContainsKey("name") ? serverData["name"].ToString() : "Unknown Server";
+            var serverName = serverData.ContainsKey("name") ? serverData["name"].ToString() : LocalizationManager.GetString("Servers.UnknownServer", "Невідомий сервер");
             int port = serverData.ContainsKey("port") ? Convert.ToInt32(serverData["port"]) : 25565;
             string ip = serverData.ContainsKey("ip") ? serverData["ip"].ToString() : "";
+            string version = serverData.ContainsKey("version") ? serverData["version"].ToString() : "";
+            string type = serverData.ContainsKey("type") ? serverData["type"].ToString() : "";
 
             bool partner = false;
             if (serverData.TryGetValue("partner", out object partnerValue)) bool.TryParse(partnerValue?.ToString(), out partner);
@@ -183,13 +187,13 @@ namespace CL_CLegendary_Launcher_.Class
             var item = new MyItemsServer
             {
                 _Title = serverName,
-                Description_ = $"Тип: {serverData["type"]}\nВерсія: {serverData["version"]}",
+                Description_ = string.Format(LocalizationManager.GetString("Servers.TypeVersionFormat", "Тип: {0}\nВерсія: {1}"), type, version),
                 IPServerTXT = { Text = ip },
                 HorizontalAlignment = HorizontalAlignment.Left,
                 VerticalAlignment = VerticalAlignment.Top
             };
 
-            item.PlayServerTXT1.MouseDown += (s, e) => onPlayClick(serverData["version"].ToString(), ip, port);
+            item.PlayServerTXT1.MouseDown += (s, e) => onPlayClick(version, ip, port);
             item.OpenInfoServerTXT.MouseDown += (s, e) => onInfoClick(item, serverData);
 
             Task.Run(() =>
@@ -394,7 +398,7 @@ namespace CL_CLegendary_Launcher_.Class
                     bitmap.DecodePixelWidth = 100;
 
                     bitmap.EndInit();
-                    bitmap.Freeze(); 
+                    bitmap.Freeze();
 
                     item.IconModPack.Source = bitmap;
                 }
@@ -444,7 +448,7 @@ namespace CL_CLegendary_Launcher_.Class
                 UUID = profile.UUID,
                 index = index,
                 TypeAccount = (ItemManegerProfile.AccountType)profile.TypeAccount,
-                Cursor = System.Windows.Input.Cursors.Hand 
+                Cursor = System.Windows.Input.Cursors.Hand
             };
 
             item.IconAccountType.Source = _defaultAvatar;
@@ -462,7 +466,7 @@ namespace CL_CLegendary_Launcher_.Class
                     image.DecodePixelWidth = 100;
 
                     image.EndInit();
-                    image.Freeze(); 
+                    image.Freeze();
 
                     item.IconAccountType.Source = image;
                 }

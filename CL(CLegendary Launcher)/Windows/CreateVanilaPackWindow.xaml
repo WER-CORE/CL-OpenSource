@@ -73,7 +73,7 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <TextBlock Grid.Column="0" 
+            <TextBlock x:Name="TxtHeaderTitle" Grid.Column="0" 
                Text="Створення збірки - Ванільної збірки (Ваніла)" 
                VerticalAlignment="Center" 
                Margin="10,0,0,0" 
@@ -101,12 +101,12 @@
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0" Margin="0,0,10,0">
-                    <TextBlock Text="Назва збірки" FontSize="10" Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,0,5"/>
+                    <TextBlock x:Name="TxtModpackName" Text="Назва збірки" FontSize="10" Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,0,5"/>
                     <ui:TextBox x:Name="NameModPackTXT" PlaceholderText="Напишіть назву..." Height="38" Foreground="{DynamicResource MainForegroundBrush}" Background="{DynamicResource MainBackgroundButton}" Cursor="IBeam" />
                 </StackPanel>
 
                 <StackPanel Grid.Column="1">
-                    <TextBlock Text="Версія Minecraft" FontSize="10" Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,0,5"/>
+                    <TextBlock x:Name="TxtMcVersion" Text="Версія Minecraft" FontSize="10" Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,0,5"/>
                     <ComboBox x:Name="VersionVanilBox" Height="38" SelectionChanged="VersionVanil_SelectionChanged" Background="{DynamicResource MainBackgroundBrush}" Foreground="{DynamicResource MainForegroundBrush}" Cursor="Hand"/>
                 </StackPanel>
             </Grid>
@@ -120,7 +120,7 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <TextBlock Text="Ресурс-паки (Опціонально)" VerticalAlignment="Center" FontWeight="Bold" Foreground="{DynamicResource MainForegroundBrush}"/>
+            <TextBlock x:Name="TxtResourcePacksOpt" Text="Ресурс-паки (Опціонально)" VerticalAlignment="Center" FontWeight="Bold" Foreground="{DynamicResource MainForegroundBrush}"/>
 
             <ui:TextBox Grid.Column="2" x:Name="SearchSystemModsTXT" PlaceholderText="Пошук ресурс-паків..." Margin="10,0" TextChanged="SearchSystemModsTXT_TextChanged" Foreground="{DynamicResource MainForegroundBrush}" Background="{DynamicResource MainBackgroundBrushServer}"/>
 
@@ -162,7 +162,7 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <TextBlock Text="Знайдені ресурс-паки" FontSize="12" Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,0,5"/>
+                <TextBlock x:Name="TxtFoundResourcePacks" Text="Знайдені ресурс-паки" FontSize="12" Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,0,5"/>
 
                 <Border Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="8" Margin="0,19,0,45" Grid.RowSpan="2">
                     <Grid>
@@ -192,7 +192,7 @@
                              Width="60" Height="60" 
                              Foreground="{DynamicResource MainBackgroundProgressBar}"/>
 
-                            <TextBlock Text="Bit-CL шукає потрібні файли..." 
+                            <TextBlock x:Name="TxtSearchLoading" Text="Bit-CL шукає потрібні файли..." 
                        Margin="0,20,0,0"
                        FontSize="16" 
                        FontFamily="Inter"
@@ -251,7 +251,7 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <TextBlock Text="Обрані паки" FontSize="12" Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,0,5"/>
+                <TextBlock x:Name="TxtSelectedPacks" Text="Обрані паки" FontSize="12" Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,0,5"/>
 
                 <Border Grid.Row="1" Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="8">
                     <ListView x:Name="AddModsInModPackList" Background="Transparent" BorderThickness="0"
@@ -284,7 +284,7 @@
             Background="{DynamicResource MainBackgroundBrushServer}" 
             Foreground="{DynamicResource MainForegroundBrush}" Cursor="Hand">
                 <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="СТВОРИТИ ЗБІРКУ" FontWeight="Bold" Foreground="{DynamicResource MainForegroundBrush}"/>
+                    <TextBlock x:Name="BtnCreatePack" Text="СТВОРИТИ ЗБІРКУ" FontWeight="Bold" Foreground="{DynamicResource MainForegroundBrush}"/>
                 </StackPanel>
             </ui:Button>
         </Grid>

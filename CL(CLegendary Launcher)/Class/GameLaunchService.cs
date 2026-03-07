@@ -11,9 +11,11 @@ using CmlLib.Core.ProcessBuilder;
 using Optifine.Installer;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Net.NetworkInformation;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -48,25 +50,60 @@ namespace CL_CLegendary_Launcher_.Class
             _gameSessionManager = sessionManager;
             _lastActionService = lastActionService;
         }
+        private bool IsOfflineMode()
+        {
+            return SettingsManager.Default.OfflineModLauncher || !NetworkInterface.GetIsNetworkAvailable();
+        }
+        private string GetOfflineVersionName(LoaderType loaderType, string mcVersion, string loaderVersion)
+        {
+            if (mcVersion.ToLower().Contains("optifine") ||
+                mcVersion.ToLower().Contains("forge") ||
+                mcVersion.ToLower().Contains("fabric"))
+            {
+                return mcVersion;
+            }
+
+            switch (loaderType)
+            {
+                case LoaderType.Vanilla:
+                case LoaderType.Custom_Local:
+                    return mcVersion;
+                case LoaderType.Optifine:
+                    string cleanLoader = loaderVersion?.Replace("OptiFine_", "");
+                    return $"{mcVersion}-OptiFine_{cleanLoader}";
+                case LoaderType.Fabric:
+                    return $"fabric-loader-{loaderVersion}-{mcVersion}";
+                case LoaderType.Quilt:
+                    return $"quilt-loader-{loaderVersion}-{mcVersion}";
+                case LoaderType.Forge:
+                    return $"{mcVersion}-forge-{loaderVersion}";
+                case LoaderType.NeoForge:
+                    return $"neoforge-{loaderVersion}";
+                case LoaderType.LiteLoader:
+                    return $"{mcVersion}-LiteLoader{mcVersion}";
+                default:
+                    return mcVersion;
+            }
+        }
         public async Task LaunchGameAsync(LoaderType loaderType, string minecraftVersion, string loaderVersion, string serverIp = null, int? serverPort = null)
         {
             _cts = new CancellationTokenSource();
             var token = _cts.Token;
+            bool isOffline = IsOfflineMode();
 
             _main.Dispatcher.Invoke(() =>
             {
                 _main.InstallVersionOnPlay = true;
-                _main.PlayTXT.Text = "ЗАВАНТАЖЕННЯ";
+                _main.PlayTXT.Text = isOffline ? LocalizationManager.GetString("GameLaunch.LaunchOffline", "ОФЛАЙН ЗАПУСК...") : LocalizationManager.GetString("GameLaunch.LaunchDownloading", "ЗАВАНТАЖЕННЯ...");
             });
 
             DowloadProgress dowloadProgress = new DowloadProgress { CTS = _cts };
-            _main.Dispatcher.Invoke(() => dowloadProgress.Show());
+            if (!isOffline) _main.Dispatcher.Invoke(() => dowloadProgress.Show());
 
             try
             {
                 System.Net.ServicePointManager.DefaultConnectionLimit = 256;
-                var path = new MinecraftPath(Settings1.Default.PathLacunher);
-
+                var path = new MinecraftPath(SettingsManager.Default.PathLacunher);
                 var httpClient = new HttpClient();
                 int safeThreads = Math.Clamp(Environment.ProcessorCount * 2, 4, 16);
 
@@ -79,9 +116,12 @@ namespace CL_CLegendary_Launcher_.Class
 
                 var parameters = MinecraftLauncherParameters.CreateDefault(path);
                 parameters.GameInstaller = parallelInstaller;
+                if (isOffline)
+                {
+                    parameters.VersionLoader = new CmlLib.Core.VersionLoader.LocalJsonVersionLoader(path);
+                }
 
                 var launcher = new MinecraftLauncher(parameters);
-
                 launcher.FileProgressChanged += (sender, args) =>
                 {
                     _main.Dispatcher.Invoke(() =>
@@ -102,23 +142,40 @@ namespace CL_CLegendary_Launcher_.Class
                     });
                 };
 
-                string versionName = await InstallVersionAsync(loaderType, minecraftVersion, loaderVersion, launcher, token);
+                string versionName = "";
 
-                if (string.IsNullOrEmpty(versionName))
+                if (isOffline)
                 {
-                    MascotMessageBox.Show(
-                                            "Ой леле! Я намагалася встановити цю версію, але нічого не вийшло.\nСпробуй ще раз пізніше.",
-                                            "Помилка встановлення",
-                                            MascotEmotion.Sad);
-                    return; 
+                    versionName = GetOfflineVersionName(loaderType, minecraftVersion, loaderVersion);
+
+                    string versionDir = Path.Combine(path.Versions, versionName);
+                    if (!Directory.Exists(versionDir))
+                    {
+                        MascotMessageBox.Show(
+                            LocalizationManager.GetString("GameLaunch.LaunchNeedInternetDesc", "Ой! Схоже, у вас немає інтернету, а ця версія ще жодного разу не запускалася.\n\nЩоб грати без мережі, спочатку завантажте цю версію онлайн!"),
+                            LocalizationManager.GetString("GameLaunch.LaunchNeedInternetTitle", "Потрібен інтернет"),
+                            MascotEmotion.Sad);
+                        return;
+                    }
+                }
+                else
+                {
+                    versionName = await InstallVersionAsync(loaderType, minecraftVersion, loaderVersion, launcher, token);
+                    if (string.IsNullOrEmpty(versionName))
+                    {
+                        MascotMessageBox.Show(
+                            LocalizationManager.GetString("GameLaunch.LaunchInstallFailedDesc", "Ой леле! Я намагалася встановити цю версію, але нічого не вийшло.\nСпробуй ще раз пізніше."),
+                            LocalizationManager.GetString("GameLaunch.LaunchInstallFailedTitle", "Помилка встановлення"),
+                            MascotEmotion.Sad);
+                        return;
+                    }
                 }
 
                 var launchOption = CreateLaunchOptions(serverIp, serverPort);
 
-                if (Settings1.Default.EnableAutoBackup)
+                if (SettingsManager.Default.EnableAutoBackup)
                 {
-                    _main.Dispatcher.Invoke(() => _main.PlayTXT.Text = "БЕКАП СВІТІВ...");
-
+                    _main.Dispatcher.Invoke(() => _main.PlayTXT.Text = LocalizationManager.GetString("GameLaunch.LaunchBackupWorlds", "БЕКАП СВІТІВ..."));
                     string gameDir = path.BasePath;
                     string savesPath = Path.Combine(gameDir, "saves");
 
@@ -136,29 +193,36 @@ namespace CL_CLegendary_Launcher_.Class
                             }
                             catch (Exception ex)
                             {
-                                _main.Dispatcher.Invoke(() =>
-                                {
-                                    NotificationService.ShowNotification("Йой! Помилка при створення бекапів!", $"Помилка авто-бекапу: {ex.Message}", _main.SnackbarPresenter, 10);
-                                });
-
-                                System.Diagnostics.Debug.WriteLine($"Backup error: {ex}");
+                                _main.Dispatcher.Invoke(() => NotificationService.ShowNotification(
+                                    LocalizationManager.GetString("GameLaunch.LaunchBackupErrorTitle", "Йой! Помилка при створенні бекапів!"),
+                                    string.Format(LocalizationManager.GetString("GameLaunch.LaunchBackupErrorDesc", "Помилка авто-бекапу: {0}"), ex.Message),
+                                    _main.SnackbarPresenter, 10));
                             }
                         });
                     }
                 }
-                _main.Dispatcher.Invoke(() => _main.PlayTXT.Text = "ЗАПУСК...");
 
-                var process = await launcher.InstallAndBuildProcessAsync(versionName, launchOption, token);
+                _main.Dispatcher.Invoke(() => _main.PlayTXT.Text = LocalizationManager.GetString("GameLaunch.LaunchStarting", "ЗАПУСК..."));
+
+                Process process;
+                if (isOffline)
+                {
+                    process = await launcher.BuildProcessAsync(versionName, launchOption);
+                }
+                else
+                {
+                    process = await launcher.InstallAndBuildProcessAsync(versionName, launchOption, token);
+                }
 
                 _main.Dispatcher.Invoke(() =>
                 {
-                    dowloadProgress.Close();
+                    if (dowloadProgress.IsLoaded) dowloadProgress.Close();
                     _main.WindowState = WindowState.Minimized;
                 });
 
-                await DiscordController.UpdatePresence($"Грає версію {versionName}");
+                await DiscordController.UpdatePresence(string.Format(LocalizationManager.GetString("DiscordRPC.PlayingVersion", "Грає версію {0}"), versionName));
 
-                if (Settings1.Default.EnableLog)
+                if (SettingsManager.Default.EnableLog)
                 {
                     _main.ShowGameLog(process);
                 }
@@ -178,7 +242,7 @@ namespace CL_CLegendary_Launcher_.Class
                 };
                 await _lastActionService.AddLastActionAsync(action);
 
-                if (Settings1.Default.CloseLaucnher)
+                if (SettingsManager.Default.CloseLaucnher)
                 {
                     _main.Dispatcher.Invoke(() => _main.Close());
                 }
@@ -190,15 +254,15 @@ namespace CL_CLegendary_Launcher_.Class
             catch (OperationCanceledException)
             {
                 MascotMessageBox.Show(
-                    "Гаразд, я зупинила завантаження.\nМи можемо спробувати знову, коли ти будеш готовий!",
-                    "Скасовано",
+                    LocalizationManager.GetString("GameLaunch.LaunchCancelledDesc", "Гаразд, я зупинила завантаження.\nМи можемо спробувати знову, коли ти будеш готовий!"),
+                    LocalizationManager.GetString("GameLaunch.LaunchCancelledTitle", "Скасовано"),
                     MascotEmotion.Normal);
             }
             catch (Exception ex)
             {
                 MascotMessageBox.Show(
-                    $"Ой! Сталася помилка під час запуску гри.\n\nДеталі: {ex.Message}",
-                    "Помилка",
+                    string.Format(LocalizationManager.GetString("GameLaunch.LaunchCrashDesc", "Ой! Сталася помилка під час запуску гри.\n\nДеталі: {0}"), ex.Message),
+                    LocalizationManager.GetString("GameLaunch.LaunchCrashTitle", "Помилка запуску"),
                     MascotEmotion.Sad);
             }
             finally
@@ -207,96 +271,28 @@ namespace CL_CLegendary_Launcher_.Class
                 _main.Dispatcher.Invoke(() =>
                 {
                     _main.InstallVersionOnPlay = false;
-                    _main.PlayTXT.Text = $"ГРАТИ ({Settings1.Default.LastSelectedVersion}:{Settings1.Default.LastSelectedModVersion})";
+
+                    string savedTypeStr = SettingsManager.Default.LastSelectedType.ToString();
+                    if (SettingsManager.Default.LastSelectedType == 5 && !string.IsNullOrEmpty(SettingsManager.Default.LastSelectedModVersion))
+                    {
+                        _main.PlayTXT.Text = string.Format(LocalizationManager.GetString("GameLaunch.PlayBtnPlayIn", "ГРАТИ В ({0})"), SettingsManager.Default.LastSelectedModVersion);
+                    }
+                    else
+                    {
+                        _main.PlayTXT.Text = string.Format(LocalizationManager.GetString("GameLaunch.PlayBtnPlayIn", "ГРАТИ В ({0})"), SettingsManager.Default.LastSelectedVersion);
+                    }
+
                     if (dowloadProgress.IsLoaded) dowloadProgress.Close();
                 });
             }
         }
         #region OmniArchive LogicInstall
-        //    private async Task<string> InstallOmniArchiveAsync(string versionName, string downloadUrl, string category, MinecraftLauncher launcher, CancellationToken token)
-        //    {
-        //        var path = launcher.MinecraftPath;
-        //        string versionDir = Path.Combine(path.Versions, versionName);
-        //        string jarPath = Path.Combine(versionDir, $"{versionName}.jar");
-        //        string jsonPath = Path.Combine(versionDir, $"{versionName}.json");
-
-        //        if (!Directory.Exists(versionDir))
-        //            Directory.CreateDirectory(versionDir);
-
-        //        if (!File.Exists(jarPath))
-        //        {
-        //            using (var client = new HttpClient())
-        //            {
-        //                var response = await client.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead, token);
-        //                response.EnsureSuccessStatusCode();
-
-        //                using (var fs = new FileStream(jarPath, FileMode.Create, FileAccess.Write, FileShare.None))
-        //                {
-        //                    await response.Content.CopyToAsync(fs);
-        //                }
-        //            }
-        //        }
-
-        //        if (!File.Exists(jsonPath))
-        //        {
-        //            string type = "old_alpha"; 
-        //            string args = "";
-
-        //            switch (category.ToLower())
-        //            {
-        //                case "classic":
-        //                case "pre-classic":
-        //                    type = "old_alpha";
-        //                    args = "\"${auth_player_name} ${auth_session}\"";
-        //                    break;
-        //                case "indev":
-        //                case "infdev":
-        //                    type = "old_alpha";
-        //                    args = "\"${auth_player_name} ${auth_session}\"";
-        //                    break;
-        //                case "beta":
-        //                    type = "old_beta";
-        //                    args = "\"${auth_player_name} ${auth_session}\"";
-        //                    break;
-        //                default:
-        //                    type = "release";
-        //                    args = "\"--username ${auth_player_name} --session ${auth_session} --version ${version_name}\"";
-        //                    break;
-        //            }
-        //            string jsonContent = $@"{{
-        //""id"": ""{versionName}"",
-        //""inheritsFrom"": ""1.6.4"",
-        //""type"": ""{type}"",
-        //""mainClass"": ""net.minecraft.client.Minecraft"",
-        //""minecraftArguments"": {args},
-        //""libraries"": []
-        //                }}";
-
-        //            await File.WriteAllTextAsync(jsonPath, jsonContent);
-        //        }
-
-        //        await launcher.InstallAsync(versionName, token);
-
-        //        string resourcesPath = Path.Combine(launcher.MinecraftPath.BasePath, "resources");
-        //        if (!Directory.Exists(resourcesPath)) Directory.CreateDirectory(resourcesPath);
-
-        //        return versionName;
-        //    }
         #endregion
         public async Task<string> InstallVersionAsync(LoaderType loaderType, string mcVersion, string loaderVersion, MinecraftLauncher launcher, CancellationToken token)
         {
             switch (loaderType)
             {
                 #region OmniArchive Loader
-                //case LoaderType.OmniArchive:
-                //    string category = "Infdev"; 
-
-                //    if (OmniArchiveService.OmniDownloadLinks.ContainsKey(mcVersion))
-                //    {
-                //        var foundVersion = _main._cachedOmniVersions?.FirstOrDefault(v => v.Name == mcVersion);
-                //        if (foundVersion != null) category = foundVersion.Category;
-                //    }
-                //    return await InstallOmniArchiveAsync(mcVersion, loaderVersion, category, launcher, token);
                 #endregion
                 case LoaderType.Forge:
                     var forge = new ForgeInstaller(launcher);
@@ -321,7 +317,7 @@ namespace CL_CLegendary_Launcher_.Class
                         var selectedVersion = versions.FirstOrDefault(x => x.Version == loaderVersion);
 
                         if (selectedVersion == null)
-                            throw new Exception("Обрана версія Optifine не знайдена.");
+                            throw new Exception(LocalizationManager.GetString("GameLaunch.OptifineNotFound", "Обрана версія Optifine не знайдена."));
 
                         await launcher.InstallAsync(selectedVersion.MinecraftVersion, token);
 
@@ -340,7 +336,7 @@ namespace CL_CLegendary_Launcher_.Class
                                 await Task.Delay(2000);
                                 if (!File.Exists(jarPath))
                                 {
-                                    throw new Exception("Інсталятор Optifine завершився, але .jar файл не знайдено.");
+                                    throw new Exception(LocalizationManager.GetString("GameLaunch.OptifineJarMissing", "Інсталятор Optifine завершився, але .jar файл не знайдено."));
                                 }
                             }
                         }
@@ -372,7 +368,7 @@ namespace CL_CLegendary_Launcher_.Class
                 Session = _main.session,
                 ScreenWidth = int.Parse(_main.Width.Text),
                 ScreenHeight = int.Parse(_main.Height.Text),
-                FullScreen = Settings1.Default.FullScreen,
+                FullScreen = SettingsManager.Default.FullScreen,
                 ServerIp = serverIp,
                 ServerPort = serverPort ?? 0
             };

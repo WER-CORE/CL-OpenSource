@@ -84,7 +84,7 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <TextBlock Grid.Column="0" 
+            <TextBlock x:Name="TxtHeaderTitle" Grid.Column="0" 
                Text="Створення збірки - Модової збірки (Forge,Fabric,...)" 
                VerticalAlignment="Center" 
                Margin="10,0,0,0" 
@@ -113,17 +113,17 @@
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0" Margin="0,0,10,0">
-                    <TextBlock Text="Назва збірки" FontSize="10" Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,0,5"/>
+                    <TextBlock x:Name="TxtModpackName" Text="Назва збірки" FontSize="10" Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,0,5"/>
                     <ui:TextBox x:Name="NameModPackTXT" PlaceholderText="Напишіть назву..." Height="38" Background="{DynamicResource MainBackgroundBrush}" Cursor="IBeam" />
                 </StackPanel>
 
                 <StackPanel Grid.Column="1" Margin="0,0,10,0">
-                    <TextBlock Text="Версія Minecraft" FontSize="10" Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,0,5"/>
+                    <TextBlock x:Name="TxtMcVersion" Text="Версія Minecraft" FontSize="10" Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,0,5"/>
                     <ComboBox x:Name="VersionVanilBox" Height="38" SelectionChanged="VersionVanil_SelectionChanged" Background="{DynamicResource MainBackgroundBrush}" Foreground="{DynamicResource MainForegroundBrush}" ScrollViewer.HorizontalScrollBarVisibility="Hidden" Cursor="Hand"/>
                 </StackPanel>
 
                 <StackPanel Grid.Column="2" Margin="0,0,10,0">
-                    <TextBlock Text="Тип ядра" FontSize="10" Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,0,5"/>
+                    <TextBlock x:Name="TxtLoaderType" Text="Тип ядра" FontSize="10" Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,0,5"/>
                     <ComboBox x:Name="LoaderBox" Height="38" SelectedIndex="0" SelectionChanged="LoaderBox_SelectionChanged" Foreground="{DynamicResource MainForegroundBrush}" Background="{DynamicResource MainBackgroundBrush}" Cursor="Hand">
                         <ComboBoxItem Content="Forge"/>
                         <ComboBoxItem Content="NeoForge"/>
@@ -135,7 +135,7 @@
                 </StackPanel>
 
                 <StackPanel Grid.Column="3">
-                    <TextBlock Text="Версія ядра" FontSize="10" Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,0,5"/>
+                    <TextBlock x:Name="TxtLoaderVersion" Text="Версія ядра" FontSize="10" Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,0,5"/>
                     <ComboBox x:Name="LoaderVersionBox" Height="38" IsEnabled="False" Foreground="{DynamicResource MainForegroundBrush}" Background="{DynamicResource MainBackgroundBrush}" ScrollViewer.HorizontalScrollBarVisibility="Auto" Cursor="Hand"/>
                 </StackPanel>
             </Grid>
@@ -150,9 +150,9 @@
             </Grid.ColumnDefinitions>
 
             <StackPanel Orientation="Horizontal" Grid.Column="0">
-                <Button Content="Моди" Style="{StaticResource TabButtonStyle}" Click="ModsTxt_MouseDown" Foreground="{DynamicResource MainForegroundBrush}" Background="{x:Null}"/>
-                <Button Content="Ресурс-паки" Style="{StaticResource TabButtonStyle}" Click="ResourcePackTxt_MouseDown" Foreground="{DynamicResource MainForegroundBrush}" Background="{x:Null}"/>
-                <Button Content="Шейдери" Style="{StaticResource TabButtonStyle}" Click="ShaderPackTxt_MouseDown" Foreground="{DynamicResource MainForegroundBrush}" Background="{x:Null}"/>
+                <Button x:Name="BtnMods" Content="Моди" Style="{StaticResource TabButtonStyle}" Click="ModsTxt_MouseDown" Foreground="{DynamicResource MainForegroundBrush}" Background="{x:Null}"/>
+                <Button x:Name="BtnResourcePacks" Content="Ресурс-паки" Style="{StaticResource TabButtonStyle}" Click="ResourcePackTxt_MouseDown" Foreground="{DynamicResource MainForegroundBrush}" Background="{x:Null}"/>
+                <Button x:Name="BtnShaders" Content="Шейдери" Style="{StaticResource TabButtonStyle}" Click="ShaderPackTxt_MouseDown" Foreground="{DynamicResource MainForegroundBrush}" Background="{x:Null}"/>
             </StackPanel>
 
             <ui:TextBox Grid.Column="2" x:Name="SearchSystemModsTXT" PlaceholderText="Пошук модів..." Margin="10,0" TextChanged="SearchSystemModsTXT_TextChanged" Foreground="{DynamicResource MainForegroundBrush}" Background="{DynamicResource MainBackgroundBrush}"/>
@@ -195,7 +195,7 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <TextBlock Text="Результати пошуку" FontSize="12" Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,0,5"/>
+                <TextBlock x:Name="TxtSearchResults" Text="Результати пошуку" FontSize="12" Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,0,5"/>
 
                 <Border Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="8" Margin="0,19,0,50" Grid.RowSpan="2">
                     <Grid>
@@ -225,7 +225,7 @@
                              Width="60" Height="60" 
                              Foreground="{DynamicResource MainBackgroundProgressBar}"/>
 
-                            <TextBlock Text="Bit-CL шукає потрібні файли..." 
+                            <TextBlock x:Name="TxtSearchLoading" Text="Bit-CL шукає потрібні файли..." 
                        Margin="0,20,0,0"
                        FontSize="16" 
                        FontFamily="Inter"
@@ -282,7 +282,7 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
-                <TextBlock Text="Обрані моди (Ваша збірка)" FontSize="12" Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,0,5"/>
+                <TextBlock x:Name="TxtSelectedMods" Text="Обрані моди (Ваша збірка)" FontSize="12" Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,0,5"/>
 
                 <Border Grid.Row="1" Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="8">
                     <ListView x:Name="AddModsInModPackList" 
@@ -320,7 +320,7 @@
             Background="{DynamicResource MainBackgroundBrushServer}" 
             Foreground="{DynamicResource MainForegroundBrush}" Cursor="Hand">
                 <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="СТВОРИТИ ЗБІРКУ" FontWeight="Bold" Foreground="{DynamicResource MainForegroundBrush}"/>
+                    <TextBlock x:Name="BtnCreatePack" Text="СТВОРИТИ ЗБІРКУ" FontWeight="Bold" Foreground="{DynamicResource MainForegroundBrush}"/>
                 </StackPanel>
             </ui:Button>
         </Grid>

@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -35,12 +36,19 @@ namespace CL_CLegendary_Launcher_.Class
             try
             {
                 CurrentSession = await _profileManager.CreateSessionForProfileAsync(profile, _loginHandler);
+
+                if (profile.TypeAccount == AccountType.Offline && CurrentSession != null)
+                {
+                    CurrentSession.UUID = profile.UUID;
+                    CurrentSession.AccessToken = "access_token";
+                }
+
                 CurrentProfile = profile;
                 return true;
             }
             catch (Exception ex)
             {
-                throw new Exception($"Не вдалося активувати профіль: {ex.Message}");
+                throw new Exception(string.Format(LocalizationManager.GetString("Accounts.ProfileActivationError", "Не вдалося активувати профіль: {0}"), ex.Message));
             }
         }
 
@@ -65,13 +73,14 @@ namespace CL_CLegendary_Launcher_.Class
                 }
             }
         }
+
         public async Task<ProfileItem> AddMicrosoftAccountAsync()
         {
             var session = await _loginHandler.AuthenticateInteractively();
             var mojangApi = new Mojang(new HttpClient());
 
             bool ownsGame = await mojangApi.CheckGameOwnership(session.AccessToken);
-            if (!ownsGame) throw new Exception("На цьому акаунті не куплено Minecraft.");
+            if (!ownsGame) throw new Exception(LocalizationManager.GetString("Accounts.NoMinecraftOwned", "На цьому акаунті не куплено Minecraft."));
 
             var profile = new ProfileItem
             {
@@ -88,17 +97,7 @@ namespace CL_CLegendary_Launcher_.Class
 
         public async Task<ProfileItem> AddOfflineAccountAsync(string nickname)
         {
-            string uuid;
-            try
-            {
-                Mojang mojang = new Mojang(new HttpClient());
-                var res = await mojang.GetUUID(nickname);
-                uuid = res.UUID;
-            }
-            catch
-            {
-                uuid = Guid.NewGuid().ToString();
-            }
+            string uuid = CreateOfflineUUID(nickname);
 
             var profile = new ProfileItem
             {
@@ -110,7 +109,24 @@ namespace CL_CLegendary_Launcher_.Class
             };
 
             _profileManager.SaveProfile(profile);
+
+            await Task.CompletedTask;
+
             return profile;
+        }
+
+        private string CreateOfflineUUID(string username)
+        {
+            string input = "OfflinePlayer:" + username;
+            using (MD5 md5 = MD5.Create())
+            {
+                byte[] hash = md5.ComputeHash(Encoding.UTF8.GetBytes(input));
+
+                hash[6] = (byte)((hash[6] & 0x0f) | 0x30);
+                hash[8] = (byte)((hash[8] & 0x3f) | 0x80);
+
+                return new Guid(hash).ToString("N");
+            }
         }
 
         public async Task<ProfileItem> AddLittleSkinAccountAsync(string login, string password)

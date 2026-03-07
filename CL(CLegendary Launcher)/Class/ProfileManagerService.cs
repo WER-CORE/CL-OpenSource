@@ -50,7 +50,10 @@ namespace CL_CLegendary_Launcher_.Class
             }
             catch (Exception ex)
             {
-                MascotMessageBox.Show($"Не вдалося зберегти профіль: {ex.Message}", "Помилка запису", MascotEmotion.Sad);
+                MascotMessageBox.Show(
+                    string.Format(LocalizationManager.GetString("Accounts.ProfileSaveErrorDesc", "Не вдалося зберегти профіль: {0}"), ex.Message),
+                    LocalizationManager.GetString("Accounts.ProfileSaveErrorTitle", "Помилка запису"),
+                    MascotEmotion.Sad);
             }
         }
 
@@ -61,8 +64,8 @@ namespace CL_CLegendary_Launcher_.Class
             if (profiles.Any(p => p.NameAccount == profileItem.NameAccount && p.TypeAccount == profileItem.TypeAccount))
             {
                 MascotMessageBox.Show(
-                    $"Цей акаунт ({profileItem.NameAccount}) вже є в списку.\nНемає сенсу додавати його двічі.",
-                    "Вже існує",
+                    string.Format(LocalizationManager.GetString("Accounts.ProfileExistsDesc", "Цей акаунт ({0}) вже є в списку.\nНемає сенсу додавати його двічі."), profileItem.NameAccount),
+                    LocalizationManager.GetString("Accounts.ProfileExistsTitle", "Вже існує"),
                     MascotEmotion.Alert);
                 return false;
             }
@@ -109,8 +112,8 @@ namespace CL_CLegendary_Launcher_.Class
                 catch (Exception ex)
                 {
                     MascotMessageBox.Show(
-                        $"Не вдалося завантажити профілі.\nФайл пошкоджено або він з іншого ПК.\n\nДеталі: {ex.Message}",
-                        "Збій профілів",
+                        string.Format(LocalizationManager.GetString("Accounts.ProfileLoadCrashDesc", "Не вдалося завантажити профілі.\nФайл пошкоджено або він з іншого ПК.\n\nДеталі: {0}"), ex.Message),
+                        LocalizationManager.GetString("Accounts.ProfileLoadCrashTitle", "Збій профілів"),
                         MascotEmotion.Sad);
 
                     File.Move(_profilesManegerPath, _profilesManegerPath + ".corrupted");
@@ -130,10 +133,14 @@ namespace CL_CLegendary_Launcher_.Class
                     return new MSession(profile.NameAccount, profile.AccessToken, profile.UUID);
 
                 case AccountType.Offline:
-                    return MSession.CreateOfflineSession(profile.NameAccount);
-
                 default:
-                    return MSession.CreateOfflineSession(profile.NameAccount);
+                    return new MSession
+                    {
+                        Username = profile.NameAccount,
+                        UUID = profile.UUID,
+                        AccessToken = "access_token",
+                        UserType = "offline"
+                    };
             }
         }
 
@@ -156,10 +163,10 @@ namespace CL_CLegendary_Launcher_.Class
                 if (!response.IsSuccessStatusCode)
                 {
                     MascotMessageBox.Show(
-                                            $"Сервер LittleSkin відмовив у доступі.\nПеревір логін та пароль.\n\nВідповідь сервера: {body}",
-                                            "Помилка входу",
-                                            MascotEmotion.Sad);
-                    throw new Exception("Помилка авторизації");
+                        string.Format(LocalizationManager.GetString("Accounts.LoginLittleSkinErrorDesc", "Сервер LittleSkin відмовив у доступі.\nПеревір логін та пароль.\n\nВідповідь сервера: {0}"), body),
+                        LocalizationManager.GetString("Accounts.LoginLittleSkinErrorTitle", "Помилка входу"),
+                        MascotEmotion.Sad);
+                    throw new Exception(LocalizationManager.GetString("Accounts.LittleSkinAuthFailed", "Помилка авторизації"));
                 }
 
                 var json = JObject.Parse(body);
@@ -168,7 +175,7 @@ namespace CL_CLegendary_Launcher_.Class
                 string token = json["accessToken"]?.ToString();
 
                 if (username == null || uuid == null || token == null)
-                    throw new Exception("Відповідь від LittleSkin неповна");
+                    throw new Exception(LocalizationManager.GetString("Accounts.LittleSkinIncomplete", "Відповідь від LittleSkin неповна"));
 
                 return new MSession
                 {
@@ -206,11 +213,11 @@ namespace CL_CLegendary_Launcher_.Class
 
         private byte[] GetLegacyEncryptionKey()
         {
-            string base64Key = Settings1.Default.EncryptKey;
+            string base64Key = SettingsManager.Default.EncryptKey;
 
             if (string.IsNullOrEmpty(base64Key))
             {
-                throw new Exception("Ключ шифрування відсутній у налаштуваннях.");
+                throw new Exception(LocalizationManager.GetString("Accounts.EncryptionKeyMissing", "Ключ шифрування відсутній у налаштуваннях."));
             }
             return Convert.FromBase64String(base64Key);
         }

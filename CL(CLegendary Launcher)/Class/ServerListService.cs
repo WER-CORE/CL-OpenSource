@@ -37,9 +37,8 @@ namespace CL_CLegendary_Launcher_.Class
             catch (Exception ex)
             {
                 MascotMessageBox.Show(
-                    $"Ой леле! Не вдалося отримати список серверів.\n" +
-                    $"Можливо, інтернет зник або посилання застаріло?\n\nДеталі: {ex.Message}",
-                    "Збій мережі",
+                    string.Format(LocalizationManager.GetString("Servers.FetchErrorDesc", "Ой леле! Не вдалося отримати список серверів.\nМожливо, інтернет зник або посилання застаріло?\n\nДеталі: {0}"), ex.Message),
+                    LocalizationManager.GetString("Servers.FetchErrorTitle", "Збій мережі"),
                     MascotEmotion.Sad);
                 return null;
             }
@@ -96,18 +95,21 @@ namespace CL_CLegendary_Launcher_.Class
                 else
                 {
                     _main.ServerSearchLoader.Visibility = Visibility.Collapsed;
-                    NotificationService.ShowNotification("Пусто", "Хм, я нічого не знайшла за твоїм запитом. Спробуй змінити пошук.", _main.SnackbarPresenter, 3);
+                    NotificationService.ShowNotification(
+                        LocalizationManager.GetString("Servers.EmptyTitle", "Пусто"),
+                        LocalizationManager.GetString("Servers.EmptyDesc", "Хм, я нічого не знайшла за твоїм запитом. Спробуй змінити пошук."),
+                        _main.SnackbarPresenter, 3);
                 }
             }
             else
             {
                 _main.ServerSearchLoader.Visibility = Visibility.Collapsed;
                 MascotMessageBox.Show(
-                    "Дивина! Список серверів порожній або має неправильний формат.",
-                    "Помилка даних",
+                    LocalizationManager.GetString("Servers.FormatErrorDesc", "Дивина! Список серверів порожній або має неправильний формат."),
+                    LocalizationManager.GetString("Servers.FormatErrorTitle", "Помилка даних"),
                     MascotEmotion.Confused);
             }
-            
+
 
             _main.Dispatcher.Invoke(() =>
             {

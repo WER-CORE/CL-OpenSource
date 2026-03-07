@@ -1,8 +1,12 @@
 ﻿using CL_CLegendary_Launcher_.Class;
 using CL_CLegendary_Launcher_.Models;
 using CL_CLegendary_Launcher_.Windows;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -66,6 +70,7 @@ namespace CL_CLegendary_Launcher_
                 }
             );
         }
+
         private void OpenServerInfoPanel(string ip, string version, int port, string online, string title,
                                          string description, System.Windows.Controls.Image iconSource,
                                          Dictionary<string, object> data)
@@ -118,6 +123,7 @@ namespace CL_CLegendary_Launcher_
                 catch { }
             }
         }
+
         private void BackIconServerList_MouseDown(object sender, MouseButtonEventArgs e)
         {
             Click();
@@ -169,12 +175,13 @@ namespace CL_CLegendary_Launcher_
             };
             return AddLastActionAsync(action);
         }
+
         private void DiscordLink_Click(object sender, RoutedEventArgs e)
         {
             if (!string.IsNullOrEmpty(_currentDiscordUrl) && _currentDiscordUrl != "-")
                 WebHelper.OpenUrl(_currentDiscordUrl);
             else
-                MascotMessageBox.Show("У цього сервера немає Discord каналу.", "Упс", MascotEmotion.Confused);
+                MascotMessageBox.Show(LocalizationManager.GetString("Servers.ServerNoDiscord", "У цього сервера немає Discord каналу."), LocalizationManager.GetString("Dialogs.Oops", "Упс"), MascotEmotion.Confused);
         }
 
         private void SiteLink_Click(object sender, RoutedEventArgs e)
@@ -182,28 +189,134 @@ namespace CL_CLegendary_Launcher_
             if (!string.IsNullOrEmpty(_currentSiteUrl) && _currentSiteUrl != "-")
                 WebHelper.OpenUrl(_currentSiteUrl);
             else
-                MascotMessageBox.Show("Сайт не вказано.", "Упс", MascotEmotion.Confused);
+                MascotMessageBox.Show(LocalizationManager.GetString("Servers.ServerNoSite", "Сайт не вказано."), LocalizationManager.GetString("Dialogs.Oops", "Упс"), MascotEmotion.Confused);
         }
+
         private void DonateLink_Click(object sender, RoutedEventArgs e)
         {
             if (!string.IsNullOrEmpty(_currentDonateUrl) && _currentDonateUrl != "-")
                 WebHelper.OpenUrl(_currentDonateUrl);
             else
-                MascotMessageBox.Show("Посилання на донат відсутнє.", "Упс", MascotEmotion.Confused);
+                MascotMessageBox.Show(LocalizationManager.GetString("Servers.ServerNoDonate", "Посилання на донат відсутнє."), LocalizationManager.GetString("Dialogs.Oops", "Упс"), MascotEmotion.Confused);
         }
+
         private void BugReport_Click(object sender, RoutedEventArgs e)
         {
             Click();
             WebHelper.OpenUrl("https://discord.com/channels/1195118159187939458/1195494058571866172");
         }
+
         private void TutorialYoutube_Click(object sender, RoutedEventArgs e)
         {
             WebHelper.OpenUrl("https://cl-launcher.app/tutorial.html");
         }
+
         private void GitHub_Click(object sender, RoutedEventArgs e)
         {
             WebHelper.OpenUrl("https://github.com/WER-CORE/CL-OpenSource");
         }
+
+        private void Support3OSHBr_Click(object sender, RoutedEventArgs e)
+        {
+            AnimationService.AnimatePageTransition(FundraiserOverlay);
+            LoadFundraiserAsync();
+        }
+
+        private void SupportProject_Click(object sender, RoutedEventArgs e)
+        {
+            string supportUrl = "https://send.monobank.ua/jar/APZdKjTvuT";
+
+            try
+            {
+                Process.Start(new ProcessStartInfo(supportUrl) { UseShellExecute = true });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Не вдалося відкрити посилання підтримки: {ex.Message}");
+            }
+        }
+
+        private async void LoadFundraiserAsync()
+        {
+            FundLoader.Visibility = Visibility.Visible;
+            FundraisersList.ItemsSource = null;
+            NoActiveFundsTXT.Visibility = Visibility.Collapsed;
+
+            try
+            {
+                using (HttpClient client = new HttpClient())
+                {
+                    client.Timeout = TimeSpan.FromSeconds(5);
+                    string json = await client.GetStringAsync(Secrets.FundraiserURL);
+
+                    var dataList = JsonConvert.DeserializeObject<List<FundraiserData3rd>>(json);
+
+                    var activeFunds = dataList?.Where(d => d.isActive).ToList();
+
+                    if (activeFunds != null && activeFunds.Count > 0)
+                    {
+                        foreach (var fund in activeFunds)
+                        {
+                            if (!string.IsNullOrEmpty(fund.imageUrl))
+                            {
+                                try
+                                {
+                                    BitmapImage bitmap = new BitmapImage();
+                                    bitmap.BeginInit();
+                                    bitmap.UriSource = new Uri(fund.imageUrl, UriKind.Absolute);
+                                    bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                                    bitmap.EndInit();
+                                    fund.ImageBitmap = bitmap;
+                                }
+                                catch { }
+                            }
+                        }
+
+                        FundraisersList.ItemsSource = activeFunds;
+                    }
+                    else
+                    {
+                        NoActiveFundsTXT.Visibility = Visibility.Visible;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                NoActiveFundsTXT.Text = LocalizationManager.GetString("Servers.FundNetworkError", "Помилка мережі або бази зборів.");
+                NoActiveFundsTXT.Visibility = Visibility.Visible;
+                System.Diagnostics.Debug.WriteLine(ex.Message);
+            }
+            finally
+            {
+                FundLoader.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void BtnFund_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is FrameworkElement btn && btn.Tag is string url && !string.IsNullOrEmpty(url))
+            {
+                Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+            }
+        }
+
+        private void BtnDetails_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is FrameworkElement btn && btn.Tag is string url && !string.IsNullOrEmpty(url))
+            {
+                Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+            }
+        }
+
+        private void CloseFundraiser_Click(object sender, RoutedEventArgs e) => AnimationService.AnimatePageTransitionExit(FundraiserOverlay);
+
+        private void FundraiserOverlay_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.OriginalSource == FundraiserOverlay) FundraiserOverlay.Visibility = Visibility.Collapsed;
+        }
+
+        private void FundraiserCard_MouseDown(object sender, MouseButtonEventArgs e) => e.Handled = true;
+
         private async void NewsUpdateLauncher_Click(object sender, RoutedEventArgs e)
         {
             Click();
@@ -216,22 +329,35 @@ namespace CL_CLegendary_Launcher_
 
             try
             {
-                var newsItems = await _newsService.GetNewsAsync();
+                if (NewsLoader != null) NewsLoader.Visibility = Visibility.Visible;
+
                 ListNews.Items.Clear();
 
-                foreach (var item in newsItems)
+                var newsItems = await _newsService.GetNewsAsync();
+
+                if (newsItems != null && newsItems.Any())
                 {
-                    var uiControl = LauncherUIFactory.CreateNewsControl(item, OnNewsItemClicked);
-                    ListNews.Items.Add(uiControl);
+                    foreach (var item in newsItems)
+                    {
+                        var uiControl = LauncherUIFactory.CreateNewsControl(item, OnNewsItemClicked);
+                        ListNews.Items.Add(uiControl);
+                    }
+                }
+                else
+                {
                 }
             }
             catch (Exception ex)
             {
                 MascotMessageBox.Show(
-                    $"Не вдалося завантажити новини.\nДеталі: {ex.Message}",
-                    "Новини загубилися",
+                    string.Format(LocalizationManager.GetString("Servers.NewsLoadError", "Не вдалося завантажити новини.\nДеталі: {0}"), ex.Message),
+                    LocalizationManager.GetString("Dialogs.Error", "Новини загубилися"),
                     MascotEmotion.Sad
                 );
+            }
+            finally
+            {
+                if (NewsLoader != null) NewsLoader.Visibility = Visibility.Collapsed;
             }
         }
 
@@ -244,6 +370,7 @@ namespace CL_CLegendary_Launcher_
 
             TextNews.Text = item.Description;
         }
+
         public void AddActionToList(Dictionary<string, string> action)
         {
             try
@@ -268,6 +395,7 @@ namespace CL_CLegendary_Launcher_
                 System.Diagnostics.Debug.WriteLine($"Error adding history item: {ex.Message}");
             }
         }
+
         private void TabRegularServer_MouseDown(object sender, MouseButtonEventArgs e) { }
         private void TabModdedServer_MouseDown(object sender, MouseButtonEventArgs e) { }
     }
