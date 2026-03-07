@@ -1,4 +1,14 @@
 <div align="center">
+  🌍 <b>Читати іншими мовами:</b><br>
+  <a href="README.md">🇺🇦 Українська</a> |
+  🇬🇧 English (поки що відсутня, <a href="https://uk.crowdin.com/project/clegendary-launcher">допоможіть з перекладом</a>) | 
+  🇵🇱 Polski (поки що відсутня, <a href="https://uk.crowdin.com/project/clegendary-launcher">допоможіть з перекладом</a>) | 
+⬜🟥⬜ Беларуская (поки що відсутня, <a href="https://uk.crowdin.com/project/clegendary-launcher">допоможіть з перекладом</a>) |
+  🇨🇿 Čeština (поки що відсутня, <a href="https://uk.crowdin.com/project/clegendary-launcher">допоможіть з перекладом</a>) | 
+  🇫🇷 Français (поки що відсутня, <a href="https://uk.crowdin.com/project/clegendary-launcher">допоможіть з перекладом</a>)
+</div>
+
+<div align="center">
 
 # CL-Launcher | CL (Clegendary Launcher) Code
 ### Windows Edition
@@ -90,6 +100,7 @@ This project uses assets and libraries from various sources. We are grateful to 
 <b>Якщо вам подобається цей проект — поставте ⭐️ (Star) цьому репозиторію!</b>
 <i>Це мотивує розвивати український софт.</i>
 </div>
+
 
 
 
