@@ -5,11 +5,38 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:CL_CLegendary_Launcher_.Windows"
              mc:Ignorable="d" Height="50" Width="196">
+
     <Grid x:Name="MainGird">
-        <Border x:Name="FonBorder" BorderThickness="1" Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="9,9,9,9" Width="196"/>
-        <Image x:Name="IconAccountType" RenderOptions.BitmapScalingMode="HighQuality" HorizontalAlignment="Left" Height="42" Margin="5,5,0,0" VerticalAlignment="Top" Width="45" Source="/Assets/big-steve-face-2002298922 2.png" Stretch="Fill"/>
-        <TextBlock x:Name="NameAccount" HorizontalAlignment="Left" Margin="50,5,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" Foreground="{DynamicResource MainForegroundBrush}" Width="126" Height="38" FontFamily="Inter 18pt 18pt" FontSize="11"/>
-        <Image x:Name="DeleteAccount" HorizontalAlignment="Left" RenderOptions.BitmapScalingMode="HighQuality" Height="20" Margin="173,28,0,0" VerticalAlignment="Top" Width="20" Source="/Assets/delete_1000dp_E8EAED_FILL0_wght400_GRAD0_opsz48.png" Stretch="UniformToFill" Cursor="Hand" ToolTip="Видалити" RenderTransformOrigin="0.476,0.188"/>
-        <Grid x:Name="ClickSelectAccount" HorizontalAlignment="Left" Height="50" VerticalAlignment="Center" Width="170" Cursor="Hand" Background="#00000000"/>
+        <Border x:Name="FonBorder" BorderThickness="1" 
+                Background="{DynamicResource MainBackgroundBrushServer}" 
+                CornerRadius="9" Width="196"/>
+
+        <Image x:Name="IconAccountType" 
+               RenderOptions.BitmapScalingMode="LowQuality" 
+               HorizontalAlignment="Left" VerticalAlignment="Top" 
+               Height="42" Width="42" Margin="5,4,0,0" 
+               Source="/Assets/big-steve-face-2002298922 2.png" 
+               Stretch="Uniform"/>
+
+        <TextBlock x:Name="NameAccount" 
+                   HorizontalAlignment="Left" VerticalAlignment="Center" 
+                   Margin="52,0,0,0" 
+                   Text="PlayerName" 
+                   TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"
+                   Foreground="{DynamicResource MainForegroundBrush}" 
+                   Width="115" 
+                   FontFamily="Inter" FontSize="12" FontWeight="SemiBold"/>
+        
+        <Path x:Name="DeleteAccount"
+              Data="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"
+              Fill="{DynamicResource MainForegroundBrush}"
+              Stretch="Uniform"
+              HorizontalAlignment="Right" VerticalAlignment="Bottom"
+              Margin="0,0,6,6" Width="16" Height="16"
+              Cursor="Hand" ToolTip="Видалити"/>
+
+        <Grid x:Name="ClickSelectAccount" 
+              HorizontalAlignment="Left" Height="50" VerticalAlignment="Center" 
+              Width="160" Cursor="Hand" Background="Transparent"/>
     </Grid>
 </UserControl>

@@ -1,4 +1,5 @@
-﻿using NAudio.Wave;
+﻿using CL_CLegendary_Launcher_.Class;
+using NAudio.Wave;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,7 +23,20 @@ namespace CL_CLegendary_Launcher_.Windows
         public ItemModPack()
         {
             InitializeComponent();
+            ApplyLocalization();
         }
+
+        private void ApplyLocalization()
+        {
+            SettingTXT.Text = LocalizationManager.GetString("Modpacks.SettingsBtn", "Налаштування");
+            PlayTXT.Text = LocalizationManager.GetString("Modpacks.PlayBtn", "Грати");
+
+            DeleteTXT.Text = LocalizationManager.GetString("Modpacks.DeleteBtn", "Видалити");
+            FloderPackTXT.Text = LocalizationManager.GetString("Modpacks.FolderBtn", "Тека Збірки");
+            ExportTXT.Text = LocalizationManager.GetString("Modpacks.ExportZipBtn", "Експортувати ZIP");
+            EditModPackTXT.Text = LocalizationManager.GetString("Modpacks.EditBtn", "Редагувати");
+        }
+
         void Click()
         {
             Task.Run(() =>
@@ -53,7 +67,7 @@ namespace CL_CLegendary_Launcher_.Windows
                 To = 1,
                 Duration = TimeSpan.FromSeconds(duration),
                 FillBehavior = FillBehavior.HoldEnd,
-                EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseInOut } 
+                EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseInOut }
             };
 
             element.Visibility = Visibility.Visible;
@@ -78,19 +92,19 @@ namespace CL_CLegendary_Launcher_.Windows
             Storyboard fadeOutStoryboard = new Storyboard();
             fadeOutStoryboard.Children.Add(fadeOut);
             fadeOutStoryboard.Begin();
-
         }
+
         private void SettingTXT_MouseDown(object sender, MouseButtonEventArgs e)
         {
-           Click();
-           if (GirdFon.Visibility == Visibility.Visible)
-           {
+            Click();
+            if (GirdFon.Visibility == Visibility.Visible)
+            {
                 FadeOut(GirdFon, 0.3);
-           }
-           else
-           {
-               FadeIn(GirdFon, 0.3);
-           }
+            }
+            else
+            {
+                FadeIn(GirdFon, 0.3);
+            }
         }
 
         private void PlayTXT_MouseDown(object sender, MouseButtonEventArgs e)

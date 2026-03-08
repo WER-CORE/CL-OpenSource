@@ -13,9 +13,7 @@
                 <ResourceDictionary Source="Them/LightThemeSerLisAndUpdMinecraft.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <sys:Double x:Key="GlassBlurRadius">20</sys:Double>
-
             <Visibility x:Key="GlassVisibility">Visible</Visibility>
-
             <SolidColorBrush x:Key="GlassTintBrush" Color="#66000000"/>
         </ResourceDictionary>
     </Application.Resources>

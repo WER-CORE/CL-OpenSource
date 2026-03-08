@@ -10,24 +10,24 @@ namespace CL_CLegendary_Launcher_.Class
 
         public static async Task Initialize(string textDetails)
         {
-            if (Settings1.Default.OfflineModLauncher) { return; }
+            if (SettingsManager.Default.OfflineModLauncher) { return; }
 
             try
             {
-                clientdsc = new DiscordRpcClient("1327198221180735609"); // це тестова Application-ID тому рекомендую вставити свою ID
+                clientdsc = new DiscordRpcClient("1210664596289884200");
 
                 clientdsc.Initialize();
 
                 clientdsc.SetPresence(new RichPresence()
                 {
                     State = textDetails,
-                    Details = "test",
+                    Details = LocalizationManager.GetString("DiscordRPC.Details", "Український лаунчер майнкрафт"),
                     Timestamps = Timestamps.Now,
-                    //Assets = new Assets()
-                    //{
-                    //    LargeImageKey = "test",
-                    //    SmallImageKey = "test",
-                    //}
+                    Assets = new Assets()
+                    {
+                        LargeImageKey = "frame_73",
+                        SmallImageKey = "ua",
+                    }
                 });
             }
             catch (Exception ex)
@@ -38,7 +38,7 @@ namespace CL_CLegendary_Launcher_.Class
 
         public static async Task UpdatePresence(string textDetails)
         {
-            if (Settings1.Default.OfflineModLauncher) { return; }
+            if (SettingsManager.Default.OfflineModLauncher) { return; }
 
             if (clientdsc == null)
             {
@@ -51,13 +51,13 @@ namespace CL_CLegendary_Launcher_.Class
                 clientdsc.SetPresence(new RichPresence()
                 {
                     State = textDetails,
-                    Details = "test",
+                    Details = LocalizationManager.GetString("DiscordRPC.Details", "Український лаунчер майнкрафт"),
                     Timestamps = Timestamps.Now,
-                    //Assets = new Assets()
-                    //{
-                    //    LargeImageKey = "test",
-                    //    SmallImageKey = "test",
-                    //}
+                    Assets = new Assets()
+                    {
+                        LargeImageKey = "frame_73",
+                        SmallImageKey = "ua",
+                    }
                 });
             }
             catch (Exception ex)
@@ -68,7 +68,7 @@ namespace CL_CLegendary_Launcher_.Class
 
         public static void Deinitialize()
         {
-            if (Settings1.Default.OfflineModLauncher) { return; }
+            if (SettingsManager.Default.OfflineModLauncher) { return; }
 
             try
             {

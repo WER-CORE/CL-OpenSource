@@ -6,69 +6,161 @@
         xmlns:gif="clr-namespace:XamlAnimatedGif;assembly=XamlAnimatedGif"
         xmlns:local="clr-namespace:CL_CLegendary_Launcher_.Class"
         Title="LoadScreen"
-        Height="315"
-        Width="594"
+        Height="350" Width="600"
         WindowStyle="None"
         AllowsTransparency="True"
-        Background="Transparent"
-        WindowStartupLocation="CenterScreen" Icon="/Icon/IconCL(Winter).ico">
+        Background="{x:Null}"
+        WindowStartupLocation="CenterScreen" 
+        Icon="/Icon/IconCL(Common).png" Foreground="{DynamicResource MainForegroundBrush}">
 
-    <ui:ClientAreaBorder CornerRadius="20"
-            Background="Black"
-            BorderThickness="2">
+    <Window.Triggers>
+        <EventTrigger RoutedEvent="Window.Loaded">
+            <BeginStoryboard>
+                <Storyboard>
+                    <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.5"/>
+                </Storyboard>
+            </BeginStoryboard>
+        </EventTrigger>
+    </Window.Triggers>
 
-        <Border.Clip>
-            <RectangleGeometry RadiusX="20" RadiusY="20" Rect="0,0,594,315" />
-        </Border.Clip>
+    <ui:ClientAreaBorder CornerRadius="15" BorderThickness="0">
 
-        <Grid x:Name="SnowGrid">
+        <Border x:Name="MainBorder" CornerRadius="15" Background="#151515">
 
-            <Image x:Name="BG"
-                   Opacity="0.6" Source="/Assets/DarkThemBG.png" Stretch="UniformToFill" />
+            <Border.OpacityMask>
+                <VisualBrush>
+                    <VisualBrush.Visual>
+                        <Border Background="Black"
+                                Width="{Binding ActualWidth, ElementName=MainBorder}"
+                                Height="{Binding ActualHeight, ElementName=MainBorder}"
+                                CornerRadius="{Binding CornerRadius, ElementName=MainBorder}"/>
+                    </VisualBrush.Visual>
+                </VisualBrush>
+            </Border.OpacityMask>
 
-            <Border HorizontalAlignment="Center"
-                    VerticalAlignment="Top"
-                    Width="594"
-                    Height="10"
-                    Margin="0,305,0,0">
-                <ProgressBar x:Name="LoadingProgressBar"
-                             Maximum="100"
-                             Height="20"
-                             Foreground="#FF00BEFF"
-                             Background="{x:Null}" IsIndeterminate="True" BorderBrush="{x:Null}"/>
-            </Border>
+            <Grid>
+                <Image x:Name="BG"
+                       Source="/Assets/DarkThemBG.webp" 
+                       Stretch="UniformToFill" 
+                       Opacity="0.7"/>
 
-            <ui:TextBlock x:Name="LoadingText"
-           Text="Завантаження..." 
-           Foreground="White"
-           FontSize="18"
-           FontWeight="Bold"
-           HorizontalAlignment="Left"
-           VerticalAlignment="Top"
-           Margin="10,246,0,0" />
+                <Rectangle>
+                    <Rectangle.Fill>
+                        <RadialGradientBrush>
+                            <GradientStop Color="#00000000" Offset="0"/>
+                            <GradientStop Color="#CC000000" Offset="1"/>
+                        </RadialGradientBrush>
+                    </Rectangle.Fill>
+                </Rectangle>
 
-            <ui:TextBlock x:Name="RandomPhraseText"
-                       Text=""
-                       Foreground="White"
-                       FontSize="14"
-                       FontStyle="Italic"
-                       HorizontalAlignment="Center"
-                       VerticalAlignment="Top"
-                       Margin="0,270,0,0"
-                       Width="570"
-                       Height="30" />
+                <Rectangle VerticalAlignment="Bottom" Height="120">
+                    <Rectangle.Fill>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                            <GradientStop Color="Transparent" Offset="0.253"/>
+                            <GradientStop Color="#E6000000" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Rectangle.Fill>
+                </Rectangle>
 
-            <Label x:Name="VersionLauncherTXT"
-                   Content="versionlauncher"
-                   HorizontalAlignment="Left"
-                   Height="28"
-                   Margin="267,270,0,0"
-                   VerticalAlignment="Top"
-                   Width="325"
-                   HorizontalContentAlignment="Right"
-                   Foreground="#66FFFFFF"
-                   Background="{x:Null}"
-                   VerticalContentAlignment="Center" />
-        </Grid>
+                <Grid Margin="20">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <TextBlock Text="CL(Clegendary Launcher)" 
+                                   Foreground="White" 
+                                   FontSize="32" 
+                                   FontWeight="Black" 
+                                   HorizontalAlignment="Center" FontFamily="Inter 18pt 18pt">
+                            <TextBlock.Effect>
+                                <DropShadowEffect Color="#A1DD70" BlurRadius="20" ShadowDepth="0" Opacity="0.5"/>
+                            </TextBlock.Effect>
+                        </TextBlock>
+
+                        <TextBlock Text="Win Edition" 
+                                   Foreground="#A1DD70" 
+                                   FontSize="14" 
+                                   FontWeight="SemiBold" 
+                                   HorizontalAlignment="Center" 
+                                   FontStretch="Expanded"
+                                   Opacity="0.9" FontFamily="Inter 18pt 18pt"/>
+                    </StackPanel>
+
+                    <TextBlock x:Name="RandomPhraseText"
+                               Grid.Row="1"
+                               Text="Привіт!"
+                               Foreground="#DDFFFFFF"
+                               FontSize="14"
+                               FontStyle="Italic"
+                               TextAlignment="Center"
+                               HorizontalAlignment="Center"
+                               TextWrapping="Wrap"
+                               Margin="0,0,0,15" FontFamily="Inter 18pt 18pt">
+                        <TextBlock.Effect>
+                            <DropShadowEffect Color="Black" BlurRadius="2" ShadowDepth="1" Opacity="0.8"/>
+                        </TextBlock.Effect>
+                    </TextBlock>
+
+                    <Grid Grid.Row="2" Margin="0,0,0,5">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom">
+
+                            <TextBlock x:Name="LoadingText"
+                                       Text="Завантаження ресурсів..." 
+                                       Foreground="White"
+                                       FontSize="14"
+                                       FontWeight="SemiBold"
+                                       VerticalAlignment="Center" FontFamily="Inter 18pt 18pt"/>
+                        </StackPanel>
+
+                        <TextBlock x:Name="VersionLauncherTXT"
+                                   Grid.Column="1"
+                                   Text="v.1.0.0 BETA"
+                                   Foreground="#66FFFFFF"
+                                   FontSize="12"
+                                   FontWeight="Regular"
+                                   VerticalAlignment="Bottom" FontFamily="Inter 18pt 18pt"/>
+                    </Grid>
+
+                    <Border Grid.Row="3" 
+                            CornerRadius="2" 
+                            Background="#33000000" 
+                            Height="4" 
+                            ClipToBounds="True">
+                        <ProgressBar x:Name="LoadingProgressBar"
+                                     Minimum="0" Maximum="100" Value="0"
+                                     Height="4"
+                                     BorderThickness="0"
+                                     Background="Transparent"
+                                     Foreground="#FF00BEFF"
+                                     IsIndeterminate="True">
+                            <ProgressBar.Effect>
+                                <DropShadowEffect Color="#4ADE80" BlurRadius="10" ShadowDepth="0" Opacity="0.8"/>
+                            </ProgressBar.Effect>
+                        </ProgressBar>
+                    </Border>
+
+                </Grid>
+
+                <Border CornerRadius="15" BorderThickness="1" IsHitTestVisible="False">
+                    <Border.BorderBrush>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                            <GradientStop Color="#33FFFFFF" Offset="0"/>
+                            <GradientStop Color="#11FFFFFF" Offset="0.5"/>
+                            <GradientStop Color="#33FFFFFF" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Border.BorderBrush>
+                </Border>
+
+            </Grid>
+        </Border>
     </ui:ClientAreaBorder>
 </Window>

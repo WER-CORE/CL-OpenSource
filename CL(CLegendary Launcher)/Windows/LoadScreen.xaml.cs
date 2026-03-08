@@ -1,69 +1,129 @@
 ﻿using CL_CLegendary_Launcher_.Class;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.DirectoryServices.ActiveDirectory;
 using System.IO;
-using System.Linq; 
+using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
+using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;
 
 namespace CL_CLegendary_Launcher_.Windows
 {
     public partial class LoadScreen : Window
     {
-        private List<string> RandomPhrases = new List<string>
-        {
-            "Сніг приємно рипить під ногами...",
-            "Запарюємо какао з маршмелоу...",
-            "Homka ліпить ідеального сніговика...",
-            "Deeplay ловить сніжинки на камеру ❄️...",
-            "Мороз малює візерунки на вікнах...",
-            "Час закутатись у теплий плед...",
-            "Пахне мандаринами та ялинкою...",
-            "Вулиці сяють святковими вогнями...",
-            "Данило перевіряє запаси феєрверків...",
-            "WER_Clegendary шукає подарунки під ялинкою...",
-            "Зимова казка вже за вікном...",
-            "Гріємо руки об горнятко чаю...",
-            "Сніжинки танцюють у світлі ліхтарів...",
-            "Час передивлятися 'Сам у дома'...",
-            "Крижане повітря бадьорить...",
-            "Готуємось до новорічного дива...",
-            "Всі чекають на перший сніг (або вже копають)...",
-            "Холодно на вулиці, тепло на душі..."
-        };
-
+        private List<string> RandomPhrases = new List<string>();
         private Random _random = new Random();
         private readonly string versionLauncher = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "0.0.0";
 
         public LoadScreen()
         {
+            SettingsManager.Load();
+            if (string.IsNullOrEmpty(SettingsManager.Default.LanguageCode))
+            {
+                string osLang = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName.ToLower();
+
+                string autoLang = "en_US";
+
+                switch (osLang)
+                {
+                    case "uk":
+                        autoLang = "uk_UA";
+                        break;
+                    case "be":
+                        autoLang = "be_BY";
+                        break;
+                    case "pl":
+                        autoLang = "pl_PL";
+                        break;
+                    case "cs":
+                        autoLang = "cs_CZ";
+                        break;
+                    case "ru":
+                        autoLang = "uk_UA";
+                        break;
+                }
+
+                SettingsManager.Default.LanguageCode = autoLang;
+                SettingsManager.Save();
+            }
+
+            string savedLang = SettingsManager.Default.LanguageCode;
+            LocalizationManager.LoadLanguage(savedLang);
+
             InitializeComponent();
 
+            LoadingText.Text = LocalizationManager.GetString("LoadScreen.LoadingText", "Завантаження ресурсів...");
+
+            LoadLocalizedPhrases();
+
             LoadCustomPhrases();
+
             ApplyCustomSettings();
 
             Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this, WindowBackdropType.Mica);
-            VersionLauncherTXT.Content = versionLauncher + "-Beta";
+            VersionLauncherTXT.Text = versionLauncher + "-Beta";
 
-            Settings1.Default.OfflineModLauncher = false;
-            Settings1.Default.Save();
+            SettingsManager.Default.OfflineModLauncher = false;
+            SettingsManager.Save();
 
             Loaded += LoadScreen_Loaded;
+        }
+
+        private void LoadLocalizedPhrases()
+        {
+            RandomPhrases.Clear();
+
+            for (int i = 1; i <= 30; i++)
+            {
+                string phrase = LocalizationManager.GetString($"LoadScreen.RandomPhrases.Phrase{i}", "");
+                if (!string.IsNullOrWhiteSpace(phrase))
+                {
+                    RandomPhrases.Add(phrase);
+                }
+            }
+
+            if (RandomPhrases.Count == 0)
+            {
+                RandomPhrases = new List<string>
+                {
+                    "Перша зелена травичка пробивається крізь землю...",
+                    "Заварюємо свіжий фруктовий чай...",
+                    "Homka саджає перші весняні квіти...",
+                    "Deeplay фотографує цвітіння сакур на камеру 🌸...",
+                    "Теплий весняний дощик стукає по вікнах...",
+                    "Час ховати зимові куртки далеко в шафу...",
+                    "Пахне свіжоскошеною травою та бузком...",
+                    "Дерева вкриваються ніжним білим цвітом...",
+                    "Данило готує мангал для перших шашликів...",
+                    "WER_Clegendary шукає ідеальне місце для пікніка...",
+                    "Природа нарешті прокидається за вікном...",
+                    "Мружимося від яскравого весняного сонечка...",
+                    "Пелюстки вишень кружляють у теплому повітрі...",
+                    "Час виходити на довгі вечірні прогулянки...",
+                    "Свіже весняне повітря надихає на пригоди...",
+                    "Готуємось до теплих травневих вихідних...",
+                    "Всі чекають на потепління (або вже садять картоплю)...",
+                    "Тепло на вулиці, сонячно на душі..."
+                };
+            }
         }
 
         private void LoadCustomPhrases()
         {
             try
             {
-                string phrasesPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"Data", "loading_phrases.txt");
+                string phrasesPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "loading_phrases.txt");
                 if (File.Exists(phrasesPath))
                 {
                     var lines = File.ReadAllLines(phrasesPath)
@@ -80,9 +140,10 @@ namespace CL_CLegendary_Launcher_.Windows
             }
             catch { }
         }
+
         private void ApplyCustomSettings()
         {
-            string bgPath = Settings1.Default.LoadScreenBackground;
+            string bgPath = SettingsManager.Default.LoadScreenBackground;
             if (!string.IsNullOrEmpty(bgPath) && File.Exists(bgPath))
             {
                 try
@@ -92,7 +153,7 @@ namespace CL_CLegendary_Launcher_.Windows
                 catch { }
             }
 
-            string colorHex = Settings1.Default.LoadScreenBarColor;
+            string colorHex = SettingsManager.Default.LoadScreenBarColor;
             if (!string.IsNullOrEmpty(colorHex))
             {
                 try
@@ -106,8 +167,6 @@ namespace CL_CLegendary_Launcher_.Windows
 
         private async void LoadScreen_Loaded(object sender, RoutedEventArgs e)
         {
-            await UpgradeSettings();
-
             await RunStartupProcessAsync();
         }
 
@@ -126,15 +185,15 @@ namespace CL_CLegendary_Launcher_.Windows
             catch (Exception)
             {
                 var result = MascotMessageBox.Ask(
-                    "Ех, не вийшло перевірити оновлення. Спробувати офлайн?",
-                    "Помилка оновлення",
+                    LocalizationManager.GetString("LoadScreen.Errors.UpdateOfflineAsk", "Ех, не вийшло перевірити оновлення. Спробувати офлайн?"),
+                    LocalizationManager.GetString("LoadScreen.Errors.UpdateFailTitle", "Помилка оновлення"),
                     MascotEmotion.Sad
                 );
 
                 if (result == true)
                 {
-                    Settings1.Default.OfflineModLauncher = true;
-                    Settings1.Default.Save();
+                    SettingsManager.Default.OfflineModLauncher = true;
+                    SettingsManager.Save();
                     updateAvailable = false;
                 }
                 else
@@ -165,15 +224,28 @@ namespace CL_CLegendary_Launcher_.Windows
 
                 await animationTask;
                 OpenMainWindow();
-
             }
             catch (Exception ex)
             {
+                string errorDetails = $"Помилка: {ex.Message}\n\n" +
+                                      $"Де сталося: {ex.TargetSite}\n\n" +
+                                      $"Стек (для розробника):\n{ex.StackTrace}";
+
+                string logPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs", "crash-report.txt");
+                try
+                {
+                    Directory.CreateDirectory(Path.GetDirectoryName(logPath));
+                    File.WriteAllText(logPath, errorDetails);
+                }
+                catch { }
+
+                string crashFormat = LocalizationManager.GetString("LoadScreen.Errors.CriticalCrashMessage", "Ой! Критична помилка...\nФайл {0}\nКоротко: {1}");
+                string translatedCrashMsg = string.Format(crashFormat, logPath, ex.Message);
+
                 MascotMessageBox.Show(
-                    $"Критичний збій запуску:\n{ex.Message}",
-                    "Error",
-                    MascotEmotion.Dead
-                );
+                    translatedCrashMsg,
+                    LocalizationManager.GetString("LoadScreen.Errors.CriticalCrashTitle", "Критичний збій"),
+                    MascotEmotion.Dead);
                 this.Close();
             }
         }
@@ -185,19 +257,22 @@ namespace CL_CLegendary_Launcher_.Windows
                 client.DefaultRequestHeaders.UserAgent.ParseAdd("CL-Launcher");
                 client.Timeout = TimeSpan.FromSeconds(5);
 
-                string json = await client.GetStringAsync("https://raw.githubusercontent.com/WER-CORE/CL-OpenSource/main/update.json"); // Або вставте своє посилання
+                string json = await client.GetStringAsync(Secrets.UpdateUrlCheckLoadScreen);
 
-                var info = JsonSerializer.Deserialize<UpdateInfo>(json, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
+                var info = JsonSerializer.Deserialize<UpdateInfo>(json);
 
-                if (info != null && !string.IsNullOrEmpty(info.version))
+                if (info != null && !string.IsNullOrEmpty(info.Version))
                 {
-                    if (versionLauncher.Trim() != info.version.Trim())
+                    string remoteVerStr = info.Version.Trim().Replace("v", "", StringComparison.OrdinalIgnoreCase);
+                    string localVerStr = versionLauncher.Trim().Replace("v", "", StringComparison.OrdinalIgnoreCase);
+
+                    if (Version.TryParse(remoteVerStr, out Version vRemote) &&
+                        Version.TryParse(localVerStr, out Version vLocal))
                     {
-                        return true;
+                        return vRemote > vLocal;
                     }
+
+                    return remoteVerStr != localVerStr;
                 }
             }
             return false;
@@ -206,7 +281,8 @@ namespace CL_CLegendary_Launcher_.Windows
         private async Task SimulateLoadingAnimationAsync()
         {
             LoadingProgressBar.Value = 0;
-            RandomPhraseText.Text = RandomPhrases[_random.Next(RandomPhrases.Count)];
+            if (RandomPhrases.Count > 0)
+                RandomPhraseText.Text = RandomPhrases[_random.Next(RandomPhrases.Count)];
 
             for (int i = 0; i <= 100; i++)
             {
@@ -222,7 +298,7 @@ namespace CL_CLegendary_Launcher_.Windows
                 };
                 LoadingProgressBar.BeginAnimation(ProgressBar.ValueProperty, progressAnimation);
 
-                if (i % 20 == 0 && i > 0)
+                if (i % 20 == 0 && i > 0 && RandomPhrases.Count > 0)
                 {
                     string randomPhrase = RandomPhrases[_random.Next(RandomPhrases.Count)];
                     RandomPhraseText.Text = randomPhrase;
@@ -241,7 +317,6 @@ namespace CL_CLegendary_Launcher_.Windows
         private async Task<bool> CheckEulaAsync()
         {
             var eulaConfig = await EulaService.GetEulaAsync();
-
             bool showEula = false;
 
             if (eulaConfig != null)
@@ -253,7 +328,7 @@ namespace CL_CLegendary_Launcher_.Windows
             }
             else
             {
-                if (Settings1.Default.EulaAcceptedDate == DateTime.MinValue)
+                if (SettingsManager.Default.EulaAcceptedDate == DateTime.MinValue)
                 {
                     showEula = true;
                 }
@@ -262,41 +337,25 @@ namespace CL_CLegendary_Launcher_.Windows
             if (showEula)
             {
                 this.Visibility = Visibility.Hidden;
-
                 EulaWindow eulaWin = new EulaWindow(eulaConfig);
                 bool? result = eulaWin.ShowDialog();
-
                 this.Visibility = Visibility.Visible;
-
                 return result == true;
             }
 
             return true;
         }
-        private async Task UpgradeSettings()
-        {
-            try
-            {
-                if (Settings1.Default.CallUpgrade)
-                {
-                    Settings1.Default.Upgrade();
-                    Settings1.Default.CallUpgrade = false;
-                    Settings1.Default.Save();
-                }
-            }
-            catch (Exception ex)
-            {
-                Settings1.Default.Reset();
-                Settings1.Default.CallUpgrade = false;
-                Settings1.Default.Save();
-            }
-            return;
-        }
     }
 
     public class UpdateInfo
     {
-        public string version { get; set; } = "";
-        public string url { get; set; } = "";
+        [JsonPropertyName("version")]
+        public string Version { get; set; } = "";
+
+        [JsonPropertyName("url")]
+        public string UrlDefault { get; set; } = "";
+
+        [JsonPropertyName("url_x86")]
+        public string UrlX86 { get; set; } = "";
     }
 }

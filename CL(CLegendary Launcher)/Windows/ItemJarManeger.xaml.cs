@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using CL_CLegendary_Launcher_.Models;
+using Newtonsoft.Json;
 using SharpCompress.Common;
 using System;
 using System.Collections.Generic;
@@ -23,33 +24,35 @@ namespace CL_CLegendary_Launcher_.Windows
 {
     public static class ModJsonManager
     {
-        public class ModrinthIndex
-        {
-            public int formatVersion { get; set; }
-            public string game { get; set; }
-            public string versionId { get; set; }
-            public string name { get; set; }
-            public List<ModrinthFile> files { get; set; }
-        }
+public class ModrinthIndex
+{
+    public int formatVersion { get; set; }
+    public string game { get; set; }
+    public string versionId { get; set; }
+    public string name { get; set; }
+    public List<ModrinthFile> files { get; set; }
+}
 
-        public class ModrinthFile
-        {
-            public string path { get; set; }
-            public Hashes hashes { get; set; }
-            public Env env { get; set; }
-            public List<string> downloads { get; set; }
-            public long fileSize { get; set; }
-        }
-        public class Hashes
-        {
-            public string sha1 { get; set; }
-            public string sha512 { get; set; }
-        }
-        public class Env
-        {
-            public string client { get; set; }
-            public string server { get; set; }
-        }
+public class ModrinthFile
+{
+    public string path { get; set; }
+    public Hashes hashes { get; set; }
+    public Env env { get; set; }
+    public List<string> downloads { get; set; }
+    public long fileSize { get; set; }
+}
+
+public class Hashes
+{
+    public string sha1 { get; set; }
+    public string sha512 { get; set; }
+}
+
+public class Env
+{
+    public string client { get; set; }
+    public string server { get; set; }
+}
 
         public class CurseForgeManifest
         {
@@ -172,24 +175,6 @@ namespace CL_CLegendary_Launcher_.Windows
 
         private void InitializeToggleImages()
         {
-            toggleOnBrush = CreateImageBrush(Resource2.toggle__1_);
-            toggleOffBrush = CreateImageBrush(Resource2.toggle__2_);
-        }
-
-        private ImageBrush CreateImageBrush(System.Drawing.Bitmap bitmap)
-        {
-            var bitmapImage = new BitmapImage();
-            using (var memory = new MemoryStream())
-            {
-                bitmap.Save(memory, System.Drawing.Imaging.ImageFormat.Png);
-                memory.Position = 0;
-
-                bitmapImage.BeginInit();
-                bitmapImage.StreamSource = memory;
-                bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                bitmapImage.EndInit();
-            }
-            return new ImageBrush(bitmapImage);
         }
 
         private void Off_OnMods_MouseDown(object sender, MouseButtonEventArgs e)

@@ -7,14 +7,13 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Net.Http;
 using CL_CLegendary_Launcher_.Windows;
+using System.IO;
 
 namespace CL_CLegendary_Launcher_.Class
 {
     public class ServerListService
     {
         private readonly CL_Main_ _main;
-        private readonly string _serversUrl = "https://raw.githubusercontent.com/WER-CORE/CL-OpenSource/refs/heads/main/serverList.json"; // Або вставте своє посилання
-
         private List<(MyItemsServer Item, int Priority)> _tempSortedList = new List<(MyItemsServer, int)>();
         private object _listLock = new object();
 
@@ -38,9 +37,8 @@ namespace CL_CLegendary_Launcher_.Class
             catch (Exception ex)
             {
                 MascotMessageBox.Show(
-                    $"Ой леле! Не вдалося отримати список серверів.\n" +
-                    $"Можливо, інтернет зник або посилання застаріло?\n\nДеталі: {ex.Message}",
-                    "Збій мережі",
+                    string.Format(LocalizationManager.GetString("Servers.FetchErrorDesc", "Ой леле! Не вдалося отримати список серверів.\nМожливо, інтернет зник або посилання застаріло?\n\nДеталі: {0}"), ex.Message),
+                    LocalizationManager.GetString("Servers.FetchErrorTitle", "Збій мережі"),
                     MascotEmotion.Sad);
                 return null;
             }
@@ -55,18 +53,18 @@ namespace CL_CLegendary_Launcher_.Class
                 else
                     _main.PartnerServer.Items.Clear();
 
-                _main.LoadingMessage.Visibility = Visibility.Visible;
+                _main.ServerSearchLoader.Visibility = Visibility.Visible;
 
                 _main.discordLink.Clear();
                 _main.donateLink.Clear();
                 _main.siteLink.Clear();
             });
 
-            var serversData = await LoadServersFromWebAsync(_serversUrl);
+            var serversData = await LoadServersFromWebAsync(Secrets._serversUrl);
 
             if (serversData != null && serversData.ContainsKey("serverstest"))
             {
-                var serversList = serversData["serverstest"]; 
+                var serversList = serversData["serverstest"];
 
                 if (!string.IsNullOrEmpty(searchQuery))
                 {
@@ -96,20 +94,26 @@ namespace CL_CLegendary_Launcher_.Class
                 }
                 else
                 {
-                    NotificationService.ShowNotification("Пусто", "Хм, я нічого не знайшла за твоїм запитом. Спробуй змінити пошук.", _main.SnackbarPresenter, 3);
+                    _main.ServerSearchLoader.Visibility = Visibility.Collapsed;
+                    NotificationService.ShowNotification(
+                        LocalizationManager.GetString("Servers.EmptyTitle", "Пусто"),
+                        LocalizationManager.GetString("Servers.EmptyDesc", "Хм, я нічого не знайшла за твоїм запитом. Спробуй змінити пошук."),
+                        _main.SnackbarPresenter, 3);
                 }
             }
             else
             {
+                _main.ServerSearchLoader.Visibility = Visibility.Collapsed;
                 MascotMessageBox.Show(
-                    "Дивина! Список серверів порожній або має неправильний формат.",
-                    "Помилка даних",
+                    LocalizationManager.GetString("Servers.FormatErrorDesc", "Дивина! Список серверів порожній або має неправильний формат."),
+                    LocalizationManager.GetString("Servers.FormatErrorTitle", "Помилка даних"),
                     MascotEmotion.Confused);
             }
 
+
             _main.Dispatcher.Invoke(() =>
             {
-                _main.LoadingMessage.Visibility = Visibility.Hidden;
+                _main.ServerSearchLoader.Visibility = Visibility.Collapsed;
             });
         }
 
@@ -134,7 +138,7 @@ namespace CL_CLegendary_Launcher_.Class
             if (serverData.TryGetValue("priority", out object priorityVal))
                 int.TryParse(priorityVal?.ToString(), out priority);
             else if (isPartner)
-                priority = 10; 
+                priority = 10;
 
             _main.discordLink.Add(serverData.ContainsKey("discord") ? serverData["discord"]?.ToString() : "-");
             _main.donateLink.Add(serverData.ContainsKey("donatelink") ? serverData["donatelink"]?.ToString() : "-");
@@ -165,8 +169,8 @@ namespace CL_CLegendary_Launcher_.Class
                     if (IsServerTab)
                     {
                         var sortedItems = _tempSortedList
-                                            .OrderByDescending(x => x.Priority) 
-                                            .Select(x => x.Item)               
+                                            .OrderByDescending(x => x.Priority)
+                                            .Select(x => x.Item)
                                             .ToList();
 
                         _main.ServerList.Items.Clear();
@@ -177,47 +181,7 @@ namespace CL_CLegendary_Launcher_.Class
 
                         _tempSortedList.Clear();
                     }
-
-                    _main.LoadingMessage.Visibility = Visibility.Hidden;
                 }
-            });
-        }
-        public async Task ReloadServers()
-        {
-            _main.Dispatcher.Invoke(() =>
-            {
-                _main.loadedCount = 0;
-                _tempSortedList.Clear(); 
-                _main.ServerList.Items.Clear();
-                _main.LoadingMessage.Visibility = Visibility.Visible;
-
-                _main.PartnerServer.Items.Clear();
-                _main.ServerList.Items.Clear();
-
-                _main.discordLink.Clear();
-                _main.donateLink.Clear();
-                _main.siteLink.Clear();
-
-                _main.loadedCount = 0;
-                _main.LoadingMessage.Visibility = Visibility.Visible;
-            });
-
-            var serversData = await LoadServersFromWebAsync(_serversUrl);
-
-            if (serversData != null && serversData.ContainsKey("serverstest"))
-            {
-                var serversList = serversData["serverstest"];
-                _main.serverCount = serversList.Count;
-                foreach (var serverEntry in serversList)
-                {
-                    await LoadAndDisplayServerAsync(false, serverEntry.Value);
-
-                }
-            }
-
-            _main.Dispatcher.Invoke(() =>
-            {
-                _main.LoadingMessage.Visibility = Visibility.Hidden;
             });
         }
     }

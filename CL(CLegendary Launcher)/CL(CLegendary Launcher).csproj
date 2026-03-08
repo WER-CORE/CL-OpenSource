@@ -53,6 +53,7 @@
     <None Remove="Assets\CustomVersion.png" />
     <None Remove="Assets\DarkThem.png" />
     <None Remove="Assets\DarkThemBG.png" />
+    <None Remove="Assets\DarkThemBG.webp" />
     <None Remove="Assets\delete_1000dp_E8EAED_FILL0_wght400_GRAD0_opsz48.png" />
     <None Remove="Assets\DirtIconSnapshot.png" />
     <None Remove="Assets\download_1000dp_D9D9D9_FILL0_wght400_GRAD0_opsz48.png" />
@@ -69,6 +70,7 @@
     <None Remove="Assets\keyboard_arrow_down_100dp_E8EAED_FILL0_wght400_GRAD0_opsz48.png" />
     <None Remove="Assets\LightThem.png" />
     <None Remove="Assets\LightThemBG.png" />
+    <None Remove="Assets\LightThemBG.webp" />
     <None Remove="Assets\LittleSkinAccount.png" />
     <None Remove="Assets\microsoft logo.png" />
     <None Remove="Assets\newspaper_1000dp_E8EAED_FILL0_wght400_GRAD0_opsz48.png" />
@@ -159,57 +161,67 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="Assets\DarkThemBG.webp">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\LightThemBG.webp">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
     <Resource Include="Icon\IconCL(Winter).ico" />
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="Assets\CobblestoneIconAlpha.png" />
+    <Resource Include="Assets\CobblestoneIconAlpha.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="Assets\1200-818013157 1.png" />
-    <Resource Include="Assets\add_1000dp_B7B7B7_FILL0_wght700_GRAD200_opsz48.png" />
-    <Resource Include="Assets\big-steve-face-2002298922 2.png" />
-    <Resource Include="Assets\bug_report_1000dp_E8EAED_FILL0_wght400_GRAD0_opsz48.png" />
-    <Resource Include="Assets\curseforge-logo-3499974474.png" />
-    <Resource Include="Assets\CustomVersion.png" />
-    <Resource Include="Assets\DarkThem.png" />
-    <Resource Include="Assets\DarkThemBG.png" />
-    <Resource Include="Assets\delete_1000dp_E8EAED_FILL0_wght400_GRAD0_opsz48.png" />
-    <Resource Include="Assets\DirtIconSnapshot.png" />
-    <Resource Include="Assets\download_1000dp_D9D9D9_FILL0_wght400_GRAD0_opsz48.png" />
-    <Resource Include="Assets\faArrowRotateBack.png" />
-    <Resource Include="Assets\fabric.png" />
-    <Resource Include="Assets\folder-solid.png" />
-    <Resource Include="Assets\ForgeIcon.jpg" />
-    <Resource Include="Assets\gear-solid.png" />
-    <Resource Include="Assets\history_1000dp_FFFFFF_FILL0_wght400_GRAD0_opsz48.png" />
-    <Resource Include="Assets\IconCL(Halloween).png" />
-    <Resource Include="Assets\IconNeoForge.png" />
-    <Resource Include="Assets\IconOptiFine.png" />
-    <Resource Include="Assets\images.png" />
-    <Resource Include="Assets\keyboard_arrow_down_100dp_E8EAED_FILL0_wght400_GRAD0_opsz48.png" />
-    <Resource Include="Assets\LightThem.png" />
-    <Resource Include="Assets\LightThemBG.png" />
-    <Resource Include="Assets\LittleSkinAccount.png" />
-    <Resource Include="Assets\microsoft logo.png" />
-    <Resource Include="Assets\newspaper_1000dp_E8EAED_FILL0_wght400_GRAD0_opsz48.png" />
-    <Resource Include="Assets\person_1000dp_FFFFFF_FILL0_wght400_GRAD0_opsz48.png" />
-    <Resource Include="Assets\search.png" />
-    <Resource Include="Assets\server-solid.png" />
-    <Resource Include="Assets\SettingReset.png" />
-    <Resource Include="Assets\Snow.png" />
-    <Resource Include="Assets\StoneIconBeta.png" />
-    <Resource Include="Assets\toggle (1).png" />
-    <Resource Include="Assets\toggle (2).png" />
-    <Resource Include="Assets\upload_1000dp_B7B7B7_FILL0_wght400_GRAD0_opsz48.png" />
-    <Resource Include="Assets\upload_file_1000dp_FFFFFF_FILL0_wght400_GRAD0_opsz48.png" />
-    <Resource Include="Assets\VanilaVersion.png" />
-    <Resource Include="Assets\Vector (1).png" />
-    <Resource Include="Assets\Vector (2).png" />
-    <Resource Include="Assets\Vector.png" />
-    <Resource Include="Assets\youtube_activity_1000dp_B7B7B7_FILL0_wght700_GRAD200_opsz48.png" />
-    <Resource Include="Assets\СMD.png" />
+    <Resource Include="Assets\1200-818013157 1.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\big-steve-face-2002298922 2.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\curseforge-logo-3499974474.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\CustomVersion.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\DirtIconSnapshot.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\fabric.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\ForgeIcon.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\IconNeoForge.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\IconOptiFine.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\images.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\LittleSkinAccount.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\microsoft logo.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\Snow.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\StoneIconBeta.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\VanilaVersion.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
     <Resource Include="Icon\IconCL(Halloween).ico" />
   </ItemGroup>
 
@@ -321,8 +333,6 @@
     <Resource Include="Icon\IconCL(Common).ico" />
     <Resource Include="Icon\IconCL(Common).png" />
     <Resource Include="Icon\IconCL(Halloween).png" />
-    <Resource Include="Resources\OfflineIconDeafult.png" />
-    <Resource Include="Windows\InfoIcon.png" />
   </ItemGroup>
 
   <ItemGroup>

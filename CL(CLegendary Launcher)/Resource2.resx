@@ -118,40 +118,10 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="SelectRelesed" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Resources\SelectRelesed.wav;System.IO.MemoryStream, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="pling" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>resources\pling.wav;System.IO.MemoryStream, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="astanavites" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\astanavites.wav;System.IO.MemoryStream, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="click" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>resources\click.wav;System.IO.MemoryStream, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="ForgeSelect" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Resources\ForgeSelect.wav;System.IO.MemoryStream, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="СMD" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Resources\СMD.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="toggle__1_" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Assets\toggle (1).png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="toggle__2_" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Assets\toggle (2).png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="DarkThem" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Assets\DarkThem.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="LightThem" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Assets\LightThem.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="OfflineIconDeafult" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Resources\OfflineIconDeafult.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="AutumnFonLight" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Assets\LightThemBG.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="AutumnFonDark" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Assets\DarkThemBG.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>

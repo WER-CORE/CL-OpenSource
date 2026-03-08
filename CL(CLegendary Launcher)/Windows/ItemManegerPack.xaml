@@ -15,7 +15,7 @@
         <Border x:Name="Border" 
                 BorderThickness="1" 
                 CornerRadius="12"
-                Cursor="Hand">
+                Cursor="Hand" Background="{DynamicResource MainBackgroundBrushServer}">
 
             <Border.Style>
                 <Style TargetType="Border">
@@ -66,8 +66,10 @@
 
                 <StackPanel Grid.Column="2" VerticalAlignment="Bottom" Orientation="Horizontal" Margin="0,0,0,5">
 
-                    <ui:ToggleSwitch x:Name="IsOnOffSwitch" Height="24" Width="54" FontFamily="Inter 18pt 18pt"/>
-
+                    <ui:ToggleSwitch x:Name="IsOnOffSwitch" 
+                 Height="24" Width="54" 
+                 FontFamily="Inter 18pt 18pt"
+                 Click="Off_OnMods_Click"/>
                     <Border x:Name="DeleteMod" 
                             Height="26" Width="90" 
                             CornerRadius="6" Cursor="Hand"

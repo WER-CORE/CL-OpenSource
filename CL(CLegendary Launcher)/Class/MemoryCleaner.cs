@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Runtime;
+using System.Runtime; 
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
@@ -15,7 +15,6 @@ namespace CL_CLegendary_Launcher_.Class
         {
             await Task.Run(() => FlushMemory(trimWorkingSet));
         }
-
         public static void FlushMemory(bool trimWorkingSet = true)
         {
             try

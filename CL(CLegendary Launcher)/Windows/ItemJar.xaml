@@ -8,7 +8,6 @@
              Height="108" Width="740">
 
     <Grid x:Name="GirdMain">
-
         <Border x:Name="Border" BorderThickness="1" Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="15">
             <Grid Margin="10">
                 <Grid.ColumnDefinitions>
@@ -19,8 +18,9 @@
 
                 <Border Grid.Column="0" x:Name="BorderImage" BorderThickness="1" 
                         Height="86" Width="86" 
-                        Background="{DynamicResource MainBackgroundBrush}" CornerRadius="6">
-                    <Image x:Name="ModIcon" RenderOptions.BitmapScalingMode="HighQuality" Stretch="UniformToFill"/>
+                        Background="{DynamicResource MainBackgroundBrush}" CornerRadius="6"
+                        ClipToBounds="True">
+                    <Image x:Name="ModIcon" RenderOptions.BitmapScalingMode="LowQuality" Stretch="UniformToFill"/>
                 </Border>
 
                 <Grid Grid.Column="1" Margin="15,0,15,0">
@@ -31,66 +31,64 @@
                     </Grid.RowDefinitions>
 
                     <TextBlock x:Name="Title" Text="Mod Name" 
-                               FontWeight="Bold" FontSize="20" 
+                               FontFamily="Inter" FontWeight="Bold" FontSize="20" 
                                Foreground="{DynamicResource MainForegroundBrush}" 
                                TextTrimming="CharacterEllipsis"/>
 
                     <TextBlock Grid.Row="1" x:Name="Description" 
                                Text="Long description of the mod goes here..." 
-                               FontSize="12" Foreground="Gray" 
+                               FontFamily="Inter" FontSize="12" Foreground="Gray" 
                                TextWrapping="Wrap" TextTrimming="CharacterEllipsis" 
-                               Margin="0,5,0,5"/>
+                               Margin="0,5,0,5" Opacity="0.8"/>
 
                     <StackPanel Grid.Row="2" Orientation="Horizontal">
 
-                        <StackPanel Orientation="Horizontal" Margin="0,0,15,0" ToolTip="Кількість завантажень">
+                        <StackPanel x:Name="ToolTipDownloads" Orientation="Horizontal" Margin="0,0,15,0" ToolTip="Кількість завантажень">
                             <Path Data="M19,9h-4V3H9v6H5l7,7l7-7z M5,18v2h14v-2H5z" 
-              Fill="{DynamicResource MainForegroundBrush}" 
-              Stretch="Uniform" Width="14" Height="14" Margin="0,0,5,0"
-              VerticalAlignment="Center"/>
-                            <TextBlock x:Name="DowloadCountTXT" Text="0" FontSize="11" Foreground="{DynamicResource MainForegroundBrush}" VerticalAlignment="Center"/>
+                                  Fill="{DynamicResource MainForegroundBrush}" 
+                                  Stretch="Uniform" Width="14" Height="14" Margin="0,0,5,0"
+                                  VerticalAlignment="Center"/>
+                            <TextBlock x:Name="DowloadCountTXT" Text="0" FontFamily="Inter" FontSize="11" Foreground="{DynamicResource MainForegroundBrush}" VerticalAlignment="Center"/>
                         </StackPanel>
 
-                        <StackPanel Orientation="Horizontal" Margin="0,0,15,0" ToolTip="Останнє оновлення">
-                            <Path Data="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z" 
-              Fill="{DynamicResource MainForegroundBrush}" 
-              Stretch="Uniform" Width="14" Height="14" Margin="0,0,5,0"
-              VerticalAlignment="Center"/>
-                            <TextBlock x:Name="DataUpdateLastTXT" Text="Date" FontSize="11" Foreground="{DynamicResource MainForegroundBrush}" VerticalAlignment="Center"/>
+                        <StackPanel x:Name="ToolTipUpdate" Orientation="Horizontal" Margin="0,0,15,0" ToolTip="Останнє оновлення">
+                            <Path Data="M12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm0-14c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6z M11 7h2v5.4l3.5 2.1-1 1.7-4.5-2.7V7z" 
+                                  Fill="{DynamicResource MainForegroundBrush}" 
+                                  Stretch="Uniform" Width="14" Height="14" Margin="0,0,5,0"
+                                  VerticalAlignment="Center"/>
+                            <TextBlock x:Name="DataUpdateLastTXT" Text="Date" FontFamily="Inter" FontSize="11" Foreground="{DynamicResource MainForegroundBrush}" VerticalAlignment="Center"/>
                         </StackPanel>
 
-                        <StackPanel Orientation="Horizontal" Margin="0,0,15,0" ToolTip="Дата створення">
-                            <Path Data="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" 
-              Fill="{DynamicResource MainForegroundBrush}" 
-              Stretch="Uniform" Width="14" Height="14" Margin="0,0,5,0"
-              VerticalAlignment="Center"/>
-                            <TextBlock x:Name="DataCreateModTXT" Text="Date" FontSize="11" Foreground="{DynamicResource MainForegroundBrush}" VerticalAlignment="Center"/>
+                        <StackPanel x:Name="ToolTipCreate" Orientation="Horizontal" Margin="0,0,15,0" ToolTip="Дата створення">
+                            <Path Data="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z" 
+                                  Fill="{DynamicResource MainForegroundBrush}" 
+                                  Stretch="Uniform" Width="14" Height="14" Margin="0,0,5,0"
+                                  VerticalAlignment="Center"/>
+                            <TextBlock x:Name="DataCreateModTXT" Text="Date" FontFamily="Inter" FontSize="11" Foreground="{DynamicResource MainForegroundBrush}" VerticalAlignment="Center"/>
                         </StackPanel>
 
-                        <StackPanel Orientation="Horizontal" ToolTip="Автор">
+                        <StackPanel x:Name="ToolTipAuthor" Orientation="Horizontal" ToolTip="Автор">
                             <Path Data="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" 
-              Fill="{DynamicResource MainForegroundBrush}" 
-              Stretch="Uniform" Width="14" Height="14" Margin="0,0,5,0"
-              VerticalAlignment="Center"/>
-                            <TextBlock x:Name="User_AuthorTXT" Text="Author" FontSize="11" Foreground="{DynamicResource MainForegroundBrush}" VerticalAlignment="Center"/>
+                                  Fill="{DynamicResource MainForegroundBrush}" 
+                                  Stretch="Uniform" Width="14" Height="14" Margin="0,0,5,0"
+                                  VerticalAlignment="Center"/>
+                            <TextBlock x:Name="User_AuthorTXT" Text="Author" FontFamily="Inter" FontSize="11" Foreground="{DynamicResource MainForegroundBrush}" VerticalAlignment="Center"/>
                         </StackPanel>
 
                     </StackPanel>
                 </Grid>
 
                 <Border Grid.Column="2" x:Name="DowloadMod" 
-        VerticalAlignment="Center"
-        Height="30" Width="100" 
-        CornerRadius="6" Cursor="Hand" Background="{DynamicResource MainBackgroundButton}">
+                        VerticalAlignment="Center"
+                        Height="30" Width="100" 
+                        CornerRadius="6" Cursor="Hand" Background="{DynamicResource MainBackgroundButton}">
 
                     <Border.Style>
                         <Style TargetType="Border">
-                            <Setter Property="Background" Value="{DynamicResource MainBackgroundBrush}"/>
-
+                            <Setter Property="Background" Value="{DynamicResource MainBackgroundButton}"/>
                             <Style.Triggers>
                                 <Trigger Property="IsMouseOver" Value="True">
                                     <Setter Property="Background" Value="#FF454545"/>
-
                                     <Setter Property="BorderBrush" Value="White"/>
                                     <Setter Property="BorderThickness" Value="1"/>
                                 </Trigger>
@@ -99,9 +97,9 @@
                     </Border.Style>
 
                     <TextBlock x:Name="DowloadTXT" Text="Встановити" 
-               Foreground="{DynamicResource MainForegroundBrush}" 
-               HorizontalAlignment="Center" VerticalAlignment="Center" 
-               FontWeight="Bold" FontSize="12"/>
+                               Foreground="{DynamicResource MainForegroundBrush}" 
+                               HorizontalAlignment="Center" VerticalAlignment="Center" 
+                               FontFamily="Inter" FontWeight="Bold" FontSize="12"/>
                 </Border>
 
             </Grid>

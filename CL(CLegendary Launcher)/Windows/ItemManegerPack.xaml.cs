@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using CL_CLegendary_Launcher_.Class;
+using CL_CLegendary_Launcher_.Models;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -21,49 +23,70 @@ namespace CL_CLegendary_Launcher_.Windows
     public partial class ItemManegerPack : UserControl
     {
         public ModpackInfo CurrentModpack { get; set; }
-        public ImageSource ModIconValue { get; set; }
-        public string pathmods; 
-        public bool Off_OnMod = true; 
+        public string pathmods;
+        public bool Off_OnMod = true;
         public bool IsModPack = false;
-        public int Index { get; set; } 
+        public int Index { get; set; }
 
         public ItemManegerPack()
         {
             InitializeComponent();
-            ApplicationThemeManager.Apply(this);
-            IsOnOffSwitch.IsChecked = Off_OnMod;
-
+            ApplyLocalization();
         }
-        private void Off_OnMods_MouseDown(object sender, MouseButtonEventArgs e)
+
+        private void ApplyLocalization()
+        {
+            DowloadTXT.Text = LocalizationManager.GetString("Mods.ItemManagerDeleteBtn", "Видалити");
+        }
+
+        public void Off_OnMods_Click(object sender, RoutedEventArgs e)
         {
             if (string.IsNullOrEmpty(pathmods) || !File.Exists(pathmods))
             {
-                MessageBox.Show("Файл мода не знайдено. Перевірте шлях.", "Помилка");
-                return;
-            }
-
-            string newFilePath;
-            try
-            {
-                if (Off_OnMod == true)
+                string altPath = Off_OnMod ? pathmods + ".disabled" : pathmods.Replace(".disabled", "");
+                if (File.Exists(altPath))
                 {
-                    Off_OnMod = false;
-                    IsOnOffSwitch.IsChecked = Off_OnMod;
-                    newFilePath = pathmods + ".disabled";
+                    pathmods = altPath;
                 }
                 else
                 {
+                    MascotMessageBox.Show(
+                        string.Format(LocalizationManager.GetString("Mods.FileNotFound", "Файл мода не знайдено:\n{0}"), pathmods),
+                        LocalizationManager.GetString("Dialogs.Error", "Помилка"),
+                        MascotEmotion.Sad);
+                    return;
+                }
+            }
+
+            try
+            {
+                string directory = System.IO.Path.GetDirectoryName(pathmods);
+                string fileName = System.IO.Path.GetFileName(pathmods);
+                string newPath;
+
+                if (fileName.EndsWith(".disabled"))
+                {
+                    newPath = System.IO.Path.Combine(directory, fileName.Replace(".disabled", ""));
                     Off_OnMod = true;
-                    IsOnOffSwitch.IsChecked = Off_OnMod;
-                    newFilePath = pathmods.Replace(".disabled", "");
+                    Description.Text = LocalizationManager.GetString("Modpacks.ModStateActive", "Активний");
+                }
+                else
+                {
+                    newPath = pathmods + ".disabled";
+                    Off_OnMod = false;
+                    Description.Text = LocalizationManager.GetString("Modpacks.ModStateDisabled", "Вимкнено");
                 }
 
-                File.Move(pathmods, newFilePath);
-                pathmods = newFilePath; 
+                File.Move(pathmods, newPath);
+                pathmods = newPath;
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Не вдалося змінити статус мода.\nПомилка: {ex.Message}", "Помилка");
+                MascotMessageBox.Show(
+                    string.Format(LocalizationManager.GetString("Mods.StatusChangeError", "Не вдалося змінити статус мода.\n{0}"), ex.Message),
+                    LocalizationManager.GetString("Dialogs.Error", "Помилка"),
+                    MascotEmotion.Sad);
+                IsOnOffSwitch.IsChecked = !IsOnOffSwitch.IsChecked;
             }
         }
 
@@ -71,36 +94,118 @@ namespace CL_CLegendary_Launcher_.Windows
         {
             if (string.IsNullOrEmpty(pathmods) || !File.Exists(pathmods))
             {
-                MessageBox.Show("Файл мода не знайдено. Перевірте шлях.", "Помилка");
-                return;
+                if (File.Exists(pathmods + ".disabled")) pathmods += ".disabled";
+                else if (File.Exists(pathmods.Replace(".disabled", ""))) pathmods = pathmods.Replace(".disabled", "");
+                else
+                {
+                    MascotMessageBox.Show(
+                        LocalizationManager.GetString("Mods.DeleteFileNotFound", "Файл не знайдено для видалення."),
+                        LocalizationManager.GetString("Dialogs.Error", "Помилка"),
+                        MascotEmotion.Sad);
+                    return;
+                }
             }
 
             try
             {
+                string fileNameToDelete = System.IO.Path.GetFileName(pathmods).Replace(".disabled", "");
+
                 File.Delete(pathmods);
-                if (IsModPack && CurrentModpack != null)
+
+                if (IsModPack && CurrentModpack != null && !string.IsNullOrEmpty(CurrentModpack.PathJson))
                 {
-                    if (CurrentModpack.TypeSite == "CurseForge")
+                    string jsonPath = CurrentModpack.PathJson;
+
+                    if (File.Exists(jsonPath))
                     {
-                        ModJsonManager.RemoveModFromCurseForgeManifest(CurrentModpack.PathJson, Index);
+                        try
+                        {
+                            string jsonContent = File.ReadAllText(jsonPath);
+                            bool updated = false;
+                            string newJsonContent = "";
+
+                            try
+                            {
+                                var manifest = JsonConvert.DeserializeObject<CustomModpackManifest>(jsonContent);
+                                if (manifest != null && manifest.Files != null)
+                                {
+                                    var itemToRemove = manifest.Files.FirstOrDefault(m =>
+                                        (m.FileName != null && m.FileName.Equals(fileNameToDelete, StringComparison.OrdinalIgnoreCase)) ||
+                                        (m.Name != null && m.Name.Equals(Title.Text, StringComparison.OrdinalIgnoreCase))
+                                    );
+
+                                    if (itemToRemove != null)
+                                    {
+                                        manifest.Files.Remove(itemToRemove);
+                                        newJsonContent = JsonConvert.SerializeObject(manifest, Formatting.Indented);
+                                        updated = true;
+                                    }
+                                }
+                            }
+                            catch
+                            {
+                            }
+
+                            if (!updated)
+                            {
+                                try
+                                {
+                                    var modsList = JsonConvert.DeserializeObject<List<ModInfo>>(jsonContent);
+                                    if (modsList != null)
+                                    {
+                                        var itemToRemove = modsList.FirstOrDefault(m =>
+                                            (m.FileName != null && m.FileName.Equals(fileNameToDelete, StringComparison.OrdinalIgnoreCase)) ||
+                                            (m.Name != null && m.Name.Equals(Title.Text, StringComparison.OrdinalIgnoreCase))
+                                        );
+
+                                        if (itemToRemove != null)
+                                        {
+                                            modsList.Remove(itemToRemove);
+                                            newJsonContent = JsonConvert.SerializeObject(modsList, Formatting.Indented);
+                                            updated = true;
+                                        }
+                                    }
+                                }
+                                catch { }
+                            }
+
+                            if (updated && !string.IsNullOrEmpty(newJsonContent))
+                            {
+                                File.WriteAllText(jsonPath, newJsonContent);
+                            }
+                        }
+                        catch (Exception jsonEx)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"Помилка оновлення JSON: {jsonEx.Message}");
+                        }
                     }
-                    else if (CurrentModpack.TypeSite == "Custom")
-                    {
-                        string modFileName = System.IO.Path.GetFileName(pathmods);
-                        ModJsonManager.RemoveModFromJson(pathmods, CurrentModpack);
-                    }
-                }
-                var parentItemsControl = this.Parent as ItemsControl;
-                if (parentItemsControl != null)
-                {
-                    parentItemsControl.Items.Remove(this);
                 }
 
+                var parentList = FindParent<ItemsControl>(this);
+                if (parentList != null && parentList.ItemsSource == null)
+                {
+                    parentList.Items.Remove(this);
+                }
+                else if (parentList != null && parentList.ItemsSource != null)
+                {
+                    try { parentList.Items.Remove(this); } catch { }
+                }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Не вдалося видалити мод.\nПомилка: {ex.Message}", "Помилка");
+                MascotMessageBox.Show(
+                    string.Format(LocalizationManager.GetString("Mods.DeleteError", "Помилка видалення: {0}"), ex.Message),
+                    LocalizationManager.GetString("Dialogs.Error", "Помилка"),
+                    MascotEmotion.Sad);
             }
+        }
+
+        public static T FindParent<T>(DependencyObject child) where T : DependencyObject
+        {
+            DependencyObject parentObject = VisualTreeHelper.GetParent(child);
+            if (parentObject == null) return null;
+            T parent = parentObject as T;
+            return parent ?? FindParent<T>(parentObject);
         }
     }
 }

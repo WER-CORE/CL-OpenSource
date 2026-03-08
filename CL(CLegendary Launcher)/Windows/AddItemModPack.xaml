@@ -4,10 +4,38 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:CL_CLegendary_Launcher_.Windows"
-             mc:Ignorable="d" Height="65" Width="177">
-    <Grid Background="{DynamicResource MainBackgroundBrushServer}" HorizontalAlignment="Center" Width="177">
-        <TextBlock x:Name="NameMod" HorizontalAlignment="Left" Height="50" Margin="45,5,0,0" TextWrapping="Wrap" Text="Name" VerticalAlignment="Top" Width="90" FontFamily="Inter 18pt 18pt" Padding="0,18,0,0" Foreground="{DynamicResource MainForegroundBrush}"/>
-        <Image x:Name="DeleteModFromModPack" RenderOptions.BitmapScalingMode="HighQuality" HorizontalAlignment="Left" Height="30" Margin="145,15,0,0" VerticalAlignment="Top" Width="30" Source="/Assets/delete_1000dp_E8EAED_FILL0_wght400_GRAD0_opsz48.png"/>
-        <Image x:Name="IconMod" RenderOptions.BitmapScalingMode="HighQuality" HorizontalAlignment="Left" Height="30" Margin="5,15,0,0" VerticalAlignment="Top" Width="30"/>
-    </Grid>
+             mc:Ignorable="d" 
+             d:DesignWidth="200" Height="50">
+
+    <Border Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="8" Margin="0,0,0,5">
+        <Grid Margin="10,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <Image x:Name="IconMod" Grid.Column="0" 
+                   RenderOptions.BitmapScalingMode="LowQuality" 
+                   Height="24" Width="24" VerticalAlignment="Center"/>
+
+            <TextBlock x:Name="NameMod" Grid.Column="1" 
+                       Text="Mod Name" 
+                       VerticalAlignment="Center" Margin="10,0"
+                       Foreground="{DynamicResource MainForegroundBrush}"
+                       FontSize="12" FontFamily="Inter"
+                       TextWrapping="NoWrap"
+                       TextTrimming="CharacterEllipsis"/>
+
+            <Path x:Name="DeleteModFromModPack" Grid.Column="2" 
+                  Data="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"
+                  Fill="{DynamicResource MainForegroundBrush}"
+                  Stretch="Uniform" 
+                  Height="18" Width="18" 
+                  VerticalAlignment="Center" 
+                  Cursor="Hand"
+                  ToolTip="Видалити зі збірки"
+                  />
+        </Grid>
+    </Border>
 </UserControl>

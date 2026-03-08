@@ -1,55 +1,79 @@
-﻿<UserControl x:Class="CL_CLegendary_Launcher_.Windows.PartherItem"
+﻿<UserControl x:Name="UserControl" x:Class="CL_CLegendary_Launcher_.Windows.PartherItem"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:CL_CLegendary_Launcher_.Windows"
-             xmlns:h="http://helix-toolkit.org/wpf" 
              mc:Ignorable="d" Height="60" Width="315" Foreground="{x:Null}">
+
     <Grid x:Name="MainGirdItem4">
 
-        <Border x:Name="BGParther" BorderThickness="1" CornerRadius="7">
-            <Border.Effect>
-                <BlurEffect Radius="3"/>
-            </Border.Effect>
+        <Border x:Name="BGParther" BorderThickness="1" CornerRadius="7" ClipToBounds="True">
             <Border.Background>
-                <ImageBrush ImageSource="/Assets/DarkThemBG.png" Stretch="UniformToFill"/>
+                <ImageBrush ImageSource="/Assets/DarkThemBG.webp" Stretch="UniformToFill"/>
             </Border.Background>
         </Border>
 
         <Border CornerRadius="7" Background="Black" Opacity="0.4" IsHitTestVisible="False"/>
 
-        <Image x:Name="MainIcon3" RenderOptions.BitmapScalingMode="HighQuality" HorizontalAlignment="Left" Height="32" VerticalAlignment="Center" Width="32" Margin="10,0,0,0" Source="/Icon/IconCL(Common).png">
+        <Image x:Name="MainIcon3" 
+               RenderOptions.BitmapScalingMode="LowQuality" 
+               HorizontalAlignment="Left" Height="32" Width="32" 
+               VerticalAlignment="Center" Margin="10,0,0,0" 
+               Source="/Icon/IconCL(Common).png">
             <Image.Effect>
                 <DropShadowEffect ShadowDepth="1" BlurRadius="5" Opacity="0.5"/>
             </Image.Effect>
         </Image>
 
-        <Label x:Name="TitleMain1" Content="Title" 
-               HorizontalAlignment="Left" Margin="42,0,0,0" VerticalAlignment="Center" 
-               Height="30" Width="116" 
-               Foreground="{DynamicResource MainForegroundBrush}" 
-               VerticalContentAlignment="Center" FontFamily="Inter 18pt 18pt" Background="{x:Null}" 
-               FontWeight="Bold" FontSize="14">
-            <Label.Effect>
+        <TextBlock x:Name="TitleMain1" Text="Title" 
+                   HorizontalAlignment="Left" Margin="48,0,0,0" VerticalAlignment="Center" 
+                   Foreground="{DynamicResource MainForegroundBrush}" 
+                   FontFamily="Inter" FontWeight="Bold" FontSize="14"
+                   TextTrimming="CharacterEllipsis" MaxWidth="110">
+            <TextBlock.Effect>
                 <DropShadowEffect ShadowDepth="1" BlurRadius="2" Opacity="0.8" Color="Black"/>
-            </Label.Effect>
-        </Label>
+            </TextBlock.Effect>
+        </TextBlock>
 
-        <Border x:Name="OpenInfoServerPanel" BorderThickness="1" HorizontalAlignment="Left" Height="24" Margin="158,6,0,0" VerticalAlignment="Top" Width="151" Background="{DynamicResource MainBackgroundButton}" CornerRadius="4">
-            <Label x:Name="OpenInfoServerTXT" Content="Перейти на сторінку" HorizontalAlignment="Center" Width="146" HorizontalContentAlignment="Center" Foreground="{DynamicResource MainForegroundBrush}" Margin="0,-1,0,-1" Cursor="Hand" ToolTip="Інформація про сервер" FontSize="10" VerticalAlignment="Top" VerticalContentAlignment="Center"/>
+        <Border x:Name="OpenInfoServerPanel" BorderThickness="1" HorizontalAlignment="Left" 
+                Height="24" Margin="158,6,0,0" VerticalAlignment="Top" Width="151" 
+                Background="{DynamicResource MainBackgroundButton}" CornerRadius="4"
+                Cursor="Hand" ToolTip="Інформація про сервер">
+            <TextBlock x:Name="OpenInfoServerTXT" Text="Перейти на сторінку" 
+                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                       Foreground="{DynamicResource MainForegroundBrush}" 
+                       FontSize="10" FontFamily="Inter"/>
         </Border>
 
-        <Border x:Name="OnlinePlayerPanel" BorderThickness="1" HorizontalAlignment="Left" Height="22" Margin="158,30,0,0" VerticalAlignment="Top" Width="39" Background="{DynamicResource MainBackgroundButton}" CornerRadius="4">
-            <Label x:Name="OnlinePlayerTXT" Content="5/50" Foreground="{DynamicResource MainForegroundBrush}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="0,-1,0,-1" Cursor="Hand" ToolTip="Онлайн" FontFamily="Inter 18pt 18pt" FontSize="10"/>
+        <Border x:Name="OnlinePlayerPanel" BorderThickness="1" HorizontalAlignment="Left" 
+                Height="22" Margin="158,30,0,0" VerticalAlignment="Top" Width="39" 
+                Background="{DynamicResource MainBackgroundButton}" CornerRadius="4"
+                Cursor="Hand" ToolTip="Онлайн">
+            <TextBlock x:Name="OnlinePlayerTXT" Text="5/50" 
+                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                       Foreground="{DynamicResource MainForegroundBrush}" 
+                       FontSize="10" FontFamily="Inter"/>
         </Border>
 
-        <Border x:Name="IPServerPanel" BorderThickness="1" HorizontalAlignment="Left" Height="22" Margin="199,30,0,0" VerticalAlignment="Top" Width="68" Background="{DynamicResource MainBackgroundButton}" CornerRadius="4">
-            <Label x:Name="IPServerTXT" Content="bober.fun" Background="{x:Null}" Foreground="{DynamicResource MainForegroundBrush}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="0,-1,0,-1"  Cursor="Hand" ToolTip="Натисніть щоб скопіювати" FontSize="10" FontFamily="Inter 18pt 18pt" MouseDown="IPServerTXT_MouseDown"/>
+        <Border x:Name="IPServerPanel" BorderThickness="1" HorizontalAlignment="Left" 
+                Height="22" Margin="199,30,0,0" VerticalAlignment="Top" Width="68" 
+                Background="{DynamicResource MainBackgroundButton}" CornerRadius="4"
+                Cursor="Hand" ToolTip="Натисніть щоб скопіювати" MouseDown="IPServerTXT_MouseDown">
+            <TextBlock x:Name="IPServerTXT" Text="bober.fun" 
+                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                       Foreground="{DynamicResource MainForegroundBrush}" 
+                       FontSize="10" FontFamily="Inter" TextTrimming="CharacterEllipsis"/>
         </Border>
 
-        <Border x:Name="PlayServerPanel1" BorderThickness="1" HorizontalAlignment="Left" Height="22" Margin="269,30,0,0" VerticalAlignment="Top" Width="40" Background="{DynamicResource MainBackgroundButton}" CornerRadius="4">
-            <Label x:Name="PlayServerTXT1" Content="Грати" Foreground="{DynamicResource MainForegroundBrush}" Background="{x:Null}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="0,-1,0,-1" Cursor="Hand" ToolTip="Натисніть щоб почати грати" FontSize="10" FontFamily="Inter 18pt 18pt"/>
+        <Border x:Name="PlayServerPanel1" BorderThickness="1" HorizontalAlignment="Left" 
+                Height="22" Margin="269,30,0,0" VerticalAlignment="Top" Width="40" 
+                Background="{DynamicResource MainBackgroundButton}" CornerRadius="4"
+                Cursor="Hand" ToolTip="Натисніть щоб почати грати">
+            <TextBlock x:Name="PlayServerTXT1" Text="Грати" 
+                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                       Foreground="{DynamicResource MainForegroundBrush}" 
+                       FontSize="10" FontFamily="Inter"/>
         </Border>
 
     </Grid>

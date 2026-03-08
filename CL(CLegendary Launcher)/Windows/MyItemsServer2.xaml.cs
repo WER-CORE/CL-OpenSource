@@ -1,8 +1,7 @@
-﻿using System;
+﻿using CL_CLegendary_Launcher_.Class;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
 namespace CL_CLegendary_Launcher_
@@ -13,66 +12,55 @@ namespace CL_CLegendary_Launcher_
         private Image Image;
         private string _title;
         private string _description;
-        private string port;
 
         public MyItemsServer()
         {
             InitializeComponent();
-            FontFamily myFont = new FontFamily(new Uri("pack://application:,,,/CL_CLegendary_Launcher_;component/Resources/"), "#Inter 18pt");
-
-            TitleMain1.FontFamily = myFont;
-            DescriptionMain2.FontFamily = myFont;
-            OnlinePlayerTXT.FontFamily = myFont;
-            OpenInfoServerTXT.FontFamily = myFont;
-            IPServerTXT.FontFamily = myFont;
-            PlayServerTXT1.FontFamily = myFont;
+            ApplyLocalization();
         }
 
+        private void ApplyLocalization()
+        {
+            OpenInfoServerPanel.ToolTip = LocalizationManager.GetString("Servers.ServerItemInfoTooltip", "Інформація про сервер");
+            OpenInfoServerTXT.Text = LocalizationManager.GetString("Servers.ServerPageBtn", "Перейти на сторінку");
+
+            OnlinePlayerPanel.ToolTip = LocalizationManager.GetString("Servers.ServerOnlineTooltip", "Онлайн");
+            IPServerPanel.ToolTip = LocalizationManager.GetString("Servers.ServerCopyIpTooltip", "Натисніть щоб скопіювати");
+            PlayServerPanel1.ToolTip = LocalizationManager.GetString("Servers.ServerPlayBtn", "Натисніть щоб почати грати");
+            PlayServerTXT1.Text = LocalizationManager.GetString("Servers.ServerPlayBtn", "Грати");
+        }
 
         [Category("Custom Props")]
         public string _Title
         {
-            get { return _title; }
+            get => _title;
             set { _title = value; TitleMain1.Text = value; }
-        }
-        [Category("Custom Props")]
-        public string Description_
-        {
-            get { return _description; }
-            set { _description = value; DescriptionMain2.Text = value; }
-        }
-        [Category("Custom Props")]
-        public Image ImageMain_
-        {
-            get { return Image; }
-            set
-            {
-                Image = value;
-                BitmapImage newImage = new BitmapImage();
-                newImage.BeginInit();
-                newImage.UriSource = new Uri(value.ToString()); 
-                newImage.EndInit();
-                MainIcon3.Source = newImage;
-            }
         }
 
         [Category("Custom Props")]
-        public Image ImageMainBg_
+        public string Description_
         {
-            get { return ImageBg; } 
+            get => _description;
+            set { _description = value; DescriptionMain2.Text = value; }
+        }
+
+        [Category("Custom Props")]
+        public Image ImageMain_
+        {
+            get => Image;
             set
             {
-                ImageBg = value;
-                BitmapImage newImage = new BitmapImage();
-                newImage.BeginInit();
-                newImage.UriSource = new Uri(value.ToString()); 
-                newImage.EndInit();
-                //BgImageMincraftServer.Source = newImage;
+                Image = value;
+                if (value?.Source is BitmapSource source)
+                {
+                    MainIcon3.Source = source;
+                }
             }
         }
+
         private void IPServerTXT_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            Clipboard.SetText(IPServerTXT.Content.ToString());
+            try { Clipboard.SetText(IPServerTXT.Text); } catch { }
         }
     }
 }

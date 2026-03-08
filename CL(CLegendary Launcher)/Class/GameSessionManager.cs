@@ -15,7 +15,7 @@ namespace CL_CLegendary_Launcher_.Class
 
             Application.Current.Dispatcher.Invoke(() =>
             {
-                if (_gameTimer != null) return; 
+                if (_gameTimer != null) return;
 
                 _gameTimer = new DispatcherTimer();
                 _gameTimer.Interval = TimeSpan.FromMinutes(1);
@@ -34,7 +34,7 @@ namespace CL_CLegendary_Launcher_.Class
                     _gameTimer.Tick -= GameTimer_Tick;
                     _gameTimer = null;
 
-                    Settings1.Default.Save();
+                    SettingsManager.Save();
                 }
             });
         }
@@ -46,28 +46,30 @@ namespace CL_CLegendary_Launcher_.Class
             switch (_currentMode)
             {
                 case "vanilla":
-                    Settings1.Default.StatsGameVanila += oneMinuteInHours;
+                    SettingsManager.Default.StatsGameVanila += oneMinuteInHours;
                     break;
                 case "mod":
-                    Settings1.Default.StatsGameMod += oneMinuteInHours;
+                    SettingsManager.Default.StatsGameMod += oneMinuteInHours;
                     break;
                 case "server":
-                    Settings1.Default.StatsGameServer += oneMinuteInHours;
+                    SettingsManager.Default.StatsGameServer += oneMinuteInHours;
                     break;
             }
-            Settings1.Default.Save();
+            SettingsManager.Save();
         }
 
         public string GetFormattedStats()
         {
-            string vanillaTime = FormatTime(Settings1.Default.StatsGameVanila);
-            string modTime = FormatTime(Settings1.Default.StatsGameMod);
-            string serverTime = FormatTime(Settings1.Default.StatsGameServer);
+            string vanillaTime = FormatTime(SettingsManager.Default.StatsGameVanila);
+            string modTime = FormatTime(SettingsManager.Default.StatsGameMod);
+            string serverTime = FormatTime(SettingsManager.Default.StatsGameServer);
 
-            return $"Статистика:\n" +
-                   $"Ваніла: {vanillaTime};\n" +
-                   $"Модові: {modTime};\n" +
-                   $"Сервер: {serverTime}";
+            string title = LocalizationManager.GetString("GameLaunch.StatsTitle", "Статистика:\n");
+            string van = string.Format(LocalizationManager.GetString("GameLaunch.StatsVanilla", "Ваніла: {0};\n"), vanillaTime);
+            string mod = string.Format(LocalizationManager.GetString("GameLaunch.StatsModded", "Модові: {0};\n"), modTime);
+            string srv = string.Format(LocalizationManager.GetString("GameLaunch.StatsServer", "Сервер: {0}"), serverTime);
+
+            return title + van + mod + srv;
         }
 
         private string FormatTime(double hours)
@@ -79,13 +81,13 @@ namespace CL_CLegendary_Launcher_.Class
             if (ts.TotalHours >= 1)
             {
                 if (ts.Minutes > 0)
-                    return $"{(int)ts.TotalHours} год {ts.Minutes} хв";
+                    return string.Format(LocalizationManager.GetString("GameLaunch.StatsHoursMins", "{0} год {1} хв"), (int)ts.TotalHours, ts.Minutes);
                 else
-                    return $"{(int)ts.TotalHours} год";
+                    return string.Format(LocalizationManager.GetString("GameLaunch.StatsHours", "{0} год"), (int)ts.TotalHours);
             }
             else
             {
-                return $"{ts.Minutes} хв";
+                return string.Format(LocalizationManager.GetString("GameLaunch.StatsMins", "{0} хв"), ts.Minutes);
             }
         }
     }

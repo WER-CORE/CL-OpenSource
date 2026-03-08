@@ -9,16 +9,19 @@ namespace CL_CLegendary_Launcher_.Class
 {
     public static class MascotMessageBox
     {
-        public static void Show(string message, string title = "Інформація", MascotEmotion emotion = MascotEmotion.Normal)
+        public static void Show(string message, string title = null, MascotEmotion emotion = MascotEmotion.Normal)
         {
-            var dialog = new MascotDialogWindow(message, title, emotion, isQuestion: false);
+            string actualTitle = title ?? LocalizationManager.GetString("Dialogs.InfoTitle", "Інформація");
+            var dialog = new MascotDialogWindow(message, actualTitle, emotion, isQuestion: false);
             dialog.ShowDialog();
         }
-        public static bool Ask(string message, string title = "Питання", MascotEmotion emotion = MascotEmotion.Alert)
+
+        public static bool Ask(string message, string title = null, MascotEmotion emotion = MascotEmotion.Alert)
         {
-            var dialog = new MascotDialogWindow(message, title, emotion, isQuestion: true);
+            string actualTitle = title ?? LocalizationManager.GetString("Dialogs.QuestionTitle", "Питання");
+            var dialog = new MascotDialogWindow(message, actualTitle, emotion, isQuestion: true);
             var result = dialog.ShowDialog();
-            return result == true; 
+            return result == true;
         }
     }
 }

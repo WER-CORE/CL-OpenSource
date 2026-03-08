@@ -4,17 +4,42 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:CL_CLegendary_Launcher_.Windows"
-             mc:Ignorable="d" Width="243" Height="33" Foreground="{DynamicResource MainForegroundBrush}">
-    <Grid>
-        <Border x:Name="Border" BorderThickness="1" Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="8,8,8,8">
-            <Image x:Name="IconModPack" RenderOptions.BitmapScalingMode="HighQuality" HorizontalAlignment="Left" Height="17" VerticalAlignment="Top" Width="17" Source="/Frame_73.ico" Margin="12,6,0,0"/>
-        </Border>
-        <Label x:Name="ModPackName" Content="Label" HorizontalAlignment="Left" Height="32" Margin="40,0,0,0" VerticalAlignment="Center" Width="178" FontSize="10" FontFamily="Inter 18pt 18pt" VerticalContentAlignment="Center" Foreground="{DynamicResource MainForegroundBrush}"/>
-        <Image x:Name="AddModInModPack" HorizontalAlignment="Left" VerticalAlignment="Center" Height="20" Width="21" Margin="218,0,0,0" Cursor="Hand" RenderOptions.BitmapScalingMode="HighQuality">
-            <Image.Source>
-                <BitmapImage UriSource="/Assets/add_1000dp_B7B7B7_FILL0_wght700_GRAD200_opsz48.png" 
-                    DecodePixelWidth="64" />
-            </Image.Source>
-        </Image>
-    </Grid>
+             mc:Ignorable="d" 
+             d:DesignWidth="300" Height="40" 
+             Foreground="{DynamicResource MainForegroundBrush}">
+    <Border x:Name="Border" BorderThickness="1" 
+            Background="{DynamicResource MainBackgroundBrushServer}" 
+            CornerRadius="8" Margin="0,0,0,5">
+
+        <Grid Margin="10,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <Image x:Name="IconModPack" Grid.Column="0" 
+                   RenderOptions.BitmapScalingMode="HighQuality" 
+                   Height="20" Width="20" VerticalAlignment="Center" 
+                   Source="/Icon/IconCL(Common).png"/>
+
+            <TextBlock x:Name="ModPackName" Grid.Column="1" 
+                       Text="Mod Name Example" 
+                       VerticalAlignment="Center" Margin="10,0" 
+                       FontSize="12" FontFamily="Inter" 
+                       Foreground="{DynamicResource MainForegroundBrush}"
+                       TextTrimming="CharacterEllipsis"/>
+
+            <Path x:Name="AddModInModPack" 
+      Grid.Column="2"
+      Data="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"
+      Fill="{DynamicResource MainBackgroundBrush}"
+      Width="20" Height="20"
+      Stretch="Uniform"
+      VerticalAlignment="Center"
+      Cursor="Hand"
+      ToolTip="Додати у збірку"
+      ></Path>
+        </Grid>
+    </Border>
 </UserControl>

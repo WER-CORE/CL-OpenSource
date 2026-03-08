@@ -6,56 +6,32 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:CL_CLegendary_Launcher_.Windows"
         mc:Ignorable="d"
-        Title="GameLog" Height="279" Width="303" 
+        Title="GameLog" Height="565" Width="879" 
         WindowStyle="None" Background="{x:Null}" 
         Foreground="{DynamicResource MainForegroundBrush}" 
         FontFamily="Inter 18pt 18pt" 
-        ResizeMode="NoResize"     
+        ResizeMode="CanResize"      
         ExtendsContentIntoTitleBar="True"
-        WindowBackdropType="Mica" Icon="/Icon/IconCL(Winter).ico">
+        WindowBackdropType="Mica" Icon="/Icon/IconCL(Common).png">
 
     <Grid x:Name="GridMain">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <Border x:Name="BorderTool" Grid.Row="0"
                 BorderThickness="0,0,0,1" 
                 BorderBrush="#33FFFFFF"
-                Height="24" 
+                Height="30" 
                 VerticalAlignment="Top" 
                 HorizontalAlignment="Stretch" 
-                Background="{DynamicResource MainBackgroundBrushServer}" 
                 CornerRadius="0" 
-                MouseDown="BorderTool_MouseDown">
-
+                MouseDown="BorderTool_MouseDown" Background="{DynamicResource MainBackgroundBrushServer}">
             <Grid>
-                <TextBlock x:Name="NameWin" 
-                           Text="GameLog - Minecraft" 
-                           HorizontalAlignment="Center" 
-                           VerticalAlignment="Center" 
-                           Foreground="{DynamicResource MainForegroundBrush}" 
-                           FontSize="10"
-                           IsHitTestVisible="False"/>
-                <Grid HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,5,0">
-                    <Border x:Name="BordrExitTXT"
-                            Background="#FFC50808"
-                            Width="14" Height="14"
-                            CornerRadius="7"
-                            Visibility="Hidden"/>
-
-                    <TextBlock x:Name="ExitTXT" Text="✕"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Center"
-                               FontSize="10"
-                               FontWeight="Bold"
-                               Foreground="{DynamicResource MainForegroundBrush}"
-                               Cursor="Hand"
-                               MouseDown="ExitLauncher_MouseDown"
-                               MouseEnter="ExitLauncher_MouseEnter"
-                               MouseLeave="ExitLauncher_MouseLeave"/>
-                </Grid>
+                <TextBlock x:Name="TxtConsoleHeader" Text="Консоль розробника" VerticalAlignment="Center" Margin="10,0,0,0" FontSize="12" Opacity="0.7"/>
+                <ui:TitleBar/>
             </Grid>
         </Border>
 
@@ -70,10 +46,198 @@
                  Foreground="{DynamicResource MainForegroundBrush}" 
                  SelectionBrush="#FF0F57C9" 
                  SelectionTextBrush="#FF0F57C9" 
-                 FontFamily="Inter 18pt 18pt" 
+                 FontFamily="Consolas, Inter" 
                  FontSize="12"
                  IsReadOnly="True" 
                  BorderBrush="{x:Null}"
-                 VerticalScrollBarVisibility="Auto"/>
+                 VerticalScrollBarVisibility="Visible"
+                 Padding="5"/>
+
+        <Border Grid.Row="2" 
+                Background="{DynamicResource MainBackgroundBrushServer}" 
+                BorderThickness="0,1,0,0" 
+                BorderBrush="#33FFFFFF" 
+                Padding="10">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Opacity="0.7">
+                    <ui:SymbolIcon Symbol="Code24" Margin="0,0,5,0" FontSize="16"/>
+                    <TextBlock x:Name="TxtLiveOutput" Text="Вихідний журнал в режимі реального часу" FontSize="12" VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <ui:Button x:Name="BtnAiAnalyze" 
+                           Grid.Column="1"
+                           Content="Аналіз Agent C.L." 
+                           Icon="{ui:SymbolIcon Sparkle24}" 
+                           Appearance="Primary" 
+                           Cursor="Hand"
+                           Click="BtnAiAnalyze_Click"
+                           ToolTip="Виявити причину помилки за допомогою ШІ" Background="{DynamicResource MainBackgroundButton}" BorderBrush="{x:Null}" Foreground="{DynamicResource MainForegroundBrush}"/>
+            </Grid>
+        </Border>
+
+        <Grid x:Name="AiOverlay" Grid.RowSpan="3" Panel.ZIndex="100" Visibility="Collapsed">
+
+            <Border x:Name="OverlayBackgroundDimmer" Background="#CC000000" MouseDown="AiOverlay_MouseDown"/>
+
+            <Border x:Name="OverlayMainContainer" Width="580" Height="480" 
+                    Background="{DynamicResource MainBackgroundBrushServer}" 
+                    BorderBrush="#33FFFFFF" BorderThickness="1" 
+                    CornerRadius="16" Padding="20">
+
+                <Grid x:Name="OverlayContentGrid">
+                    <ui:Button x:Name="BtnCloseOverlay" Icon="{ui:SymbolIcon Dismiss24}" Appearance="Transparent" 
+                               HorizontalAlignment="Right" VerticalAlignment="Top" 
+                               Click="CloseOverlay_Click" Cursor="Hand" Panel.ZIndex="10"/>
+
+                    <Grid x:Name="StateInput">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <StackPanel x:Name="InputHeaderPanel" Grid.Row="0" Margin="0,0,0,15">
+                            <StackPanel x:Name="InputTitlePanel" Orientation="Horizontal" Margin="0,0,0,5">
+                                <ui:SymbolIcon x:Name="InputTitleIcon" Symbol="Bot24" FontSize="24" Foreground="{DynamicResource MainBackgroundProgressBar}"/>
+                                <TextBlock x:Name="InputTitleText" Text="Агент C.L. - Налаштування аналізу" FontSize="20" FontWeight="Bold" Margin="10,0,0,0" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </StackPanel>
+
+                        <ScrollViewer x:Name="InputScrollArea" Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="0,0,10,0" BorderThickness="0">
+                            <StackPanel x:Name="InputFormPanel">
+
+                                <Border x:Name="ProviderSectionBorder" Background="{DynamicResource MainBackgroundBrush}" CornerRadius="8" Padding="15" Margin="0,0,0,15">
+                                    <StackPanel>
+                                        <TextBlock x:Name="TxtProviderTitle" Text="Нейроядро Агента (Провайдер)" FontWeight="SemiBold" FontSize="14" Margin="0,0,0,10" Foreground="{DynamicResource MainForegroundBrush}"/>
+                                        <ComboBox x:Name="AiProviderComboBox" SelectedIndex="0" SelectionChanged="AiProviderComboBox_SelectionChanged" 
+                                                  Foreground="{DynamicResource MainForegroundBrush}" Background="{DynamicResource MainBackgroundButton}" BorderBrush="#33FFFFFF">
+                                            <ComboBoxItem x:Name="CboItemGemini" Content="Google Gemini 2.5 Flash(Хмарне ядро)" FontFamily="Inter 18pt 18pt" Foreground="{DynamicResource MainForegroundBrush}"/>
+                                            <ComboBoxItem x:Name="CboItemOllama" Content="Ollama (Локальне ядро)" Foreground="{DynamicResource MainForegroundBrush}" FontFamily="Inter 18pt 18pt"/>
+                                        </ComboBox>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border x:Name="GeminiSettingsPanel" Background="{DynamicResource MainBackgroundBrush}" CornerRadius="8" Padding="15" Margin="0,0,0,15">
+                                    <StackPanel x:Name="ApiKeySectionPanel">
+                                        <TextBlock x:Name="ApiKeySectionTitle" Text="Ключ доступу до ШІ (API Key)" FontWeight="SemiBold" FontSize="14" Margin="0,0,0,10" Foreground="{DynamicResource MainForegroundBrush}"/>
+
+                                        <StackPanel x:Name="CustomApiRadioPanel" Orientation="Horizontal" Margin="0,0,0,5">
+                                            <RadioButton x:Name="RadioCustomApi" 
+                                                         GroupName="ApiMode"
+                                                         Content="Використати власний ключ Gemini (Рекомендовано)" 
+                                                         IsChecked="True" 
+                                                         Checked="ApiRadio_CheckedChanged" 
+                                                         Unchecked="ApiRadio_CheckedChanged" 
+                                                         Foreground="{DynamicResource MainForegroundBrush}" Background="#FF202020"/>
+                                            <ui:Button x:Name="BtnOpenTutorial" Content="Що це?" Appearance="Transparent" Foreground="#FF5E9BFF" Margin="10,0,0,0" 
+                                                       Padding="5,0" Cursor="Hand" Click="OpenTutorial_Click" Background="{DynamicResource MainBackgroundButton}" BorderBrush="{x:Null}"/>
+                                        </StackPanel>
+
+                                        <StackPanel x:Name="CustomApiPanel" Margin="25,5,0,10">
+                                            <ui:PasswordBox x:Name="CustomApiKeyInput" PlaceholderText="Вставте ваш API Key сюди..." Height="35"/>
+                                        </StackPanel>
+
+                                        <RadioButton x:Name="RadioLauncherApi" 
+                                                     GroupName="ApiMode"
+                                                     Content="Використати систему CL Launcher" 
+                                                     Checked="ApiRadio_CheckedChanged" 
+                                                     Unchecked="ApiRadio_CheckedChanged" 
+                                                     Foreground="{DynamicResource MainForegroundBrush}" Margin="0,5,0,0" Background="#FF202020" BorderBrush="#FF707070"/>
+                                        <TextBlock x:Name="LauncherApiWarning" 
+                                                   Text="Увага! Безкоштовний сервер лаунчера має жорсткі ліміти. Ніхто не гарантує роботу 24/7. Якщо сервер перевантажений, аналіз завершиться помилкою." 
+                                                   Foreground="#FFFFB300" TextWrapping="Wrap" FontSize="11" Margin="25,5,0,0" Visibility="Collapsed"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border x:Name="OllamaSettingsPanel" Background="{DynamicResource MainBackgroundBrush}" CornerRadius="8" Padding="15" Margin="0,0,0,15" Visibility="Collapsed">
+                                    <StackPanel>
+                                        <TextBlock x:Name="TxtOllamaModelTitle" Text="Назва локальної моделі" FontWeight="SemiBold" FontSize="14" Margin="0,0,0,5" Foreground="{DynamicResource MainForegroundBrush}"/>
+                                        <ui:TextBox x:Name="OllamaModelInput" Text="llama3" PlaceholderText="Наприклад: llama3, phi3, mistral..." Height="35" FontSize="14"/>
+                                        <TextBlock x:Name="TxtOllamaWarning" Text="Переконайтеся, що Ollama запущена на вашому ПК і ця модель завантажена." Foreground="#FFFFB300" TextWrapping="Wrap" FontSize="11" Margin="0,5,0,0"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border x:Name="ContextSectionBorder" Background="{DynamicResource MainBackgroundBrush}" CornerRadius="8" Padding="15">
+                                    <StackPanel x:Name="ContextSectionPanel">
+                                        <TextBlock x:Name="ContextSectionTitle" Text="Що ви робили перед крашем? (Опціонально)" FontWeight="SemiBold" FontSize="14" Margin="0,0,0,5" Foreground="{DynamicResource MainForegroundBrush}"/>
+                                        <TextBlock x:Name="ContextSectionDescription" Text="Ця інформація допоможе Агенту дати точнішу відповідь." Opacity="0.7" FontSize="12" Margin="0,0,0,10" Foreground="{DynamicResource MainForegroundBrush}"/>
+                                        <ui:TextBox x:Name="UserContextBox" AcceptsReturn="True" TextWrapping="Wrap" 
+                                                    PlaceholderText="Наприклад: я зайшов у портал в Незер, і гра зависла..." 
+                                                    Height="80" FontSize="13"/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </ScrollViewer>
+                        <StackPanel x:Name="InputActionsPanel" Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,15,0,0">
+                            <ui:Button x:Name="BtnCancelAnalysis" Content="Скасувати" Appearance="Secondary" Click="CloseOverlay_Click" Margin="0,0,10,0" Cursor="Hand" Foreground="{DynamicResource MainForegroundBrush}" Background="{DynamicResource MainBackgroundButton}"/>
+                            <ui:Button x:Name="BtnSubmitAnalysis" Content="Почати аналіз" Appearance="Primary" Icon="{ui:SymbolIcon Play24}" Click="BtnStartAnalysis_Click" Cursor="Hand" Background="{DynamicResource MainBackgroundButton}" BorderBrush="{x:Null}" Foreground="{DynamicResource MainForegroundBrush}"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <Grid x:Name="StateTutorial" Visibility="Collapsed">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock x:Name="TutorialMainTitle" Grid.Row="0" Text="Як отримати безкоштовний API Key?" FontSize="20" FontWeight="Bold" Margin="0,0,0,15"/>
+
+                        <ScrollViewer x:Name="TutorialScrollArea" Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="0,0,10,0">
+                            <StackPanel x:Name="TutorialContentPanel">
+                                <TextBlock x:Name="TutorialIntroText" Text="API Key — це ваш особистий пропуск до новітньої нейромережі Google Gemini 2.5. Він абсолютно безкоштовний і дає вам гарантований особистий ліміт — 20 детальних аналізів на день (чого з головою вистачить для вирішення будь-яких проблем зі збіркою!)." TextWrapping="Wrap" Margin="0,0,0,15" Opacity="0.9"/>
+
+                                <TextBlock x:Name="TutorialStep1Title" Text="Крок 1:" FontWeight="Bold" Foreground="{DynamicResource MainBackgroundProgressBar}"/>
+                                <TextBlock x:Name="TutorialStep1Desc" Text="Перейдіть на сайт Google AI Studio (потрібен Google акаунт)." TextWrapping="Wrap" Margin="0,5,0,10"/>
+
+                                <TextBlock x:Name="TutorialStep2Title" Text="Крок 2:" FontWeight="Bold" Foreground="{DynamicResource MainBackgroundProgressBar}"/>
+                                <TextBlock x:Name="TutorialStep2Desc" Text="Натисніть велику синю кнопку «Get API Key»." TextWrapping="Wrap" Margin="0,5,0,10"/>
+
+                                <TextBlock x:Name="TutorialStep3Title" Text="Крок 3:" FontWeight="Bold" Foreground="{DynamicResource MainBackgroundProgressBar}"/>
+                                <TextBlock x:Name="TutorialStep3Desc" Text="Натисніть «Create API Key» -> «Create API key in new project»." TextWrapping="Wrap" Margin="0,5,0,10"/>
+
+                                <TextBlock x:Name="TutorialStep4Title" Text="Крок 4:" FontWeight="Bold" Foreground="{DynamicResource MainBackgroundProgressBar}"/>
+                                <TextBlock x:Name="TutorialStep4Desc" Text="Скопіюйте згенерований довгий код і вставте його в поле в лаунчері." TextWrapping="Wrap" Margin="0,5,0,15"/>
+
+                                <ui:Button x:Name="BtnOpenAiStudioLink" Content="Відкрити Google AI Studio" Icon="{ui:SymbolIcon Globe24}" Appearance="Secondary" Click="OpenAiStudio_Click" Cursor="Hand" HorizontalAlignment="Left" Background="{DynamicResource MainBackgroundButton}" Foreground="{DynamicResource MainForegroundBrush}"/>
+                            </StackPanel>
+                        </ScrollViewer>
+
+                        <ui:Button x:Name="BtnBackFromTutorial" Grid.Row="2" Content="Зрозуміло, назад" Appearance="Primary" Click="BackToInput_Click" Cursor="Hand" HorizontalAlignment="Left" Margin="0,15,0,0" Foreground="{DynamicResource MainForegroundBrush}" Background="{DynamicResource MainBackgroundButton}"/>
+                    </Grid>
+
+                    <StackPanel x:Name="StateThinking" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Collapsed">
+                        <ui:SymbolIcon x:Name="ThinkingBotIcon" Symbol="Bot24" FontSize="48" Foreground="{DynamicResource MainBackgroundProgressBar}" Margin="0,0,0,20"/>
+                        <ui:ProgressRing x:Name="ThinkingProgressRing" IsIndeterminate="True" Width="50" Height="50" Foreground="{DynamicResource MainBackgroundProgressBar}"/>
+                        <TextBlock x:Name="ThinkingMainText" Text="Bit-CL обробляє ваші дані..." FontSize="18" FontWeight="Bold" Margin="0,20,0,5" HorizontalAlignment="Center"/>
+                        <TextBlock x:Name="ThinkingSubText" Text="Встановлення зв'язку з Агентом C.L." FontSize="14" Opacity="0.7" HorizontalAlignment="Center"/>
+                    </StackPanel>
+
+                    <Grid x:Name="StateResult" Visibility="Collapsed">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <StackPanel x:Name="ResultHeaderPanel" Orientation="Horizontal" Margin="0,0,0,15">
+                            <ui:SymbolIcon x:Name="ResultTitleIcon" Symbol="PersonSupport24" FontSize="24" Foreground="{DynamicResource MainBackgroundProgressBar}"/>
+                            <TextBlock x:Name="ResultTitleText" Text="Звіт Агента C.L." FontSize="20" FontWeight="Bold" Margin="10,0,0,0" VerticalAlignment="Center"/>
+                        </StackPanel>
+
+                        <Border x:Name="ResultContentBorder" Grid.Row="1" Background="{DynamicResource MainBackgroundBrush}" CornerRadius="8" Padding="10">
+                            <ScrollViewer x:Name="ResultScrollArea">
+                                <TextBlock x:Name="AiResponseText" Text="Аналіз завершено..." TextWrapping="Wrap" FontSize="14" LineHeight="22" FontFamily="Inter"/>
+                            </ScrollViewer>
+                        </Border>
+                    </Grid>
+
+                </Grid>
+            </Border>
+        </Grid>
     </Grid>
 </ui:FluentWindow>
