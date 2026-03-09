@@ -45,7 +45,6 @@
 <div align="center">
   <img width="750" height="438" alt="image" src="https://github.com/user-attachments/assets/2a9528bb-551c-4017-b26f-29d4d65fbf78" />
   <img width="1200" height="678" alt="image" src="https://github.com/user-attachments/assets/8c6ad520-fe55-4aa8-89ba-aaef56c29a7b" />
-  <img width="1125" height="750" alt="image" src="https://github.com/user-attachments/assets/0c6f71b4-0008-43fc-b473-8167b3db02b3" />
 
   <p><i>Інтерфейс версії 0.8.0.0B</i></p>
 </div>
@@ -101,6 +100,7 @@ This project uses assets and libraries from various sources. We are grateful to 
 <b>Якщо вам подобається цей проект — поставте ⭐️ (Star) цьому репозиторію!</b>
 <i>Це мотивує розвивати український софт.</i>
 </div>
+
 
 
 
