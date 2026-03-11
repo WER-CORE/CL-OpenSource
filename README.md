@@ -39,6 +39,7 @@
 * 📦 **Менеджер модів:** Інтеграція з **CurseForge** та **Modrinth**.
 * 🛠 **Завантажувачі:** Підтримка Forge, Fabric, Quilt, NeoForge, OptiFine та LiteLoader.
 * 🎨 **Кастомізація:** Сучасний інтерфейс (WPF UI), теми та налаштування прозорості (Mica/Acrylic).
+* ...
 
 ## 📸 Скріншоти (Screenshots)
 
@@ -100,6 +101,7 @@ This project uses assets and libraries from various sources. We are grateful to 
 <b>Якщо вам подобається цей проект — поставте ⭐️ (Star) цьому репозиторію!</b>
 <i>Це мотивує розвивати український софт.</i>
 </div>
+
 
 
 
