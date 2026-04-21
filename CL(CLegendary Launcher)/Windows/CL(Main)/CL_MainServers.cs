@@ -2,6 +2,7 @@
 using CL_CLegendary_Launcher_.Models;
 using CL_CLegendary_Launcher_.Windows;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -11,7 +12,11 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
+using System.Windows.Threading;
+using Wpf.Ui.Controls;
 using WpfAnimatedGif;
 
 namespace CL_CLegendary_Launcher_
@@ -75,7 +80,7 @@ namespace CL_CLegendary_Launcher_
                                          string description, System.Windows.Controls.Image iconSource,
                                          Dictionary<string, object> data)
         {
-            Click();
+            SoundManager.Click();
 
             _currentDiscordUrl = data.ContainsKey("discord") ? data["discord"]?.ToString() : null;
             _currentSiteUrl = data.ContainsKey("sitelink") ? data["sitelink"]?.ToString() : null;
@@ -116,17 +121,84 @@ namespace CL_CLegendary_Launcher_
             {
                 try
                 {
-                    var bitmapImage = new BitmapImage(bgUri);
-                    this.BG.Source = bitmapImage;
+                    this.BG.Source = ImageHelper.LoadOptimizedImage(bgUri.ToString(), 200);
                     this.BG.Visibility = Visibility.Visible;
                 }
                 catch { }
             }
+            if (data.ContainsKey("versions") && data["versions"] is JArray versionsArray)
+            {
+                var versionsList = versionsArray.ToObject<List<string>>();
+                if (versionsList != null && versionsList.Count > 1)
+                {
+                    VersionSelector.ItemsSource = versionsList;
+                    VersionSelector.SelectedItem = version;
+                    VersionSelector.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    VersionSelector.Visibility = Visibility.Collapsed;
+                }
+            }
+            else
+            {
+                VersionSelector.Visibility = Visibility.Collapsed;
+            }
+        }
+        public void SetupPagination(List<UIElement> sortedCards)
+        {
+            _allServerCards = new List<UIElement>(sortedCards);
+            _filteredServerCards = new List<UIElement>(_allServerCards);
+            _currentPage = 1;
+            DisplayCurrentPage();
+        }
+        private void DisplayCurrentPage()
+        {
+            int totalPages = (int)Math.Ceiling((double)_filteredServerCards.Count / _itemsPerPage_servers);
+            if (totalPages == 0) totalPages = 1;
+
+            var pageItems = _filteredServerCards.Skip((_currentPage_server - 1) * _itemsPerPage_servers).Take(_itemsPerPage_servers).ToList();
+
+            ServerList.Items.Clear();
+            foreach (var item in pageItems)
+            {
+                ServerList.Items.Add(item);
+            }
+
+            TxtPageInfo.Text = string.Format(
+                LocalizationManager.GetString("Servers.PageInfo", "Сторінка {0} з {1}"),
+                _currentPage_server,
+                totalPages
+            );
+            BtnPrevPage.IsEnabled = _currentPage_server > 1;
+            BtnNextPage.IsEnabled = _currentPage_server < totalPages;
+
+            PaginationPanel.Visibility = _filteredServerCards.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
         }
 
+        private void BtnPrevPage_Click(object sender, RoutedEventArgs e)
+        {
+            SoundManager.Click();
+            if (_currentPage_server > 1)
+            {
+                _currentPage_server--;
+                DisplayCurrentPage();
+            }
+        }
+
+        private void BtnNextPage_Click(object sender, RoutedEventArgs e)
+        {
+            SoundManager.Click();
+            int totalPages = (int)Math.Ceiling((double)_filteredServerCards.Count / _itemsPerPage_servers);
+            if (_currentPage < totalPages)
+            {
+                _currentPage_server++;
+                DisplayCurrentPage();
+            }
+        }
         private void BackIconServerList_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            Click();
+            SoundManager.Click();
             AnimationService.AnimateBorderObject(100, 0, FonBackIconServerList, false);
 
             if (PanelInfoServer.Visibility == Visibility.Visible)
@@ -141,26 +213,52 @@ namespace CL_CLegendary_Launcher_
             }
         }
 
-        private void PlayServer_Click(object sender, RoutedEventArgs e)
+        private async void PlayServer_Click(object sender, RoutedEventArgs e)
         {
-            Click();
-            DowloadVanila(VersionTXT.Text, IPServerTXT.Text, Convert.ToInt32(PortTXT.Text), NameNik.Text);
-            AddLastActionAsync(TitleMain1.Text, VersionTXT.Text, IPServerTXT.Text, Convert.ToInt32(PortTXT.Text));
+            string selectedVersion = VersionSelector.Visibility == Visibility.Visible
+                ? VersionSelector.SelectedItem?.ToString()
+                : VersionTXT.Text;
+
+            string ip = IPServerTXT.Text;
+            int port = int.Parse(PortTXT.Text);
+
+            await DowloadVanila(selectedVersion, ip, port, NameNik.Text);
         }
 
         public void ServerTXTPanelSelect_MouseDown(object sender, MouseButtonEventArgs e)
         {
             _navigationService.NavigateToServers();
+            MoveMenuSelector(ServersBtnBorder);
         }
-
-        private async void SearchSystem_TextChanged(object sender, TextChangedEventArgs e)
+        private void SearchSystem_TextChanged(object sender, TextChangedEventArgs e)
         {
-            await _serverListService.InitializeServersAsync(true, SearchSystemTXT.Text);
-        }
+            if (_allServerCards == null || _allServerCards.Count == 0) return;
 
+            string query = SearchSystemTXT.Text.ToLower().Trim();
+
+            if (string.IsNullOrEmpty(query))
+            {
+                _filteredServerCards = new List<UIElement>(_allServerCards);
+            }
+            else
+            {
+                _filteredServerCards = _allServerCards.Where(card =>
+                {
+                    if (card is MyItemsServer ms)
+                    {
+                        return ms._Title.ToLower().Contains(query);
+                    }
+
+                    return false;
+                }).ToList();
+            }
+
+            _currentPage = 1;
+            DisplayCurrentPage();
+        }
         public async Task AddLastActionAsync(Dictionary<string, string> action)
         {
-            await _lastActionService.AddLastActionAsync(action);
+            if (SettingsManager.Default.EnableMod_LatestActions) { await _lastActionService.AddLastActionAsync(action); }
         }
 
         private Task AddLastActionAsync(string name, string version, string ip, int port)
@@ -178,6 +276,7 @@ namespace CL_CLegendary_Launcher_
 
         private void DiscordLink_Click(object sender, RoutedEventArgs e)
         {
+            SoundManager.Click();
             if (!string.IsNullOrEmpty(_currentDiscordUrl) && _currentDiscordUrl != "-")
                 WebHelper.OpenUrl(_currentDiscordUrl);
             else
@@ -186,6 +285,7 @@ namespace CL_CLegendary_Launcher_
 
         private void SiteLink_Click(object sender, RoutedEventArgs e)
         {
+            SoundManager.Click();
             if (!string.IsNullOrEmpty(_currentSiteUrl) && _currentSiteUrl != "-")
                 WebHelper.OpenUrl(_currentSiteUrl);
             else
@@ -194,6 +294,7 @@ namespace CL_CLegendary_Launcher_
 
         private void DonateLink_Click(object sender, RoutedEventArgs e)
         {
+            SoundManager.Click();
             if (!string.IsNullOrEmpty(_currentDonateUrl) && _currentDonateUrl != "-")
                 WebHelper.OpenUrl(_currentDonateUrl);
             else
@@ -202,13 +303,13 @@ namespace CL_CLegendary_Launcher_
 
         private void BugReport_Click(object sender, RoutedEventArgs e)
         {
-            Click();
+            SoundManager.Click();
             WebHelper.OpenUrl("https://discord.com/channels/1195118159187939458/1195494058571866172");
         }
 
         private void TutorialYoutube_Click(object sender, RoutedEventArgs e)
         {
-            WebHelper.OpenUrl("https://cl-launcher.app/tutorial.html");
+            WebHelper.OpenUrl("https://wiki.cl-launcher.app/wiki/%D0%93%D0%BE%D0%BB%D0%BE%D0%B2%D0%BD%D0%B0_%D1%81%D1%82%D0%BE%D1%80%D1%96%D0%BD%D0%BA%D0%B0");
         }
 
         private void GitHub_Click(object sender, RoutedEventArgs e)
@@ -261,12 +362,7 @@ namespace CL_CLegendary_Launcher_
                             {
                                 try
                                 {
-                                    BitmapImage bitmap = new BitmapImage();
-                                    bitmap.BeginInit();
-                                    bitmap.UriSource = new Uri(fund.imageUrl, UriKind.Absolute);
-                                    bitmap.CacheOption = BitmapCacheOption.OnLoad;
-                                    bitmap.EndInit();
-                                    fund.ImageBitmap = bitmap;
+                                    fund.ImageBitmap = ImageHelper.LoadOptimizedImage(fund.imageUrl, 86);
                                 }
                                 catch { }
                             }
@@ -291,7 +387,72 @@ namespace CL_CLegendary_Launcher_
                 FundLoader.Visibility = Visibility.Collapsed;
             }
         }
+        private void PartnerServer_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (PartnerServer.Items.Count > 1)
+            {
+                Dispatcher.InvokeAsync(() => AnimateSlide(), DispatcherPriority.Loaded);
+            }
+        }
 
+        private async void NextIndex()
+        {
+            if (PartnerServer.Items.Count < 2) return;
+
+            int next = (PartnerServer.SelectedIndex + 1) % PartnerServer.Items.Count;
+            PartnerServer.SelectedIndex = next;
+
+            await MemoryCleaner.FlushMemoryAsync(trimWorkingSet: false);
+        }
+
+        private void AnimateSlide()
+        {
+            if (PartnerServer.SelectedItem == null) return;
+
+            int newIndex = PartnerServer.SelectedIndex;
+
+            if (_lastIndex != -1 && _lastIndex != newIndex)
+            {
+                var oldItem = PartnerServer.ItemContainerGenerator.ContainerFromIndex(_lastIndex) as ListBoxItem;
+                if (oldItem != null)
+                {
+                    AnimateItem(oldItem, 0, -300);
+                }
+            }
+
+            PartnerServer.UpdateLayout();
+
+            var newItem = PartnerServer.ItemContainerGenerator.ContainerFromIndex(newIndex) as ListBoxItem;
+            if (newItem != null)
+            {
+                AnimateItem(newItem, 300, 0);
+            }
+
+            _lastIndex = newIndex;
+        }
+
+        private void AnimateItem(UIElement item, double from, double to)
+        {
+            var tt = new TranslateTransform();
+            item.RenderTransform = tt;
+
+            var anim = new DoubleAnimation(from, to, TimeSpan.FromSeconds(0.5))
+            {
+                EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseOut }
+            };
+
+            tt.BeginAnimation(TranslateTransform.XProperty, anim);
+        }
+
+        private void PartnerServer_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            _slideTimer.Stop();
+        }
+
+        private void PartnerServer_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            _slideTimer.Start();
+        }
         private void BtnFund_Click(object sender, RoutedEventArgs e)
         {
             if (sender is FrameworkElement btn && btn.Tag is string url && !string.IsNullOrEmpty(url))
@@ -319,7 +480,7 @@ namespace CL_CLegendary_Launcher_
 
         private async void NewsUpdateLauncher_Click(object sender, RoutedEventArgs e)
         {
-            Click();
+            SoundManager.Click();
             await HideAllPages();
 
             AnimationService.AnimatePageTransition(GirdNews);
@@ -363,7 +524,7 @@ namespace CL_CLegendary_Launcher_
 
         private void OnNewsItemClicked(NewsItem item)
         {
-            Click();
+            SoundManager.Click();
             AnimationService.AnimateBorderObject(-120, 0, FonBackIconServerList, true);
             AnimationService.AnimatePageTransitionExit(GirdNews);
             AnimationService.AnimatePageTransition(GirdTXTNews);

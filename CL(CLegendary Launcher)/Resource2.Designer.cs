@@ -63,15 +63,6 @@ namespace CL_CLegendary_Launcher_ {
         /// <summary>
         ///   Looks up a localized resource of type System.IO.UnmanagedMemoryStream similar to System.IO.MemoryStream.
         /// </summary>
-        internal static System.IO.UnmanagedMemoryStream astanavites {
-            get {
-                return ResourceManager.GetStream("astanavites", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.IO.UnmanagedMemoryStream similar to System.IO.MemoryStream.
-        /// </summary>
         internal static System.IO.UnmanagedMemoryStream click {
             get {
                 return ResourceManager.GetStream("click", resourceCulture);

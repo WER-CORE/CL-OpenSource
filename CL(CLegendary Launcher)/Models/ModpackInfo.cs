@@ -18,10 +18,10 @@ namespace CL_CLegendary_Launcher_.Models
         public string UrlImage { get; set; }
         public bool IsConsoleLogOpened { get; set; } = false;
         public int OPack { get; set; } = 4096;
-        public int Wdith { get; set; } = 600;
-        public int Height { get; set; } = 800;
+        public int Wdith { get; set; } = 800;
+        public int Height { get; set; } = 600;
         public bool EnterInServer { get; set; } = false;
         public string ServerIP { get; set; } = "Назва сервера";
+        public string JavaPath { get; set; } = string.Empty;
     }
-
 }

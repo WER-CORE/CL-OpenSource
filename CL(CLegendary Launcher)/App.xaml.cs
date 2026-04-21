@@ -1,11 +1,9 @@
 ﻿using CL_CLegendary_Launcher_.Class;
-using SevenZip.Compression.LZ;
+using CL_CLegendary_Launcher_.Windows;
 using System;
 using System.IO;
-using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Media;
 
 namespace CL_CLegendary_Launcher_
 {
@@ -14,11 +12,12 @@ namespace CL_CLegendary_Launcher_
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
+            SoundManager.Initialize();
+
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
             DispatcherUnhandledException += App_DispatcherUnhandledException;
             TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
         }
-
         private void LogException(string source, Exception ex)
         {
             try
@@ -43,16 +42,24 @@ namespace CL_CLegendary_Launcher_
             }
             catch { }
         }
+
         private void App_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
         {
             LogException("Dispatcher", e.Exception);
-            e.Handled = true;
-        }
 
+            string errorTitle = LocalizationManager.GetString("Crash.Title", "Помилка CL Launcher");
+            string errorMessage = LocalizationManager.GetString("Crash.Message",
+                "Ой-йой! Лаунчер зіткнувся з критичною помилкою.\nЯкщо ви давали згоду, розробник вже отримав звіт.\n\nДеталі можна знайти в папці logs.");
+
+            MascotMessageBox.Show(errorMessage, errorTitle, MascotEmotion.Sad);
+
+            e.Handled = false;
+        }
         private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             LogException("AppDomain", e.ExceptionObject as Exception);
         }
+
         private void TaskScheduler_UnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
         {
             Exception realError = e.Exception;
@@ -62,6 +69,7 @@ namespace CL_CLegendary_Launcher_
             }
 
             LogException("TaskScheduler", realError);
+
             e.SetObserved();
         }
     }

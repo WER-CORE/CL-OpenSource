@@ -93,6 +93,7 @@ namespace CL_CLegendary_Launcher_.Windows
 
         private async void PrevPageBtn_Click(object sender, RoutedEventArgs e)
         {
+            SoundManager.Click();
             if (_currentPage > 0)
             {
                 _currentPage--;
@@ -102,6 +103,7 @@ namespace CL_CLegendary_Launcher_.Windows
 
         private async void NextPageBtn_Click(object sender, RoutedEventArgs e)
         {
+            SoundManager.Click();
             _currentPage++;
             await RefreshList();
         }
@@ -114,6 +116,8 @@ namespace CL_CLegendary_Launcher_.Windows
 
         private void ModrinthSite_MouseDown(object sender, MouseButtonEventArgs e)
         {
+            SoundManager.Click();
+
             if (SiteDowload == "Modrinth") return;
 
             ModrinthSite.Opacity = 1.0;
@@ -126,6 +130,8 @@ namespace CL_CLegendary_Launcher_.Windows
 
         private void CurseForgeSite_MouseDown(object sender, MouseButtonEventArgs e)
         {
+            SoundManager.Click();
+
             if (SiteDowload == "CurseForge") return;
 
             ModrinthSite.Opacity = 0.5;
@@ -136,11 +142,21 @@ namespace CL_CLegendary_Launcher_.Windows
             ResetPaginationAndLoad();
         }
 
-        private void SearchSystemModsTXT_TextChanged(object sender, TextChangedEventArgs e) => ResetPaginationAndLoad();
-        private void VersionVanil_SelectionChanged(object sender, SelectionChangedEventArgs e) => ResetPaginationAndLoad();
+        private void SearchSystemModsTXT_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            ResetPaginationAndLoad();
+        }
+
+        private void VersionVanil_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            SoundManager.Click();
+            ResetPaginationAndLoad();
+        }
 
         private void MenuItem_Click(object sender, RoutedEventArgs e)
         {
+            SoundManager.Click();
+
             string content = (sender as MenuItem).Header.ToString();
             LoderNow = content;
             SelectLoader.Content = content;
@@ -177,6 +193,7 @@ namespace CL_CLegendary_Launcher_.Windows
         private async Task LoadModrinthModsAsync(string searchText)
         {
             ModsSearchLoader.Visibility = Visibility.Visible;
+            ModsSkeletonPanel.Visibility = Visibility.Visible;
             ModsDowloadList.Visibility = Visibility.Collapsed;
             ModsDowloadList.Items.Clear();
             iconUrl.Clear();
@@ -207,7 +224,8 @@ namespace CL_CLegendary_Launcher_.Windows
             }
             finally
             {
-                ModsSearchLoader.Visibility = Visibility.Hidden;
+                ModsSkeletonPanel.Visibility = Visibility.Collapsed;
+                ModsSearchLoader.Visibility = Visibility.Collapsed;
                 ModsDowloadList.Visibility = Visibility.Visible;
             }
         }
@@ -215,6 +233,7 @@ namespace CL_CLegendary_Launcher_.Windows
         private async Task LoadCurseForgeModpacksAsync(string searchText)
         {
             ModsSearchLoader.Visibility = Visibility.Visible;
+            ModsSkeletonPanel.Visibility = Visibility.Visible;
             ModsDowloadList.Visibility = Visibility.Collapsed;
             ModsDowloadList.Items.Clear();
             iconUrl.Clear();
@@ -258,7 +277,8 @@ namespace CL_CLegendary_Launcher_.Windows
             }
             finally
             {
-                ModsSearchLoader.Visibility = Visibility.Hidden;
+                ModsSkeletonPanel.Visibility = Visibility.Collapsed;
+                ModsSearchLoader.Visibility = Visibility.Collapsed;
                 ModsDowloadList.Visibility = Visibility.Visible;
             }
         }
@@ -273,11 +293,14 @@ namespace CL_CLegendary_Launcher_.Windows
             if (!string.IsNullOrEmpty(icon)) item.IconModPack.Source = ImageHelper.LoadOptimizedImage(icon, ListIconSize);
             else item.IconModPack.Source = ImageHelper.LoadOptimizedImage(DefaultIconPath, ListIconSize);
 
-            item.MouseDoubleClick += (s, e) => WebHelper.OpenUrl($"https://modrinth.com/modpack/{mod["slug"]}");
+            item.DetailsModPackBtn.PreviewMouseDown += (s, e) =>
+            {
+                WebHelper.OpenUrl($"https://modrinth.com/modpack/{mod["slug"]}"); SoundManager.Click();
+            };
 
             item.ProjectId = mod["project_id"];
             item.Name = mod["title"];
-            item.AddModInModPack.Visibility = Visibility.Hidden;
+            item.AddModInModPack.Visibility = Visibility.Collapsed;
             return item;
         }
 
@@ -291,11 +314,15 @@ namespace CL_CLegendary_Launcher_.Windows
             if (!string.IsNullOrEmpty(icon)) item.IconModPack.Source = ImageHelper.LoadOptimizedImage(icon, ListIconSize);
             else item.IconModPack.Source = ImageHelper.LoadOptimizedImage(DefaultIconPath, ListIconSize);
 
-            item.MouseDoubleClick += (s, e) => WebHelper.OpenUrl(mod.Links.WebsiteUrl);
+            item.DetailsModPackBtn.PreviewMouseDown += (s, e) =>
+            {
+                WebHelper.OpenUrl($"https://modrinth.com/modpack/{mod.Slug}"); 
+                SoundManager.Click();
+            };
 
             item.ProjectId = mod.Id.ToString();
             item.Name = mod.Name;
-            item.AddModInModPack.Visibility = Visibility.Hidden;
+            item.AddModInModPack.Visibility = Visibility.Collapsed;
             return item;
         }
 
@@ -429,6 +456,7 @@ namespace CL_CLegendary_Launcher_.Windows
         private async void DowloaadModPacksButtonTXT_MouseDown(object sender, MouseButtonEventArgs e)
         {
             if (ModsDowloadList.SelectedItem is not ModPackItem selectedModpack) return;
+            SoundManager.Click();
 
             if (PackVersionSelector.SelectedItem is not ModpackFileVersion selectedFile)
             {
@@ -572,6 +600,8 @@ namespace CL_CLegendary_Launcher_.Windows
 
         private async void ImportFileModPacksTXT_MouseDown(object sender, MouseButtonEventArgs e)
         {
+            SoundManager.Click();
+
             var dialog = new Microsoft.Win32.OpenFileDialog
             {
                 Filter = "Modpack Files (*.zip;*.rar;*.mrpack)|*.zip;*.rar;*.mrpack",

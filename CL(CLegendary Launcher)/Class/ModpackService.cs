@@ -19,6 +19,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Shapes;
+using Application = System.Windows.Application;
 using MessageBox = System.Windows.Forms.MessageBox;
 using Path = System.IO.Path;
 
@@ -40,6 +41,7 @@ namespace CL_CLegendary_Launcher_.Class
         public int Height { get; set; } = 600;
         public bool EnterInServer { get; set; } = false;
         public string ServerIP { get; set; } = "IP Сервера";
+        public string JavaPath { get; set; } = string.Empty;
     }
 
     public static class ModpackPaths
@@ -110,7 +112,7 @@ namespace CL_CLegendary_Launcher_.Class
                 Directory.Delete(value.Path, true);
             }
         }
-        public async void PlayModPack(string version, string versionMod, string loader, string nameModPack, string pathModPack, string pathJson, string typeSite)
+        public async void PlayModPack(string version, string versionMod, string loader, string nameModPack, string pathModPack, string pathJson, string typeSite, string javaPath)
         {
             if (_main.InstallVersionOnPlay) return;
 
@@ -142,7 +144,7 @@ namespace CL_CLegendary_Launcher_.Class
                 string savesPath = Path.Combine(finalModPath, "saves");
                 System.Diagnostics.Debug.WriteLine($"[DEBUG] Шлях до сейвів: {savesPath}");
 
-                if (SettingsManager.Default.EnableAutoBackup)
+                if (SettingsManager.Default.EnableAutoBackup && SettingsManager.Default.EnableSubFiles_Backups)
                 {
                     if (Directory.Exists(savesPath))
                     {
@@ -244,7 +246,11 @@ namespace CL_CLegendary_Launcher_.Class
                     ScreenHeight = installedModpack.Height,
                     ServerIp = (installedModpack.EnterInServer && !string.IsNullOrWhiteSpace(installedModpack.ServerIP)) ? installedModpack.ServerIP.Split(':')[0] : null,
                     ServerPort = (installedModpack.EnterInServer && !string.IsNullOrWhiteSpace(installedModpack.ServerIP) && installedModpack.ServerIP.Contains(':') && int.TryParse(installedModpack.ServerIP.Split(':')[1], out int port)) ? port : 0,
-                };
+
+                    JavaPath = !string.IsNullOrWhiteSpace(javaPath)
+                                ? javaPath
+                                : (!string.IsNullOrWhiteSpace(installedModpack.JavaPath) ? installedModpack.JavaPath : null)
+                }; 
                 var activeJvmArgs = new List<string>();
 
                 if (_main.selectAccountNow == AccountType.LittleSkin)
@@ -278,7 +284,7 @@ namespace CL_CLegendary_Launcher_.Class
                     if (Enum.TryParse(typeof(LoaderType), loader, true, out object result))
                         loaderType = (LoaderType)result;
                     else
-                        loaderType = LoaderType.Custom_Local;
+                        loaderType = LoaderType.Vanilla;
                 }
 
                 string versionName;
@@ -315,7 +321,7 @@ namespace CL_CLegendary_Launcher_.Class
                     process = await launcher.InstallAndBuildProcessAsync(versionName, mLaunch, token);
                 }
 
-                _gameSessionManager.StartGameSession("mod");
+                if (SettingsManager.Default.EnableMod_Statistics) { _gameSessionManager.StartGameSession("mod"); }
 
                 _main.Dispatcher.Invoke(() =>
                 {
@@ -336,6 +342,34 @@ namespace CL_CLegendary_Launcher_.Class
                 }
                 await MemoryCleaner.FlushMemoryAsync(trimWorkingSet: true);
                 await process.WaitForExitAsync();
+                int exitCode = process.ExitCode;
+
+                if (exitCode != 0)
+                {
+                    _main.Dispatcher.Invoke(() =>
+                    {
+                        _main.Show();
+                        _main.WindowState = WindowState.Normal;
+
+                        if (!installedModpack.IsConsoleLogOpened)
+                        {
+                            string logFilePath = Path.Combine(finalModPath, "logs", "latest.log");
+                            _main.ShowGameLogFromFile(logFilePath);
+                        }
+
+                        MascotMessageBox.Show(
+                            string.Format(LocalizationManager.GetString("GameLaunch.CrashDesc", "Йой! Майнкрафт впав (Код помилки: {0}).\nЯ відкрила логи, щоб ми могли знайти конфліктний мод або помилку."), exitCode),
+                            LocalizationManager.GetString("GameLaunch.CrashTitle", "Краш гри!"),
+                            MascotEmotion.Sad);
+                    });
+                }
+                else
+                {
+                    if (SettingsManager.Default.CloseLaucnher)
+                    {
+                        _main.Dispatcher.Invoke(() => Application.Current.Shutdown());
+                    }
+                }
             }
             catch (OperationCanceledException)
             {

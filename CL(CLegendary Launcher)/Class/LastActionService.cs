@@ -28,7 +28,7 @@ namespace CL_CLegendary_Launcher_.Class
         {
             try
             {
-                if (File.Exists(_lastActionsPath))
+                if (File.Exists(_lastActionsPath) && SettingsManager.Default.EnableMod_LatestActions)
                 {
                     string jsonContent = await File.ReadAllTextAsync(_lastActionsPath);
                     var actions = JsonConvert.DeserializeObject<List<Dictionary<string, string>>>(jsonContent);

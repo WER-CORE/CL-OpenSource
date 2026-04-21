@@ -27,6 +27,7 @@ namespace CL_CLegendary_Launcher_.Models
         public double StatsGameServer { get; set; } = 0;
         public bool OfflineModLauncher { get; set; } = false;
         public bool DisableGlassEffect { get; set; } = true;
+        public bool IsCrashReportingEnabled { get; set; } = false;
         public string LanguageCode { get; set; } = null;
         public int LastSelectedType { get; set; } = -1;
         public string LastSelectedVersion { get; set; } = "";
@@ -38,8 +39,24 @@ namespace CL_CLegendary_Launcher_.Models
         public int SelectIndexAccount { get; set; } = -1;
         public byte MaxAutoBackups { get; set; } = 0;
         public bool EnableAutoBackup { get; set; } = false;
-        public bool EnableMemeSound { get; set; } = false;
         public string CustomGeminiKey { get; set; } = "";
+        public bool EnableModpacks { get; set; } = true;
+        public bool EnableMods { get; set; } = true;
+        public bool EnableServers { get; set; } = true;
+        public bool EnableGallery { get; set; } = true;
+        public bool EnableAIAgent { get; set; } = true;
+        public bool EnableSubFiles { get; set; } = true;
+        public bool EnableSubFiles_Backups { get; set; } = true;
+        public bool EnableSubInfo_Bug { get; set; } = true;
+        public bool EnableSubInfo_News { get; set; } = true;
+        public bool EnableSubInfo_Wiki { get; set; } = true;
+        public bool EnableSubInfo_Github { get; set; } = true;
+        public bool EnableSubInfo_Credits { get; set; } = true;
+        public bool EnableSubInfo_Support { get; set; } = true;
+        public bool EnableMod_Changelog { get; set; } = true;
+        public bool EnableMod_LatestActions { get; set; } = true;
+        public bool EnableMod_DiscordRPC { get; set; } = true;
+        public bool EnableMod_Statistics { get; set; } = true;
         public object this[string propertyName]
         {
             get

@@ -54,6 +54,7 @@ namespace CL_CLegendary_Launcher_.Class
                     _main.PartnerServer.Items.Clear();
 
                 _main.ServerSearchLoader.Visibility = Visibility.Visible;
+                _main.ServerCardSkeletonTemplate.Visibility = Visibility.Visible;
 
                 _main.discordLink.Clear();
                 _main.donateLink.Clear();
@@ -94,6 +95,7 @@ namespace CL_CLegendary_Launcher_.Class
                 }
                 else
                 {
+                    _main.ServerCardSkeletonTemplate.Visibility = Visibility.Collapsed;
                     _main.ServerSearchLoader.Visibility = Visibility.Collapsed;
                     NotificationService.ShowNotification(
                         LocalizationManager.GetString("Servers.EmptyTitle", "Пусто"),
@@ -103,6 +105,7 @@ namespace CL_CLegendary_Launcher_.Class
             }
             else
             {
+                _main.ServerCardSkeletonTemplate.Visibility = Visibility.Collapsed;
                 _main.ServerSearchLoader.Visibility = Visibility.Collapsed;
                 MascotMessageBox.Show(
                     LocalizationManager.GetString("Servers.FormatErrorDesc", "Дивина! Список серверів порожній або має неправильний формат."),
@@ -113,10 +116,10 @@ namespace CL_CLegendary_Launcher_.Class
 
             _main.Dispatcher.Invoke(() =>
             {
+                _main.ServerCardSkeletonTemplate.Visibility = Visibility.Collapsed;
                 _main.ServerSearchLoader.Visibility = Visibility.Collapsed;
             });
         }
-
         private async Task LoadAndDisplayServerAsync(bool IsServerTab, object serverDataObject)
         {
             Dictionary<string, object> serverData = null;
@@ -170,14 +173,10 @@ namespace CL_CLegendary_Launcher_.Class
                     {
                         var sortedItems = _tempSortedList
                                             .OrderByDescending(x => x.Priority)
-                                            .Select(x => x.Item)
+                                            .Select(x => (UIElement)x.Item)
                                             .ToList();
 
-                        _main.ServerList.Items.Clear();
-                        foreach (var serverItem in sortedItems)
-                        {
-                            _main.ServerList.Items.Add(serverItem);
-                        }
+                        _main.SetupPagination(sortedItems);
 
                         _tempSortedList.Clear();
                     }

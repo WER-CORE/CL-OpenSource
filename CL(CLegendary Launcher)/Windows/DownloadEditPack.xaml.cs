@@ -86,7 +86,6 @@ namespace CL_CLegendary_Launcher_.Windows
             TitleModsDowload.Text = LocalizationManager.GetString("DownloadManager.SelectFileVersionTitle", "Оберіть версію файлу:");
             DowloadTXT.Content = LocalizationManager.GetString("Mods.InstallBtn", "Встановити");
         }
-
         private void LoadVaribaleCurrectPack()
         {
             if (CurrentModpack != null)
@@ -98,9 +97,9 @@ namespace CL_CLegendary_Launcher_.Windows
                 VersionVanil.IsEnabled = false; ListModsList.IsEnabled = false;
 
                 LoaderButton.Content = CurrentModpack.LoaderType;
+                LoderNow = CurrentModpack.LoaderType;
             }
         }
-
         void LoadLoaderVersion(string modpackName)
         {
             string path = @$"{AppContext.BaseDirectory}Data\installed_modpacks.json";
@@ -180,9 +179,9 @@ namespace CL_CLegendary_Launcher_.Windows
                     int offset = _currentPage * PageSize;
 
                     var urls = new[] {
-                $"https://api.modrinth.com/v2/search?query={SearchSystem.Text}&facets=[[%22categories:{LoderNow}%22],[%22project_type:mod%22]]&limit={PageSize}&offset={offset}",
-                $"https://api.modrinth.com/v2/search?query={SearchSystem.Text}&facets=[[%22project_type:resourcepack%22]]&limit={PageSize}&offset={offset}",
-                $"https://api.modrinth.com/v2/search?query={SearchSystem.Text}&facets=[[%22project_type:shader%22]]&limit={PageSize}&offset={offset}",
+    $"https://api.modrinth.com/v2/search?query={SearchSystem.Text}&facets=[[%22categories:{LoderNow.ToLower()}%22],[%22project_type:mod%22]]&limit={PageSize}&offset={offset}",
+    $"https://api.modrinth.com/v2/search?query={SearchSystem.Text}&facets=[[%22project_type:resourcepack%22]]&limit={PageSize}&offset={offset}",
+    $"https://api.modrinth.com/v2/search?query={SearchSystem.Text}&facets=[[%22project_type:shader%22]]&limit={PageSize}&offset={offset}",
                     };
 
                     var response = await httpClient.GetStringAsync(urls[(int)SelectMod]);
@@ -270,10 +269,13 @@ namespace CL_CLegendary_Launcher_.Windows
             iconUrl.Add(icon);
 
             item.IconModPack.Source = !string.IsNullOrEmpty(icon)
-                ? new BitmapImage(new Uri(icon))
-                : new BitmapImage(new Uri("pack://application:,,,/Icon/IconCL(Common).png"));
+                ? ImageHelper.LoadOptimizedImage(icon, 32)
+                : ImageHelper.LoadOptimizedImage("pack://application:,,,/Icon/IconCL(Common).png", 32);
 
-            item.MouseDoubleClick += (s, e) => WebHelper.OpenUrl(mod.Links.WebsiteUrl);
+            item.DetailsModPackBtn.PreviewMouseDown += (s, e) => { 
+                SoundManager.Click(); 
+                WebHelper.OpenUrl(mod.Links.WebsiteUrl);
+            };
 
             item.downloda_url = "";
             item.game_version = VersionVanil.SelectedItem?.ToString();
@@ -286,6 +288,7 @@ namespace CL_CLegendary_Launcher_.Windows
             item.AddModInModPack.Visibility = Visibility.Visible;
             item.AddModInModPack.MouseDown += async (s, e) =>
             {
+                SoundManager.Click();
                 AnimationService.FadeIn(MenuInstaller, 0.3);
                 var info = new ModInfo
                 {
@@ -309,11 +312,11 @@ namespace CL_CLegendary_Launcher_.Windows
             iconUrl.Add(icon);
 
             if (!string.IsNullOrEmpty(icon) && Uri.IsWellFormedUriString(icon, UriKind.Absolute))
-                item.IconModPack.Source = new BitmapImage(new Uri(icon));
+                item.IconModPack.Source = ImageHelper.LoadOptimizedImage(icon, 32);
             else
-                item.IconModPack.Source = new BitmapImage(new Uri("pack://application:,,,/Icon/IconCL(Common).png"));
+                item.IconModPack.Source = ImageHelper.LoadOptimizedImage("pack://application:,,,/Icon/IconCL(Common).png", 32);
 
-            item.MouseDoubleClick += (s, e) => WebHelper.OpenUrl($"https://modrinth.com/{loaderType}/{mod["slug"]}");
+            item.DetailsModPackBtn.PreviewMouseDown += (s, e) => { SoundManager.Click(); WebHelper.OpenUrl($"https://modrinth.com/{loaderType}/{mod.Slug}"); };
 
             item.ProjectId = mod["project_id"];
             item.Slug = mod["slug"];
@@ -322,6 +325,7 @@ namespace CL_CLegendary_Launcher_.Windows
 
             item.AddModInModPack.MouseDown += (s, e) =>
             {
+                SoundManager.Click();
                 AnimationService.FadeIn(MenuInstaller, 0.3);
                 GetCompatibleVersions(new List<ModInfo>
                 {
@@ -493,6 +497,8 @@ namespace CL_CLegendary_Launcher_.Windows
 
         private void ModrinthSite_MouseDown(object sender, MouseButtonEventArgs e)
         {
+            SoundManager.Click();
+
             if (SiteDowload == "Modrinth") return;
 
             ModrinthSite.Opacity = 1.0;
@@ -507,6 +513,8 @@ namespace CL_CLegendary_Launcher_.Windows
 
         private void CurseForgeSite_MouseDown(object sender, MouseButtonEventArgs e)
         {
+            SoundManager.Click();
+
             if (SiteDowload == "CurseForge") return;
 
             ModrinthSite.Opacity = 0.5;
@@ -521,6 +529,8 @@ namespace CL_CLegendary_Launcher_.Windows
 
         private async void DowloadTXT_MouseDown(object sender, RoutedEventArgs e)
         {
+            SoundManager.Click();
+
             if (VersionMods.SelectedItem == null)
             {
                 MenuInstaller.Visibility = Visibility.Hidden;
@@ -606,12 +616,16 @@ namespace CL_CLegendary_Launcher_.Windows
 
         private void GirdModsDowload_MouseDown(object sender, MouseButtonEventArgs e)
         {
+            SoundManager.Click();
+
             AnimationService.FadeOut(MenuInstaller, 0.3);
             if (fileUrlDowload.Count != 0) fileUrlDowload.Clear();
         }
 
         private void CreateModPacksButtonTXT_MouseDown(object sender, MouseButtonEventArgs e)
         {
+            SoundManager.Click();
+
             this.Close();
         }
 
@@ -634,7 +648,7 @@ namespace CL_CLegendary_Launcher_.Windows
 
                 AddItemModPack moditem = new AddItemModPack();
                 moditem.NameMod.Text = mod.Name;
-                try { moditem.IconMod.Source = new BitmapImage(new Uri(mod.ImageURL ?? "pack://application:,,,/Icon/IconCL(Common).png")); } catch { }
+                try { moditem.IconMod.Source = ImageHelper.LoadOptimizedImage(mod.ImageURL ?? "pack://application:,,,/Icon/IconCL(Common).png", 32); } catch { }
 
                 moditem.DeleteModFromModPack.MouseDown += (s, e) =>
                 {
@@ -674,9 +688,10 @@ namespace CL_CLegendary_Launcher_.Windows
             VersionVanil.IsEnabled = false;
             ListModsList.IsEnabled = false;
         }
-
         private async void CreateModPacksButton_MouseDown(object sender, RoutedEventArgs e)
         {
+            SoundManager.Click();
+
             var progress = new DowloadProgress();
             progress.Show();
 
@@ -713,11 +728,24 @@ namespace CL_CLegendary_Launcher_.Windows
 
                     string basePath = CurrentModpack.Path;
                     string targetDir = Path.Combine(basePath, subFolder);
-                    if (Directory.Exists(Path.Combine(basePath, "overrides"))) targetDir = Path.Combine(basePath, "overrides", subFolder);
-                    else if (Directory.Exists(Path.Combine(basePath, "override"))) targetDir = Path.Combine(basePath, "override", subFolder);
 
-                    Directory.CreateDirectory(targetDir);
-                    string fileName = Path.GetFileName(mod.Url);
+                    bool hasOverrides = Directory.Exists(Path.Combine(basePath, "overrides"));
+                    bool hasOverride = Directory.Exists(Path.Combine(basePath, "override"));
+                    
+                    if (hasOverrides)
+                    {
+                        targetDir = Path.Combine(basePath, "overrides", subFolder);
+                    }
+                    else if (hasOverride)
+                    {
+                        targetDir = Path.Combine(basePath, "override", subFolder);
+                    }
+                    else if (Directory.Exists(Path.Combine(basePath, ".minecraft")))
+                    {
+                        targetDir = Path.Combine(basePath, ".minecraft", subFolder);
+                    }
+
+                    Directory.CreateDirectory(targetDir); string fileName = Path.GetFileName(mod.Url);
                     string filePath = Path.Combine(targetDir, fileName);
 
                     progress.DowloadProgressBarFileTask(total, completed, fileName);
@@ -747,7 +775,6 @@ namespace CL_CLegendary_Launcher_.Windows
                     MascotEmotion.Sad);
             }
         }
-
         private async Task<bool> DownloadFileWithProgress(string url, string savePath, DowloadProgress progress)
         {
             try
@@ -796,6 +823,8 @@ namespace CL_CLegendary_Launcher_.Windows
         private void ExitLauncher_MouseDown(object sender, RoutedEventArgs e) => this.Close();
         private void BtnPrevPage_Click(object sender, RoutedEventArgs e)
         {
+            SoundManager.Click();
+
             if (_currentPage > 0)
             {
                 _currentPage--;
@@ -805,6 +834,8 @@ namespace CL_CLegendary_Launcher_.Windows
 
         private void BtnNextPage_Click(object sender, RoutedEventArgs e)
         {
+            SoundManager.Click();
+
             _currentPage++;
             UpdateModsList();
         }

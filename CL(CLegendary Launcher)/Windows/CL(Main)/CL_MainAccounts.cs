@@ -6,6 +6,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 
 namespace CL_CLegendary_Launcher_
@@ -51,18 +53,18 @@ namespace CL_CLegendary_Launcher_
         {
             try
             {
-                Click();
+                SoundManager.Click();
 
                 if (PanelManegerAccount.Visibility == Visibility.Visible)
                 {
-                    IconRotateTransform.Angle = 0;
+                    AnimationService.AnimateRotation(CheckMarkAccount, 0);
                     AnimationService.AnimatePageTransitionExit(PanelManegerAccount, -20);
 
                     ListAccount.Items?.Clear();
                 }
                 else
                 {
-                    IconRotateTransform.Angle = 180;
+                    AnimationService.AnimateRotation(CheckMarkAccount, 180);
                     AnimationService.AnimatePageTransition(PanelManegerAccount, -20);
 
                     if (PanelListStats.Visibility == Visibility.Visible)
@@ -138,6 +140,7 @@ namespace CL_CLegendary_Launcher_
         {
             try
             {
+                SoundManager.Click();
                 await _accountService.SelectProfileAsync(profile);
 
                 NameNik.Text = profile.NameAccount;
@@ -168,14 +171,7 @@ namespace CL_CLegendary_Launcher_
 
             try
             {
-                var image = new BitmapImage();
-                image.BeginInit();
-                image.UriSource = new Uri(imageUrl, UriKind.RelativeOrAbsolute);
-                image.CacheOption = BitmapCacheOption.OnLoad;
-                image.DecodePixelWidth = 64;
-                image.EndInit();
-                image.Freeze();
-                IconAccount.Source = image;
+                IconAccount.Source = ImageHelper.LoadOptimizedImage(imageUrl, 64);
             }
             catch
             {
@@ -202,7 +198,7 @@ namespace CL_CLegendary_Launcher_
 
         private async void CreateAccount_Offline_Click(object sender, RoutedEventArgs e)
         {
-            Click();
+            SoundManager.Click();
             if (string.IsNullOrWhiteSpace(NameNikManeger.Text)) return;
 
             try
@@ -226,7 +222,7 @@ namespace CL_CLegendary_Launcher_
 
         private async void MicrosoftLoginButton_Click(object sender, RoutedEventArgs e)
         {
-            Click();
+            SoundManager.Click();
             try
             {
                 CloseAccountSelectionUI();
@@ -253,7 +249,7 @@ namespace CL_CLegendary_Launcher_
 
         private async void LoginAccountLittleSkin_Click(object sender, RoutedEventArgs e)
         {
-            Click();
+            SoundManager.Click();
             try
             {
                 await _accountService.AddLittleSkinAccountAsync(Login_LittleSkin.Text, PasswordLittleSkin.Password);
@@ -285,7 +281,7 @@ namespace CL_CLegendary_Launcher_
 
         private void AddProfile_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            Click();
+            SoundManager.Click();
             AnimationService.AnimatePageTransition(GridFormAccountAdd);
             AnimationService.AnimatePageTransition(GridOfflineMode);
             AnimationService.AnimatePageTransition(GridSelectAccountType);
@@ -293,7 +289,7 @@ namespace CL_CLegendary_Launcher_
 
         private void GirdFormAccountAdd_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            Click();
+            SoundManager.Click();
             CloseAccountSelectionUI();
 
             if (SelectCreatePackMinecraft.Visibility == Visibility.Visible)
@@ -305,19 +301,19 @@ namespace CL_CLegendary_Launcher_
 
         private void MicrosoftAccount_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            Click();
+            SoundManager.Click();
             SwitchAccountAddTab(GridOnlineMode);
         }
 
         private void OfflineAccount_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            Click();
+            SoundManager.Click();
             SwitchAccountAddTab(GridOfflineMode);
         }
 
         private void LittleSkinAccount_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            Click();
+            SoundManager.Click();
             SwitchAccountAddTab(GridLittleSkinMode);
         }
 
@@ -334,7 +330,7 @@ namespace CL_CLegendary_Launcher_
 
         private void StatsTextOpen_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            Click();
+            SoundManager.Click();
             TextStatsGameMinecraft.Text = _gameSessionManager.GetFormattedStats();
 
             AnimationService.AnimatePageTransitionExit(PanelManegerAccount, -20, 0.2);

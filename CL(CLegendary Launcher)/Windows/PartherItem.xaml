@@ -10,7 +10,7 @@
 
         <Border x:Name="BGParther" BorderThickness="1" CornerRadius="7" ClipToBounds="True">
             <Border.Background>
-                <ImageBrush ImageSource="/Assets/DarkThemBG.webp" Stretch="UniformToFill"/>
+                <ImageBrush ImageSource="/Assets/DarkThemBG.png" Stretch="UniformToFill"/>
             </Border.Background>
         </Border>
 

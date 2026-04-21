@@ -14,7 +14,7 @@
 
     <Grid>
         <Grid.Background>
-            <ImageBrush ImageSource="/Assets/LightThemBG.webp"/>
+            <ImageBrush ImageSource="/Assets/LightThemBG.png"/>
         </Grid.Background>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>

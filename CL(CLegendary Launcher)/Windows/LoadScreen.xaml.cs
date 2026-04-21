@@ -29,6 +29,10 @@ namespace CL_CLegendary_Launcher_.Windows
         public LoadScreen()
         {
             SettingsManager.Load();
+            if (SettingsManager.Default.IsCrashReportingEnabled)
+            {
+                CrashReportManager.Enable();
+            }
             if (string.IsNullOrEmpty(SettingsManager.Default.LanguageCode))
             {
                 string osLang = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName.ToLower();
@@ -148,7 +152,7 @@ namespace CL_CLegendary_Launcher_.Windows
             {
                 try
                 {
-                    BG.Source = new BitmapImage(new Uri(bgPath));
+                    BG.Source = ImageHelper.LoadOptimizedImage(bgPath, 300);
                 }
                 catch { }
             }
@@ -172,7 +176,7 @@ namespace CL_CLegendary_Launcher_.Windows
 
         private async Task RunStartupProcessAsync()
         {
-            await DiscordController.Initialize("В віконці завантаження");
+            await DiscordController.Initialize(LocalizationManager.GetString("LoadScreen.DiscordRPC", "У віконці завантаження"));
 
             var animationTask = SimulateLoadingAnimationAsync();
 

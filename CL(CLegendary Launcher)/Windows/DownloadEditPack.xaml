@@ -194,22 +194,22 @@
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <TextBlock x:Name="TxtInstallMod" Text="Встановлення мода" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center"/>
+                    <TextBlock x:Name="TxtInstallMod" Text="Встановлення мода" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center" Foreground="{DynamicResource MainForegroundBrush}"/>
 
                     <TextBlock Grid.Row="1" x:Name="TitleModsDowload" 
                                Text="Оберіть версію файлу:" 
-                               Margin="0,10,0,5" Opacity="0.7" HorizontalAlignment="Center"/>
+                               Margin="0,10,0,5" Opacity="0.7" HorizontalAlignment="Center" Foreground="{DynamicResource MainForegroundBrush}"/>
 
                     <Border Grid.Row="2" Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="6">
                         <ui:ListView x:Name="VersionMods" Margin="2"
-                                     d:ItemsSource="{d:SampleData ItemCount=5}"/>
+                                     d:ItemsSource="{d:SampleData ItemCount=5}" Foreground="{DynamicResource MainForegroundBrush}"/>
                     </Border>
 
                     <ui:Button Grid.Row="3" x:Name="DowloadTXT" 
                                Content="Встановити" 
                                Appearance="Primary" Margin="0,15,0,0"
                                HorizontalAlignment="Stretch" 
-                               Click="DowloadTXT_MouseDown"/>
+                               Click="DowloadTXT_MouseDown" Background="{DynamicResource MainBackgroundButton}" BorderBrush="{x:Null}" Foreground="{DynamicResource MainForegroundBrush}"/>
                 </Grid>
             </Border>
         </Grid>

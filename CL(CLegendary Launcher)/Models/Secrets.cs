@@ -9,6 +9,7 @@ namespace CL_CLegendary_Launcher_.Class
 {
     public static class Secrets
     {
+        public const string DNS_KEY_AutoReport = "ВАШ_КЛЮЧ";
         public const string API_KEY_Gemini = "Ваш-API";
         public const string API_URL_Gemini_Model = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
         public static string LocalizationURL = $"https://raw.githubusercontent.com/WER-CORE/CL-Win-Edition--Update/main/languages.json?v={DateTime.Now.Ticks}";

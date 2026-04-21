@@ -10,7 +10,11 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Interop;
+using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;
 using Path = System.IO.Path;
@@ -30,13 +34,15 @@ namespace CL_CLegendary_Launcher_
         public bool InstallVersionOnPlay = false;
 
         public AccountType selectAccountNow;
-        bool MicosoftAccount = false;
-        JELoginHandler loginHandler;
         public MSession session;
 
         public List<string> donateLink = new List<string>();
         public List<string> siteLink = new List<string>();
         public List<string> discordLink = new List<string>();
+        private int _currentPage_server = 1;
+        private int _itemsPerPage_servers = 5;
+        private List<UIElement> _allServerCards = new List<UIElement>();
+        private List<UIElement> _filteredServerCards = new List<UIElement>();
 
         private bool isSliderDragging = false;
         private double previousSliderValue = 2048;
@@ -47,11 +53,8 @@ namespace CL_CLegendary_Launcher_
         byte selectmodificed = 0;
         byte SelectModPackCreate = 0;
 
-        private string currentFundUrl = "https://ab3.support/";
-        private string currentDetailsUrl = "https://ab3.support/";
-
         private int _currentPage = 0;
-        private const int ITEMS_PER_PAGE = 10; 
+        private const int ITEMS_PER_PAGE = 10;
         private CancellationTokenSource _searchCts;
         private List<ModVersionInfo> _currentModVersions;
         private List<InstalledModpack> allInstalledModpacks = new List<InstalledModpack>();
@@ -59,8 +62,8 @@ namespace CL_CLegendary_Launcher_
         private CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
 
         private TutorialOverlayService _tutorialService;
-        private  ScreenshotService _screenshotService;
-        public  ServerListService _serverListService;
+        private ScreenshotService _screenshotService;
+        public ServerListService _serverListService;
         protected ProfileManagerService _profileManagerService;
         private AccountService _accountService;
         protected GameSessionManager _gameSessionManager;
@@ -73,47 +76,42 @@ namespace CL_CLegendary_Launcher_
         private LauncherNavigationService _navigationService;
         public VersionService _versionService;
         private NewsService _newsService;
+
+        private int _lastIndex = 0;
+        private DispatcherTimer _slideTimer;
         public CL_Main_()
         {
-            DateTime today = DateTime.Now;
-
             LocalizationManager.LoadLanguage(SettingsManager.Default.LanguageCode);
             InitializeLanguagesAsync();
 
             InitializeComponent();
-            bool isAprilFoolsWeek = today.Month == 4 && today.Day >= 1 && today.Day <= 7;
+            CheckAndCreateDefaultPath();
 
-            if (SettingsManager.Default.LanguageCode == "uk_UA" && isAprilFoolsWeek)
-            {
-                _1AprilGird.Visibility = System.Windows.Visibility.Visible;
-            }
-            else { _1AprilGird.Visibility = System.Windows.Visibility.Collapsed; }
+            InitializeServices();
+            InitializeModules();
 
             UpdateLocalization();
-            CheckAndCreateDefaultPath();
-            InitializeServices();
 
             Microsoft.Win32.SystemEvents.DisplaySettingsChanged += OnDisplaySettingsChanged;
 
             ApplicationThemeManager.Apply(this);
             _themeService.InitializeTheme();
             LoadCustomSettings();
-            InitToggles();       
+            InitToggles();
 
             _serverListService.InitializeServersAsync(false, null);
-            _lastActionService.LoadLastActionsFromJsonAsync();
-            LoadChangeLogMinecraft(); 
-            LoadProfilesAsync(); 
+            LoadProfilesAsync();
 
             _launcherSettingsService.Initialize();
 
-            DiscordController.Initialize("В головному вікні");
             InitializeThemeSelection();
+            _slideTimer = new DispatcherTimer();
+            _slideTimer.Interval = TimeSpan.FromSeconds(10);
+            _slideTimer.Tick += (s, e) => NextIndex();
+            _slideTimer.Start();
         }
         public void InitializeServices()
         {
-            loginHandler = JELoginHandlerBuilder.BuildDefault();
-
             _versionService = new VersionService(SettingsManager.Default.PathLacunher);
 
             _tutorialService = new TutorialOverlayService(
@@ -132,7 +130,7 @@ namespace CL_CLegendary_Launcher_
             _gameLaunchService = new GameLaunchService(this, _gameSessionManager, _lastActionService);
             _modDownloadService = new ModDownloadService();
 
-            _modpackService = new ModpackService(this, _gameSessionManager, _gameLaunchService,_modDownloadService);
+            _modpackService = new ModpackService(this, _gameSessionManager, _gameLaunchService, _modDownloadService);
             _screenshotService = new ScreenshotService();
         }
 
@@ -151,7 +149,7 @@ namespace CL_CLegendary_Launcher_
         }
         private async void MainTitleBar_MinimizeClicked(TitleBar sender, System.Windows.RoutedEventArgs args)
         {
-           await MemoryCleaner.FlushMemoryAsync(true);
+            await MemoryCleaner.FlushMemoryAsync(true);
         }
     }
 }

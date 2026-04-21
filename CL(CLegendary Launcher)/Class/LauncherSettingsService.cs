@@ -82,7 +82,7 @@ namespace CL_CLegendary_Launcher_.Class
         }
         public async void HandleChangePathClick()
         {
-            _main.Click();
+            SoundManager.Click();
 
             using (var openFileDlg = new System.Windows.Forms.FolderBrowserDialog())
             {
@@ -235,7 +235,7 @@ namespace CL_CLegendary_Launcher_.Class
         }
         public async void HandleResetPathClick()
         {
-            _main.Click();
+            SoundManager.Click();
 
             string defaultPath = "";
             if (OperatingSystem.IsWindows())
@@ -318,7 +318,7 @@ namespace CL_CLegendary_Launcher_.Class
         }
         public void HandleResetOpClick()
         {
-            _main.Click();
+            SoundManager.Click();
             _main.OPSlider.Value = 2048;
             _main.SliderOPTXT.Content = "2048MB";
 
@@ -328,7 +328,7 @@ namespace CL_CLegendary_Launcher_.Class
 
         public void HandleResetResolutionClick()
         {
-            _main.Click();
+            SoundManager.Click();
             _main.Width.Text = "800";
             _main.Height.Text = "600";
             _main.MincraftWindowSize.Content = "800x600";

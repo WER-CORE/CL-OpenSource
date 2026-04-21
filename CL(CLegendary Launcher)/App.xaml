@@ -1,16 +1,15 @@
 ﻿<Application x:Class="CL_CLegendary_Launcher_.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:CL_CLegendary_Launcher_" xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml" 
+             xmlns:local="clr-namespace:CL_CLegendary_Launcher_" 
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml" 
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
              StartupUri="Windows/LoadScreen.xaml">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="Them/LightTheme.xaml" />
                 <ResourceDictionary Source="Them/DarkTheme.xaml" />
                 <ResourceDictionary Source="Them/DarkThemeSerLisAndUpdMinecraft.xaml" />
-                <ResourceDictionary Source="Them/LightThemeSerLisAndUpdMinecraft.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <sys:Double x:Key="GlassBlurRadius">20</sys:Double>
             <Visibility x:Key="GlassVisibility">Visible</Visibility>

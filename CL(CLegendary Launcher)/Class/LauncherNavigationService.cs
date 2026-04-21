@@ -24,7 +24,7 @@ namespace CL_CLegendary_Launcher_.Class
             {
                 _isNavigating = true;
 
-                _main.Click();
+                SoundManager.Click();
 
                 if (!string.IsNullOrEmpty(discordStatus))
                     await DiscordController.UpdatePresence(discordStatus);
@@ -77,8 +77,6 @@ namespace CL_CLegendary_Launcher_.Class
         {
             await NavigateToPage(_main.ListModsBuild, 95, LocalizationManager.GetString("DiscordRPC.ViewingModpacks", "Дивиться збірки"), async () =>
             {
-                _main.ModsDowloadList1.Items.Clear();
-
                 var valueList = _main._modpackService.LoadInstalledModpacks();
                 var installedPacks = valueList.Where(x => Directory.Exists(x.Path)).ToList();
                 _main.UpdateDisplayedModpacks(installedPacks);
@@ -106,5 +104,6 @@ namespace CL_CLegendary_Launcher_.Class
                 return Task.CompletedTask;
             });
         }
+
     }
 }

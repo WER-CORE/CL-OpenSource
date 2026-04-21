@@ -27,11 +27,12 @@ namespace CL_CLegendary_Launcher_.Windows
 
             DowloadTXT.Text = LocalizationManager.GetString("DownloadManager.CancelBtn", "Скасувати");
         }
-
         public void DowloadProgressBarVersion(int progress, object version)
         {
             VersionTXT.Text = string.Format(LocalizationManager.GetString("DownloadManager.DownloadingVersion", "Завантажується версія {0}"), version);
-            ProgressDowloadVersion.Value = progress;
+
+            AnimationService.AnimateProgressBar(ProgressDowloadVersion, progress);
+
             ProgressDowloadTXT.Text = progress + "%";
         }
 
@@ -43,19 +44,16 @@ namespace CL_CLegendary_Launcher_.Windows
 
         public void DowloadProgressBarFile(int progress)
         {
-            ProgressDowloadFile.Value = progress;
+            AnimationService.AnimateProgressBar(ProgressDowloadFile, progress);
+
             ProgressFileDowloadTXT.Text = progress + "%";
         }
-
         private void StopDownload_PreviewMouseDown(object sender, MouseButtonEventArgs e)
         {
+            SoundManager.Click();
             CTS?.Cancel();
             this.Close();
         }
-
-        private void ExitLauncher_MouseEnter(object sender, MouseEventArgs e) { }
-        private void ExitLauncher_MouseLeave(object sender, MouseEventArgs e) { }
-
         private void ExitLauncher_MouseDown(object sender, MouseButtonEventArgs e)
         {
             this.Close();

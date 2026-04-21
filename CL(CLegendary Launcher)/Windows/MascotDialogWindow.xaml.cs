@@ -77,12 +77,16 @@ namespace CL_CLegendary_Launcher_.Windows
 
         private void BtnCancel_Click(object sender, RoutedEventArgs e)
         {
+            SoundManager.Click();
+
             DialogResult = false;
             Close();
         }
 
         private void Close_MouseDown(object sender, MouseButtonEventArgs e)
         {
+            SoundManager.Click();
+
             DialogResult = false;
             Close();
         }

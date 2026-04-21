@@ -96,7 +96,7 @@ namespace CL_CLegendary_Launcher_.Windows
         {
             VersionVanilBox?.Items.Clear();
             LoaderVersionBox?.Items.Clear();
-            LoaderVersionBox.IsEnabled = false;
+            if (LoaderVersionBox != null) LoaderVersionBox.IsEnabled = false;
 
             try
             {
@@ -269,6 +269,7 @@ namespace CL_CLegendary_Launcher_.Windows
 
             ModsDowloadList.Items.Clear();
             ModsSearchLoader.Visibility = Visibility.Visible;
+            ModsSkeletonPanel.Visibility = Visibility.Visible;
             ModsDowloadList.Visibility = Visibility.Collapsed;
 
             if (PageNumberText != null)
@@ -318,6 +319,7 @@ namespace CL_CLegendary_Launcher_.Windows
             {
                 if (!token.IsCancellationRequested)
                 {
+                    ModsSkeletonPanel.Visibility = Visibility.Collapsed;
                     ModsSearchLoader.Visibility = Visibility.Collapsed;
                     ModsDowloadList.Visibility = Visibility.Visible;
                 }
@@ -331,16 +333,17 @@ namespace CL_CLegendary_Launcher_.Windows
 
             if (!string.IsNullOrEmpty(mod.IconUrl))
             {
-                try { item.IconModPack.Source = new BitmapImage(new Uri(mod.IconUrl)); } catch { }
+                try { item.IconModPack.Source = ImageHelper.LoadOptimizedImage(mod.IconUrl, 32); } catch { }
                 iconUrl.Add(mod.IconUrl);
             }
             else
             {
-                item.IconModPack.Source = new BitmapImage(new Uri("pack://application:,,,/Icon/IconCL(Common).png"));
+                item.IconModPack.Source = ImageHelper.LoadOptimizedImage("pack://application:,,,/Icon/IconCL(Common).png", 32);
             }
 
-            item.MouseDoubleClick += (s, e) =>
+            item.DetailsModPackBtn.PreviewMouseDown += (s, e) =>
             {
+                SoundManager.Click();
                 string baseUrl = mod.Site == "Modrinth" ? "https://modrinth.com" : "https://www.curseforge.com/minecraft";
                 string category = mod.Site == "Modrinth"
                     ? (SelectMod == 1 ? "shader" : SelectMod == 2 ? "resourcepack" : "mod")
@@ -348,10 +351,9 @@ namespace CL_CLegendary_Launcher_.Windows
                 WebHelper.OpenUrl($"{baseUrl}/{category}/{mod.Slug}");
             };
 
-            item.AddModInModPack.Visibility = Visibility.Visible;
-
-            item.AddModInModPack.MouseDown += async (s, e) =>
+            item.AddModInModPack.PreviewMouseDown += async (s, e) =>
             {
+                SoundManager.Click();
                 await OpenVersionSelector(mod);
             };
 
@@ -368,7 +370,7 @@ namespace CL_CLegendary_Launcher_.Windows
 
             _currentModToInstall = mod;
 
-            GameVersionMinecraft_Копировать.Text = mod.Title;
+            GameVersionMinecraft.Text = mod.Title;
 
             MenuInstaller.Visibility = Visibility.Visible;
             VersionMods.Items.Clear();
@@ -407,6 +409,7 @@ namespace CL_CLegendary_Launcher_.Windows
 
         private async void DowloadTXT_MouseDown(object sender, MouseButtonEventArgs e)
         {
+            SoundManager.Click();
             if (VersionMods.SelectedIndex == -1 || _currentModToInstall == null || _currentAvailableVersions == null) return;
 
             int index = VersionMods.SelectedIndex;
@@ -473,16 +476,11 @@ namespace CL_CLegendary_Launcher_.Windows
                 }
             }
         }
-
         private void CloseMenu_MouseDown(object sender, MouseButtonEventArgs e)
         {
+            SoundManager.Click();
             MenuInstaller.Visibility = Visibility.Hidden;
         }
-
-        private void VersionMods_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-        }
-
         private void SaveModToModpackJson(ModInfo mod)
         {
             try
@@ -514,7 +512,7 @@ namespace CL_CLegendary_Launcher_.Windows
             moditem.NameMod.Text = mod.Name;
             try
             {
-                moditem.IconMod.Source = new BitmapImage(new Uri(mod.ImageURL ?? "pack://application:,,,/Icon/IconCL(Common).png"));
+                moditem.IconMod.Source = ImageHelper.LoadOptimizedImage(mod.ImageURL ?? "pack://application:,,,/Icon/IconCL(Common).png", 32);
             }
             catch { }
 
@@ -542,6 +540,8 @@ namespace CL_CLegendary_Launcher_.Windows
         {
             try
             {
+                SoundManager.Click();
+
                 string modpackName = NameModPackTXT.Text.Trim();
                 if (string.IsNullOrWhiteSpace(modpackName))
                 {
@@ -581,7 +581,7 @@ namespace CL_CLegendary_Launcher_.Windows
                     LoaderVersion = loaderVersion,
                     Path = basePath,
                     PathJson = pathJson,
-                    UrlImage = imageUrl
+                    UrlImage = imageUrl,
                 };
 
                 _modpackService.AddModpack(modpack);
@@ -598,6 +598,8 @@ namespace CL_CLegendary_Launcher_.Windows
 
         private void VersionVanil_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            SoundManager.Click();
+
             if (VersionVanilBox.SelectedItem != null)
             {
                 UpdateLoaderVersionsList();
@@ -607,6 +609,8 @@ namespace CL_CLegendary_Launcher_.Windows
 
         private void LoaderBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            SoundManager.Click();
+
             if (LoaderBox.SelectedItem is ComboBoxItem item)
             {
                 LoderNow = item.Content.ToString();
@@ -624,6 +628,8 @@ namespace CL_CLegendary_Launcher_.Windows
 
         private void ModsTxt_MouseDown(object sender, RoutedEventArgs e)
         {
+            SoundManager.Click();
+
             _currentPage = 0;
             SelectMod = 0;
             LoadModsByType("mod");
@@ -632,6 +638,8 @@ namespace CL_CLegendary_Launcher_.Windows
 
         private void ResourcePackTxt_MouseDown(object sender, RoutedEventArgs e)
         {
+            SoundManager.Click();
+
             _currentPage = 0;
             SelectMod = 2;
             LoadModsByType("resourcepack");
@@ -640,6 +648,8 @@ namespace CL_CLegendary_Launcher_.Windows
 
         private void ShaderPackTxt_MouseDown(object sender, RoutedEventArgs e)
         {
+            SoundManager.Click();
+
             _currentPage = 0;
             SelectMod = 1;
             LoadModsByType("shader");
@@ -648,6 +658,8 @@ namespace CL_CLegendary_Launcher_.Windows
 
         private void ModrinthSite_MouseDown(object sender, MouseButtonEventArgs e)
         {
+            SoundManager.Click();
+
             if (SiteDowload == "Modrinth") return;
 
             SiteDowload = "Modrinth";
@@ -659,6 +671,8 @@ namespace CL_CLegendary_Launcher_.Windows
 
         private void CurseForgeSite_MouseDown(object sender, MouseButtonEventArgs e)
         {
+            SoundManager.Click();
+
             if (SiteDowload == "CurseForge") return;
 
             SiteDowload = "CurseForge";
@@ -738,6 +752,8 @@ namespace CL_CLegendary_Launcher_.Windows
 
         private void PrevPageBtn_Click(object sender, RoutedEventArgs e)
         {
+            SoundManager.Click();
+
             if (_currentPage > 0)
             {
                 _currentPage--;
@@ -747,6 +763,8 @@ namespace CL_CLegendary_Launcher_.Windows
 
         private void NextPageBtn_Click(object sender, RoutedEventArgs e)
         {
+            SoundManager.Click();
+
             _currentPage++;
             UpdateModsList();
         }

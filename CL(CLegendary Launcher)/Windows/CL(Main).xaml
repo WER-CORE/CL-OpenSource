@@ -7,7 +7,8 @@
         xmlns:local="clr-namespace:CL_CLegendary_Launcher_.Class"
         xmlns:Wpf="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf" 
         xmlns:syncfusion="http://schemas.syncfusion.com/wpf" 
-        xmlns:Windows="clr-namespace:CL_CLegendary_Launcher_.Windows" 
+        xmlns:Windows="clr-namespace:CL_CLegendary_Launcher_.Windows"
+        xmlns:markdig="clr-namespace:Markdig.Wpf;assembly=Markdig.Wpf"
         x:Name="CL_CLegendary_Launcher_" 
         x:Class="CL_CLegendary_Launcher_.CL_Main_"
         mc:Ignorable="d"
@@ -19,7 +20,7 @@
         Loaded="CL_CLegendary_Launcher__Loaded_1" Background="{x:Null}" AllowDrop="True" 
         Closed="CL_CLegendary_Launcher__Closed" WindowStyle="None"
         ExtendsContentIntoTitleBar="True" ResizeMode="CanResize"
-        WindowBackdropType="Acrylic" Closing="CL_CLegendary_Launcher__Closing">
+        WindowBackdropType="Mica" Closing="CL_CLegendary_Launcher__Closing">
     <Window.Resources>
         <Style TargetType="{x:Type Button}">
             <Setter Property="Background" Value="{DynamicResource MainBackgroundButton}" />
@@ -93,7 +94,69 @@
             <Setter Property="Margin" Value="0,0,10,0"/>
             <Setter Property="Height" Value="32"/>
         </Style>
+        <ControlTemplate x:Key="ModCardSkeletonTemplate">
+            <Grid Width="740" Height="108">
+                <Border x:Name="SkeletonGrid" Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="8" Padding="10" Margin="5" BorderBrush="{x:Null}" BorderThickness="1">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Border Grid.Column="0" 
+                                Width="64" Height="64" 
+                                CornerRadius="5" 
+                                Background="{DynamicResource MainBackgroundBrush}" 
+                                VerticalAlignment="Top" 
+                                Margin="0,0,10,0"/>
 
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <Border Height="20" Width="150" CornerRadius="4" Background="{DynamicResource MainBackgroundBrush}" HorizontalAlignment="Left" Margin="0,0,0,8"/>
+                            <Border Height="14" CornerRadius="3" Background="{DynamicResource MainBackgroundBrush}" Margin="0,0,0,4"/>
+                            <Border Height="14" Width="200" CornerRadius="3" Background="{DynamicResource MainBackgroundBrush}" HorizontalAlignment="Left"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            </Grid>
+        </ControlTemplate>
+        <ControlTemplate x:Key="ServerCardSkeletonTemplate">
+            <Border Background="{DynamicResource MainBackgroundBrushServer}" 
+                    Height="80" 
+                    CornerRadius="8" Padding="10" Margin="0,5" 
+                    BorderBrush="#10FFFFFF" BorderThickness="1">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" 
+                            Width="64" Height="64" 
+                            CornerRadius="8" 
+                            Background="{DynamicResource MainBackgroundBrush}" 
+                            VerticalAlignment="Center" 
+                            Margin="0,0,15,0"/>
+
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <Border Height="22" Width="180" CornerRadius="4" 
+                                Background="{DynamicResource MainBackgroundBrush}" 
+                                HorizontalAlignment="Left" Margin="0,0,0,8"/>
+                        <Border Height="14" Width="250" CornerRadius="3" 
+                                Background="{DynamicResource MainBackgroundBrush}" 
+                                HorizontalAlignment="Left"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
+                        <Border Height="18" Width="60" CornerRadius="4" 
+                                Background="{DynamicResource MainBackgroundBrush}" 
+                                Margin="0,0,0,8" HorizontalAlignment="Right"/>
+                        <Border Height="12" Width="80" CornerRadius="3" 
+                                Background="{DynamicResource MainBackgroundBrush}" 
+                                HorizontalAlignment="Right"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </ControlTemplate>
     </Window.Resources>
 
     <Grid x:Name="GirdMain" HorizontalAlignment="Center" VerticalAlignment="Center" AllowDrop="True">
@@ -110,7 +173,7 @@
            VerticalAlignment="Center" 
            Stretch="UniformToFill" 
            IsHitTestVisible="False"
-           Source="/Assets/DarkThemBG.webp"/>
+           Source="/Assets/DarkThemBG.png"/>
         </Grid>
         <Grid x:Name="PanelListStats" 
       HorizontalAlignment="Right" 
@@ -279,7 +342,7 @@
                     <Border CornerRadius="12" Background="{DynamicResource GlassTintBrush}"/>
                 </Grid>
             </Border>
-            <StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="10,0,0,135">
+            <StackPanel x:Name="ChangelogHeaderPanel" Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="10,0,0,135">
                 <ui:SymbolIcon Symbol="News24" FontSize="18" Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,8,0"/>
                 <TextBlock x:Name="DevLogMinecraft" 
                            Text="Що нового? (Changelog)" 
@@ -356,9 +419,9 @@
                     Background="{DynamicResource MainBackgroundBrushServer}" 
                     CornerRadius="16" Padding="0,5">
 
-                        <StackPanel VerticalAlignment="Center">
+                        <StackPanel VerticalAlignment="Top">
 
-                            <Grid Height="40" Margin="5,2" Cursor="Hand" MouseDown="SettingPanel_MouseDown" Background="Transparent">
+                            <Grid x:Name="SettingPanelGird" Height="40" Margin="5,2" Cursor="Hand" MouseDown="SettingPanel_MouseDown" Background="Transparent" MouseEnter="PanelFooterScalePlus_MouseEnter" MouseLeave="PanelFooterScaleMinus_MouseLeave">
                                 <Border x:Name="SettingPanel" CornerRadius="12" Background="{DynamicResource MainBackgroundButton}" Opacity="0.5"/>
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0">
                                     <Path Width="20" Height="20" Stretch="Uniform" Fill="{DynamicResource MainForegroundBrush}"
@@ -367,7 +430,7 @@
                                 </StackPanel>
                             </Grid>
 
-                            <Grid Height="40" Margin="5,2" Cursor="Hand" MouseDown="FolderPanel_MouseDown" Background="Transparent">
+                            <Grid x:Name="FilesMenuGrid" Height="40" Margin="5,2" Cursor="Hand" MouseDown="FolderPanel_MouseDown" Background="Transparent" MouseEnter="PanelFooterScalePlus_MouseEnter" MouseLeave="PanelFooterScaleMinus_MouseLeave">
                                 <Grid.ContextMenu>
                                     <ContextMenu x:Name="FilesContextMenu" Placement="Top">
                                         <MenuItem x:Name="Loc_MenuOpenFolder" Header="Відкрити папку...">
@@ -433,7 +496,7 @@
                                 </StackPanel>
                             </Grid>
 
-                            <Grid x:Name="InfoPanel" Height="40" Margin="5,2" Cursor="Hand" MouseDown="InfoPanel_MouseDown" Background="Transparent">
+                            <Grid x:Name="InfoPanel" Height="40" Margin="5,2" Cursor="Hand" MouseDown="InfoPanel_MouseDown" Background="Transparent" MouseEnter="PanelFooterScalePlus_MouseEnter" MouseLeave="PanelFooterScaleMinus_MouseLeave">
 
                                 <Grid.ContextMenu>
                                     <ContextMenu x:Name="InfoContextMenu" Placement="Top">
@@ -456,7 +519,7 @@
                                             </MenuItem.Icon>
                                         </MenuItem>
 
-                                        <Separator/>
+                                        <Separator x:Name="InfoSep1"/>
 
                                         <MenuItem x:Name="Loc_MenuGithub" Header="GitHub (Код)" Click="GitHub_Click">
                                             <MenuItem.Icon>
@@ -464,7 +527,7 @@
                                             </MenuItem.Icon>
                                         </MenuItem>
 
-                                        <Separator/>
+                                        <Separator x:Name="InfoSep2"/>
 
                                         <MenuItem x:Name="Loc_MenuCredits" Header="Подяки (Автори та Перекладачі)" Click="OpenCredits_Click" Foreground="{DynamicResource MainForegroundBrush}">
                                             <MenuItem.Icon>
@@ -472,7 +535,7 @@
                                             </MenuItem.Icon>
                                         </MenuItem>
 
-                                        <Separator/>
+                                        <Separator x:Name="InfoSep3"/>
 
                                         <MenuItem x:Name="Loc_MenuSupportProject" Header="Підтримати проект" Click="SupportProject_Click" Foreground="{DynamicResource MainForegroundBrush}">
                                             <MenuItem.Icon>
@@ -480,7 +543,7 @@
                                             </MenuItem.Icon>
                                         </MenuItem>
 
-                                        <MenuItem Click="Support3OSHBr_Click">
+                                        <MenuItem x:Name="Loc_MenuSupport3OSHBr" Click="Support3OSHBr_Click">
                                             <MenuItem.Header>
                                                 <TextBlock x:Name="Loc_MenuSupportBrigade" Text="Підтримати 3 ОШБр" Foreground="#FFB74D" FontWeight="SemiBold"/>
                                             </MenuItem.Header>
@@ -528,7 +591,7 @@
                    VerticalAlignment="Top" HorizontalAlignment="Left" 
                    Margin="9,23,0,0" Width="176" Height="29" 
                    FontFamily="Inter 18pt 18pt" FontSize="10" Foreground="White" Background="{x:Null}"
-                   PreviewMouseDown="PlayTXT_MouseDown" Text="ОБЕРІТЬ ВЕРСІЮ" Padding="53,10,0,0" Cursor="Hand"/>
+                   PreviewMouseDown="PlayTXT_MouseDown" Text="ОБЕРІТЬ ВЕРСІЮ" Padding="53,10,0,0" Cursor="Hand" MouseEnter="PlayTXT_MouseEnter" MouseLeave="PlayTXT_MouseLeave"/>
 
                 <Image x:Name="IconSelectVersion" Source="/Assets/VanilaVersion.png" 
                HorizontalAlignment="Right" VerticalAlignment="Top" 
@@ -550,7 +613,7 @@
               Fill="{DynamicResource MainForegroundBrush}"
               Stretch="Uniform"
               HorizontalAlignment="Right" VerticalAlignment="Top"
-              Margin="0,32,14,0" Height="31" Width="18"
+              Margin="0,32,14,0" Height="21" Width="18"
               Cursor="Hand"
               ToolTip="НАТИСНІТЬ ЩОБ ДІЗНАТИСЯ ЯКІ Є ВЕРСІЇ НА ВИБІР" 
               MouseDown="CheckMarkVersionSelect_MouseDown"
@@ -598,7 +661,7 @@
                      ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                      SelectedIndex="0" 
                      HorizontalContentAlignment="Center" 
-                     VerticalContentAlignment="Center">
+                     VerticalContentAlignment="Center" SelectionChanged="PartnerServer_SelectionChanged" MouseEnter="PartnerServer_MouseEnter" MouseLeave="PartnerServer_MouseLeave">
 
                     <ui:ListView.ItemsPanel>
                         <ItemsPanelTemplate>
@@ -624,7 +687,7 @@
                 </ui:ListView>
             </Border>
 
-            <StackPanel Grid.Column="2" Orientation="Horizontal"
+            <StackPanel x:Name="LatestActionsHeaderPanel" Grid.Column="2" Orientation="Horizontal"
             HorizontalAlignment="Right" VerticalAlignment="Top" 
             Margin="0,132,10,0" Height="14">
                 <ui:SymbolIcon Symbol="History24" FontSize="10" Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,5,0"/>
@@ -871,10 +934,6 @@
                                 <CheckBox x:Name="Snapshots" Content="Снапшоти" FontSize="10" Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,0,5" Click="Snapshots_Click" Background="{DynamicResource MainBackgroundBrushServer}"/>
                                 <CheckBox x:Name="Beta" Content="Бета" FontSize="10" Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,0,5" Click="Beta_Click" Background="{DynamicResource MainBackgroundBrushServer}"/>
                                 <CheckBox x:Name="Alpha" Content="Альфа" FontSize="10" Foreground="{DynamicResource MainForegroundBrush}" Click="Alpha_Click" Background="{DynamicResource MainBackgroundBrushServer}"/>
-                                <CheckBox x:Name="Infdev" Content="Infdev" FontSize="10" Foreground="{DynamicResource MainForegroundBrush}" Background="{DynamicResource MainBackgroundBrushServer}" Click="Infdev_Click" Visibility="Collapsed"/>
-                                <CheckBox x:Name="Indev" Content="Indev" FontSize="10" Foreground="{DynamicResource MainForegroundBrush}" Background="{DynamicResource MainBackgroundBrushServer}" Click="Indev_Click" Visibility="Collapsed"/>
-                                <CheckBox x:Name="Classic" Content="Classic" FontSize="10" Foreground="{DynamicResource MainForegroundBrush}" Background="{DynamicResource MainBackgroundBrushServer}" Click="Classic_Click" Visibility="Collapsed"/>
-                                <CheckBox x:Name="Pre_classic" Content="Pre-classic" FontSize="10" Foreground="{DynamicResource MainForegroundBrush}" Background="{DynamicResource MainBackgroundBrushServer}" Click="Pre_classic_Click" Visibility="Collapsed"/>
                             </StackPanel>
                         </Grid>
                     </Grid>
@@ -999,14 +1058,39 @@
 
 
                 <Grid Grid.Row="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
 
-                    <ui:ListView x:Name="ServerList" 
-                                 Background="Transparent" 
-                                 BorderThickness="0"
-                                 ScrollViewer.CanContentScroll="True"
-                                 VirtualizingPanel.IsVirtualizing="True"
-                                 Foreground="{DynamicResource MainForegroundBrush}"/>
+                    <ui:ListView x:Name="ServerList" Grid.Row="0"
+                 Background="Transparent" BorderThickness="0"
+                 ScrollViewer.CanContentScroll="False"
+                 Foreground="{DynamicResource MainForegroundBrush}"/>
+                    <StackPanel x:Name="PaginationPanel" Grid.Row="1" Orientation="Horizontal" 
+                HorizontalAlignment="Center" Margin="0,15,0,15" Visibility="Collapsed">
 
+                        <ui:Button x:Name="BtnPrevPage" Icon="{ui:SymbolIcon ChevronLeft24}" 
+                   Click="BtnPrevPage_Click" IsEnabled="False" 
+                   Width="40" Height="40" CornerRadius="8" 
+                   Background="#20FFFFFF" BorderBrush="Transparent" Foreground="White" Margin="0,0,15,0" Cursor="Hand"/>
+
+                        <TextBlock x:Name="TxtPageInfo" Text="Сторінка 1 з 1" 
+                   VerticalAlignment="Center" Foreground="{DynamicResource MainForegroundBrush}" 
+                   FontSize="16" FontFamily="Inter" FontWeight="SemiBold" Margin="0,0,15,0"/>
+
+                        <ui:Button x:Name="BtnNextPage" Icon="{ui:SymbolIcon ChevronRight24}" 
+                   Click="BtnNextPage_Click" IsEnabled="False" 
+                   Width="40" Height="40" CornerRadius="8" 
+                   Background="#20FFFFFF" BorderBrush="Transparent" Foreground="White" Cursor="Hand"/>
+                    </StackPanel>
+                    <StackPanel x:Name="ServerCardSkeletonTemplate" Visibility="Collapsed">
+                        <Control Template="{StaticResource ServerCardSkeletonTemplate}"/>
+                        <Control Template="{StaticResource ServerCardSkeletonTemplate}"/>
+                        <Control Template="{StaticResource ServerCardSkeletonTemplate}"/>
+                        <Control Template="{StaticResource ServerCardSkeletonTemplate}"/>
+                        <Control Template="{StaticResource ServerCardSkeletonTemplate}"/>
+                    </StackPanel>
                     <StackPanel x:Name="ServerSearchLoader" 
                                 VerticalAlignment="Center" 
                                 HorizontalAlignment="Center"
@@ -1024,6 +1108,7 @@
                                    Foreground="{DynamicResource MainForegroundBrush}"
                                    HorizontalAlignment="Center"
                                    TextAlignment="Center"/>
+
                     </StackPanel>
                 </Grid>
 
@@ -1133,33 +1218,41 @@
 
                         <Grid Grid.Row="2">
                             <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
 
-                            <ui:Button x:Name="PlayServer" Grid.Column="0" 
-                                       Height="50" CornerRadius="12"
-                                       Content="ГРАТИ НА СЕРВЕРІ" FontSize="16" FontWeight="Bold"
-                                       Icon="{ui:SymbolIcon Play24}" 
-                                       Appearance="Primary" Cursor="Hand" 
-                                       Click="PlayServer_Click" Margin="0,0,15,0" 
-                                       Background="{DynamicResource MainBackgroundButton}" BorderBrush="{x:Null}" Foreground="{DynamicResource MainForegroundBrush}"/>
+                            <ComboBox x:Name="VersionSelector" Grid.Column="0" 
+              Width="120" Height="50" Margin="0,0,15,0" 
+              FontSize="16" FontFamily="Inter" FontWeight="SemiBold"
+              Foreground="{DynamicResource MainForegroundBrush}"
+              Background="#20FFFFFF" BorderThickness="0"
+              Visibility="Collapsed" Cursor="Hand"/>
 
-                            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                            <ui:Button x:Name="PlayServer" Grid.Column="1" 
+               Height="50" CornerRadius="12" HorizontalAlignment="Stretch"
+               Content="ГРАТИ НА СЕРВЕРІ" FontSize="16" FontWeight="Bold"
+               Icon="{ui:SymbolIcon Play24}" 
+               Appearance="Primary" Cursor="Hand" 
+               Click="PlayServer_Click" Margin="0,0,15,0" 
+               Background="{DynamicResource MainBackgroundButton}" BorderBrush="{x:Null}" Foreground="{DynamicResource MainForegroundBrush}"/>
+
+                            <StackPanel Grid.Column="2" Orientation="Horizontal">
                                 <ui:Button x:Name="DiscordLink" Width="50" Height="50" Margin="0,0,10,0"
-                                           Icon="{ui:SymbolIcon Chat24}" ToolTip="Discord"
-                                           Appearance="Secondary" CornerRadius="12" Click="DiscordLink_Click" 
-                                           Background="{DynamicResource MainBackgroundButton}" BorderBrush="{x:Null}" Foreground="{DynamicResource MainForegroundBrush}" Cursor="Hand"/>
+                   Icon="{ui:SymbolIcon Chat24}" ToolTip="Discord"
+                   Appearance="Secondary" CornerRadius="12" Click="DiscordLink_Click" 
+                   Background="{DynamicResource MainBackgroundButton}" BorderBrush="{x:Null}" Foreground="{DynamicResource MainForegroundBrush}" Cursor="Hand"/>
 
                                 <ui:Button x:Name="SiteLink" Width="50" Height="50" Margin="0,0,10,0"
-                                           Icon="{ui:SymbolIcon Globe24}" ToolTip="Сайт"
-                                           Appearance="Secondary" CornerRadius="12" Click="SiteLink_Click" 
-                                           BorderBrush="{x:Null}" Background="{DynamicResource MainBackgroundButton}" Foreground="{DynamicResource MainForegroundBrush}" Cursor="Hand"/>
+                   Icon="{ui:SymbolIcon Globe24}" ToolTip="Сайт"
+                   Appearance="Secondary" CornerRadius="12" Click="SiteLink_Click" 
+                   BorderBrush="{x:Null}" Background="{DynamicResource MainBackgroundButton}" Foreground="{DynamicResource MainForegroundBrush}" Cursor="Hand"/>
 
                                 <ui:Button x:Name="DonateLink" Width="50" Height="50"
-                                           Icon="{ui:SymbolIcon Money24}" ToolTip="Донат"
-                                           Appearance="Secondary" CornerRadius="12" Click="DonateLink_Click" 
-                                           BorderBrush="{x:Null}" Background="{DynamicResource MainBackgroundButton}" Foreground="{DynamicResource MainForegroundBrush}" Cursor="Hand"/>
+                   Icon="{ui:SymbolIcon Money24}" ToolTip="Донат"
+                   Appearance="Secondary" CornerRadius="12" Click="DonateLink_Click" 
+                   BorderBrush="{x:Null}" Background="{DynamicResource MainBackgroundButton}" Foreground="{DynamicResource MainForegroundBrush}" Cursor="Hand"/>
                             </StackPanel>
                         </Grid>
                     </Grid>
@@ -1186,7 +1279,7 @@
                     <ColumnDefinition/>
                 </Grid.ColumnDefinitions>
 
-                <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Hidden" Margin="0,-45,15,0">
+                <ScrollViewer ScrollViewer.CanContentScroll="False" Grid.Column="0" VerticalScrollBarVisibility="Hidden" Margin="0,-45,15,0">
                     <StackPanel Orientation="Vertical">
 
                         <StackPanel.Resources>
@@ -1400,6 +1493,16 @@
                                 </ListView.ItemContainerStyle>
                             </ListView>
 
+                            <StackPanel x:Name="ModsSkeletonPanel" 
+                                VerticalAlignment="Top" 
+                                Visibility="Collapsed" 
+                                Margin="0,10,0,0">
+                                <Control Template="{StaticResource ModCardSkeletonTemplate}"/>
+                                <Control Template="{StaticResource ModCardSkeletonTemplate}"/>
+                                <Control Template="{StaticResource ModCardSkeletonTemplate}"/>
+                                <Control Template="{StaticResource ModCardSkeletonTemplate}"/>
+                                <Control Template="{StaticResource ModCardSkeletonTemplate}"/>
+                            </StackPanel>
                             <StackPanel x:Name="ModsSearchLoader" 
                                 VerticalAlignment="Center" 
                                 HorizontalAlignment="Center"
@@ -1410,7 +1513,7 @@
                         </Grid>
                     </Border>
 
-                    <StackPanel x:Name="PaginationPanel" Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,15,0,0">
+                    <StackPanel x:Name="ModsPaginationPanel" Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,15,0,0">
                         <ui:Button x:Name="PrevPageBtn" Icon="{ui:SymbolIcon ArrowLeft24}" Click="PrevPageBtn_Click" 
                            Appearance="Secondary" IsEnabled="False" Margin="0,0,15,0" 
                            Width="43" Height="40" CornerRadius="8" Content="" 
@@ -1722,8 +1825,7 @@
               Fill="{DynamicResource MainForegroundBrush}" Stretch="Uniform" Width="20" Height="20" Margin="0,0,15,0"
               Cursor="Hand" ToolTip="Скинути шлях" MouseDown="ResetPathMinecraftLauncher_MouseDown"/>
                     </Grid>
-
-                    <Border BorderThickness="1" CornerRadius="15" Background="{DynamicResource MainBackgroundBrushServer}" Padding="15" Margin="0,5">
+                    <Border x:Name="SettingsBackupBorder" BorderThickness="1" CornerRadius="15" Background="{DynamicResource MainBackgroundBrushServer}" Padding="15" Margin="0,5">
                         <StackPanel>
                             <Grid>
                                 <Grid.ColumnDefinitions>
@@ -1810,7 +1912,7 @@
               VerticalAlignment="Top" Margin="2,5,16,0"
               SelectionChanged="LanguageComboBox_SelectionChanged"
               Background="{DynamicResource MainBackgroundButton}"
-              Foreground="{DynamicResource MainForegroundBrush}" Cursor="Hand">
+              Foreground="{DynamicResource MainForegroundBrush}" Cursor="Hand" PreviewMouseDown="LanguageComboBox_PreviewMouseDown">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal" Margin="2">
@@ -1833,7 +1935,7 @@
                             </ComboBox.ItemTemplate>
                         </ComboBox>
                     </Grid>
-                    <Grid x:Name="_1AprilGird" Height="55" Visibility="Collapsed">
+                    <Grid Height="55" Margin="0,5">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition/>
                             <ColumnDefinition Width="Auto" MinWidth="63.2"/>
@@ -1841,15 +1943,14 @@
                         <Border Grid.ColumnSpan="2" BorderThickness="1" CornerRadius="15" Background="{DynamicResource MainBackgroundBrushServer}"/>
 
                         <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="15,0,0,0">
-                            <TextBlock x:Name="Loc_Settings_April" Text="Зупиніться!" Foreground="{DynamicResource MainForegroundBrush}" FontSize="20" FontFamily="Inter"/>
-                            <TextBlock x:Name="Loc_Settings_AprilDesc" Text="Замінює звук інтерфейсу на дещо більш легітимне. Працює лише на початку квітня." Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6" FontSize="12" FontFamily="Inter" Margin="0,2,0,0"/>
+                            <TextBlock x:Name="Loc_Settings_CrashReportTitle" Text="Звіти про помилки" Foreground="{DynamicResource MainForegroundBrush}" FontSize="20" FontFamily="Inter"/>
+                            <TextBlock x:Name="Loc_Settings_CrashReportDesc" Text="Анонімне відправлення даних про критичні збої розробнику для їх виправлення" Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6" FontSize="12" FontFamily="Inter" Margin="0,2,0,0"/>
                         </StackPanel>
 
-                        <ui:ToggleSwitch Grid.Column="1" x:Name="MemToggle" 
-                            VerticalAlignment="Center" Margin="0,0,20,0"
-                            Click="MemToggle_Click" Height="30" Cursor="Hand" />
+                        <ui:ToggleSwitch Grid.Column="1" x:Name="ToggleCrashReports" 
+                                         VerticalAlignment="Center" Margin="0,0,20,0"
+                                         Click="ToggleCrashReports_Click" Height="30" Cursor="Hand" />
                     </Grid>
-
                     <Grid Height="55" Margin="0,5">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition/>
@@ -1898,6 +1999,218 @@
                          VerticalAlignment="Center" Margin="0,0,20,0"
                          Click="DisableGlassEffectToggle_MouseDown" Height="30" IsChecked="True" Cursor="Hand" />
                     </Grid>
+                    <Border x:Name="ModulesBorder" 
+                            BorderThickness="1" CornerRadius="15" 
+                            Background="{DynamicResource MainBackgroundBrushServer}" 
+                            Padding="15" Margin="0,5"
+                            HorizontalAlignment="Stretch" VerticalAlignment="Top">
+                        <StackPanel>
+
+                            <StackPanel Margin="0,0,0,15">
+                                <TextBlock x:Name="Loc_Settings_ModulesTitle" Text="Модульність (Кастомізація)" Foreground="{DynamicResource MainForegroundBrush}" FontSize="24" FontWeight="Bold" FontFamily="Inter" TextWrapping="Wrap"/>
+                                <TextBlock x:Name="Loc_Settings_ModulesDesc" Text="Оберіть готовий шаблон або вимкніть непотрібні функції власноруч:" Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6" FontSize="12" FontFamily="Inter" Margin="0,2,0,0" TextWrapping="Wrap"/>
+                            </StackPanel>
+
+                            <Grid Margin="0,0,0,15">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <ui:Button Grid.Column="0" x:Name="Loc_Settings_PresetLiteBtn" Content="Мінімалізм" HorizontalAlignment="Stretch" Margin="0,0,5,0" Height="40"
+                                           Appearance="Secondary" Background="{DynamicResource MainBackgroundButton}" Foreground="{DynamicResource MainForegroundBrush}" 
+                                           Click="PresetLiteBtn_Click" Cursor="Hand" ToolTip="Вимкнути все зайве"/>
+
+                                <ui:Button Grid.Column="1" x:Name="Loc_Settings_PresetBalanceBtn" Content="Баланс" HorizontalAlignment="Stretch" Margin="5,0,5,0" Height="40"
+                                           Appearance="Secondary" Background="{DynamicResource MainBackgroundButton}" Foreground="{DynamicResource MainForegroundBrush}" 
+                                           Click="PresetBalanceBtn_Click" Cursor="Hand" ToolTip="Оптимальний набір функцій"/>
+
+                                <ui:Button Grid.Column="2" x:Name="Loc_Settings_PresetUltraBtn" Content="Ультра" HorizontalAlignment="Stretch" Margin="5,0,0,0" Height="40"
+                                           Appearance="Secondary" Background="{DynamicResource MainBackgroundButton}" Foreground="{DynamicResource MainForegroundBrush}" BorderBrush="{x:Null}"
+                                           Click="PresetUltraBtn_Click" Cursor="Hand" ToolTip="Увімкнути всі можливості (Комбайн)"/>
+                            </Grid>
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition/>
+                                    <ColumnDefinition Width="Auto" MinWidth="57.2"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <StackPanel Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,15,0" Height="36">
+                                    <TextBlock x:Name="Loc_Settings_ModModpacksTitle" Text="Вкладка «Збірки»" Foreground="{DynamicResource MainForegroundBrush}" FontSize="16" FontFamily="Inter"/>
+                                    <TextBlock x:Name="Loc_Settings_ModModpacksDesc" Text="Відображає розділ створення та гри з модовими збірками" Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6" FontSize="12" FontFamily="Inter" Margin="0,2,0,0"/>
+                                </StackPanel>
+                                <ui:ToggleSwitch Grid.Row="0" Grid.Column="1" x:Name="ToggleMod_Modpacks" VerticalAlignment="Center" Margin="5,0,5,0" Height="30" Cursor="Hand" IsChecked="True" Click="ModuleToggle_Click"/>
+
+                                <StackPanel Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,15,0" Height="35">
+                                    <TextBlock x:Name="Loc_Settings_ModModsTitle" Text="Вкладка «Моди»" Foreground="{DynamicResource MainForegroundBrush}" FontSize="16" FontFamily="Inter"/>
+                                    <TextBlock x:Name="Loc_Settings_ModModsDesc" Text="Вбудований завантажувач модифікацій, ресурспаків та шейдерів" Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6" FontSize="12" FontFamily="Inter" Margin="0,2,0,0"/>
+                                </StackPanel>
+                                <ui:ToggleSwitch Grid.Row="1" Grid.Column="1" x:Name="ToggleMod_Mods" VerticalAlignment="Center" Margin="5,0,5,0" Height="30" Cursor="Hand" IsChecked="True" Click="ModuleToggle_Click"/>
+
+                                <StackPanel Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,15,0" Height="36">
+                                    <TextBlock x:Name="Loc_Settings_ModServersTitle" Text="Вкладка «Сервери»" Foreground="{DynamicResource MainForegroundBrush}" FontSize="16" FontFamily="Inter"/>
+                                    <TextBlock x:Name="Loc_Settings_ModServersDesc" Text="Загальний моніторинг серверів (Плашка партнерів не вимикається)" Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6" FontSize="12" FontFamily="Inter" Margin="0,2,0,0"/>
+                                </StackPanel>
+                                <ui:ToggleSwitch Grid.Row="2" Grid.Column="1" x:Name="ToggleMod_Servers" VerticalAlignment="Center" Margin="5,0,5,0" Height="30" Cursor="Hand" IsChecked="True" Click="ModuleToggle_Click"/>
+
+                                <StackPanel Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,15,0" Height="35">
+                                    <TextBlock x:Name="Loc_Settings_ModGalleryTitle" Text="Вкладка «Галерея»" Foreground="{DynamicResource MainForegroundBrush}" FontSize="16" FontFamily="Inter"/>
+                                    <TextBlock x:Name="Loc_Settings_ModGalleryDesc" Text="Перегляд та управління скріншотами з гри" Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6" FontSize="12" FontFamily="Inter" Margin="0,2,0,0"/>
+                                </StackPanel>
+                                <ui:ToggleSwitch Grid.Row="3" Grid.Column="1" x:Name="ToggleMod_Gallery" VerticalAlignment="Center" Margin="5,0,5,0" Height="30" Cursor="Hand" IsChecked="True" Click="ModuleToggle_Click"/>
+
+                                <StackPanel Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,15,0" Height="36">
+                                    <TextBlock x:Name="Loc_Settings_ModAITitle" Text="ШІ-Асистент (Agent C.L.)" Foreground="{DynamicResource MainForegroundBrush}" FontSize="16" FontFamily="Inter"/>
+                                    <TextBlock x:Name="Loc_Settings_ModAIDesc" Text="Розумний аналіз помилок у вікні логів гри" Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6" FontSize="12" FontFamily="Inter" Margin="0,2,0,0"/>
+                                </StackPanel>
+                                <ui:ToggleSwitch Grid.Row="4" Grid.Column="1" x:Name="ToggleMod_AI" VerticalAlignment="Center" Margin="5,0,5,0" Height="30" Cursor="Hand" IsChecked="True" Click="ModuleToggle_Click"/>
+
+                                <StackPanel Grid.Row="5" Grid.Column="0" VerticalAlignment="Center" Margin="0,5,15,5">
+                                    <TextBlock x:Name="Loc_Settings_ModFilesTitle" Text="Кнопка «Файли та Бекапи»" Foreground="{DynamicResource MainForegroundBrush}" FontSize="16" FontFamily="Inter"/>
+                                    <TextBlock x:Name="Loc_Settings_ModFilesDesc" Text="Швидкий доступ до папок та управління архівами світів" Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6" FontSize="12" FontFamily="Inter" Margin="0,2,0,0"/>
+                                </StackPanel>
+
+                                <StackPanel Grid.Row="6" Grid.ColumnSpan="2" Margin="30,0,0,5" IsEnabled="{Binding IsChecked, ElementName=ToggleMod_Files}">
+                                    <StackPanel.Style>
+                                        <Style TargetType="{x:Type StackPanel}">
+                                            <Style.Triggers>
+                                                <Trigger Property="IsEnabled" Value="False">
+                                                    <Setter Property="Opacity" Value="0.4"/>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </StackPanel.Style>
+
+                                    <Grid Height="30" Margin="0,2">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition/>
+                                            <ColumnDefinition Width="Auto" MinWidth="57.2"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" x:Name="Loc_Settings_SubFilesMods" Text="↳ Показувати функцію «Відкрити папку...»" Foreground="{DynamicResource MainForegroundBrush}" FontSize="14" FontFamily="Inter" VerticalAlignment="Center" Opacity="0.8" Height="16"/>
+                                        <ui:ToggleSwitch Grid.Column="1" x:Name="ToggleSub_FilesMods" VerticalAlignment="Center" Margin="5,0,5,0" Height="30" Cursor="Hand" IsChecked="True" Click="ModuleToggle_Click"/>
+                                    </Grid>
+
+                                    <Grid Height="30" Margin="0,2">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition/>
+                                            <ColumnDefinition Width="Auto" MinWidth="57.2"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" x:Name="Loc_Settings_SubFilesBackups" Text="↳ Показувати функцію «Менеджер світів (Backups)»" Foreground="{DynamicResource MainForegroundBrush}" FontSize="14" FontFamily="Inter" VerticalAlignment="Center" Opacity="0.8" Height="16"/>
+                                        <ui:ToggleSwitch Grid.Column="1" x:Name="ToggleSub_FilesBackups" VerticalAlignment="Center" Margin="5,0,5,0" Height="30" Cursor="Hand" IsChecked="True" Click="ModuleToggle_Click"/>
+                                    </Grid>
+                                </StackPanel>
+
+                                <StackPanel Grid.Row="7" Grid.Column="0" VerticalAlignment="Center" Margin="0,10,15,5">
+                                    <TextBlock x:Name="Loc_Settings_ModInfoTitle" Text="Кнопка «Інформація»" Foreground="{DynamicResource MainForegroundBrush}" FontSize="16" FontFamily="Inter"/>
+                                    <TextBlock x:Name="Loc_Settings_ModInfoDesc" Text="Меню з посиланнями на новини, Wiki, GitHub та подяки" Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6" FontSize="12" FontFamily="Inter" Margin="0,2,0,0"/>
+                                </StackPanel>
+
+                                <StackPanel Grid.Row="8" Grid.ColumnSpan="2" Margin="30,0,0,10" IsEnabled="{Binding IsChecked, ElementName=ToggleMod_Info}">
+                                    <StackPanel.Style>
+                                        <Style TargetType="{x:Type StackPanel}">
+                                            <Style.Triggers>
+                                                <Trigger Property="IsEnabled" Value="False">
+                                                    <Setter Property="Opacity" Value="0.4"/>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </StackPanel.Style>
+
+                                    <Grid Height="30" Margin="0,2">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto" MinWidth="63.2"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" x:Name="Loc_Settings_SubInfoBug" Text="↳ Показувати «Повідомити про баг»" Foreground="{DynamicResource MainForegroundBrush}" FontSize="14" FontFamily="Inter" VerticalAlignment="Center" Opacity="0.8"/>
+                                        <ui:ToggleSwitch Grid.Column="1" x:Name="ToggleSub_InfoBug" VerticalAlignment="Center" Margin="5,0" Height="24" Cursor="Hand" IsChecked="True" Click="ModuleToggle_Click"/>
+                                    </Grid>
+
+                                    <Grid Height="30" Margin="0,2">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto" MinWidth="63.2"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" x:Name="Loc_Settings_SubInfoNews" Text="↳ Показувати «Новини запускача»" Foreground="{DynamicResource MainForegroundBrush}" FontSize="14" FontFamily="Inter" VerticalAlignment="Center" Opacity="0.8"/>
+                                        <ui:ToggleSwitch Grid.Column="1" x:Name="ToggleSub_InfoNews" VerticalAlignment="Center" Margin="5,0" Height="24" Cursor="Hand" IsChecked="True" Click="ModuleToggle_Click"/>
+                                    </Grid>
+
+                                    <Grid Height="30" Margin="0,2">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto" MinWidth="63.2"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" x:Name="Loc_Settings_SubInfoWiki" Text="↳ Показувати «Документація (Wiki)»" Foreground="{DynamicResource MainForegroundBrush}" FontSize="14" FontFamily="Inter" VerticalAlignment="Center" Opacity="0.8"/>
+                                        <ui:ToggleSwitch Grid.Column="1" x:Name="ToggleSub_InfoWiki" VerticalAlignment="Center" Margin="5,0" Height="24" Cursor="Hand" IsChecked="True" Click="ModuleToggle_Click"/>
+                                    </Grid>
+
+                                    <Grid Height="30" Margin="0,2">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto" MinWidth="63.2"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" x:Name="Loc_Settings_SubInfoGithub" Text="↳ Показувати «GitHub (Код)»" Foreground="{DynamicResource MainForegroundBrush}" FontSize="14" FontFamily="Inter" VerticalAlignment="Center" Opacity="0.8"/>
+                                        <ui:ToggleSwitch Grid.Column="1" x:Name="ToggleSub_InfoGithub" VerticalAlignment="Center" Margin="5,0" Height="24" Cursor="Hand" IsChecked="True" Click="ModuleToggle_Click"/>
+                                    </Grid>
+
+                                    <Grid Height="30" Margin="0,2">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto" MinWidth="63.2"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" x:Name="Loc_Settings_SubInfoCredits" Text="↳ Показувати «Подяки (Автори та Перекладачі)»" Foreground="{DynamicResource MainForegroundBrush}" FontSize="14" FontFamily="Inter" VerticalAlignment="Center" Opacity="0.8"/>
+                                        <ui:ToggleSwitch Grid.Column="1" x:Name="ToggleSub_InfoCredits" VerticalAlignment="Center" Margin="5,0" Height="24" Cursor="Hand" IsChecked="True" Click="ModuleToggle_Click"/>
+                                    </Grid>
+
+                                    <Grid Height="30" Margin="0,2">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto" MinWidth="63.2"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" x:Name="Loc_Settings_SubInfoSupport" Text="↳ Показувати кнопки підтримки та донатів" Foreground="{DynamicResource MainForegroundBrush}" FontSize="14" FontFamily="Inter" VerticalAlignment="Center" Opacity="0.8"/>
+                                        <ui:ToggleSwitch Grid.Column="1" x:Name="ToggleSub_InfoSupport" VerticalAlignment="Center" Margin="5,0" Height="24" Cursor="Hand" IsChecked="True" Click="ModuleToggle_Click"/>
+                                    </Grid>
+                                </StackPanel>
+                                <StackPanel Grid.Row="9" Grid.Column="0" VerticalAlignment="Center" Margin="0,10,15,5">
+                                    <TextBlock x:Name="Loc_Settings_ModChangelogTitle" Text="Блок «Що нового? (Changelog)»" Foreground="{DynamicResource MainForegroundBrush}" FontSize="16" FontFamily="Inter"/>
+                                    <TextBlock x:Name="Loc_Settings_ModChangelogDesc" Text="Відображає список змін оновлень гри на головному екрані" Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6" FontSize="12" FontFamily="Inter" Margin="0,2,0,0"/>
+                                </StackPanel>
+                                <ui:ToggleSwitch Grid.Row="9" Grid.Column="1" x:Name="ToggleMod_Changelog" VerticalAlignment="Center" Margin="5,4" Height="30" Cursor="Hand" IsChecked="True" Click="ModuleToggle_Click"/>
+
+                                <StackPanel Grid.Row="10" Grid.Column="0" VerticalAlignment="Center" Margin="0,5,15,5">
+                                    <TextBlock x:Name="Loc_Settings_ModActionsTitle" Text="Блок «Останні дії»" Foreground="{DynamicResource MainForegroundBrush}" FontSize="16" FontFamily="Inter"/>
+                                    <TextBlock x:Name="Loc_Settings_ModActionsDesc" Text="Відображає історію запусків та дій на головному екрані" Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6" FontSize="12" FontFamily="Inter" Margin="0,2,0,0"/>
+                                </StackPanel>
+                                <ui:ToggleSwitch Grid.Row="10" Grid.Column="1" x:Name="ToggleMod_Actions" VerticalAlignment="Center" Margin="5,4" Height="30" Cursor="Hand" IsChecked="True" Click="ModuleToggle_Click"/>
+                                <StackPanel Grid.Row="11" Grid.Column="0" VerticalAlignment="Center" Margin="0,5,15,5">
+                                    <TextBlock x:Name="Loc_Settings_ModDiscordTitle" Text="Discord RPC (Ігрова активність)" Foreground="{DynamicResource MainForegroundBrush}" FontSize="16" FontFamily="Inter"/>
+                                    <TextBlock x:Name="Loc_Settings_ModDiscordDesc" Text="Відображає ваш статус та ігрову активність у профілі Discord" Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6" FontSize="12" FontFamily="Inter" Margin="0,2,0,0"/>
+                                </StackPanel>
+                                <ui:ToggleSwitch Grid.Row="11" Grid.Column="1" x:Name="ToggleMod_Discord" VerticalAlignment="Center" Margin="5,4" Height="30" Cursor="Hand" IsChecked="True" Click="ModuleToggle_Click"/>
+
+                                <StackPanel Grid.Row="12" Grid.Column="0" VerticalAlignment="Center" Margin="0,5,15,5">
+                                    <TextBlock x:Name="Loc_Settings_ModStatsTitle" Text="Функція Статистики" Foreground="{DynamicResource MainForegroundBrush}" FontSize="16" FontFamily="Inter"/>
+                                    <TextBlock x:Name="Loc_Settings_ModStatsDesc" Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6" FontSize="12" FontFamily="Inter" Margin="0,2,0,0"/>
+                                </StackPanel>
+                                <ui:ToggleSwitch Grid.Row="12" Grid.Column="1" x:Name="ToggleMod_Stats" VerticalAlignment="Center" Margin="5,4" Height="30" Cursor="Hand" IsChecked="True" Click="ModuleToggle_Click"/>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
                     <Border x:Name="ThemBorder" 
         BorderThickness="1" CornerRadius="15" 
         Background="{DynamicResource MainBackgroundBrushServer}" 
@@ -1920,7 +2233,7 @@
                       VerticalAlignment="Top"
                       SelectionChanged="ThemeComboBox_SelectionChanged"
                       Background="{DynamicResource MainBackgroundButton}"
-                      Foreground="{DynamicResource MainForegroundBrush}" Cursor="Hand">
+                      Foreground="{DynamicResource MainForegroundBrush}" Cursor="Hand" PreviewMouseDown="ThemeComboBox_PreviewMouseDown">
                                     <ComboBoxItem x:Name="Loc_ThemeDark" Content="Темна" Tag="Dark" />
                                     <ComboBoxItem x:Name="Loc_ThemeLight" Content="Світла" Tag="Light" />
                                     <ComboBoxItem x:Name="Loc_ThemeCustom" Content="Кастомна" Tag="Custom" />
@@ -2315,12 +2628,12 @@
                         <TextBlock x:Name="Loc_TxtGalleryEmptyDesc" Text="Зробіть скріншот у грі (F2), щоб він з'явився тут" FontSize="14" Opacity="0.7" HorizontalAlignment="Center" Foreground="{DynamicResource MainForegroundBrush}"/>
                     </StackPanel>
 
-                    <Border x:Name="ActionPanel" Visibility="Hidden"
+                    <Border x:Name="ActionPanel"
                     VerticalAlignment="Bottom" HorizontalAlignment="Center"
                     Margin="0,0,0,30" Padding="20,10"
                     Background="{DynamicResource MainBackgroundBrushServer}"
                     BorderBrush="#33FFFFFF" BorderThickness="1"
-                    CornerRadius="16">
+                    CornerRadius="16" Visibility="Collapsed">
 
                         <Border.Effect>
                             <DropShadowEffect BlurRadius="30" ShadowDepth="10" Opacity="0.4"/>
@@ -2363,105 +2676,95 @@
             <Grid x:Name="SelectGirdPage" Grid.Row="0" Grid.Column="1" VerticalAlignment="Top" Margin="0,35,0,0">
 
                 <Border x:Name="SelectPanel" 
-            Height="45"
-            BorderThickness="1" 
-            CornerRadius="16" 
-            BorderBrush="#33FFFFFF" 
-            Background="{DynamicResource GlassTintBrush}">
+                        Height="45"
+                        HorizontalAlignment="Center" 
+                        BorderThickness="1" 
+                        CornerRadius="16" 
+                        BorderBrush="#33FFFFFF" 
+                        Background="{DynamicResource GlassTintBrush}">
                     <Grid x:Name="SelectPanelGrid">
+
                         <Grid.OpacityMask>
-                            <VisualBrush>
+                            <VisualBrush Stretch="Fill">
                                 <VisualBrush.Visual>
                                     <Border Background="Black" CornerRadius="16"
-                                Width="{Binding ActualWidth, ElementName=SelectPanelGrid}"
-                                Height="{Binding ActualHeight, ElementName=SelectPanelGrid}"/>
+                                            Width="{Binding ActualWidth, ElementName=SelectPanelGrid}"
+                                            Height="{Binding ActualHeight, ElementName=SelectPanelGrid}"/>
                                 </VisualBrush.Visual>
                             </VisualBrush>
                         </Grid.OpacityMask>
+
                         <Border Visibility="{DynamicResource GlassVisibility}">
                             <Border.Background>
-                                <VisualBrush Visual="{Binding ElementName=MainBackgroundContainer}" Stretch="None" AlignmentX="Left" AlignmentY="Top"/>
+                                <VisualBrush Visual="{Binding ElementName=MainBackgroundContainer}" Stretch="None" AlignmentX="Center" AlignmentY="Top"/>
                             </Border.Background>
                             <Border.Effect>
                                 <BlurEffect Radius="{DynamicResource GlassBlurRadius}"/>
                             </Border.Effect>
                         </Border>
+
                         <Border Background="{DynamicResource GlassTintBrush}" CornerRadius="16"/>
+
+                        <Border x:Name="PanelSelectNow"
+                                BorderThickness="1"
+                                CornerRadius="11"
+                                Background="{DynamicResource MainBackgroundBrushServer}"
+                                Height="40" Width="90" 
+                                HorizontalAlignment="Left" VerticalAlignment="Center">
+                            <Border.RenderTransform>
+                                <TranslateTransform x:Name="PanelTranslateTransform" />
+                            </Border.RenderTransform>
+                        </Border>
+
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="5,0">
+
+                            <Border x:Name="PlayBtnBorder" CornerRadius="11" Margin="0,0,5,0" Padding="12,0"
+                                    Background="Transparent" Cursor="Hand" MouseDown="PlayTXTPanelSelect_MouseDown" ToolTip="Головна сторінка" 
+                                    MouseEnter="MenuButton_MouseEnter" MouseLeave="MenuButton_MouseLeave">
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <Path Data="M10,20V14H14V20H19V12H22L12,3L2,12H5V20H10Z" Fill="{DynamicResource MainForegroundBrush}" Stretch="Uniform" Height="16" Width="16" Margin="0,0,8,0"/>
+                                    <TextBlock x:Name="Loc_MenuBtnMain" Text="Головна" FontFamily="Inter" FontSize="14" FontWeight="Medium" Foreground="{DynamicResource MainForegroundBrush}" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+
+                            <Border x:Name="ModpacksBtnBorder" CornerRadius="11" Margin="0,0,5,0" Padding="12,0"
+                                    Background="Transparent" Cursor="Hand" MouseDown="modbuilds_MouseDown" ToolTip="Створити або імпортувати збірку"
+                                    MouseEnter="MenuButton_MouseEnter" MouseLeave="MenuButton_MouseLeave">
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <Path Data="M21,16.5C21,16.88 20.79,17.21 20.47,17.38L12.57,21.82C12.41,21.94 12.21,22 12,22C11.79,22 11.59,21.94 11.43,21.82L3.53,17.38C3.21,17.21 3,16.88 3,16.5V7.5C3,7.12 3.21,6.79 3.53,6.62L11.43,2.18C11.59,2.06 11.79,2 12,2C12.21,2 12.41,2.06 12.57,2.18L20.47,6.62C20.79,6.79 21,7.12 21,7.5V16.5M12,4.15L6.04,7.5L12,10.85L17.96,7.5L12,4.15M5,15.91L11,19.29V12.58L5,9.21V15.91M19,15.91V9.21L13,12.58V19.29L19,15.91Z" Fill="{DynamicResource MainForegroundBrush}" Stretch="Uniform" Height="15" Width="15" Margin="0,0,8,0"/>
+                                    <TextBlock x:Name="Loc_MenuBtnModpacks" Text="Збірки" FontFamily="Inter" FontSize="14" FontWeight="Medium" Foreground="{DynamicResource MainForegroundBrush}" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+
+                            <Border x:Name="ModsBtnBorder" CornerRadius="11" Margin="0,0,5,0" Padding="12,0"
+                                    Background="Transparent" Cursor="Hand" MouseDown="ModsTXTPanelSelect_MouseDown" ToolTip="Завантаження модів"
+                                    MouseEnter="MenuButton_MouseEnter" MouseLeave="MenuButton_MouseLeave">
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <Path Data="M20.5,11H19V7C19,5.89 18.1,5 17,5H13V3.5A2.5,2.5 0 0,0 10.5,1A2.5,2.5 0 0,0 8,3.5V5H4A2,2 0 0,0 2,7V11H3.5A2.5,2.5 0 0,1 6,13.5A2.5,2.5 0 0,1 3.5,16H2V20A2,2 0 0,0 4,22H8V20.5A2.5,2.5 0 0,1 10.5,18A2.5,2.5 0 0,1 13,20.5V22H17A2,2 0 0,0 19,20V16H20.5A2.5,2.5 0 0,0 23,13.5A2.5,2.5 0 0,0 20.5,11M10.5,3A1,1 0 0,1 11.5,4A1,1 0 0,1 10.5,5A1,1 0 0,1 9.5,4A1,1 0 0,1 10.5,3M13,19.5A1,1 0 0,0 12,20.5A1,1 0 0,0 13,21.5A1,1 0 0,0 14,20.5A1,1 0 0,0 13,19.5M5,13.5A1,1 0 0,0 4,14.5A1,1 0 0,0 5,15.5A1,1 0 0,0 6,14.5A1,1 0 0,0 5,13.5M20.5,15A1,1 0 0,1 19.5,14A1,1 0 0,1 20.5,13A1,1 0 0,1 21.5,14A1,1 0 0,1 20.5,15Z" Fill="{DynamicResource MainForegroundBrush}" Stretch="Uniform" Height="16" Width="16" Margin="0,0,8,0"/>
+                                    <TextBlock x:Name="Loc_MenuBtnMods" Text="Моди" FontFamily="Inter" FontSize="14" FontWeight="Medium" Foreground="{DynamicResource MainForegroundBrush}" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+
+                            <Border x:Name="ServersBtnBorder" CornerRadius="11" Margin="0,0,5,0" Padding="12,0"
+                                    Background="Transparent" Cursor="Hand" MouseDown="ServerTXTPanelSelect_MouseDown" ToolTip="Список серверів"
+                                    MouseEnter="MenuButton_MouseEnter" MouseLeave="MenuButton_MouseLeave">
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <Path Data="M17.9,17.39C17.64,16.59 16.89,16 16,16H15V13A1,1 0 0,0 14,12H8V10H10A1,1 0 0,0 11,9V7H13A2,2 0 0,0 15,5V4.59C17.93,5.77 20,8.64 20,12C20,14.08 19.2,15.97 17.9,17.39M11,19.93C7.05,19.44 4,16.08 4,12C4,11.38 4.08,10.78 4.21,10.21L9,15V16A2,2 0 0,0 11,18M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z" Fill="{DynamicResource MainForegroundBrush}" Stretch="Uniform" Height="16" Width="16" Margin="0,0,8,0"/>
+                                    <TextBlock x:Name="Loc_MenuBtnServers" Text="Сервери" FontFamily="Inter" FontSize="14" FontWeight="Medium" Foreground="{DynamicResource MainForegroundBrush}" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+
+                            <Border x:Name="GalleryBtnBorder" CornerRadius="11" Margin="0" Padding="12,0"
+                                    Background="Transparent" Cursor="Hand" MouseDown="PhotoMinecraftTXT_MouseDown" ToolTip="Скріншоти"
+                                    MouseEnter="MenuButton_MouseEnter" MouseLeave="MenuButton_MouseLeave">
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <Path Data="M8.5,13.5L11,16.5L14.5,12L19,18H5M21,19V5C21,3.89 20.1,3 19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19Z" Fill="{DynamicResource MainForegroundBrush}" Stretch="Uniform" Height="16" Width="16" Margin="0,0,8,0"/>
+                                    <TextBlock x:Name="Loc_MenuBtnGallery" Text="Галерея" FontFamily="Inter" FontSize="14" FontWeight="Medium" Foreground="{DynamicResource MainForegroundBrush}" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
                     </Grid>
                 </Border>
-
-                <Border x:Name="PanelSelectNow"
-            BorderThickness="1"
-            CornerRadius="11"
-            Background="{DynamicResource MainBackgroundBrushServer}"
-            Height="40"
-            Width="85" 
-            HorizontalAlignment="Left"
-            VerticalAlignment="Center" Margin="5,0,0,0">
-                    <Border.RenderTransform>
-                        <TranslateTransform x:Name="PanelTranslateTransform" />
-                    </Border.RenderTransform>
-                </Border>
-
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
-
-                    <Border x:Name="PlayBtnBorder" Width="90" Height="40" CornerRadius="11" Margin="0,0,5,0"
-                Background="Transparent" Cursor="Hand"
-                MouseDown="PlayTXTPanelSelect_MouseDown"
-                ToolTip="Головна сторінка">
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <Path Data="M10,20V14H14V20H19V12H22L12,3L2,12H5V20H10Z" 
-                      Fill="{DynamicResource MainForegroundBrush}" Stretch="Uniform" Height="16" Width="16" Margin="0,0,8,0"/>
-                            <TextBlock x:Name="Loc_MenuBtnMain" Text="Головна" FontFamily="Inter" FontSize="14" FontWeight="Medium" Foreground="{DynamicResource MainForegroundBrush}" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </Border>
-
-                    <Border x:Name="ModpacksBtnBorder" Width="90" Height="40" CornerRadius="11" Margin="0,0,5,0"
-                Background="Transparent" Cursor="Hand"
-                MouseDown="modbuilds_MouseDown"
-                ToolTip="Створити або імпортувати збірку">
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <Path Data="M21,16.5C21,16.88 20.79,17.21 20.47,17.38L12.57,21.82C12.41,21.94 12.21,22 12,22C11.79,22 11.59,21.94 11.43,21.82L3.53,17.38C3.21,17.21 3,16.88 3,16.5V7.5C3,7.12 3.21,6.79 3.53,6.62L11.43,2.18C11.59,2.06 11.79,2 12,2C12.21,2 12.41,2.06 12.57,2.18L20.47,6.62C20.79,6.79 21,7.12 21,7.5V16.5M12,4.15L6.04,7.5L12,10.85L17.96,7.5L12,4.15M5,15.91L11,19.29V12.58L5,9.21V15.91M19,15.91V9.21L13,12.58V19.29L19,15.91Z" 
-                      Fill="{DynamicResource MainForegroundBrush}" Stretch="Uniform" Height="15" Width="15" Margin="0,0,8,0"/>
-                            <TextBlock x:Name="Loc_MenuBtnModpacks" Text="Збірки" FontFamily="Inter" FontSize="14" FontWeight="Medium" Foreground="{DynamicResource MainForegroundBrush}" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </Border>
-
-                    <Border x:Name="ModsBtnBorder" Width="90" Height="40" CornerRadius="11" Margin="0,0,5,0"
-                Background="Transparent" Cursor="Hand"
-                MouseDown="ModsTXTPanelSelect_MouseDown"
-                ToolTip="Завантаження модів">
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <Path Data="M20.5,11H19V7C19,5.89 18.1,5 17,5H13V3.5A2.5,2.5 0 0,0 10.5,1A2.5,2.5 0 0,0 8,3.5V5H4A2,2 0 0,0 2,7V11H3.5A2.5,2.5 0 0,1 6,13.5A2.5,2.5 0 0,1 3.5,16H2V20A2,2 0 0,0 4,22H8V20.5A2.5,2.5 0 0,1 10.5,18A2.5,2.5 0 0,1 13,20.5V22H17A2,2 0 0,0 19,20V16H20.5A2.5,2.5 0 0,0 23,13.5A2.5,2.5 0 0,0 20.5,11M10.5,3A1,1 0 0,1 11.5,4A1,1 0 0,1 10.5,5A1,1 0 0,1 9.5,4A1,1 0 0,1 10.5,3M13,19.5A1,1 0 0,0 12,20.5A1,1 0 0,0 13,21.5A1,1 0 0,0 14,20.5A1,1 0 0,0 13,19.5M5,13.5A1,1 0 0,0 4,14.5A1,1 0 0,0 5,15.5A1,1 0 0,0 6,14.5A1,1 0 0,0 5,13.5M20.5,15A1,1 0 0,1 19.5,14A1,1 0 0,1 20.5,13A1,1 0 0,1 21.5,14A1,1 0 0,1 20.5,15Z" 
-                      Fill="{DynamicResource MainForegroundBrush}" Stretch="Uniform" Height="16" Width="16" Margin="0,0,8,0"/>
-                            <TextBlock x:Name="Loc_MenuBtnMods" Text="Моди" FontFamily="Inter" FontSize="14" FontWeight="Medium" Foreground="{DynamicResource MainForegroundBrush}" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </Border>
-
-                    <Border x:Name="ServersBtnBorder" Width="95" Height="40" CornerRadius="11" Margin="0,0,5,0"
-                Background="Transparent" Cursor="Hand"
-                MouseDown="ServerTXTPanelSelect_MouseDown"
-                ToolTip="Список серверів">
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <Path Data="M17.9,17.39C17.64,16.59 16.89,16 16,16H15V13A1,1 0 0,0 14,12H8V10H10A1,1 0 0,0 11,9V7H13A2,2 0 0,0 15,5V4.59C17.93,5.77 20,8.64 20,12C20,14.08 19.2,15.97 17.9,17.39M11,19.93C7.05,19.44 4,16.08 4,12C4,11.38 4.08,10.78 4.21,10.21L9,15V16A2,2 0 0,0 11,18M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z" 
-                      Fill="{DynamicResource MainForegroundBrush}" Stretch="Uniform" Height="16" Width="16" Margin="0,0,8,0"/>
-                            <TextBlock x:Name="Loc_MenuBtnServers" Text="Сервери" FontFamily="Inter" FontSize="14" FontWeight="Medium" Foreground="{DynamicResource MainForegroundBrush}" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </Border>
-
-                    <Border x:Name="GalleryBtnBorder" Width="95" Height="40" CornerRadius="11"
-                Background="Transparent" Cursor="Hand"
-                MouseDown="PhotoMinecraftTXT_MouseDown"
-                ToolTip="Скріншоти">
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <Path Data="M8.5,13.5L11,16.5L14.5,12L19,18H5M21,19V5C21,3.89 20.1,3 19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19Z" 
-                      Fill="{DynamicResource MainForegroundBrush}" Stretch="Uniform" Height="16" Width="16" Margin="0,0,8,0"/>
-                            <TextBlock x:Name="Loc_MenuBtnGallery" Text="Галерея" FontFamily="Inter" FontSize="14" FontWeight="Medium" Foreground="{DynamicResource MainForegroundBrush}" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </Border>
-
-                </StackPanel>
-
                 <Border x:Name="FonBackIconServerList" BorderThickness="1" CornerRadius="16" Background="{DynamicResource MainBackgroundBrushServer}" Width="40" Height="40" HorizontalAlignment="Left" Margin="-50,0,0,0" Visibility="Hidden">
                     <Path x:Name="BackIconServerList" Data="M12.5,8C9.85,8 7.45,9 5.6,10.6L2,7V16H11L7.38,12.38C8.77,11.22 10.54,10.5 12.5,10.5C16.04,10.5 19.05,12.81 20.1,16L22,15.3C20.64,11.38 16.91,8.5 12.5,8Z" Fill="{DynamicResource MainForegroundBrush}" Stretch="Uniform" Width="24" Height="24" HorizontalAlignment="Center" VerticalAlignment="Center" Cursor="Hand" ToolTip="Повернутись" MouseDown="BackIconServerList_MouseDown"/>
                 </Border>

@@ -42,7 +42,6 @@
                  Margin="0"
                  TextWrapping="Wrap" 
                  Background="{DynamicResource MainBackgroundBrush}" 
-                 CaretBrush="#FFBAB4B4" 
                  Foreground="{DynamicResource MainForegroundBrush}" 
                  SelectionBrush="#FF0F57C9" 
                  SelectionTextBrush="#FF0F57C9" 

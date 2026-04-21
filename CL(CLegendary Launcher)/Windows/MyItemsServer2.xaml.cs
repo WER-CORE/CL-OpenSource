@@ -60,6 +60,7 @@ namespace CL_CLegendary_Launcher_
 
         private void IPServerTXT_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
+            SoundManager.Click();
             try { Clipboard.SetText(IPServerTXT.Text); } catch { }
         }
     }

@@ -1,6 +1,7 @@
 ﻿using CL_CLegendary_Launcher_.Class;
 using System;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using Wpf.Ui.Appearance;
@@ -17,8 +18,13 @@ namespace CL_CLegendary_Launcher_.Windows
         {
             InitializeComponent();
             ApplicationThemeManager.Apply(this);
-            _aiService = new AiAssistantService();
-            _isOfflineMode = isOfflineMode;
+
+            if (SettingsManager.Default.EnableAIAgent)
+            {
+                _aiService = new AiAssistantService();
+                _isOfflineMode = isOfflineMode;
+            }
+            else { BtnAiAnalyze.Visibility = Visibility.Collapsed; }
 
             ApplyLocalization();
 
@@ -77,7 +83,41 @@ namespace CL_CLegendary_Launcher_.Windows
             ThinkingSubText.Text = LocalizationManager.GetString("AI.ThinkingSubText", "Встановлення зв'язку з Агентом C.L.");
             ResultTitleText.Text = LocalizationManager.GetString("AI.ResultTitleText", "Звіт Агента C.L.");
         }
+        public async Task LoadLogFromFileAsync(string logFilePath)
+        {
+            try
+            {
+                if (!System.IO.File.Exists(logFilePath))
+                {
+                    string notFoundMsg = string.Format(
+                        LocalizationManager.GetString("GameLog.FileNotFound", "[Система]: Не вдалося знайти файл логів за шляхом:\n{0}"),
+                        logFilePath);
 
+                    AppendTextToLog(notFoundMsg);
+                    return;
+                }
+
+                AppendTextToLog(LocalizationManager.GetString("GameLog.ReadingCrashLog", "[Система]: Читання посмертного логу (latest.log)...\n"));
+
+                using (var fileStream = new System.IO.FileStream(logFilePath, System.IO.FileMode.Open, System.IO.FileAccess.Read, System.IO.FileShare.ReadWrite))
+                using (var reader = new System.IO.StreamReader(fileStream, System.Text.Encoding.UTF8))
+                {
+                    string allLogs = await reader.ReadToEndAsync();
+
+                    AppendTextToLog(allLogs);
+
+                    AppendTextToLog(LocalizationManager.GetString("GameLog.EndOfLog", "\n[Система]: --- КІНЕЦЬ ЛОГУ ---"));
+                }
+            }
+            catch (Exception ex)
+            {
+                string errorMsg = string.Format(
+                    LocalizationManager.GetString("GameLog.ReadError", "\n[Система]: Сталася помилка при спробі прочитати лог-файл:\n{0}"),
+                    ex.Message);
+
+                AppendTextToLog(errorMsg);
+            }
+        }
         public void MinecraftProcess_OutputDataReceived(object sender, DataReceivedEventArgs e)
         {
             if (!string.IsNullOrEmpty(e.Data))
@@ -116,6 +156,8 @@ namespace CL_CLegendary_Launcher_.Windows
 
         private void BtnAiAnalyze_Click(object sender, RoutedEventArgs e)
         {
+            SoundManager.Click();
+
             if (string.IsNullOrWhiteSpace(GameLogTXTMincraft.Text))
             {
                 MascotMessageBox.Show(LocalizationManager.GetString("AI.EmptyLogAlert", "Лог пустий!"), LocalizationManager.GetString("Dialogs.Error", "Помилка"), MascotEmotion.Confused);
@@ -128,6 +170,8 @@ namespace CL_CLegendary_Launcher_.Windows
 
         private void ApiRadio_CheckedChanged(object sender, RoutedEventArgs e)
         {
+            SoundManager.Click();
+
             if (CustomApiPanel == null || LauncherApiWarning == null) return;
 
             if (RadioCustomApi.IsChecked == true)
@@ -144,6 +188,8 @@ namespace CL_CLegendary_Launcher_.Windows
 
         private void AiProviderComboBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
+            SoundManager.Click();
+
             if (GeminiSettingsPanel == null || OllamaSettingsPanel == null) return;
 
             if (AiProviderComboBox.SelectedIndex == 0)
@@ -158,17 +204,28 @@ namespace CL_CLegendary_Launcher_.Windows
             }
         }
 
-        private void OpenTutorial_Click(object sender, RoutedEventArgs e) => SwitchState(StateTutorial);
+        private void OpenTutorial_Click(object sender, RoutedEventArgs e)
+        {
+            SoundManager.Click();
+            SwitchState(StateTutorial);
+        }
 
-        private void BackToInput_Click(object sender, RoutedEventArgs e) => SwitchState(StateInput);
+        private void BackToInput_Click(object sender, RoutedEventArgs e)
+        {
+            SoundManager.Click();
+            SwitchState(StateInput);
+        }
 
         private void OpenAiStudio_Click(object sender, RoutedEventArgs e)
         {
+            SoundManager.Click();
             Process.Start(new ProcessStartInfo("https://aistudio.google.com/app/apikey") { UseShellExecute = true });
         }
 
         private async void BtnStartAnalysis_Click(object sender, RoutedEventArgs e)
         {
+            SoundManager.Click();
+
             string logContent = GameLogTXTMincraft.Text;
             string userComment = UserContextBox.Text;
 
@@ -242,11 +299,19 @@ namespace CL_CLegendary_Launcher_.Windows
             activeState.Visibility = Visibility.Visible;
         }
 
-        private void CloseOverlay_Click(object sender, RoutedEventArgs e) => AiOverlay.Visibility = Visibility.Collapsed;
+        private void CloseOverlay_Click(object sender, RoutedEventArgs e)
+        {
+            SoundManager.Click();
+            AiOverlay.Visibility = Visibility.Collapsed;
+        }
 
         private void AiOverlay_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            if (e.OriginalSource == sender) AiOverlay.Visibility = Visibility.Collapsed;
+            if (e.OriginalSource == sender)
+            {
+                SoundManager.Click();
+                AiOverlay.Visibility = Visibility.Collapsed;
+            }
         }
     }
 }
