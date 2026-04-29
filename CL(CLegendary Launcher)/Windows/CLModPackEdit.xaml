@@ -143,7 +143,8 @@
                     <Border Grid.Row="1" Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="12" Padding="10">
                         <ListView x:Name="ModsManegerList" 
                                   Background="Transparent" BorderThickness="0" 
-                                  ScrollViewer.HorizontalScrollBarVisibility="Disabled"/>
+                                  ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                        </ListView>
                     </Border>
                 </Grid>
 

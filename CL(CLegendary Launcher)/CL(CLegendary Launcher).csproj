@@ -231,15 +231,14 @@
     <PackageReference Include="HtmlAgilityPack" Version="1.12.4" />
     <PackageReference Include="Markdig.Wpf" Version="0.5.0.1" />
     <PackageReference Include="MCQuery" Version="2022.7.13.192844" />
-    <PackageReference Include="Microsoft.Net.Sdk.Compilers.Toolset" Version="10.0.202" />
+    <PackageReference Include="Microsoft.Net.Sdk.Compilers.Toolset" Version="10.0.203" />
     <PackageReference Include="MojangAPI" Version="1.2.1" />
     <PackageReference Include="Optifine.Installer" Version="1.0.1" />
     <PackageReference Include="RestSharp" Version="114.0.0" />
     <PackageReference Include="Sentry" Version="6.4.1" />
     <PackageReference Include="SharpCompress" Version="0.47.4" />
-    <PackageReference Include="System.Management" Version="10.0.6" />
-    <PackageReference Include="WPF-UI" Version="4.2.0" />
-    <PackageReference Include="WpfAnimatedGif" Version="2.0.2" />
+    <PackageReference Include="System.Management" Version="10.0.7" />
+    <PackageReference Include="WPF-UI" Version="4.2.1" />
     <PackageReference Include="XamlAnimatedGif" Version="2.3.1" />
   </ItemGroup>
 

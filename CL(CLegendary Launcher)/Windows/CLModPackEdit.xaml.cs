@@ -3,17 +3,14 @@ using CL_CLegendary_Launcher_.Models;
 using CmlLib.Core;
 using CmlLib.Core.Installer.Forge.Versions;
 using CmlLib.Core.Installer.NeoForge;
-using CmlLib.Core.Java;
 using CmlLib.Core.ModLoaders.FabricMC;
 using CmlLib.Core.ModLoaders.LiteLoader;
 using CmlLib.Core.ModLoaders.QuiltMC;
-using Newtonsoft.Json;
 using Optifine.Installer;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Management;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Windows;
@@ -21,14 +18,12 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Forms;
 using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;
 using Button = System.Windows.Controls.Button;
 using ContextMenu = System.Windows.Controls.ContextMenu;
 using MenuItem = System.Windows.Controls.MenuItem;
-using MessageBox = System.Windows.MessageBox;
 using Path = System.IO.Path;
 using Separator = System.Windows.Controls.Separator;
 
@@ -526,8 +521,15 @@ namespace CL_CLegendary_Launcher_.Windows
         private void DownloadAddMod_MouseDown(object sender, RoutedEventArgs e)
         {
             SoundManager.Click();
+
             DownloadEditPack downloadEditPack = new DownloadEditPack(this.CurrentModpack, selectmodPack);
-            downloadEditPack.Show();
+
+            downloadEditPack.Closed += (s, args) =>
+            {
+                _ = UpdateModsList();
+            };
+
+            downloadEditPack.ShowDialog();
         }
         private void AddFileInPack_MouseDown(object sender, RoutedEventArgs e)
         {

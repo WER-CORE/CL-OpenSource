@@ -12,7 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;
-using WpfAnimatedGif;
+using XamlAnimatedGif;
 using Application = System.Windows.Application;
 using Button = System.Windows.Controls.Button;
 using Color = System.Windows.Media.Color;
@@ -62,7 +62,7 @@ namespace CL_CLegendary_Launcher_.Class
 
             ApplicationThemeManager.Apply(targetSystemTheme, WindowBackdropType.Mica, true);
 
-            ImageBehavior.SetAnimatedSource(_main.Bg, null);
+            AnimationBehavior.SetSourceUri(_main.Bg, null);
 
             var dictionariesToAdd = new List<ResourceDictionary>();
 
@@ -180,6 +180,7 @@ namespace CL_CLegendary_Launcher_.Class
 
             ApplyTheme("Dark");
             SetColourButtons();
+            MemoryCleaner.FlushMemory(true);
         }
         public object CreateColorButtonContent(string colorHex)
         {
@@ -289,21 +290,18 @@ namespace CL_CLegendary_Launcher_.Class
             {
                 Uri uri = new(bg, UriKind.Absolute);
 
-                ImageBehavior.SetAnimatedSource(_main.Bg, null);
+                AnimationBehavior.SetSourceUri(_main.Bg, null);
 
                 if (bg.EndsWith(".gif", StringComparison.OrdinalIgnoreCase))
                 {
-                    var gifImage = new BitmapImage(uri);
-                    ImageBehavior.SetAnimatedSource(_main.Bg, gifImage);
+                    AnimationBehavior.SetSourceUri(_main.Bg, uri);
                 }
                 else
                 {
                     var img = new BitmapImage();
                     img.BeginInit();
                     img.UriSource = uri;
-
                     img.DecodePixelWidth = 800;
-
                     img.CacheOption = BitmapCacheOption.OnLoad;
                     img.EndInit();
                     if (img.CanFreeze) img.Freeze();
@@ -556,6 +554,7 @@ namespace CL_CLegendary_Launcher_.Class
                     _main.SnackbarPresenter
                 );
             }
+            MemoryCleaner.FlushMemory(true);
         }
         public string ExportMainTheme()
         {

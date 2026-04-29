@@ -36,10 +36,9 @@ namespace CL_CLegendary_Launcher_.Windows
     {
         private List<string> iconUrl = new List<string>();
         private string LoderNow = "Forge";
-        private string SiteDowload = "Modrinth";
-        private readonly string apiKey = Secrets.CurseForgeKey;
+        private string SiteDowload = "Modrinth"; 
+        private static ApiClient _cfApiClientInstance;
         private static readonly HttpClient httpClient = new HttpClient();
-        private ApiClient curseClient;
         private ModpackService _modpackService;
 
         private const string DefaultIconPath = "pack://application:,,,/Icon/IconCL(Common).png";
@@ -53,7 +52,6 @@ namespace CL_CLegendary_Launcher_.Windows
             InitializeComponent();
             ApplicationThemeManager.Apply(this);
 
-            curseClient = new ApiClient(apiKey);
             _modpackService = modpackService;
 
             ApplyLocalization();
@@ -189,7 +187,29 @@ namespace CL_CLegendary_Launcher_.Windows
             DowloaadModPacksButton.IsEnabled = false;
             PackVersionSelector.Text = LocalizationManager.GetString("Modpacks.ModpackSelectFileDefault", "Спочатку оберіть збірку");
         }
-
+        private async Task<ApiClient> GetCfClientAsync()
+        {
+            if (_cfApiClientInstance != null) return _cfApiClientInstance;
+            try
+            {
+                using var client = new HttpClient();
+                client.DefaultRequestHeaders.Add("", "");
+                var response = await client.GetAsync($"{Secrets.CurseForgeKey}");
+                if (response.IsSuccessStatusCode)
+                {
+                    string json = await response.Content.ReadAsStringAsync();
+                    var data = JObject.Parse(json);
+                    string key = data["key"]?.ToString();
+                    _cfApiClientInstance = new ApiClient(key);
+                    return _cfApiClientInstance;
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Не вдалося отримати ключ CurseForge: {ex.Message}");
+            }
+            return null;
+        }
         private async Task LoadModrinthModsAsync(string searchText)
         {
             ModsSearchLoader.Visibility = Visibility.Visible;
@@ -240,6 +260,9 @@ namespace CL_CLegendary_Launcher_.Windows
 
             try
             {
+                var cfApi = await GetCfClientAsync();
+                if (cfApi == null) return;
+
                 var modLoaderType = LoderNow switch
                 {
                     "Forge" => ModLoaderType.Forge,
@@ -252,15 +275,15 @@ namespace CL_CLegendary_Launcher_.Windows
                 var gameVersion = VersionVanil?.SelectedItem?.ToString();
                 int index = _currentPage * ITEMS_PER_PAGE;
 
-                var searchResponse = await curseClient.SearchModsAsync(
-                  gameId: 432,
-                  searchFilter: searchText,
-                  classId: 4471,
-                  pageSize: ITEMS_PER_PAGE,
-                  index: index,
-                  sortField: ModsSearchSortField.Popularity,
-                  modLoaderType: modLoaderType,
-                  gameVersion: gameVersion
+                var searchResponse = await cfApi.SearchModsAsync(
+                    gameId: 432,
+                    searchFilter: searchText,
+                    classId: 4471,
+                    pageSize: ITEMS_PER_PAGE,
+                    index: index,
+                    sortField: ModsSearchSortField.Popularity,
+                    modLoaderType: modLoaderType,
+                    gameVersion: gameVersion
                 );
 
                 foreach (var mod in searchResponse.Data)
@@ -316,7 +339,7 @@ namespace CL_CLegendary_Launcher_.Windows
 
             item.DetailsModPackBtn.PreviewMouseDown += (s, e) =>
             {
-                WebHelper.OpenUrl($"https://modrinth.com/modpack/{mod.Slug}"); 
+                WebHelper.OpenUrl(mod.Links?.WebsiteUrl ?? $"https://www.curseforge.com/minecraft/modpacks/{mod.Slug}");
                 SoundManager.Click();
             };
 
@@ -404,32 +427,35 @@ namespace CL_CLegendary_Launcher_.Windows
                 {
                     if (int.TryParse(item.ProjectId, out int modId))
                     {
-                        var filesResponse = await curseClient.GetModFilesAsync(modId, pageSize: 50);
-
-                        if (filesResponse.Data != null)
+                        var cfApi = await GetCfClientAsync();
+                        if (cfApi != null)
                         {
-                            foreach (var file in filesResponse.Data)
-                            {
-                                bool isCorrectVersion = file.GameVersions.Any(v => v == targetMcVersion);
-                                bool isCorrectLoader = file.GameVersions.Any(v => v.Equals(targetLoader, StringComparison.OrdinalIgnoreCase));
-                                if (targetLoader == "Optifine" || targetLoader == "LiteLoader") isCorrectLoader = true;
+                            var filesResponse = await cfApi.GetModFilesAsync(modId, pageSize: 50);
 
-                                if (isCorrectVersion && isCorrectLoader)
+                            if (filesResponse.Data != null)
+                            {
+                                foreach (var file in filesResponse.Data)
                                 {
-                                    availableFiles.Add(new ModpackFileVersion
+                                    bool isCorrectVersion = file.GameVersions.Any(v => v == targetMcVersion);
+                                    bool isCorrectLoader = file.GameVersions.Any(v => v.Equals(targetLoader, StringComparison.OrdinalIgnoreCase));
+                                    if (targetLoader == "Optifine" || targetLoader == "LiteLoader") isCorrectLoader = true;
+
+                                    if (isCorrectVersion && isCorrectLoader)
                                     {
-                                        Name = file.DisplayName,
-                                        DownloadUrl = file.DownloadUrl,
-                                        FileName = file.FileName,
-                                        GameVersion = targetMcVersion,
-                                        LoaderType = targetLoader
-                                    });
+                                        availableFiles.Add(new ModpackFileVersion
+                                        {
+                                            Name = file.DisplayName,
+                                            DownloadUrl = file.DownloadUrl,
+                                            FileName = file.FileName,
+                                            GameVersion = targetMcVersion,
+                                            LoaderType = targetLoader
+                                        });
+                                    }
                                 }
                             }
                         }
                     }
                 }
-
                 Dispatcher.Invoke(() =>
                 {
                     PackVersionSelector.ItemsSource = availableFiles;

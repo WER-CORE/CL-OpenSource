@@ -17,7 +17,7 @@ using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using Wpf.Ui.Controls;
-using WpfAnimatedGif;
+using XamlAnimatedGif;
 
 namespace CL_CLegendary_Launcher_
 {
@@ -95,11 +95,18 @@ namespace CL_CLegendary_Launcher_
             TitleMain1.Text = title;
             DescriptionServer.Text = description;
 
-            var animatedSource = ImageBehavior.GetAnimatedSource(iconSource);
-            if (animatedSource != null)
-                ImageBehavior.SetAnimatedSource(MainIcon3, animatedSource);
+            var gifUri = AnimationBehavior.GetSourceUri(iconSource);
+
+            if (gifUri != null)
+            {
+                MainIcon3.Source = null;
+                AnimationBehavior.SetSourceUri(MainIcon3, gifUri);
+            }
             else
+            {
+                AnimationBehavior.SetSourceUri(MainIcon3, null);
                 MainIcon3.Source = iconSource.Source;
+            }
 
             this.BG.Source = null;
             this.BG.Visibility = Visibility.Hidden;

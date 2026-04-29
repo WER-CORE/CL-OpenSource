@@ -3,15 +3,12 @@ using CL_CLegendary_Launcher_.Windows;
 using MCQuery;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Security.Policy;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using WpfAnimatedGif;
+using XamlAnimatedGif;
 
 namespace CL_CLegendary_Launcher_.Class
 {
@@ -138,17 +135,17 @@ namespace CL_CLegendary_Launcher_.Class
             if (serverData.TryGetValue("logoUrl", out object logoValue) &&
                 Uri.TryCreate(logoValue?.ToString(), UriKind.Absolute, out Uri logoUri))
             {
-                int decodeSize = (priority > 100) ? 0 : 64;
-
-                var imageSource = ImageHelper.LoadOptimizedImage(logoUri.ToString(), decodeSize);
-
-                if (imageSource != null)
+                if (priority > 100)
                 {
-                    if (priority > 100)
-                    {
-                        ImageBehavior.SetAnimatedSource(item.MainIcon3, imageSource);
-                    }
-                    else
+                    AnimationBehavior.SetSourceUri(item.MainIcon3, logoUri);
+                }
+                else
+                {
+                    AnimationBehavior.SetSourceUri(item.MainIcon3, null);
+
+                    var imageSource = ImageHelper.LoadOptimizedImage(logoUri.ToString(), 64);
+
+                    if (imageSource != null)
                     {
                         item.MainIcon3.Source = imageSource;
                     }
@@ -219,27 +216,22 @@ namespace CL_CLegendary_Launcher_.Class
             if (serverData.TryGetValue("logoUrl", out object logoValue) &&
                 Uri.TryCreate(logoValue?.ToString(), UriKind.Absolute, out Uri logoUri))
             {
-                string urlStr = logoUri.ToString();
-                bool isGif = urlStr.EndsWith(".gif", StringComparison.OrdinalIgnoreCase);
-
-                int decodeSize = isGif ? 0 : 128;
-
-                var imageSource = ImageHelper.LoadOptimizedImage(urlStr, decodeSize);
-
-                if (imageSource != null)
+                if (priority > 100)
                 {
-                    if (isGif)
+                    AnimationBehavior.SetSourceUri(item.MainIcon3, logoUri);
+                }
+                else
+                {
+                    AnimationBehavior.SetSourceUri(item.MainIcon3, null);
+
+                    var imageSource = ImageHelper.LoadOptimizedImage(logoUri.ToString(), 64);
+
+                    if (imageSource != null)
                     {
-                        ImageBehavior.SetAnimatedSource(item.MainIcon3, imageSource);
-                    }
-                    else
-                    {
-                        ImageBehavior.SetAnimatedSource(item.MainIcon3, null);
                         item.MainIcon3.Source = imageSource;
                     }
                 }
             }
-
             ApplyServerStyles(item, serverData, priority, isNeon, borderColorHex, textColorHex);
             item.RenderTransformOrigin = new Point(0.5, 0.5);
             item.RenderTransform = new ScaleTransform(1.0, 1.0);

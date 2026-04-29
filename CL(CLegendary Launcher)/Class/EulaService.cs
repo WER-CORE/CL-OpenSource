@@ -39,7 +39,7 @@ namespace CL_CLegendary_Launcher_.Class
             {
                 using HttpClient client = new HttpClient();
 
-                string json = await client.GetStringAsync($"{Secrets.EulaUrl}Lang/{langCode}/eula_{langCode}.json?v={DateTime.Now.Ticks}");
+                string json = await client.GetStringAsync($"{Secrets.EulaUrl}Lang/{langCode}/eula_{langCode}.json?v={DateTime.Now.Ticks}"); 
                 return JsonConvert.DeserializeObject<EulaConfig>(json);
             }
             catch

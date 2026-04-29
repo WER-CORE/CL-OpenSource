@@ -5,7 +5,6 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         xmlns:local="clr-namespace:CL_CLegendary_Launcher_.Class"
-        xmlns:Wpf="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf" 
         xmlns:syncfusion="http://schemas.syncfusion.com/wpf" 
         xmlns:Windows="clr-namespace:CL_CLegendary_Launcher_.Windows"
         xmlns:markdig="clr-namespace:Markdig.Wpf;assembly=Markdig.Wpf"
