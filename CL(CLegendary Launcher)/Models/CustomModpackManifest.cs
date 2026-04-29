@@ -15,6 +15,7 @@ namespace CL_CLegendary_Launcher_.Models
         public string Minecraft { get; set; }
         public string Loader { get; set; }
         public string LoaderVersion { get; set; }
+        public bool HasCustomIcon { get; set; }
         public List<ModInfo> Files { get; set; } = new List<ModInfo>();
     }
 }

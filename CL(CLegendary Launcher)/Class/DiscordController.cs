@@ -10,7 +10,7 @@ namespace CL_CLegendary_Launcher_.Class
 
         public static async Task Initialize(string textDetails)
         {
-            if (SettingsManager.Default.OfflineModLauncher) { return; }
+            if (SettingsManager.Default.OfflineModLauncher || !SettingsManager.Default.EnableMod_DiscordRPC) { return; }
 
             try
             {
@@ -27,6 +27,14 @@ namespace CL_CLegendary_Launcher_.Class
                     {
                         LargeImageKey = "frame_73",
                         SmallImageKey = "ua",
+                    },
+                    Buttons = new[]
+                    {
+                        new Button()
+                        {
+                            Label = "Репозиторій",
+                            Url = "https://github.com/WER-CORE/CL-OpenSource"
+                        }
                     }
                 });
             }
@@ -38,7 +46,7 @@ namespace CL_CLegendary_Launcher_.Class
 
         public static async Task UpdatePresence(string textDetails)
         {
-            if (SettingsManager.Default.OfflineModLauncher) { return; }
+            if (SettingsManager.Default.OfflineModLauncher || !SettingsManager.Default.EnableMod_DiscordRPC) { return; }
 
             if (clientdsc == null)
             {
@@ -68,7 +76,7 @@ namespace CL_CLegendary_Launcher_.Class
 
         public static void Deinitialize()
         {
-            if (SettingsManager.Default.OfflineModLauncher) { return; }
+            if (SettingsManager.Default.OfflineModLauncher || !SettingsManager.Default.EnableMod_DiscordRPC) { return; }
 
             try
             {

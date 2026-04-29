@@ -33,8 +33,6 @@ namespace CL_CLegendary_Launcher_.Class
         Optifine,
         NeoForge,
         LiteLoader,
-        Custom_Local,
-        OmniArchive
     }
 
     public class GameLaunchService
@@ -66,7 +64,6 @@ namespace CL_CLegendary_Launcher_.Class
             switch (loaderType)
             {
                 case LoaderType.Vanilla:
-                case LoaderType.Custom_Local:
                     return mcVersion;
                 case LoaderType.Optifine:
                     string cleanLoader = loaderVersion?.Replace("OptiFine_", "");
@@ -173,7 +170,7 @@ namespace CL_CLegendary_Launcher_.Class
 
                 var launchOption = CreateLaunchOptions(serverIp, serverPort);
 
-                if (SettingsManager.Default.EnableAutoBackup)
+                if (SettingsManager.Default.EnableAutoBackup && SettingsManager.Default.EnableSubFiles_Backups)
                 {
                     _main.Dispatcher.Invoke(() => _main.PlayTXT.Text = LocalizationManager.GetString("GameLaunch.LaunchBackupWorlds", "БЕКАП СВІТІВ..."));
                     string gameDir = path.BasePath;
@@ -240,16 +237,45 @@ namespace CL_CLegendary_Launcher_.Class
                     ["loader"] = loaderName.ToLower(),
                     ["loaderVersion"] = loaderVersion
                 };
-                await _lastActionService.AddLastActionAsync(action);
+                if (SettingsManager.Default.EnableMod_LatestActions) { await _lastActionService.AddLastActionAsync(action); }
 
                 if (SettingsManager.Default.CloseLaucnher)
                 {
                     _main.Dispatcher.Invoke(() => _main.Close());
                 }
 
-                _gameSessionManager.StartGameSession(loaderType == LoaderType.Vanilla && serverIp == null ? "vanilla" : "mod");
+                if (SettingsManager.Default.EnableMod_Statistics) { _gameSessionManager.StartGameSession(loaderType == LoaderType.Vanilla && serverIp == null ? "vanilla" : "mod"); }
                 await MemoryCleaner.FlushMemoryAsync(trimWorkingSet: true);
                 await process.WaitForExitAsync();
+                int exitCode = process.ExitCode;
+
+                if (exitCode != 0)
+                {
+                    _main.Dispatcher.Invoke(() =>
+                    {
+                        _main.Show();
+                        _main.WindowState = WindowState.Normal;
+
+                        if (!SettingsManager.Default.EnableLog)
+                        {
+                            string logFilePath = Path.Combine(path.BasePath, "logs", "latest.log");
+
+                            _main.ShowGameLogFromFile(logFilePath);
+                        }
+
+                        MascotMessageBox.Show(
+                            string.Format(LocalizationManager.GetString("GameLaunch.CrashDesc", "Йой! Майнкрафт впав (Код помилки: {0}).\nЯ відкрила логи, щоб ми могли знайти конфліктний мод або помилку."), exitCode),
+                            LocalizationManager.GetString("GameLaunch.CrashTitle", "Краш гри!"),
+                            MascotEmotion.Sad);
+                    });
+                }
+                else
+                {
+                    if (SettingsManager.Default.CloseLaucnher)
+                    {
+                        _main.Dispatcher.Invoke(() => Application.Current.Shutdown());
+                    }
+                }
             }
             catch (OperationCanceledException)
             {
@@ -286,14 +312,10 @@ namespace CL_CLegendary_Launcher_.Class
                 });
             }
         }
-        #region OmniArchive LogicInstall
-        #endregion
         public async Task<string> InstallVersionAsync(LoaderType loaderType, string mcVersion, string loaderVersion, MinecraftLauncher launcher, CancellationToken token)
         {
             switch (loaderType)
             {
-                #region OmniArchive Loader
-                #endregion
                 case LoaderType.Forge:
                     var forge = new ForgeInstaller(launcher);
                     return await forge.Install(mcVersion, loaderVersion, new ForgeInstallOptions { CancellationToken = token });
@@ -351,10 +373,6 @@ namespace CL_CLegendary_Launcher_.Class
 
                         return await liteLoaderInstaller.Install(loaderToInstall, await launcher.GetVersionAsync(mcVersion), launcher.MinecraftPath);
                     }
-                case LoaderType.Custom_Local:
-                    {
-                        return mcVersion;
-                    }
                 default:
                     await launcher.InstallAsync($"{mcVersion}", token);
                     return mcVersion;
@@ -364,13 +382,14 @@ namespace CL_CLegendary_Launcher_.Class
         {
             var baseOptions = new MLaunchOption
             {
+                MinimumRamMb = (int)_main.OPSlider.Value,
                 MaximumRamMb = (int)_main.OPSlider.Value,
                 Session = _main.session,
                 ScreenWidth = int.Parse(_main.Width.Text),
                 ScreenHeight = int.Parse(_main.Height.Text),
                 FullScreen = SettingsManager.Default.FullScreen,
                 ServerIp = serverIp,
-                ServerPort = serverPort ?? 0
+                ServerPort = serverPort ?? 0,
             };
 
             if (_main.selectAccountNow == AccountType.LittleSkin)

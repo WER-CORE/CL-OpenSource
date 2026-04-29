@@ -162,7 +162,14 @@ namespace CL_CLegendary_Launcher_
                 VersionListMod.Items.Add($"{LocalizationManager.GetString("Dialogs.Error", "Помилка")}: {ex.Message}");
             }
         }
+        public void ShowGameLogFromFile(string logFilePath)
+        {
+            var gameLogWindow = new GameLog();
 
+            gameLogWindow.Show();
+
+            _ = gameLogWindow.LoadLogFromFileAsync(logFilePath);
+        }
         private async void DownloadVersionOptifine(string effectiveVersion = null, string effectiveVersionMod = null)
         {
             string mcVersion = !string.IsNullOrEmpty(effectiveVersion)
@@ -207,7 +214,7 @@ namespace CL_CLegendary_Launcher_
 
         private async void PlayTXT_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            Click();
+            SoundManager.Click();
             if (NameNik.Text == LocalizationManager.GetString("Accounts.NoAccount", "Відсутній акаунт") || NameNik.Text == "Відсутній акаунт" || NameNik.Text == "No account")
             {
                 MascotMessageBox.Show(
@@ -324,37 +331,15 @@ namespace CL_CLegendary_Launcher_
                 );
             }
         }
-
         public void VersionMinecraftSelectLog()
         {
             if (VersionMinecraftChangeLog == null || !(VersionMinecraftChangeLog.SelectedItem is VersionLogItem selectedItem))
                 return;
 
-            string query;
-            string cleanId = selectedItem.VersionId;
+            ChangelogWindow readerWindow = new ChangelogWindow(selectedItem.VersionId, selectedItem.VersionType);
 
-            switch (selectedItem.VersionType)
-            {
-                case "old_alpha": query = $"Java Edition Alpha {cleanId.Replace("a", "")}"; break;
-                case "old_beta": query = $"Java Edition Beta {cleanId.Replace("b", "")}"; break;
-                case "snapshot": query = $"{cleanId} Java Edition"; break;
-                case "release": default: query = $"Java Edition {cleanId}"; break;
-            }
-            string searchUrl = $"https://uk.minecraft.wiki/w/Special:Search?search={Uri.EscapeDataString(query)}&go=Go";
-
-            try
-            {
-                WebHelper.OpenUrl(searchUrl);
-            }
-            catch (Exception ex)
-            {
-                MascotMessageBox.Show(
-                    string.Format(LocalizationManager.GetString("Dialogs.UrlOpenErrorDesc", "Не вдалося відкрити браузер.\n{0}"), ex.Message),
-                    LocalizationManager.GetString("Dialogs.UrlOpenErrorTitle", "Помилка браузера"),
-                    MascotEmotion.Sad);
-            }
+            readerWindow.Show();
         }
-
         private void VersionMinecraftChangeLog_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (!isMouseClickSelection) return;
@@ -364,10 +349,9 @@ namespace CL_CLegendary_Launcher_
 
         private void VersionMinecraftChangeLog_PreviewMouseDown(object sender, MouseButtonEventArgs e)
         {
-            Click();
+            SoundManager.Click();
             isMouseClickSelection = true;
         }
-
         private void SearchSystem1_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
         {
             if (!this.IsLoaded) return;
@@ -414,12 +398,12 @@ namespace CL_CLegendary_Launcher_
 
         private async void CheckMarkVersionSelect_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            Click();
+            SoundManager.Click();
             if (!InstallVersionOnPlay)
             {
                 if (SelectVersionTypeGird.Visibility == Visibility.Visible)
                 {
-                    IconVersionRotateTransform.Angle = 180;
+                    AnimationService.AnimateRotation(CheckMarkVersionSelect, 180);
                     AnimationService.AnimatePageTransitionExit(SelectVersion, 20);
                     AnimationService.AnimatePageTransitionExit(SelectVersionTypeGird, 20);
                     AnimationService.AnimatePageTransitionExit(SelectVersionMod, 20);
@@ -444,7 +428,7 @@ namespace CL_CLegendary_Launcher_
                 }
                 else
                 {
-                    IconVersionRotateTransform.Angle = 0;
+                    AnimationService.AnimateRotation(CheckMarkVersionSelect, 0);
                     AnimationService.AnimatePageTransition(SelectVersionTypeGird);
 
                     var path = new MinecraftPath(SettingsManager.Default.PathLacunher);
@@ -459,7 +443,7 @@ namespace CL_CLegendary_Launcher_
 
         private void SelectVersionVanila_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            Click();
+            SoundManager.Click();
             VersionList.Items.Clear();
             AddVersion();
             AnimationService.AnimatePageTransition(SelectVersion); AnimationService.FadeIn(SelectVersionVanila, 0.2); AnimationService.FadeOut(SelectVersionMod, 0.2);
@@ -471,7 +455,7 @@ namespace CL_CLegendary_Launcher_
         {
             PlayTXT.Text = LocalizationManager.GetString("GameLaunch.PlayBtnPlay", "ГРАТИ");
             VersionListMod.Items.Clear();
-            Click();
+            SoundManager.Click();
             AddVersionOptifine();
             AnimationService.AnimatePageTransition(SelectVersionMod); AnimationService.FadeIn(SelectVersionOptifine, 0.2); AnimationService.FadeOut(SelectVersion, 0.2);
             VersionSelect = 5;
@@ -480,7 +464,7 @@ namespace CL_CLegendary_Launcher_
 
         private async void SelectVersionRedirect_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            Click();
+            SoundManager.Click();
             SelectVersionTypeGird.Visibility = Visibility.Hidden;
 
             _navigationService.NavigateToModPacks();
@@ -501,7 +485,7 @@ namespace CL_CLegendary_Launcher_
 
         private void VersionList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            Click();
+            SoundManager.Click();
             if (VersionList.SelectedItem != null)
             {
                 string selectedVer = VersionList.SelectedItem.ToString();
@@ -563,21 +547,20 @@ namespace CL_CLegendary_Launcher_
         private void SelectVersionVanila_MouseLeave(object sender, MouseEventArgs e) => ToggleBorderColor(SelectVersionVanila, false);
         private void SelectVersionOptifine_MouseEnter(object sender, MouseEventArgs e) => ToggleBorderColor(SelectVersionOptifine, true);
         private void SelectVersionOptifine_MouseLeave(object sender, MouseEventArgs e) => ToggleBorderColor(SelectVersionOptifine, false);
-
         private void ToggleBorderColor(Border border, bool isEnter)
         {
+            Color targetColor;
             if (ThemeService.currentTheme == "Dark")
-                border.BorderBrush = new SolidColorBrush(isEnter ? Color.FromRgb(255, 255, 255) : Color.FromRgb(0, 0, 0));
+                targetColor = isEnter ? Color.FromRgb(255, 255, 255) : Color.FromRgb(40, 40, 40);
             else
-                border.BorderBrush = new SolidColorBrush(isEnter ? Color.FromRgb(0, 0, 0) : Color.FromRgb(255, 255, 255));
-        }
+                targetColor = isEnter ? Color.FromRgb(0, 0, 0) : Color.FromRgb(210, 210, 210);
 
+            AnimationService.AnimateBorderColor(border, targetColor);
+        }
+        private void PlayTXT_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e) => AnimationService.AnimateScale(BorderButton, 1.03);
+        private void PlayTXT_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e) => AnimationService.AnimateScale(BorderButton, 1.0);
         private void Relesed_MouseDown_1(object sender, RoutedEventArgs e) { if (VersionSelect == 1) AddVersion(); }
         private void Alpha_Click(object sender, RoutedEventArgs e) { if (VersionSelect == 1) AddVersion(); }
-        private void Infdev_Click(object sender, RoutedEventArgs e) { if (VersionSelect == 1) AddVersion(); }
-        private void Indev_Click(object sender, RoutedEventArgs e) { if (VersionSelect == 1) AddVersion(); }
-        private void Classic_Click(object sender, RoutedEventArgs e) { if (VersionSelect == 1) AddVersion(); }
-        private void Pre_classic_Click(object sender, RoutedEventArgs e) { if (VersionSelect == 1) AddVersion(); }
         private void Beta_Click(object sender, RoutedEventArgs e) { if (VersionSelect == 1) AddVersion(); }
         private void Snapshots_Click(object sender, RoutedEventArgs e) { if (VersionSelect == 1) AddVersion(); }
     }

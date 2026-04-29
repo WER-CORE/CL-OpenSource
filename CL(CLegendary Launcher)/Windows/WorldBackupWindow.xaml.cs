@@ -114,6 +114,7 @@ namespace CL_CLegendary_Launcher_.Windows
 
         private void SourceCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            SoundManager.Click();
             if (SourceCombo.SelectedItem is BackupSource source)
             {
                 LoadWorlds(source.Path);
@@ -148,6 +149,7 @@ namespace CL_CLegendary_Launcher_.Windows
                         bmp = new BitmapImage();
                         bmp.BeginInit();
                         bmp.UriSource = new Uri(iconPath);
+                        bmp.DecodePixelWidth = 64;
                         bmp.CacheOption = BitmapCacheOption.OnLoad;
                         bmp.EndInit();
                     }
@@ -207,6 +209,8 @@ namespace CL_CLegendary_Launcher_.Windows
 
         private void WorldsListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            SoundManager.Click();
+
             if (WorldsListBox.SelectedItem is WorldListItem world)
             {
                 _currentWorld = world;
@@ -232,6 +236,8 @@ namespace CL_CLegendary_Launcher_.Windows
 
         private async void CreateBackup_Click(object sender, RoutedEventArgs e)
         {
+            SoundManager.Click();
+
             if (_currentWorld == null) return;
             BtnCreate.IsEnabled = false;
 
@@ -259,6 +265,8 @@ namespace CL_CLegendary_Launcher_.Windows
 
         private async void Restore_Click(object sender, RoutedEventArgs e)
         {
+            SoundManager.Click();
+
             var btn = sender as System.Windows.Controls.Button;
             var backup = btn?.Tag as WorldBackupInfo;
             if (backup == null) return;
@@ -296,6 +304,8 @@ namespace CL_CLegendary_Launcher_.Windows
 
         private void Delete_Click(object sender, RoutedEventArgs e)
         {
+            SoundManager.Click();
+
             var btn = sender as System.Windows.Controls.Button;
             var backup = btn?.Tag as WorldBackupInfo;
             if (backup == null) return;
@@ -321,31 +331,6 @@ namespace CL_CLegendary_Launcher_.Windows
         {
             if (e.LeftButton == MouseButtonState.Pressed) DragMove();
         }
-
         private void Close_Click(object sender, RoutedEventArgs e) => Close();
-
-        private void RestoreText_Loaded(object sender, RoutedEventArgs e)
-        {
-            if (sender is TextBlock txt)
-            {
-                txt.Text = LocalizationManager.GetString("Backups.RestoreBtn", "Відновити");
-            }
-        }
-
-        private void DeleteBtn_Loaded(object sender, RoutedEventArgs e)
-        {
-            if (sender is Button btn)
-            {
-                btn.Content = LocalizationManager.GetString("Backups.DeleteBtn", "🗑");
-            }
-        }
-
-        private void ZipArchiveText_Loaded(object sender, RoutedEventArgs e)
-        {
-            if (sender is Wpf.Ui.Controls.TextBlock txt)
-            {
-                txt.Text = " • " + LocalizationManager.GetString("Backups.ZipArchiveSuffix", "zip архів");
-            }
-        }
     }
 }

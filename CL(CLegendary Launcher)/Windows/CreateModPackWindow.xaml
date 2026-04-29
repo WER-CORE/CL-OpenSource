@@ -67,6 +67,37 @@
                 </Setter.Value>
             </Setter>
         </Style>
+        <ControlTemplate x:Key="ModCardSkeletonTemplate">
+            <Border Height="40" Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="8" Margin="0,0,0,5">
+                <Grid Margin="10,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" 
+                            Width="20" Height="20" 
+                            CornerRadius="4" 
+                            Background="{DynamicResource MainBackgroundBrush}" 
+                            VerticalAlignment="Center"/>
+
+                    <Border Grid.Column="1" 
+                            Height="12" Width="180" 
+                            CornerRadius="3" 
+                            Background="{DynamicResource MainBackgroundBrush}" 
+                            HorizontalAlignment="Left" 
+                            VerticalAlignment="Center" 
+                            Margin="10,0"/>
+
+                    <Border Grid.Column="2" 
+                            Width="20" Height="20" 
+                            CornerRadius="4" 
+                            Background="{DynamicResource MainBackgroundBrush}" 
+                            VerticalAlignment="Center"/>
+                </Grid>
+            </Border>
+        </ControlTemplate>
     </Window.Resources>
 
     <Grid Margin="10" Background="{DynamicResource MainBackgroundBrush}">
@@ -119,7 +150,7 @@
 
                 <StackPanel Grid.Column="1" Margin="0,0,10,0">
                     <TextBlock x:Name="TxtMcVersion" Text="Версія Minecraft" FontSize="10" Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,0,5"/>
-                    <ComboBox x:Name="VersionVanilBox" Height="38" SelectionChanged="VersionVanil_SelectionChanged" Background="{DynamicResource MainBackgroundBrush}" Foreground="{DynamicResource MainForegroundBrush}" ScrollViewer.HorizontalScrollBarVisibility="Hidden" Cursor="Hand"/>
+                    <ComboBox x:Name="VersionVanilBox" Height="38" MaxDropDownHeight="200" SelectionChanged="VersionVanil_SelectionChanged" Background="{DynamicResource MainBackgroundBrush}" Foreground="{DynamicResource MainForegroundBrush}" ScrollViewer.VerticalScrollBarVisibility="Visible" Cursor="Hand"/>
                 </StackPanel>
 
                 <StackPanel Grid.Column="2" Margin="0,0,10,0">
@@ -136,7 +167,7 @@
 
                 <StackPanel Grid.Column="3">
                     <TextBlock x:Name="TxtLoaderVersion" Text="Версія ядра" FontSize="10" Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,0,5"/>
-                    <ComboBox x:Name="LoaderVersionBox" Height="38" IsEnabled="False" Foreground="{DynamicResource MainForegroundBrush}" Background="{DynamicResource MainBackgroundBrush}" ScrollViewer.HorizontalScrollBarVisibility="Auto" Cursor="Hand"/>
+                    <ComboBox x:Name="LoaderVersionBox" Height="38" MaxDropDownHeight="200" IsEnabled="False" Foreground="{DynamicResource MainForegroundBrush}" Background="{DynamicResource MainBackgroundBrush}" ScrollViewer.VerticalScrollBarVisibility="Visible" Cursor="Hand"/>
                 </StackPanel>
             </Grid>
         </Border>
@@ -215,7 +246,16 @@
                                 </Style>
                             </ListView.ItemContainerStyle>
                         </ListView>
-
+                        <StackPanel x:Name="ModsSkeletonPanel" VerticalAlignment="Top" Visibility="Collapsed">
+                            <Control Template="{StaticResource ModCardSkeletonTemplate}"/>
+                            <Control Template="{StaticResource ModCardSkeletonTemplate}"/>
+                            <Control Template="{StaticResource ModCardSkeletonTemplate}"/>
+                            <Control Template="{StaticResource ModCardSkeletonTemplate}"/>
+                            <Control Template="{StaticResource ModCardSkeletonTemplate}"/>
+                            <Control Template="{StaticResource ModCardSkeletonTemplate}"/>
+                            <Control Template="{StaticResource ModCardSkeletonTemplate}"/>
+                            <Control Template="{StaticResource ModCardSkeletonTemplate}"/>
+                        </StackPanel>
                         <StackPanel x:Name="ModsSearchLoader" 
                     VerticalAlignment="Center" 
                     HorizontalAlignment="Center"
@@ -328,7 +368,7 @@
 
         <Grid x:Name="MenuInstaller" Grid.Row="0" Grid.RowSpan="5" 
               HorizontalAlignment="Center" VerticalAlignment="Center" 
-              Width="254" Height="206" Visibility="Hidden">
+              Width="254" Height="206" Visibility="Collapsed">
 
             <Border Background="{DynamicResource MainBackgroundBrush}" CornerRadius="14" Margin="-298,-162,-298,-192" Panel.ZIndex="-1" MouseDown="CloseMenu_MouseDown" Opacity="0.8"/>
 
@@ -354,7 +394,7 @@
                 </Border>
 
                 <Border BorderBrush="Black" BorderThickness="1" HorizontalAlignment="Center" Height="30" Margin="0,41,0,0" VerticalAlignment="Top" Width="235" CornerRadius="8" Background="{DynamicResource MainBackgroundBrush}">
-                    <TextBlock x:Name="GameVersionMinecraft_Копировать" Text="Мод" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource MainForegroundBrush}" FontSize="12" TextTrimming="CharacterEllipsis" Padding="5,0"/>
+                    <TextBlock x:Name="GameVersionMinecraft" Text="Мод" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource MainForegroundBrush}" FontSize="12" TextTrimming="CharacterEllipsis" Padding="5,0"/>
                 </Border>
 
                 <Border BorderBrush="Black" BorderThickness="1" HorizontalAlignment="Center" Height="30" Margin="0,6,0,0" VerticalAlignment="Top" Width="234" CornerRadius="8" Background="{DynamicResource MainBackgroundBrush}">

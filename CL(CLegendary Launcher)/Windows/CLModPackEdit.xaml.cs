@@ -6,14 +6,11 @@ using CmlLib.Core.Installer.NeoForge;
 using CmlLib.Core.ModLoaders.FabricMC;
 using CmlLib.Core.ModLoaders.LiteLoader;
 using CmlLib.Core.ModLoaders.QuiltMC;
-using NAudio.Wave;
-using Newtonsoft.Json;
 using Optifine.Installer;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Management;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Windows;
@@ -21,13 +18,12 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Forms;
 using System.Windows.Input;
-using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;
 using Button = System.Windows.Controls.Button;
 using ContextMenu = System.Windows.Controls.ContextMenu;
 using MenuItem = System.Windows.Controls.MenuItem;
-using MessageBox = System.Windows.MessageBox;
 using Path = System.IO.Path;
 using Separator = System.Windows.Controls.Separator;
 
@@ -40,10 +36,9 @@ namespace CL_CLegendary_Launcher_.Windows
         public string PathMods { get; set; }
 
         byte selectmodPack = 0;
-        private bool isSliderDragging;
         public event Action ModpackUpdated;
         private readonly HttpClient httpClient = new HttpClient();
-
+        private bool _isDataLoaded = false;
         public CLModPackEdit()
         {
             InitializeComponent();
@@ -83,28 +78,19 @@ namespace CL_CLegendary_Launcher_.Windows
             {
                 IPAdressServer.Text = LocalizationManager.GetString("Modpacks.ModpackServerIp", "IP Сервера");
             }
-        }
+            if(TxtCustomizationTitle != null)
+                TxtCustomizationTitle.Text = LocalizationManager.GetString("Modpacks.ModpackCustomizationTitle", "Кастомізація");
+            if (BtnChangeIcon != null)
+                BtnChangeIcon.Content = LocalizationManager.GetString("Modpacks.ModpackChangeIconBtn", "Змінити");
+            if (TxtPackIcon != null)
+                TxtPackIcon.Text = LocalizationManager.GetString("Modpacks.ModpackIcon", "Іконка збірки");
 
-        void Click()
-        {
-            Task.Run(() =>
-            {
-                try
-                {
-                    var Click = new NAudio.Vorbis.VorbisWaveReader(Resource2.click);
-                    using (var waveOut = new WaveOutEvent())
-                    {
-                        waveOut.Volume = 0.1f;
-                        waveOut.Init(Click);
-                        waveOut.Play();
-                        while (waveOut.PlaybackState == PlaybackState.Playing)
-                        {
-                            System.Threading.Thread.Sleep(10);
-                        }
-                    }
-                }
-                catch { }
-            });
+            if (TxtJavaPath != null)
+                TxtJavaPath.Text = LocalizationManager.GetString("Modpacks.ModpackJavaPath", "Кастомний шлях до Java");
+            if (TxtJavaPathDesc != null)
+                TxtJavaPathDesc.Text = LocalizationManager.GetString("Modpacks.ModpackJavaPathDesc", "Залиште пустим для авто-пошуку");
+            if (BtnBrowseJava != null)
+                BtnBrowseJava.Content = LocalizationManager.GetString("Modpacks.ModpackBrowseJavaBtn", "Огляд");
         }
         private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
@@ -142,10 +128,32 @@ namespace CL_CLegendary_Launcher_.Windows
             {
                 await UpdateModsList();
             }
+            List<string> detectedJavas = FindInstalledJavas();
+            foreach (string java in detectedJavas)
+            {
+                JavaPathComboBox.Items.Add(java);
+            }
+
+            if (!string.IsNullOrEmpty(CurrentModpack.JavaPath))
+            {
+                if (!JavaPathComboBox.Items.Contains(CurrentModpack.JavaPath))
+                {
+                    JavaPathComboBox.Items.Add(CurrentModpack.JavaPath);
+                }
+
+                JavaPathComboBox.SelectedItem = CurrentModpack.JavaPath;
+                JavaPathComboBox.Text = CurrentModpack.JavaPath;
+            }
+
+            if (!string.IsNullOrEmpty(CurrentModpack.UrlImage) && File.Exists(CurrentModpack.UrlImage))
+            {
+                PackIconImage.Source = ImageHelper.LoadOptimizedImage(CurrentModpack.UrlImage, 64);
+            }
+            _isDataLoaded = true;
         }
         private async void ChangeLoaderVersion_Click(object sender, RoutedEventArgs e)
         {
-            Click();
+            SoundManager.Click();
 
             var btn = sender as Button;
             if (btn == null) return;
@@ -231,21 +239,21 @@ namespace CL_CLegendary_Launcher_.Windows
                 {
                     var versionLoader = new ForgeVersionLoader(httpClient);
                     var forgeList = await versionLoader.GetForgeVersions(mcVersion);
-                    foreach (var forge in forgeList.Take(20))
+                    foreach (var forge in forgeList)
                         versions.Add(forge.ForgeVersionName);
                 }
                 else if (loaderType == "Fabric")
                 {
                     var fabricInstaller = new FabricInstaller(httpClient);
                     var fabricVersions = await fabricInstaller.GetLoaders(mcVersion);
-                    foreach (var fabric in fabricVersions.Take(20))
+                    foreach (var fabric in fabricVersions)
                         versions.Add(fabric.Version);
                 }
                 else if (loaderType == "Quilt")
                 {
                     var quiltInstaller = new QuiltInstaller(httpClient);
                     var quiltVersions = await quiltInstaller.GetLoaders(mcVersion);
-                    foreach (var quilt in quiltVersions.Take(20))
+                    foreach (var quilt in quiltVersions)
                         versions.Add(quilt.Version);
                 }
                 else if (loaderType == "NeoForge")
@@ -254,7 +262,7 @@ namespace CL_CLegendary_Launcher_.Windows
                     var launcher = new MinecraftLauncher(path);
                     var versionLoader = new NeoForgeInstaller(launcher);
                     var neoForgeList = await versionLoader.GetForgeVersions(mcVersion);
-                    foreach (var neo in neoForgeList.Take(20))
+                    foreach (var neo in neoForgeList)
                         versions.Add(neo.VersionName);
                 }
                 else if (loaderType == "LiteLoader")
@@ -418,14 +426,14 @@ namespace CL_CLegendary_Launcher_.Windows
         private void ExitLauncher_MouseDown(object sender, RoutedEventArgs e) => this.Close();
         private void DebugOff_On_Click(object sender, RoutedEventArgs e)
         {
-            Click();
+            SoundManager.Click();
             bool newState = DebugOff_On.IsChecked ?? false;
             EditInstalledModpack(CurrentModpack.Name, "IsConsoleLogOpened", newState);
         }
 
         private void OnJoinServerOff_On_Click(object sender, RoutedEventArgs e)
         {
-            Click();
+            SoundManager.Click();
             bool newState = OnJoinServerOff_On.IsChecked ?? false;
             IPAdressServer.IsEnabled = newState;
             EditInstalledModpack(CurrentModpack.Name, "EnterInServer", newState);
@@ -461,21 +469,30 @@ namespace CL_CLegendary_Launcher_.Windows
         }
         private async void ModsPack_MouseDown(object sender, MouseButtonEventArgs e)
         {
+            SoundManager.Click();
             if (IsVanillaVersion()) { ShowError(LocalizationManager.GetString("Modpacks.VanillaNoMods", "Ванільна версія не підтримує моди.")); return; }
             await SwitchTab(0, 0);
         }
 
-        private async void Resource_packPack_MouseDown(object sender, MouseButtonEventArgs e) => await SwitchTab(1, 40);
+        private async void Resource_packPack_MouseDown(object sender, MouseButtonEventArgs e) {
+            SoundManager.Click();
+            await SwitchTab(1, 40);
+        }
         private async void ShaderPack_MouseDown(object sender, MouseButtonEventArgs e)
         {
+            SoundManager.Click();
             if (IsVanillaVersion()) { ShowError(LocalizationManager.GetString("Modpacks.VanillaNoShaders", "Ванільна версія не підтримує шейдери.")); return; }
             await SwitchTab(2, 80);
         }
-        private void SettingPack_MouseDown(object sender, MouseButtonEventArgs e) => _ = SwitchTab(3, 120);
+        private void SettingPack_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            SoundManager.Click();
+            _ = SwitchTab(3, 120);
+        }
 
         private async Task SwitchTab(byte index, double positionY)
         {
-            Click();
+            SoundManager.Click();
             selectmodPack = index;
 
             AnimationService.AnimateBorderObject(0, positionY, PanelSelectNowSiteMods, true);
@@ -498,15 +515,25 @@ namespace CL_CLegendary_Launcher_.Windows
         }
         private void OPSlider_PreviewMouseUp(object sender, MouseButtonEventArgs e)
         {
+            SoundManager.Click();
             EditInstalledModpack(CurrentModpack.Name, "OPack", (int)OPSlider.Value);
         }
         private void DownloadAddMod_MouseDown(object sender, RoutedEventArgs e)
         {
+            SoundManager.Click();
+
             DownloadEditPack downloadEditPack = new DownloadEditPack(this.CurrentModpack, selectmodPack);
-            downloadEditPack.Show();
+
+            downloadEditPack.Closed += (s, args) =>
+            {
+                _ = UpdateModsList();
+            };
+
+            downloadEditPack.ShowDialog();
         }
         private void AddFileInPack_MouseDown(object sender, RoutedEventArgs e)
         {
+            SoundManager.Click();
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
             {
                 openFileDialog.Filter = selectmodPack == 0
@@ -534,6 +561,125 @@ namespace CL_CLegendary_Launcher_.Windows
                         File.Copy(file, targetPath);
                     }
                     _ = UpdateModsList();
+                }
+            }
+        }
+        private void JavaPathComboBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (!_isDataLoaded || CurrentModpack == null || JavaPathComboBox == null) return;
+
+            EditInstalledModpack(CurrentModpack.Name, "JavaPath", JavaPathComboBox.Text);
+        }
+
+        private void JavaPathComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (!_isDataLoaded || CurrentModpack == null || JavaPathComboBox.SelectedItem == null) return;
+
+            EditInstalledModpack(CurrentModpack.Name, "JavaPath", JavaPathComboBox.SelectedItem.ToString());
+        }
+        private void BtnBrowseJava_Click(object sender, RoutedEventArgs e)
+        {
+            SoundManager.Click();
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            {
+                openFileDialog.Filter = LocalizationManager.GetString("Dialogs.JavaFilter", "Java Executable (javaw.exe)|javaw.exe|Усі файли (*.*)|*.*");
+                openFileDialog.Title = LocalizationManager.GetString("Dialogs.SelectJavaTitle", "Оберіть файл javaw.exe");
+
+                if (openFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                {
+                    string selectedPath = openFileDialog.FileName;
+
+                    if (!JavaPathComboBox.Items.Contains(selectedPath))
+                    {
+                        JavaPathComboBox.Items.Add(selectedPath);
+                    }
+
+                    JavaPathComboBox.SelectedItem = selectedPath;
+                    JavaPathComboBox.Text = selectedPath;
+                }
+            }
+        }
+        private List<string> FindInstalledJavas()
+        {
+            List<string> javaPaths = new List<string>();
+
+            try
+            {
+                string runtimePath = Path.Combine(SettingsManager.Default.PathLacunher, "runtime");
+                if (Directory.Exists(runtimePath))
+                {
+                    var mojangJavas = Directory.GetFiles(runtimePath, "javaw.exe", SearchOption.AllDirectories);
+                    javaPaths.AddRange(mojangJavas);
+                }
+            }
+            catch { }
+
+            string[] baseDirs = {
+                @"C:\Program Files\Java",
+                @"C:\Program Files (x86)\Java",
+                @"C:\Program Files\Eclipse Adoptium",
+                @"C:\Program Files\AdoptOpenJDK",
+                @"C:\Program Files\BellSoft"
+            };
+
+            foreach (var baseDir in baseDirs)
+            {
+                if (Directory.Exists(baseDir))
+                {
+                    try
+                    {
+                        var dirs = Directory.GetDirectories(baseDir);
+                        foreach (var dir in dirs)
+                        {
+                            string javaw = Path.Combine(dir, "bin", "javaw.exe");
+                            if (File.Exists(javaw))
+                            {
+                                javaPaths.Add(javaw);
+                            }
+                        }
+                    }
+                    catch { }
+                }
+            }
+            return javaPaths.Distinct().ToList();
+        }
+        private void BtnChangeIcon_Click(object sender, RoutedEventArgs e)
+        {
+            SoundManager.Click();
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            {
+                openFileDialog.Filter = LocalizationManager.GetString("Dialogs.ImageFilter", "Зображення (*.png;*.jpg;*.jpeg)|*.png;*.jpg;*.jpeg");
+                openFileDialog.Title = LocalizationManager.GetString("Dialogs.SelectIconTitle", "Оберіть іконку для збірки");
+
+                if (openFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                {
+                    try
+                    {
+                        string targetIconPath = Path.Combine(CurrentModpack.Path, "icon.png");
+
+                        if (File.Exists(targetIconPath)) File.Delete(targetIconPath);
+                        File.Copy(openFileDialog.FileName, targetIconPath);
+
+                        var bitmap = new BitmapImage();
+                        bitmap.BeginInit();
+                        bitmap.UriSource = new Uri(targetIconPath, UriKind.Absolute);
+                        bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                        bitmap.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+                        bitmap.DecodePixelWidth = 64; 
+                        bitmap.EndInit();
+                        if (bitmap.CanFreeze) bitmap.Freeze();
+
+                        PackIconImage.Source = bitmap;
+
+                        EditInstalledModpack(CurrentModpack.Name, "UrlImage", targetIconPath);
+                    }
+                    catch (Exception ex)
+                    {
+                        MascotMessageBox.Show(
+                            string.Format(LocalizationManager.GetString("Dialogs.IconSaveError", "Помилка встановлення іконки: {0}"), ex.Message),
+                            LocalizationManager.GetString("Dialogs.Error", "Помилка"),
+                            MascotEmotion.Sad);
+                    }
                 }
             }
         }

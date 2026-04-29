@@ -56,6 +56,7 @@ namespace CL_CLegendary_Launcher_.Windows
 
         private void BtnClose_Click(object sender, RoutedEventArgs e)
         {
+            SoundManager.Click();
             this.Close();
         }
     }

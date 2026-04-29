@@ -51,6 +51,7 @@ namespace CL_CLegendary_Launcher_.Windows
         private async void LanguageComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (!IsLoaded || LanguageComboBox.SelectedItem is not LanguageItem selectedLang) return;
+            SoundManager.Click();
 
             if (LocalizationManager.CurrentLanguage != selectedLang.Code)
             {
@@ -93,30 +94,34 @@ namespace CL_CLegendary_Launcher_.Windows
             BtnAccept.Content = LocalizationManager.GetString("Eula.AcceptBtn", "Згода!");
 
             MascotMessageText.Text = LocalizationManager.GetString("Eula.UpdateMessage", MascotMessageText.Text);
-        }
 
-        private void MascotImage_ImageFailed(object sender, ExceptionRoutedEventArgs e)
-        {
-            HideMascot();
-        }
-
-        private void HideMascot()
-        {
-            MascotPanel.Visibility = Visibility.Collapsed;
-            MascotColumn.Width = new GridLength(0);
+            if (RunCrashTitle != null)
+                RunCrashTitle.Text = LocalizationManager.GetString("Eula.CrashTitle", "Дозволити анонімну відправку звітів про помилки.");
+            if (RunCrashDesc != null)
+                RunCrashDesc.Text = LocalizationManager.GetString("Eula.CrashDesc", "Це допоможе нам швидше виправляти баги. Жодні особисті дані не збираються.");
         }
 
         private void Accept_Click(object sender, RoutedEventArgs e)
         {
+            SoundManager.Click();
+
             SettingsManager.Default.EulaAcceptedDate = _versionDate;
+            bool allowCrashReports = ChkAllowCrashReports.IsChecked == true;
+            SettingsManager.Default.IsCrashReportingEnabled = allowCrashReports;
+
             SettingsManager.Save();
+            if (SettingsManager.Default.IsCrashReportingEnabled)
+            {
+                CrashReportManager.Enable();
+            }
 
             this.DialogResult = true;
             this.Close();
         }
-
         private void Decline_Click(object sender, RoutedEventArgs e)
         {
+            SoundManager.Click();
+
             this.DialogResult = false;
             this.Close();
         }

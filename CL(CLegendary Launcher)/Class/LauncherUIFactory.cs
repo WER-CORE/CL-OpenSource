@@ -3,14 +3,12 @@ using CL_CLegendary_Launcher_.Windows;
 using MCQuery;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using WpfAnimatedGif;
+using XamlAnimatedGif;
 
 namespace CL_CLegendary_Launcher_.Class
 {
@@ -21,12 +19,7 @@ namespace CL_CLegendary_Launcher_.Class
         {
             try
             {
-                _defaultAvatar = new BitmapImage();
-                _defaultAvatar.BeginInit();
-                _defaultAvatar.UriSource = new Uri("pack://application:,,,/Assets/big-steve-face-2002298922 2.png");
-                _defaultAvatar.CacheOption = BitmapCacheOption.OnLoad;
-                _defaultAvatar.EndInit();
-                _defaultAvatar.Freeze();
+                _defaultAvatar = ImageHelper.LoadOptimizedImage("pack://application:,,,/Assets/big-steve-face-2002298922 2.png", 32);
             }
             catch
             {
@@ -142,26 +135,36 @@ namespace CL_CLegendary_Launcher_.Class
             if (serverData.TryGetValue("logoUrl", out object logoValue) &&
                 Uri.TryCreate(logoValue?.ToString(), UriKind.Absolute, out Uri logoUri))
             {
-                int decodeSize = (priority > 100) ? 0 : 64;
-
-                var imageSource = ImageHelper.LoadOptimizedImage(logoUri.ToString(), decodeSize);
-
-                if (imageSource != null)
+                if (priority > 100)
                 {
-                    if (priority > 100)
-                    {
-                        ImageBehavior.SetAnimatedSource(item.MainIcon3, imageSource);
-                    }
-                    else
+                    AnimationBehavior.SetSourceUri(item.MainIcon3, logoUri);
+                }
+                else
+                {
+                    AnimationBehavior.SetSourceUri(item.MainIcon3, null);
+
+                    var imageSource = ImageHelper.LoadOptimizedImage(logoUri.ToString(), 64);
+
+                    if (imageSource != null)
                     {
                         item.MainIcon3.Source = imageSource;
                     }
                 }
             }
             ApplyServerStyles(item, serverData, priority, isNeon, neonColorHex, textColorHex);
+            item.RenderTransformOrigin = new Point(0.5, 0.5);
+            item.RenderTransform = new ScaleTransform(1.0, 1.0);
+            item.MouseEnter += (s, e) => AnimationService.AnimateScale(item, 1.02, 0.15);
+            item.MouseLeave += (s, e) => AnimationService.AnimateScale(item, 1.0, 0.15);
 
             return item;
         }
+
+        private static void IPServerTXT_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
         public static MyItemsServer CreateRegularServerCard(
           Dictionary<string, object> serverData,
           Action<string, string, int> onPlayClick,
@@ -213,28 +216,27 @@ namespace CL_CLegendary_Launcher_.Class
             if (serverData.TryGetValue("logoUrl", out object logoValue) &&
                 Uri.TryCreate(logoValue?.ToString(), UriKind.Absolute, out Uri logoUri))
             {
-                string urlStr = logoUri.ToString();
-                bool isGif = urlStr.EndsWith(".gif", StringComparison.OrdinalIgnoreCase);
-
-                int decodeSize = isGif ? 0 : 128;
-
-                var imageSource = ImageHelper.LoadOptimizedImage(urlStr, decodeSize);
-
-                if (imageSource != null)
+                if (priority > 100)
                 {
-                    if (isGif)
+                    AnimationBehavior.SetSourceUri(item.MainIcon3, logoUri);
+                }
+                else
+                {
+                    AnimationBehavior.SetSourceUri(item.MainIcon3, null);
+
+                    var imageSource = ImageHelper.LoadOptimizedImage(logoUri.ToString(), 64);
+
+                    if (imageSource != null)
                     {
-                        ImageBehavior.SetAnimatedSource(item.MainIcon3, imageSource);
-                    }
-                    else
-                    {
-                        ImageBehavior.SetAnimatedSource(item.MainIcon3, null);
                         item.MainIcon3.Source = imageSource;
                     }
                 }
             }
-
             ApplyServerStyles(item, serverData, priority, isNeon, borderColorHex, textColorHex);
+            item.RenderTransformOrigin = new Point(0.5, 0.5);
+            item.RenderTransform = new ScaleTransform(1.0, 1.0);
+            item.MouseEnter += (s, e) => AnimationService.AnimateScale(item, 1.02, 0.15);
+            item.MouseLeave += (s, e) => AnimationService.AnimateScale(item, 1.0, 0.15);
 
             return item;
         }
@@ -247,7 +249,7 @@ namespace CL_CLegendary_Launcher_.Class
             {
                 string url = bgUrlValue?.ToString();
 
-                var bgImage = ImageHelper.LoadOptimizedImage(url, 300);
+                var bgImage = ImageHelper.LoadOptimizedImage(url, 250);
 
                 if (bgImage != null)
                 {
@@ -332,7 +334,6 @@ namespace CL_CLegendary_Launcher_.Class
                 Author = mod.Author,
                 DownloadCount = FormatNumber(mod.Downloads),
                 LastUpdateDate = mod.UpdatedDate,
-                CreateDate = mod.CreatedDate,
 
                 UrlMods = mod.Slug,
                 TypeSite = mod.Site,
@@ -345,20 +346,18 @@ namespace CL_CLegendary_Launcher_.Class
             {
                 try
                 {
-                    var bitmap = new BitmapImage();
-                    bitmap.BeginInit();
-                    bitmap.UriSource = new Uri(mod.IconUrl);
-                    bitmap.DecodePixelWidth = 64;
-                    bitmap.CacheOption = BitmapCacheOption.OnLoad;
-                    bitmap.EndInit();
-                    item.ModImage = bitmap;
+                    item.ModImage = ImageHelper.LoadOptimizedImage(mod.IconUrl, 42);
                 }
                 catch { }
             }
 
-            item.DowloadTXT.MouseDown += (s, e) => onDownloadClick(mod);
+            item.DowloadTXT.PreviewMouseDown += (s, e) => onDownloadClick(mod);
 
-            item.UserControl.MouseDoubleClick += (s, e) => onOpenUrlClick(mod);
+            item.DetailsMod.PreviewMouseDown += (s, e) => onOpenUrlClick(mod);
+            item.RenderTransformOrigin = new Point(0.5, 0.5);
+            item.RenderTransform = new ScaleTransform(1.0, 1.0);
+            item.MouseEnter += (s, e) => AnimationService.AnimateScale(item, 1.02, 0.15);
+            item.MouseLeave += (s, e) => AnimationService.AnimateScale(item, 1.0, 0.15);
 
             return item;
         }
@@ -378,9 +377,6 @@ namespace CL_CLegendary_Launcher_.Class
             {
                 try
                 {
-                    var bitmap = new BitmapImage();
-                    bitmap.BeginInit();
-
                     Uri imageUri;
                     if (pack.UrlImage.StartsWith("http") || pack.UrlImage.StartsWith("pack://"))
                     {
@@ -390,17 +386,7 @@ namespace CL_CLegendary_Launcher_.Class
                     {
                         imageUri = new Uri(pack.UrlImage, UriKind.Absolute);
                     }
-
-                    bitmap.UriSource = imageUri;
-
-                    bitmap.CacheOption = BitmapCacheOption.OnLoad;
-
-                    bitmap.DecodePixelWidth = 100;
-
-                    bitmap.EndInit();
-                    bitmap.Freeze();
-
-                    item.IconModPack.Source = bitmap;
+                    item.IconModPack.Source = ImageHelper.LoadOptimizedImage(imageUri.ToString(), 64);
                 }
                 catch
                 {
@@ -414,6 +400,10 @@ namespace CL_CLegendary_Launcher_.Class
             item.ShareBorder.MouseLeftButtonUp += (s, e) => onShare(pack);
 
             item.Cursor = System.Windows.Input.Cursors.Hand;
+            item.RenderTransformOrigin = new Point(0.5, 0.5);
+            item.RenderTransform = new ScaleTransform(1.0, 1.0);
+            item.MouseEnter += (s, e) => AnimationService.AnimateScale(item, 1.02, 0.15);
+            item.MouseLeave += (s, e) => AnimationService.AnimateScale(item, 1.0, 0.15);
 
             return item;
         }
@@ -457,18 +447,7 @@ namespace CL_CLegendary_Launcher_.Class
             {
                 try
                 {
-                    var uri = new Uri(profile.ImageUrl, UriKind.RelativeOrAbsolute);
-                    var image = new BitmapImage();
-                    image.BeginInit();
-                    image.UriSource = uri;
-                    image.CacheOption = BitmapCacheOption.OnLoad;
-
-                    image.DecodePixelWidth = 100;
-
-                    image.EndInit();
-                    image.Freeze();
-
-                    item.IconAccountType.Source = image;
+                    item.IconAccountType.Source = ImageHelper.LoadOptimizedImage(profile.ImageUrl, 32);
                 }
                 catch
                 {
@@ -491,18 +470,7 @@ namespace CL_CLegendary_Launcher_.Class
             {
                 try
                 {
-                    var image = new BitmapImage();
-                    image.BeginInit();
-                    image.UriSource = new Uri(data.IconUrl, UriKind.Absolute);
-                    image.CacheOption = BitmapCacheOption.OnLoad;
-                    image.DecodePixelWidth = 300;
-
-                    image.EndInit();
-
-                    if (image.CanFreeze)
-                        image.Freeze();
-
-                    item.ImageNews.Source = image;
+                    item.ImageNews.Source = ImageHelper.LoadOptimizedImage(data.IconUrl,200);
                 }
                 catch
                 {
@@ -513,6 +481,10 @@ namespace CL_CLegendary_Launcher_.Class
             item.MouseLeftButtonUp += (s, e) => onClick(data);
 
             item.Cursor = System.Windows.Input.Cursors.Hand;
+            item.RenderTransformOrigin = new Point(0.5, 0.5);
+            item.RenderTransform = new ScaleTransform(1.0, 1.0);
+            item.MouseEnter += (s, e) => AnimationService.AnimateScale(item, 1.02, 0.15);
+            item.MouseLeave += (s, e) => AnimationService.AnimateScale(item, 1.0, 0.15);
 
             return item;
         }

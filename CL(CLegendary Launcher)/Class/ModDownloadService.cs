@@ -48,7 +48,7 @@ namespace CL_CLegendary_Launcher_.Class
     public class ModDownloadService
     {
         private static readonly HttpClient _httpClient = new HttpClient { Timeout = TimeSpan.FromMinutes(10) };
-        private static readonly ApiClient _cfApiClient = new ApiClient(Secrets.CurseForgeKey);
+        private static ApiClient _cfApiClientInstance;
 
         private static readonly SemaphoreSlim _downloadSemaphore = new SemaphoreSlim(3);
         private readonly JsonSerializerSettings _modrinthSettings;
@@ -76,7 +76,33 @@ namespace CL_CLegendary_Launcher_.Class
             };
             return Path.Combine(pack.Path, folderName);
         }
+        private async Task<ApiClient> GetCfClientAsync()
+        {
+            if (_cfApiClientInstance != null) return _cfApiClientInstance;
 
+            try
+            {
+                using var client = new HttpClient();
+                client.DefaultRequestHeaders.Add("", "");
+
+                var response = await client.GetAsync($"{Secrets.CurseForgeKey}");
+                if (response.IsSuccessStatusCode)
+                {
+                    string json = await response.Content.ReadAsStringAsync();
+                    var data = JObject.Parse(json);
+                    string key = data["key"]?.ToString();
+
+                    _cfApiClientInstance = new ApiClient(key);
+                    return _cfApiClientInstance;
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Не вдалося отримати ключ CurseForge: {ex.Message}");
+            }
+
+            return null;
+        }
         public async Task<List<ModSearchResult>> SearchModsAsync(string query, string site, string loader, int modType, int offset = 0)
         {
             if (site == "Modrinth") return await SearchModrinthAsync(query, loader, modType, offset);
@@ -359,6 +385,8 @@ namespace CL_CLegendary_Launcher_.Class
         #region CurseForge Logic
         private async Task<List<ModSearchResult>> SearchCurseForgeAsync(string query, string loader, int modType, int offset = 0)
         {
+            var cfApi = await GetCfClientAsync();
+            if (cfApi == null) return new List<ModSearchResult>();
             ModLoaderType? targetLoaderType = null;
             if (modType == 0)
             {
@@ -386,7 +414,7 @@ namespace CL_CLegendary_Launcher_.Class
 
             try
             {
-                var response = await _cfApiClient.SearchModsAsync(
+                var response = await cfApi.SearchModsAsync(
                     gameId: 432,
                     classId: classId,
                     searchFilter: cleanQuery,
@@ -423,12 +451,14 @@ namespace CL_CLegendary_Launcher_.Class
                 return new List<ModSearchResult>();
             }
         }
-
         private async Task<List<ModVersionInfo>> GetCurseForgeVersionsAsync(int modId)
         {
             try
             {
-                var response = await _cfApiClient.GetModFilesAsync(modId);
+                var cfApi = await GetCfClientAsync();
+                if (cfApi == null) return new List<ModVersionInfo>();
+
+                var response = await cfApi.GetModFilesAsync(modId);
                 var list = new List<ModVersionInfo>();
                 if (response?.Data == null) return list;
 
@@ -523,7 +553,6 @@ namespace CL_CLegendary_Launcher_.Class
             catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Modrinth Deps Error: {ex.Message}"); }
             return urls;
         }
-
         private async Task<List<string>> GetCurseForgeDependencyUrls(ModVersionInfo parentMod)
         {
             var urls = new List<string>();
@@ -532,7 +561,10 @@ namespace CL_CLegendary_Launcher_.Class
 
             try
             {
-                var fileData = await _cfApiClient.GetModFileAsync(int.Parse(parentMod.ModId), int.Parse(parentMod.VersionId));
+                var cfApi = await GetCfClientAsync();
+                if (cfApi == null) return urls;
+
+                var fileData = await cfApi.GetModFileAsync(int.Parse(parentMod.ModId), int.Parse(parentMod.VersionId));
                 if (fileData?.Data?.Dependencies != null)
                 {
                     foreach (var dep in fileData.Data.Dependencies)
@@ -541,8 +573,8 @@ namespace CL_CLegendary_Launcher_.Class
                         {
                             string loader = parentMod.Loaders.FirstOrDefault();
                             var depFiles = (!string.IsNullOrEmpty(loader))
-                                ? await _cfApiClient.GetModFilesAsync(modId: dep.ModId, gameVersion: gameVersion, modLoaderType: (ModLoaderType)Enum.Parse(typeof(ModLoaderType), loader, true))
-                                : await _cfApiClient.GetModFilesAsync(modId: dep.ModId, gameVersion: gameVersion);
+                                ? await cfApi.GetModFilesAsync(modId: dep.ModId, gameVersion: gameVersion, modLoaderType: (ModLoaderType)Enum.Parse(typeof(ModLoaderType), loader, true))
+                                : await cfApi.GetModFilesAsync(modId: dep.ModId, gameVersion: gameVersion);
 
                             if (depFiles?.Data?.Count > 0)
                             {
@@ -634,7 +666,6 @@ namespace CL_CLegendary_Launcher_.Class
             catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Modrinth ModPack Error: {ex.Message}"); }
             return list;
         }
-
         private async Task<List<ModInfo>> GetCurseForgeDependenciesInfo(ModVersionInfo parentMod, string loader, string typeStr)
         {
             var list = new List<ModInfo>();
@@ -643,7 +674,10 @@ namespace CL_CLegendary_Launcher_.Class
 
             try
             {
-                var fileData = await _cfApiClient.GetModFileAsync(int.Parse(parentMod.ModId), int.Parse(parentMod.VersionId));
+                var cfApi = await GetCfClientAsync();
+                if (cfApi == null) return list;
+
+                var fileData = await cfApi.GetModFileAsync(int.Parse(parentMod.ModId), int.Parse(parentMod.VersionId));
                 if (fileData?.Data?.Dependencies == null) return list;
 
                 ModLoaderType cfLoaderType = ModLoaderType.Any;
@@ -653,23 +687,23 @@ namespace CL_CLegendary_Launcher_.Class
                 {
                     if (dep.RelationType == FileRelationType.RequiredDependency)
                     {
-                        var modInfo = await _cfApiClient.GetModAsync(dep.ModId);
+                        var modInfo = await cfApi.GetModAsync(dep.ModId);
                         if (modInfo?.Data == null) continue;
 
                         string depName = modInfo.Data.Name;
                         string depIcon = modInfo.Data.Logo?.Url;
                         CurseForge.APIClient.Models.Files.File latestFile = null;
 
-                        var depFilesResponse = await _cfApiClient.GetModFilesAsync(modId: dep.ModId, gameVersion: gameVersion, modLoaderType: cfLoaderType);
+                        var depFilesResponse = await cfApi.GetModFilesAsync(modId: dep.ModId, gameVersion: gameVersion, modLoaderType: cfLoaderType);
 
                         if ((depFilesResponse?.Data == null || depFilesResponse.Data.Count == 0) && gameVersion.Count(c => c == '.') == 2)
                         {
                             string majorVersion = gameVersion.Substring(0, gameVersion.LastIndexOf('.'));
-                            depFilesResponse = await _cfApiClient.GetModFilesAsync(modId: dep.ModId, gameVersion: majorVersion, modLoaderType: cfLoaderType);
+                            depFilesResponse = await cfApi.GetModFilesAsync(modId: dep.ModId, gameVersion: majorVersion, modLoaderType: cfLoaderType);
                         }
                         if (depFilesResponse?.Data == null || depFilesResponse.Data.Count == 0)
                         {
-                            depFilesResponse = await _cfApiClient.GetModFilesAsync(modId: dep.ModId, modLoaderType: cfLoaderType);
+                            depFilesResponse = await cfApi.GetModFilesAsync(modId: dep.ModId, modLoaderType: cfLoaderType);
                         }
 
                         if (depFilesResponse?.Data != null && depFilesResponse.Data.Count > 0)
@@ -699,7 +733,7 @@ namespace CL_CLegendary_Launcher_.Class
             }
             catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"CurseForge ModPack Error: {ex.Message}"); }
             return list;
-        }
+        }        
         #endregion
     }
 

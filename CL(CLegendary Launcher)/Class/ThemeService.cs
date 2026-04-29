@@ -12,7 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;
-using WpfAnimatedGif;
+using XamlAnimatedGif;
 using Application = System.Windows.Application;
 using Button = System.Windows.Controls.Button;
 using Color = System.Windows.Media.Color;
@@ -62,7 +62,7 @@ namespace CL_CLegendary_Launcher_.Class
 
             ApplicationThemeManager.Apply(targetSystemTheme, WindowBackdropType.Mica, true);
 
-            ImageBehavior.SetAnimatedSource(_main.Bg, null);
+            AnimationBehavior.SetSourceUri(_main.Bg, null);
 
             var dictionariesToAdd = new List<ResourceDictionary>();
 
@@ -77,7 +77,7 @@ namespace CL_CLegendary_Launcher_.Class
                         dictionariesToAdd.Add(new ResourceDictionary { Source = new Uri("Them/DarkTheme.xaml", UriKind.Relative) });
                         dictionariesToAdd.Add(new ResourceDictionary { Source = new Uri("Them/DarkThemeSerLisAndUpdMinecraft.xaml", UriKind.Relative) });
 
-                        _main.Bg.Source = new BitmapImage(new Uri("pack://application:,,,/Assets/DarkThemBG.webp"));
+                        _main.Bg.Source = ImageHelper.LoadOptimizedImage("pack://application:,,,/Assets/DarkThemBG.png", 800);
                         break;
 
                     case "Light":
@@ -87,7 +87,7 @@ namespace CL_CLegendary_Launcher_.Class
                         dictionariesToAdd.Add(new ResourceDictionary { Source = new Uri("Them/LightTheme.xaml", UriKind.Relative) });
                         dictionariesToAdd.Add(new ResourceDictionary { Source = new Uri("Them/LightThemeSerLisAndUpdMinecraft.xaml", UriKind.Relative) });
 
-                        _main.Bg.Source = new BitmapImage(new Uri("pack://application:,,,/Assets/LightThemBG.webp"));
+                        _main.Bg.Source = ImageHelper.LoadOptimizedImage("pack://application:,,,/Assets/LightThemBG.png", 800);
                         break;
 
                     case "Custom":
@@ -160,7 +160,7 @@ namespace CL_CLegendary_Launcher_.Class
         public void HandleResetCustomThemeClick()
         {
             EnsureCustomThemeFileExists();
-            _main.Click();
+            SoundManager.Click();
 
             SettingsManager.Default.bgImage = "";
 
@@ -180,6 +180,7 @@ namespace CL_CLegendary_Launcher_.Class
 
             ApplyTheme("Dark");
             SetColourButtons();
+            MemoryCleaner.FlushMemory(true);
         }
         public object CreateColorButtonContent(string colorHex)
         {
@@ -285,26 +286,26 @@ namespace CL_CLegendary_Launcher_.Class
                 SettingsManager.Default.bgImage = "";
                 return;
             }
-
             try
             {
                 Uri uri = new(bg, UriKind.Absolute);
-                ImageBehavior.SetAnimatedSource(_main.Bg, null);
+
+                AnimationBehavior.SetSourceUri(_main.Bg, null);
 
                 if (bg.EndsWith(".gif", StringComparison.OrdinalIgnoreCase))
                 {
-                    var gifImage = new BitmapImage(uri);
-                    ImageBehavior.SetAnimatedSource(_main.Bg, gifImage);
+                    AnimationBehavior.SetSourceUri(_main.Bg, uri);
                 }
                 else
                 {
                     var img = new BitmapImage();
                     img.BeginInit();
                     img.UriSource = uri;
-                    img.DecodePixelWidth = 1080;
-                    img.DecodePixelHeight = 1920;
+                    img.DecodePixelWidth = 800;
                     img.CacheOption = BitmapCacheOption.OnLoad;
                     img.EndInit();
+                    if (img.CanFreeze) img.Freeze();
+
                     _main.Bg.Source = img;
                 }
                 _main.Bg.Opacity = 0.75;
@@ -380,6 +381,7 @@ namespace CL_CLegendary_Launcher_.Class
 
         public void HandleSaveCustomThemeClick()
         {
+            SoundManager.Click();
             currentTheme = "Custom";
             ApplyTheme("Custom");
             SettingsManager.Default.Them = "Custom";
@@ -457,6 +459,7 @@ namespace CL_CLegendary_Launcher_.Class
         }
         public void HandleLoadScreenBackgroundClick()
         {
+            SoundManager.Click();
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.Filter = "Image files (*.png;*.jpg;*.jpeg)|*.png;*.jpg;*.jpeg|All files (*.*)|*.*";
 
@@ -476,6 +479,7 @@ namespace CL_CLegendary_Launcher_.Class
         }
         public void HandleEditPhrasesClick()
         {
+            SoundManager.Click();
             string phrasesPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "loading_phrases.txt");
             string dataDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data");
 
@@ -505,6 +509,7 @@ namespace CL_CLegendary_Launcher_.Class
         }
         public void HandleLoadScreenColorClick(Button previewButton)
         {
+            SoundManager.Click();
             ColorDialog colorDialog = new ColorDialog();
             colorDialog.FullOpen = true;
 
@@ -524,6 +529,7 @@ namespace CL_CLegendary_Launcher_.Class
         }
         public void HandleResetLoadScreenClick(Button previewButton)
         {
+            SoundManager.Click();
             var result = MascotMessageBox.Ask(
                 LocalizationManager.GetString("ThemesCustomization.ResetLoadScreenDesc", "Хочеш повернути все як було?\nЦе скине твій фон та колір смужки на стандартні налаштування."),
                 LocalizationManager.GetString("ThemesCustomization.ResetLoadScreenTitle", "Генеральне прибирання"),
@@ -548,6 +554,7 @@ namespace CL_CLegendary_Launcher_.Class
                     _main.SnackbarPresenter
                 );
             }
+            MemoryCleaner.FlushMemory(true);
         }
         public string ExportMainTheme()
         {

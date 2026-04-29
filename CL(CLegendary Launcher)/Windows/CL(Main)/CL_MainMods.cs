@@ -23,6 +23,7 @@ namespace CL_CLegendary_Launcher_
 
         private void VersionMods_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            SoundManager.Click();
             if (Version.SelectedItem != null && VersionMods.SelectedItem != null)
             {
                 DowloadMod.IsEnabled = true;
@@ -44,6 +45,7 @@ namespace CL_CLegendary_Launcher_
 
                 ModsDowloadList.Visibility = Visibility.Collapsed;
                 ModsSearchLoader.Visibility = Visibility.Visible;
+                ModsSkeletonPanel.Visibility = Visibility.Visible;
 
                 if (PaginationPanel != null) PaginationPanel.Visibility = Visibility.Visible;
 
@@ -106,12 +108,14 @@ namespace CL_CLegendary_Launcher_
             finally
             {
                 ModsSearchLoader.Visibility = Visibility.Collapsed;
+                ModsSkeletonPanel.Visibility = Visibility.Collapsed;
                 ModsDowloadList.Visibility = Visibility.Visible;
             }
         }
 
         private async void PrevPageBtn_Click(object sender, RoutedEventArgs e)
         {
+            SoundManager.Click();
             if (_currentPage > 0)
             {
                 _currentPage--;
@@ -121,6 +125,7 @@ namespace CL_CLegendary_Launcher_
 
         private async void NextPageBtn_Click(object sender, RoutedEventArgs e)
         {
+            SoundManager.Click();
             _currentPage++;
             await UpdateModsMinecraftAsync();
         }
@@ -141,6 +146,7 @@ namespace CL_CLegendary_Launcher_
 
         private async void HandleModDownloadClick(ModSearchResult mod)
         {
+            SoundManager.Click();
             if (Version != null) Version.Items.Clear();
             if (VersionMods != null) VersionMods.Items.Clear();
             if (CollectionList != null)
@@ -175,6 +181,18 @@ namespace CL_CLegendary_Launcher_
                 {
                     CollectionListBorder.Visibility = Visibility.Visible;
                     var modpacks = _modpackService.LoadInstalledModpacks();
+
+                    if (modpacks == null || !modpacks.Any())
+                    {
+                        MascotMessageBox.Show(
+                            LocalizationManager.GetString("Mods.NoModpacksDesc", "У вас ще немає жодної створеної збірки! Спочатку створіть збірку, щоб я могла додати туди цей мод."),
+                            LocalizationManager.GetString("Mods.NoModpacksTitle", "Немає збірок"),
+                            MascotEmotion.Normal
+                        );
+                        CloseInstallerMenu();
+                        return;
+                    }
+
                     CollectionList.ItemsSource = modpacks;
                     CollectionList.DisplayMemberPath = "Name";
                 }
@@ -186,9 +204,20 @@ namespace CL_CLegendary_Launcher_
                     var gameVersions = _currentModVersions
                         .SelectMany(v => v.GameVersions)
                         .Distinct()
-                        .Where(v => char.IsDigit(v[0]))
+                        .Where(v => !string.IsNullOrEmpty(v) && char.IsDigit(v[0]))
                         .OrderByDescending(v => v)
                         .ToList();
+
+                    if (!gameVersions.Any())
+                    {
+                        MascotMessageBox.Show(
+                            LocalizationManager.GetString("Mods.NoVersionsDesc", "Я знайшла файли, але жоден з них не має чіткої версії гри (можливо, мод застарів)."),
+                            LocalizationManager.GetString("Mods.NoVersionsTitle", "Версії відсутні"),
+                            MascotEmotion.Confused
+                        );
+                        CloseInstallerMenu();
+                        return;
+                    }
 
                     foreach (var gv in gameVersions) Version.Items.Add(gv);
 
@@ -211,6 +240,7 @@ namespace CL_CLegendary_Launcher_
         private async void DowloadMod_Click(object sender, System.Windows.RoutedEventArgs e)
         {
             if (VersionMods.SelectedItem == null || _currentModVersions == null) return;
+            SoundManager.Click();
 
             var selectedVersionInfo = _currentModVersions.FirstOrDefault(v => v.VersionName == VersionMods.SelectedItem.ToString());
             if (selectedVersionInfo == null) return;
@@ -294,6 +324,7 @@ namespace CL_CLegendary_Launcher_
 
         private void OpenModInBrowser(ModSearchResult mod)
         {
+            SoundManager.Click();
             string baseUrl = mod.Site == "Modrinth" ? "https://modrinth.com" : "https://www.curseforge.com/minecraft";
             string category = mod.Site == "Modrinth"
                 ? (selectmodificed == 1 ? "shader" : selectmodificed == 2 ? "resourcepack" : selectmodificed == 4 ? "datapack" : "mod")
@@ -304,6 +335,8 @@ namespace CL_CLegendary_Launcher_
 
         private void CollectionList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            SoundManager.Click();
+
             VersionMods.Items.Clear();
 
             if (CollectionList.SelectedItem is not InstalledModpack selectedPack || _currentModVersions == null)
@@ -348,6 +381,8 @@ namespace CL_CLegendary_Launcher_
 
         private void Version_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            SoundManager.Click();
+
             VersionMods.Items.Clear();
             if (Version.SelectedItem == null || _currentModVersions == null)
             {
@@ -405,7 +440,7 @@ namespace CL_CLegendary_Launcher_
 
         private async Task ChangeModCategory(byte categoryId, object senderButton)
         {
-            Click();
+            SoundManager.Click();
 
             _currentCategoryIndex = categoryId;
             selectmodificed = categoryId;
@@ -437,33 +472,11 @@ namespace CL_CLegendary_Launcher_
             double newX = relativePoint.X;
             double newWidth = targetButton.ActualWidth;
 
-            if (animate)
-            {
-                AnimationService.AnimateBorder(newX, 0, PanelSelectNowDowloadModifi);
-
-                DoubleAnimation widthAnim = new DoubleAnimation(newWidth, TimeSpan.FromMilliseconds(300))
-                {
-                    EasingFunction = new PowerEase { EasingMode = EasingMode.EaseInOut }
-                };
-                PanelSelectNowDowloadModifi.BeginAnimation(FrameworkElement.WidthProperty, widthAnim);
-            }
-            else
-            {
-                PanelSelectNowDowloadModifi.BeginAnimation(FrameworkElement.WidthProperty, null);
-
-                PanelSelectNowDowloadModifi.Width = newWidth;
-
-                if (PanelTranslateTransform6 != null)
-                {
-                    PanelTranslateTransform6.BeginAnimation(TranslateTransform.XProperty, null);
-                    PanelTranslateTransform6.X = newX;
-                }
-            }
+            AnimationService.AnimateTabIndicator(PanelSelectNowDowloadModifi, PanelTranslateTransform6, newX, newWidth, animate);
         }
-
         private void DowloadModDepOff_On_MouseDown(object sender, RoutedEventArgs e)
         {
-            Click();
+            SoundManager.Click();
             SettingsManager.Default.ModDep = !SettingsManager.Default.ModDep;
             SettingsManager.Save();
             ModDepsToggle.IsChecked = SettingsManager.Default.ModDep;
@@ -471,14 +484,14 @@ namespace CL_CLegendary_Launcher_
 
         private void ImportTXT_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            Click();
+            SoundManager.Click();
             var dowloadModPack = new DowloadModPack(_modpackService);
             dowloadModPack.Show();
         }
 
         private void DowloadModPacks_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            Click();
+            SoundManager.Click();
             AnimationService.AnimatePageTransition(GridFormAccountAdd);
             AnimationService.AnimatePageTransition(SelectCreatePackMinecraft);
         }
@@ -533,7 +546,7 @@ namespace CL_CLegendary_Launcher_
 
         private void OnPlayModpackClicked(InstalledModpack pack)
         {
-            Click();
+            SoundManager.Click();
             _modpackService.PlayModPack(
                 pack.MinecraftVersion,
                 pack.LoaderVersion,
@@ -541,13 +554,14 @@ namespace CL_CLegendary_Launcher_
                 pack.Name,
                 pack.Path,
                 pack.PathJson,
-                pack.TypeSite
+                pack.TypeSite,
+                pack.JavaPath
             );
         }
 
         private void OnDeleteModpackClicked(InstalledModpack pack)
         {
-            Click();
+            SoundManager.Click();
             if (MascotMessageBox.Ask(
                 string.Format(LocalizationManager.GetString("Dialogs.DeleteConfirm", "Видалити {0}?"), pack.Name),
                 LocalizationManager.GetString("Dialogs.DeleteConfirmTitle", "Видалення"), MascotEmotion.Alert) == true)
@@ -561,7 +575,7 @@ namespace CL_CLegendary_Launcher_
 
         private void OnOpenModpackFolder(InstalledModpack pack)
         {
-            Click();
+            SoundManager.Click();
             if (Directory.Exists(pack.Path))
             {
                 System.Diagnostics.Process.Start("explorer.exe", pack.Path);
@@ -577,7 +591,7 @@ namespace CL_CLegendary_Launcher_
 
         private void OnEditModpackClicked(InstalledModpack pack)
         {
-            Click();
+            SoundManager.Click();
 
             var editWindow = new CLModPackEdit();
 
@@ -614,6 +628,7 @@ namespace CL_CLegendary_Launcher_
                 Height = pack.Height,
                 IsConsoleLogOpened = pack.IsConsoleLogOpened,
                 OPack = pack.OPack,
+                JavaPath = pack.JavaPath
             };
 
             editWindow.CurrentModpack = modpackInfo;
@@ -630,7 +645,7 @@ namespace CL_CLegendary_Launcher_
 
         private void OnExportModpackClicked(InstalledModpack pack)
         {
-            Click();
+            SoundManager.Click();
 
             var saveDialog = new Microsoft.Win32.SaveFileDialog
             {
@@ -662,6 +677,9 @@ namespace CL_CLegendary_Launcher_
                         Minecraft = pack.MinecraftVersion,
                         Loader = pack.LoaderType,
                         LoaderVersion = pack.LoaderVersion,
+                        HasCustomIcon = File.Exists(Path.Combine(pack.Path, "icon.png")) ||
+                                        File.Exists(Path.Combine(pack.Path, "overrides", "icon.png")) ||
+                                        File.Exists(Path.Combine(pack.Path, "override", "icon.png")),
                         Files = new List<ModInfo>()
                     };
 
@@ -700,14 +718,14 @@ namespace CL_CLegendary_Launcher_
                 }
             }
         }
-
         private async void OnModProviderClicked(object sender, MouseButtonEventArgs e)
         {
-            Click();
+            SoundManager.Click();
             if (sender is FrameworkElement element && element.Tag is string provider)
             {
                 double targetPos = (provider == "Modrinth") ? 0 : 45;
-                AnimationService.AnimateBorder(0, targetPos, PanelSelectNowSiteMods);
+
+                AnimationService.AnimateVerticalIndicator(PanelSelectNowSiteMods, targetPos);
 
                 SiteMods = provider;
                 ModsDowloadList.Items.Clear();
@@ -717,7 +735,7 @@ namespace CL_CLegendary_Launcher_
 
         private async void OnLoaderTypeClicked(object sender, MouseButtonEventArgs e)
         {
-            Click();
+            SoundManager.Click();
             if (sender is FrameworkElement element && element.Tag is string loaderType)
             {
                 double targetPos = loaderType switch
@@ -729,7 +747,8 @@ namespace CL_CLegendary_Launcher_
                     _ => 0
                 };
 
-                AnimationService.AnimateBorder(0, targetPos, PanelSelectNowVersionType);
+                AnimationService.AnimateVerticalIndicator(PanelSelectNowVersionType, targetPos);
+
                 VersionType = loaderType;
                 ModsDowloadList.Items.Clear();
                 await UpdateModsMinecraftAsync();
@@ -738,8 +757,10 @@ namespace CL_CLegendary_Launcher_
 
         private async void ModsDowloadTypeTXT_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            Click();
-            AnimationService.AnimateBorder(0, 0, PanelSelectNowModsType);
+            SoundManager.Click();
+
+            AnimationService.AnimateVerticalIndicator(PanelSelectNowModsType, 0);
+
             ModType = "Collection";
             ModsDowloadList.Items.Clear();
             VersionVanilBorder.Visibility = Visibility.Hidden;
@@ -749,40 +770,61 @@ namespace CL_CLegendary_Launcher_
 
         private async void ModsManegerTypeTXT_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            Click();
-            AnimationService.AnimateBorder(0, 45, PanelSelectNowModsType);
+            SoundManager.Click();
+
+            AnimationService.AnimateVerticalIndicator(PanelSelectNowModsType, 45);
+
             ModType = "Standard";
             ModsDowloadList.Items.Clear();
             VersionVanilBorder.Visibility = Visibility.Visible;
             CollectionListBorder.Visibility = Visibility.Hidden;
             await UpdateModsMinecraftAsync();
         }
-
         private void GirdModsDowload_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            Click();
+            SoundManager.Click();
             AnimationService.FadeOut(GirdModsDowload, 0.3);
             AnimationService.FadeOut(MenuInstaller, 0.3);
 
-            if (VersionMods != null) VersionMods.Items.Clear();
-            if (Version != null) Version.Items.Clear();
-            if (CollectionList != null) CollectionList.Items.Clear();
+            if (VersionMods != null)
+            {
+                if (VersionMods.ItemsSource != null)
+                    VersionMods.ItemsSource = null;
+                else
+                    VersionMods.Items.Clear();
+            }
+            if (Version != null)
+            {
+                if (Version.ItemsSource != null)
+                    Version.ItemsSource = null;
+                else
+                    Version.Items.Clear();
+            }
+            if (CollectionList != null)
+            {
+                if (CollectionList.ItemsSource != null)
+                    CollectionList.ItemsSource = null;
+                else
+                    CollectionList.Items.Clear();
+            }
         }
-
         private void VanilaPackIcon_MouseDown(object sender, MouseButtonEventArgs e)
         {
+            SoundManager.Click();
             SelectModPackCreate = 0;
             AnimationService.AnimateBorderObject(0, 0, SelectModPack, true);
         }
 
         private void ModPackIcon_MouseDown(object sender, MouseButtonEventArgs e)
         {
+            SoundManager.Click();
             SelectModPackCreate = 1;
             AnimationService.AnimateBorderObject(150, 0, SelectModPack, true);
         }
 
         private void BorderCountionCreatePack_MouseDown(object sender, MouseButtonEventArgs e)
         {
+            SoundManager.Click();
             AnimationService.AnimatePageTransitionExit(SelectCreatePackMinecraft);
             AnimationService.AnimatePageTransitionExit(GridFormAccountAdd);
 

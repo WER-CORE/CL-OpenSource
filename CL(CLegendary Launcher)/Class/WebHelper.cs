@@ -13,7 +13,6 @@ namespace CL_CLegendary_Launcher_.Class
         private static readonly List<BrowserInfo> _supportedBrowsers = new List<BrowserInfo>
         {
             new BrowserInfo("chrome.exe", @"Google\Chrome\Application\chrome.exe"),
-            new BrowserInfo("msedge.exe", @"Microsoft\Edge\Application\msedge.exe"),
             new BrowserInfo("firefox.exe", @"Mozilla Firefox\firefox.exe"),
             new BrowserInfo("brave.exe", @"BraveSoftware\Brave-Browser\Application\brave.exe"),
             new BrowserInfo("vivaldi.exe", @"Vivaldi\Application\vivaldi.exe"),
@@ -27,7 +26,8 @@ namespace CL_CLegendary_Launcher_.Class
             new BrowserInfo("epic.exe", @"Epic Privacy Browser\Application\epic.exe"),
             new BrowserInfo("AvastBrowser.exe", @"AVAST Software\Browser\Application\AvastBrowser.exe"),
             new BrowserInfo("CCleanerBrowser.exe", @"CCleaner Browser\Application\CCleanerBrowser.exe"),
-            new BrowserInfo("chromium.exe", @"Chromium\Application\chromium.exe")
+            new BrowserInfo("chromium.exe", @"Chromium\Application\chromium.exe"),
+            new BrowserInfo("msedge.exe", @"Microsoft\Edge\Application\msedge.exe")
         };
 
         public static void OpenUrl(string url)
@@ -56,15 +56,8 @@ namespace CL_CLegendary_Launcher_.Class
 
                 if (!launched)
                 {
-                    try
-                    {
-                        Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
-                        launched = true;
-                    }
-                    catch
-                    {
-                        ShowWebViewWindow(url);
-                    }
+                    Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+                    launched = true;
                 }
             }
             catch (Exception ex)
@@ -101,57 +94,6 @@ namespace CL_CLegendary_Launcher_.Class
 
             return null;
         }
-
-        private static void ShowWebViewWindow(string url)
-        {
-            System.Windows.Application.Current.Dispatcher.Invoke(() =>
-            {
-                try
-                {
-                    Form webForm = new Form
-                    {
-                        Text = LocalizationManager.GetString("Servers.WebViewTitle", "Вбудований перегляд (CL Launcher)"),
-                        Width = 1000,
-                        Height = 700,
-                        StartPosition = FormStartPosition.CenterScreen,
-                        Icon = null
-                    };
-
-                    var webView = new Microsoft.Web.WebView2.WinForms.WebView2
-                    {
-                        Dock = DockStyle.Fill
-                    };
-
-                    webForm.Controls.Add(webView);
-
-                    webForm.Load += async (s, e) =>
-                    {
-                        try
-                        {
-                            await webView.EnsureCoreWebView2Async();
-                            webView.CoreWebView2.Navigate(url);
-                        }
-                        catch (Exception ex)
-                        {
-                            MascotMessageBox.Show(
-                                string.Format(LocalizationManager.GetString("Servers.WebViewInitError", "Помилка ініціалізації WebView2: {0}"), ex.Message),
-                                LocalizationManager.GetString("Dialogs.Error", "Помилка"),
-                                Windows.MascotEmotion.Sad);
-                        }
-                    };
-
-                    webForm.ShowDialog();
-                }
-                catch (Exception ex)
-                {
-                    MascotMessageBox.Show(
-                        string.Format(LocalizationManager.GetString("Servers.WebViewCrashError", "Критична помилка відкриття WebView: {0}"), ex.Message),
-                        LocalizationManager.GetString("Dialogs.Error", "Помилка"),
-                        Windows.MascotEmotion.Sad);
-                }
-            });
-        }
-
         private class BrowserInfo
         {
             public string ExeName { get; }

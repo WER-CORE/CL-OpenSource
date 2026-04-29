@@ -13,8 +13,8 @@
     <UseWPF>true</UseWPF>
     <ApplicationIcon>Icon\IconCL(Winter).ico</ApplicationIcon>
     <UseWindowsForms>true</UseWindowsForms>
-    <FileVersion>0.7.0.7</FileVersion>
-    <AssemblyVersion>0.7.0.7</AssemblyVersion>
+    <FileVersion>0.9.0.0</FileVersion>
+    <AssemblyVersion>0.9.0.0</AssemblyVersion>
     <PackageIcon></PackageIcon>
     <Copyright></Copyright>
     <NeutralLanguage>uk-UA</NeutralLanguage>
@@ -161,12 +161,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="Assets\DarkThemBG.webp">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Assets\LightThemBG.webp">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
+    <Resource Include="Assets\LightThemBG.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\DarkThemBG.png" />
     <Resource Include="Icon\IconCL(Winter).ico" />
   </ItemGroup>
 
@@ -213,9 +212,6 @@
     <Resource Include="Assets\microsoft logo.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
-    <Resource Include="Assets\Snow.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
     <Resource Include="Assets\StoneIconBeta.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
@@ -230,21 +226,19 @@
     <PackageReference Include="CmlLib.Core.Auth.Microsoft" Version="3.3.1" />
     <PackageReference Include="CmlLib.Core.Installer.Forge" Version="1.1.1" />
     <PackageReference Include="CmlLib.Core.Installer.NeoForge" Version="4.0.0" />
-    <PackageReference Include="CurseForge.APIClient" Version="4.2.0" />
+    <PackageReference Include="CurseForge.APIClient" Version="5.0.0" />
     <PackageReference Include="DiscordRichPresence" Version="1.6.1.70" />
     <PackageReference Include="HtmlAgilityPack" Version="1.12.4" />
+    <PackageReference Include="Markdig.Wpf" Version="0.5.0.1" />
     <PackageReference Include="MCQuery" Version="2022.7.13.192844" />
-    <PackageReference Include="Microsoft.Net.Sdk.Compilers.Toolset" Version="10.0.101" />
-    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3650.58" />
+    <PackageReference Include="Microsoft.Net.Sdk.Compilers.Toolset" Version="10.0.203" />
     <PackageReference Include="MojangAPI" Version="1.2.1" />
-    <PackageReference Include="NAudio" Version="2.2.1" />
-    <PackageReference Include="NAudio.Vorbis" Version="1.5.0" />
     <PackageReference Include="Optifine.Installer" Version="1.0.1" />
-    <PackageReference Include="RestSharp" Version="113.0.0" />
-    <PackageReference Include="SharpCompress" Version="0.42.1" />
-    <PackageReference Include="System.Management" Version="10.0.1" />
-    <PackageReference Include="WPF-UI" Version="4.1.0" />
-    <PackageReference Include="WpfAnimatedGif" Version="2.0.2" />
+    <PackageReference Include="RestSharp" Version="114.0.0" />
+    <PackageReference Include="Sentry" Version="6.4.1" />
+    <PackageReference Include="SharpCompress" Version="0.47.4" />
+    <PackageReference Include="System.Management" Version="10.0.7" />
+    <PackageReference Include="WPF-UI" Version="4.2.1" />
     <PackageReference Include="XamlAnimatedGif" Version="2.3.1" />
   </ItemGroup>
 

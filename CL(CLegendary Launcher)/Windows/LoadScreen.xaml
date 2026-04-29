@@ -40,7 +40,7 @@
 
             <Grid>
                 <Image x:Name="BG"
-                       Source="/Assets/DarkThemBG.webp" 
+                       Source="/Assets/DarkThemBG.png" 
                        Stretch="UniformToFill" 
                        Opacity="0.7"/>
 

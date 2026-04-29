@@ -1,10 +1,10 @@
 ﻿using CL_CLegendary_Launcher_.Class;
 using CL_CLegendary_Launcher_.Models;
 using CL_CLegendary_Launcher_.Windows;
-using NAudio.Wave;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.DirectoryServices.ActiveDirectory;
 using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
@@ -74,7 +74,34 @@ namespace CL_CLegendary_Launcher_
                 MemoryCleaner.FlushMemoryAsync(true);
             });
         }
-
+        private void MenuButton_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            if (sender is UIElement element)
+            {
+                AnimationService.AnimateScale(element, 1.1);
+            }
+        }
+        private void MenuButton_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            if (sender is UIElement element)
+            {
+                AnimationService.AnimateScale(element, 1.0);
+            }
+        }
+        private void PanelFooterScalePlus_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            if (sender is UIElement element)
+            {
+                AnimationService.AnimateScale(element, 1.03);
+            }
+        }
+        private void PanelFooterScaleMinus_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            if (sender is UIElement element)
+            {
+                AnimationService.AnimateScale(element, 1.0);
+            }
+        }
         private void CL_CLegendary_Launcher__Closed(object sender, EventArgs e)
         {
             DiscordController.Deinitialize();
@@ -84,71 +111,11 @@ namespace CL_CLegendary_Launcher_
         {
             Microsoft.Win32.SystemEvents.DisplaySettingsChanged -= OnDisplaySettingsChanged;
         }
-        public void Click()
-        {
-            bool isJokeEnabled = MemToggle.IsChecked == true;
-
-            Task.Run(() =>
-            {
-                try
-                {
-                    DateTime today = DateTime.Now;
-                    bool isAprilFoolsWeek = today.Month == 4 && today.Day >= 1 && today.Day <= 7;
-
-                    string currentLang = SettingsManager.Default.LanguageCode ?? "";
-                    bool isUkrainian = currentLang.StartsWith("uk");
-
-                    System.IO.Stream audioResource = (isAprilFoolsWeek && isUkrainian && isJokeEnabled)
-                                        ? (System.IO.Stream)Resource2.astanavites
-                                        : (System.IO.Stream)Resource2.click;
-
-                    audioResource.Position = 0;
-
-                    using (var reader = new NAudio.Vorbis.VorbisWaveReader(audioResource))
-                    using (var waveOut = new NAudio.Wave.WaveOutEvent())
-                    {
-                        waveOut.Volume = 0.1f;
-                        waveOut.Init(reader);
-                        waveOut.Play();
-
-                        while (waveOut.PlaybackState == PlaybackState.Playing)
-                        {
-                            System.Threading.Thread.Sleep(10);
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                    {
-                        System.Windows.MessageBox.Show($"Помилка звуку: {ex.Message}", "Дебаг");
-                    });
-                }
-            });
-        }
         private void BackMainWindow_MouseDown(object sender, RoutedEventArgs e)
         {
-            Click();
-            if (PanelInfoServer.Visibility == Visibility.Visible) { AnimationService.AnimatePageTransitionExit(PanelInfoServer); AnimationService.AnimatePageTransition(ServerName); }
+            SoundManager.Click();
+            AnimationService.AnimatePageTransitionExit(PanelInfoServer);
         }
-
-        public BitmapImage ConvertBitmapToBitmapImage(System.Drawing.Bitmap bitmap)
-        {
-            using (MemoryStream memory = new MemoryStream())
-            {
-                bitmap.Save(memory, System.Drawing.Imaging.ImageFormat.Png);
-                memory.Position = 0;
-
-                BitmapImage bitmapImage = new BitmapImage();
-                bitmapImage.BeginInit();
-                bitmapImage.StreamSource = memory;
-                bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                bitmapImage.EndInit();
-
-                return bitmapImage;
-            }
-        }
-
         public async Task HideAllPages()
         {
             var allPages = new List<FrameworkElement>
@@ -173,6 +140,7 @@ namespace CL_CLegendary_Launcher_
             TextNews.Text = null;
             ScreenshotsList.Items?.Clear();
             ModsDowloadList1.Items?.Clear();
+            ModsDowloadList.Items?.Clear();
 
             ServerList.Items?.Clear();
 
@@ -187,26 +155,33 @@ namespace CL_CLegendary_Launcher_
         private void PlayTXTPanelSelect_MouseDown(object sender, MouseButtonEventArgs e)
         {
             _navigationService.NavigateToHome();
+            MoveMenuSelector(PlayBtnBorder);
         }
 
         private void ModsTXTPanelSelect_MouseDown(object sender, MouseButtonEventArgs e)
         {
             _navigationService.NavigateToMods();
+            MoveMenuSelector(ModsBtnBorder);
         }
 
         private void modbuilds_MouseDown(object sender, MouseButtonEventArgs e)
         {
             _navigationService.NavigateToModPacks();
+            MoveMenuSelector(ModpacksBtnBorder);
         }
 
         private void PhotoMinecraftTXT_MouseDown(object sender, MouseButtonEventArgs e)
         {
             _navigationService.NavigateToGallery();
+            MoveMenuSelector(GalleryBtnBorder);
         }
-
+        private void MoveMenuSelector(Border targetButton)
+        {
+            AnimationService.AnimateMenuSelector(targetButton, SelectPanelGrid, PanelSelectNow, PanelTranslateTransform);
+        }
         private async void SettingPanel_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            Click();
+            SoundManager.Click();
             await HideAllPages();
             await Task.Delay(200);
 
@@ -216,6 +191,10 @@ namespace CL_CLegendary_Launcher_
 
         private void FolderPanel_MouseDown(object sender, MouseButtonEventArgs e)
         {
+            if (!SettingsManager.Default.EnableSubFiles && !SettingsManager.Default.EnableSubFiles_Backups)
+            {
+                return;
+            }
             if (e.ChangedButton == MouseButton.Left)
             {
                 if (sender is Grid grid && grid.ContextMenu != null)
@@ -283,6 +262,15 @@ namespace CL_CLegendary_Launcher_
 
         private void InfoPanel_MouseDown(object sender, MouseButtonEventArgs e)
         {
+            if (!SettingsManager.Default.EnableSubInfo_Bug &&
+        !SettingsManager.Default.EnableSubInfo_News &&
+        !SettingsManager.Default.EnableSubInfo_Wiki &&
+        !SettingsManager.Default.EnableSubInfo_Github &&
+        !SettingsManager.Default.EnableSubInfo_Credits &&
+        !SettingsManager.Default.EnableSubInfo_Support)
+            {
+                return;
+            }
             if (e.ChangedButton == MouseButton.Left)
             {
                 if (sender is Grid grid && grid.ContextMenu != null)
@@ -334,7 +322,7 @@ namespace CL_CLegendary_Launcher_
 
         private void BackMainWindow_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            Click();
+            SoundManager.Click();
             if (ServerList.Visibility == Visibility.Visible || PanelInfoServer.Visibility == Visibility.Visible)
             {
                 BackMainWindow.Visibility = Visibility.Hidden;
@@ -406,6 +394,7 @@ namespace CL_CLegendary_Launcher_
 
         private void SourceSelector_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            SoundManager.Click();
             if (SourceSelector.SelectedItem is ScreenshotSourceItem selectedSource)
             {
                 currentScreenshotsPath = selectedSource.FullScreenshotsPath;
@@ -415,6 +404,7 @@ namespace CL_CLegendary_Launcher_
 
         private void BtnOpenFolder_Click(object sender, RoutedEventArgs e)
         {
+            SoundManager.Click();
             if (!string.IsNullOrEmpty(currentScreenshotsPath))
             {
                 if (!Directory.Exists(currentScreenshotsPath)) Directory.CreateDirectory(currentScreenshotsPath);
@@ -424,11 +414,13 @@ namespace CL_CLegendary_Launcher_
 
         private void BtnRefresh_Click(object sender, RoutedEventArgs e)
         {
+            SoundManager.Click();
             LoadScreenshots();
         }
 
         private void ScreenshotsList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            SoundManager.Click();
             if (ScreenshotsList.SelectedItem != null)
             {
                 AnimationService.AnimatePageTransition(ActionPanel);
@@ -443,6 +435,7 @@ namespace CL_CLegendary_Launcher_
 
         private void BtnOpenImage_Click(object sender, RoutedEventArgs e)
         {
+            SoundManager.Click();
             if (ScreenshotsList.SelectedItem is ScreenshotItem item)
             {
                 System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(item.FilePath) { UseShellExecute = true });
@@ -451,6 +444,7 @@ namespace CL_CLegendary_Launcher_
 
         private void BtnDelete_Click(object sender, RoutedEventArgs e)
         {
+            SoundManager.Click();
             if (ScreenshotsList.SelectedItem is ScreenshotItem item)
             {
                 if (_screenshotService.DeleteScreenshot(item.FilePath))

@@ -1,20 +1,10 @@
 ﻿using CL_CLegendary_Launcher_.Class;
-using NAudio.Wave;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Media.Animation;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace CL_CLegendary_Launcher_.Windows
 {
@@ -36,25 +26,6 @@ namespace CL_CLegendary_Launcher_.Windows
             ExportTXT.Text = LocalizationManager.GetString("Modpacks.ExportZipBtn", "Експортувати ZIP");
             EditModPackTXT.Text = LocalizationManager.GetString("Modpacks.EditBtn", "Редагувати");
         }
-
-        void Click()
-        {
-            Task.Run(() =>
-            {
-                var Click = new NAudio.Vorbis.VorbisWaveReader(Resource2.click);
-                using (var waveOut = new NAudio.Wave.WaveOutEvent())
-                {
-                    waveOut.Volume = 0.1f;
-                    waveOut.Init(Click);
-                    waveOut.Play();
-                    while (waveOut.PlaybackState == PlaybackState.Playing)
-                    {
-                        System.Threading.Thread.Sleep(10);
-                    }
-                }
-            });
-        }
-
         public void FadeIn(UIElement element, double duration)
         {
             if (element == null) return;
@@ -96,7 +67,7 @@ namespace CL_CLegendary_Launcher_.Windows
 
         private void SettingTXT_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            Click();
+            SoundManager.Click();
             if (GirdFon.Visibility == Visibility.Visible)
             {
                 FadeOut(GirdFon, 0.3);
@@ -109,7 +80,7 @@ namespace CL_CLegendary_Launcher_.Windows
 
         private void PlayTXT_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            Click();
+            SoundManager.Click();
         }
     }
 }

@@ -9,6 +9,7 @@ namespace CL_CLegendary_Launcher_.Class
         [JsonProperty("name")] public string Name { get; set; }
         [JsonProperty("description")] public string Description { get; set; }
         [JsonProperty("version")] public string Version { get; set; }
+        [JsonProperty("versions")] public List<string> Versions { get; set; }
         [JsonProperty("type")] public string Type { get; set; }
         [JsonProperty("ip")] public string Ip { get; set; }
         [JsonProperty("port")] public int Port { get; set; }

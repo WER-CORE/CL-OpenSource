@@ -142,7 +142,7 @@ namespace CL_CLegendary_Launcher_.Class
         }
         public static async Task AutoBackupWorldAsync(string worldPath)
         {
-            if (!SettingsManager.Default.EnableAutoBackup) return;
+            if (!SettingsManager.Default.EnableAutoBackup || !SettingsManager.Default.EnableSubFiles_Backups) return;
 
             await Task.Run(() =>
             {

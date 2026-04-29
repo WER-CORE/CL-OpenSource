@@ -27,9 +27,9 @@ namespace CL_CLegendary_Launcher_.Windows
         {
             ToolTipDownloads.ToolTip = LocalizationManager.GetString("Mods.ItemJarDownloadsTooltip", "Кількість завантажень");
             ToolTipUpdate.ToolTip = LocalizationManager.GetString("Mods.ItemJarUpdateTooltip", "Останнє оновлення");
-            ToolTipCreate.ToolTip = LocalizationManager.GetString("Mods.ItemJarCreateTooltip", "Дата створення");
             ToolTipAuthor.ToolTip = LocalizationManager.GetString("Mods.ItemJarAuthorTooltip", "Автор");
             DowloadTXT.Text = LocalizationManager.GetString("Mods.ItemJarInstallBtn", "Встановити");
+            DetailsTXT.Text = LocalizationManager.GetString("Mods.ItemJarDetailsBtn", "Докладніше");
         }
 
         [Category("Custom Props")]
@@ -52,14 +52,6 @@ namespace CL_CLegendary_Launcher_.Windows
             get => User_AuthorTXT.Text;
             set => User_AuthorTXT.Text = value;
         }
-
-        [Category("Custom Props")]
-        public string CreateDate
-        {
-            get => DataCreateModTXT.Text;
-            set => DataCreateModTXT.Text = value?.ToString();
-        }
-
         [Category("Custom Props")]
         public string LastUpdateDate
         {

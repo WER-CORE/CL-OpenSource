@@ -232,6 +232,36 @@
                             SmallChange="512" LargeChange="1024" IsSnapToTickEnabled="True" TickFrequency="512"
                             VerticalAlignment="Center" ValueChanged="OPSlider_ValueChanged" PreviewMouseUp="OPSlider_PreviewMouseUp" Cursor="Hand"/>
                                 </Grid>
+                                <Separator Background="#20FFFFFF" Margin="0,5"/>
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,0,8">
+                                        <ui:SymbolIcon Symbol="Code24" FontSize="18" Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,10,0"/>
+                                        <StackPanel>
+                                            <TextBlock x:Name="TxtJavaPath" Text="Кастомний шлях до Java" Foreground="{DynamicResource MainForegroundBrush}" FontSize="14"/>
+                                            <TextBlock x:Name="TxtJavaPathDesc" Text="Залиште пустим для авто-пошуку" Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.5" FontSize="11"/>
+                                        </StackPanel>
+                                    </StackPanel>
+
+                                    <Grid Grid.Row="1">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <ComboBox Grid.Column="0" x:Name="JavaPathComboBox" IsEditable="True" FontSize="12" 
+                                                  Background="{DynamicResource MainBackgroundBrush}" BorderThickness="0" Foreground="{DynamicResource MainForegroundBrush}" 
+                                                  VerticalContentAlignment="Center" Cursor="Hand"
+                                                  TextBoxBase.TextChanged="JavaPathComboBox_TextChanged"
+                                                  SelectionChanged="JavaPathComboBox_SelectionChanged" BorderBrush="{x:Null}"/>
+                                        <ui:Button Grid.Column="1" x:Name="BtnBrowseJava" Content="Огляд" Height="30" Margin="5,0,0,0"
+                                                   Appearance="Secondary" Background="{DynamicResource MainBackgroundButton}" 
+                                                   Click="BtnBrowseJava_Click" Cursor="Hand" Foreground="{DynamicResource MainForegroundBrush}"/>
+                                    </Grid>
+                                </Grid>
                             </StackPanel>
                         </Border>
 
@@ -286,7 +316,28 @@
                                 </Grid>
                             </StackPanel>
                         </Border>
+                        <TextBlock x:Name="TxtCustomizationTitle" Text="Кастомізація" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource MainForegroundBrush}" Margin="5,0,0,5"/>
+                        <Border CornerRadius="8" Background="{DynamicResource MainBackgroundBrushServer}" Margin="0,0,0,15" Padding="10">
+                            <StackPanel>
+                                <Grid Height="40">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
 
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <Border Width="24" Height="24" CornerRadius="4" Margin="0,0,10,0" Background="#20FFFFFF">
+                                            <Image x:Name="PackIconImage" Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                        </Border>
+                                        <TextBlock x:Name="TxtPackIcon" Text="Іконка збірки" VerticalAlignment="Center" Foreground="{DynamicResource MainForegroundBrush}" FontSize="14"/>
+                                    </StackPanel>
+
+                                    <ui:Button Grid.Column="1" x:Name="BtnChangeIcon" Content="Змінити..." Height="30" Padding="15,0"
+                                               Appearance="Secondary" Background="{DynamicResource MainBackgroundButton}" 
+                                               Click="BtnChangeIcon_Click" Cursor="Hand" Foreground="{DynamicResource MainForegroundBrush}"/>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
                     </StackPanel>
                 </ScrollViewer>
             </Grid>

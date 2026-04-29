@@ -6,213 +6,232 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:CL_CLegendary_Launcher_.Windows"
         mc:Ignorable="d"
-        Title="DownloadEditPack" Height="450" Width="700" 
-        FontFamily="Inter" WindowStyle="None" 
-        Icon="/Icon/IconCL(Common).png" 
+        Title="CL - Менеджер модів" Height="600" Width="850" 
+        Background="{x:Null}" 
         Foreground="{DynamicResource MainForegroundBrush}" 
-        Background="{DynamicResource MainBackgroundBrush}" 
-        ResizeMode="NoResize"
-        WindowStartupLocation="CenterScreen"
+        FontFamily="Inter"
+        ResizeMode="NoResize" 
+        WindowStartupLocation="CenterScreen" 
+        Icon="/Icon/IconCL(Common).png" 
+        WindowStyle="None" 
         ExtendsContentIntoTitleBar="True"
         WindowBackdropType="Mica" BorderThickness="0">
 
     <Window.Resources>
-        <Style x:Key="ProviderIconStyle" TargetType="Image">
-            <Setter Property="Width" Value="24"/>
-            <Setter Property="Height" Value="24"/>
+        <Style x:Key="TabButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="{DynamicResource MainForegroundBrush}"/>
+            <Setter Property="FontSize" Value="14"/>
             <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="RenderOptions.BitmapScalingMode" Value="HighQuality"/>
-            <Setter Property="Opacity" Value="0.6"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" Padding="10,5">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Opacity" Value="1.0"/>
+                    <Setter Property="Foreground" Value="#FF00Aaff"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
+
+        <Style x:Key="ActionButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="{DynamicResource MainBackgroundBrushServer}"/>
+            <Setter Property="Foreground" Value="{DynamicResource MainForegroundBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#33FFFFFF"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                BorderThickness="{TemplateBinding BorderThickness}" 
+                                CornerRadius="8">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#44FFFFFF"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#22FFFFFF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <ControlTemplate x:Key="ModCardSkeletonTemplate">
+            <Border Height="40" Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="8" Margin="0,0,0,5">
+                <Grid Margin="10,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Border Grid.Column="0" Width="20" Height="20" CornerRadius="4" Background="{DynamicResource MainBackgroundBrush}" VerticalAlignment="Center"/>
+                    <Border Grid.Column="1" Height="12" Width="180" CornerRadius="3" Background="{DynamicResource MainBackgroundBrush}" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10,0"/>
+                    <Border Grid.Column="2" Width="20" Height="20" CornerRadius="4" Background="{DynamicResource MainBackgroundBrush}" VerticalAlignment="Center"/>
+                </Grid>
+            </Border>
+        </ControlTemplate>
     </Window.Resources>
 
-    <Grid x:Name="MainGrid">
+    <Grid Margin="10" Background="{DynamicResource MainBackgroundBrush}">
         <Grid.RowDefinitions>
-            <RowDefinition Height="32"/>
+            <RowDefinition Height="30"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="50"/>
         </Grid.RowDefinitions>
 
-        <Grid Grid.Row="0" Background="Transparent" MouseDown="BorderTool_MouseDown">
+        <Grid Grid.Row="0" MouseLeftButtonDown="BorderTool_MouseDown" Margin="-9,-10,-8,0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <TextBlock x:Name="NameWin" Text="Менеджер модів" 
+            <TextBlock x:Name="NameWin" Grid.Column="0" 
+                       Text="Менеджер модів - Керування та додавання контенту" 
                        VerticalAlignment="Center" Margin="10,0,0,0" 
-                       FontSize="12" Opacity="0.7" Foreground="{DynamicResource MainForegroundBrush}"/>
+                       Foreground="{DynamicResource MainForegroundBrush}" FontSize="12"/>
 
-            <ui:Button Grid.Column="1" 
-                       Content="✕" 
-                       Appearance="Transparent"
+            <ui:Button Grid.Column="1" Content="✕" Appearance="Transparent"
                        Foreground="{DynamicResource MainForegroundBrush}"
-                       Width="40" Height="30" 
-                       Padding="0" VerticalAlignment="Top" 
-                       Click="ExitLauncher_MouseDown" Cursor="Hand"/>
+                       Width="40" Height="30" Padding="0" VerticalAlignment="Top" 
+                       Click="ExitLauncher_MouseDown" Cursor="Hand" Background="{DynamicResource MainBackgroundButton}"/>
         </Grid>
 
-        <Grid Grid.Row="1" Margin="10,5,10,10">
+        <Grid Grid.Row="1" Margin="0,10">
             <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="220"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <ui:TextBox x:Name="SearchSystem" 
-                        PlaceholderText="Пошук модів..." 
-                        Icon="{ui:SymbolIcon Search24}"
-                        VerticalAlignment="Center" Height="36"
-                        TextChanged="SearchSystem_TextChanged" Background="{DynamicResource MainBackgroundBrushServer}" Foreground="{DynamicResource MainForegroundBrush}"/>
+            <StackPanel Orientation="Horizontal" Grid.Column="0"/>
 
-            <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="10,0,0,0">
-                <Border x:Name="SelectSiteModPacks" 
-                        Background="{DynamicResource MainBackgroundBrushServer}" 
-                        CornerRadius="6" Padding="5" Height="36">
-                    <StackPanel Orientation="Horizontal">
-                        <Image x:Name="ModrinthSite" Source="/Assets/1200-818013157 1.png" 
-                    Width="20" Height="20" Margin="0,0,8,0" Cursor="Hand" 
-                            RenderOptions.BitmapScalingMode="HighQuality" MouseDown="ModrinthSite_MouseDown"
-                            ToolTip="Шукати на Modrinth"
-                            Opacity="1.0"/>
-                        <Image x:Name="CurseForgeSite" Source="/Assets/curseforge-logo-3499974474.png" 
-                            Width="20" Height="20" Cursor="Hand" 
-                            RenderOptions.BitmapScalingMode="HighQuality" MouseDown="CurseForgeSite_MouseDown"
-                            ToolTip="Шукати на CurseForge"
-                            Opacity="0.5"/>
-                    </StackPanel>
-                </Border>
+            <ui:TextBox Grid.Column="2" x:Name="SearchSystem" 
+                        PlaceholderText="Пошук..." Margin="10,0" 
+                        TextChanged="SearchSystem_TextChanged" 
+                        Foreground="{DynamicResource MainForegroundBrush}" 
+                        Background="{DynamicResource MainBackgroundBrushServer}"
+                        Icon="{ui:SymbolIcon Search24}"/>
+
+            <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center" Margin="5,0">
+                <Image x:Name="ModrinthSite" Source="/Assets/1200-818013157 1.png" Width="24" Height="24" Cursor="Hand" MouseDown="ModrinthSite_MouseDown" Opacity="1.0" RenderOptions.BitmapScalingMode="HighQuality"/>
+                <Image x:Name="CurseForgeSite" Source="/Assets/curseforge-logo-3499974474.png" Width="24" Height="24" Cursor="Hand" MouseDown="CurseForgeSite_MouseDown" Opacity="0.5" RenderOptions.BitmapScalingMode="HighQuality" Margin="10,0,0,0"/>
             </StackPanel>
         </Grid>
 
-        <Grid Grid.Row="2" Margin="10,0">
+        <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="80"/>
-                <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="180"/>
+                <ColumnDefinition Width="10"/>
+                <ColumnDefinition Width="1.5*"/>
+                <ColumnDefinition Width="10"/>
+                <ColumnDefinition Width="1*"/>
             </Grid.ColumnDefinitions>
 
             <StackPanel Grid.Column="0">
-                <ui:DropDownButton x:Name="LoaderButton" Content="Loader" Foreground="{DynamicResource MainForegroundBrush}" BorderBrush="{x:Null}" Background="{DynamicResource MainBackgroundButton}" />
+                <TextBlock Text="Версія Minecraft" FontSize="10" Margin="0,0,0,5" Opacity="0.6" Foreground="{DynamicResource MainForegroundBrush}"/>
+                <ComboBox x:Name="VersionVanil" Height="35" Margin="0,0,0,15" Background="{DynamicResource MainBackgroundBrushServer}" Foreground="{DynamicResource MainForegroundBrush}" Cursor="No"/>
 
-                <Border Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="6" Padding="0,5">
-                    <ui:ListView x:Name="ListModsList" Height="150" 
-                                 d:ItemsSource="{d:SampleData ItemCount=5}" 
-                                 SelectionMode="Single" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Foreground="{DynamicResource MainForegroundBrush}"/>
-                </Border>
-
-                <Border Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="6" Padding="0,5">
-                    <ui:ListView x:Name="VersionVanil" Height="100" 
-                                 d:ItemsSource="{d:SampleData ItemCount=5}" 
-                                 SelectionMode="Single" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Foreground="{DynamicResource MainForegroundBrush}"/>
-                </Border>
+                <TextBlock Text="Завантажувач" FontSize="10" Margin="0,0,0,5" Opacity="0.6" Foreground="{DynamicResource MainForegroundBrush}"/>
+                <ui:DropDownButton x:Name="LoaderButton" Content="Forge" HorizontalAlignment="Stretch" Height="35" Background="{DynamicResource MainBackgroundBrushServer}" Foreground="{DynamicResource MainForegroundBrush}" Cursor="No"/>
             </StackPanel>
-
-            <Grid Grid.Column="1" Margin="10,0">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-
-                <Border Grid.Row="0" Background="{x:Null}">
-                    <ListBox x:Name="ModsDowloadList" 
-                             Background="{x:Null}" BorderThickness="0"
-                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                             d:ItemsSource="{d:SampleData ItemCount=10}" Foreground="{DynamicResource MainForegroundBrush}">
-                        <ListBox.ItemContainerStyle>
-                            <Style TargetType="{x:Type ListBoxItem}">
-                                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                                <Setter Property="Margin" Value="0,2"/>
-                            </Style>
-                        </ListBox.ItemContainerStyle>
-                    </ListBox>
-                </Border>
-
-                <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,5,0,0">
-                    <ui:Button x:Name="BtnPrevPage" 
-                               Icon="{ui:SymbolIcon ArrowLeft24}" 
-                               Width="40" Height="30" 
-                               Click="BtnPrevPage_Click" 
-                               IsEnabled="False"
-                               Appearance="Secondary" 
-                               Margin="0,0,10,0" Background="{DynamicResource MainBackgroundButton}" BorderBrush="{x:Null}" Foreground="{DynamicResource MainForegroundBrush}"/>
-
-                    <TextBlock x:Name="TxtPageNumber" Text="1" VerticalAlignment="Center" 
-                               Foreground="{DynamicResource MainForegroundBrush}" FontWeight="Bold" FontSize="14"/>
-
-                    <ui:Button x:Name="BtnNextPage" 
-                               Icon="{ui:SymbolIcon ArrowRight24}" 
-                               Width="40" Height="30" 
-                               Click="BtnNextPage_Click"
-                               Appearance="Secondary" 
-                               Margin="10,0,0,0" Background="{DynamicResource MainBackgroundButton}" BorderBrush="{x:Null}" Foreground="{DynamicResource MainForegroundBrush}"/>
-                </StackPanel>
-            </Grid>
 
             <Grid Grid.Column="2">
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <Border Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="8" Padding="5">
+                    <Grid>
+                        <ListView x:Name="ModsDowloadList" Background="Transparent" BorderThickness="0" Foreground="{DynamicResource MainForegroundBrush}">
+                            <ListView.ItemContainerStyle>
+                                <Style TargetType="ListViewItem">
+                                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                    <Setter Property="Padding" Value="0"/>
+                                    <Setter Property="Margin" Value="0,2"/>
+                                </Style>
+                            </ListView.ItemContainerStyle>
+                        </ListView>
+
+                        <StackPanel x:Name="ModsSkeletonPanel" Visibility="Collapsed">
+                            <Control Template="{StaticResource ModCardSkeletonTemplate}"/>
+                            <Control Template="{StaticResource ModCardSkeletonTemplate}"/>
+                            <Control Template="{StaticResource ModCardSkeletonTemplate}"/>
+                            <Control Template="{StaticResource ModCardSkeletonTemplate}"/>
+                            <Control Template="{StaticResource ModCardSkeletonTemplate}"/>
+                            <Control Template="{StaticResource ModCardSkeletonTemplate}"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10">
+                    <ui:Button x:Name="BtnPrevPage" Icon="{ui:SymbolIcon ArrowLeft24}" Width="45" Click="BtnPrevPage_Click" IsEnabled="False" Background="{DynamicResource MainBackgroundButton}" Foreground="{DynamicResource MainForegroundBrush}" Cursor="Hand"/>
+                    <Border Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="6" Margin="10,0" Padding="15,0">
+                        <TextBlock x:Name="TxtPageNumber" Text="1" VerticalAlignment="Center" FontWeight="Bold" Foreground="{DynamicResource MainForegroundBrush}"/>
+                    </Border>
+                    <ui:Button x:Name="BtnNextPage" Icon="{ui:SymbolIcon ArrowRight24}" Width="45" Click="BtnNextPage_Click" Background="{DynamicResource MainBackgroundButton}" Foreground="{DynamicResource MainForegroundBrush}" Cursor="Hand"/>
+                </StackPanel>
+            </Grid>
+
+            <Grid Grid.Column="4">
+                <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
-                <TextBlock x:Name="TxtQueue" Text="До черги:" FontWeight="SemiBold" Margin="0,0,0,5" Foreground="{DynamicResource MainForegroundBrush}"/>
-                <Border Grid.Row="1" Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="6">
-                    <ui:ListView x:Name="AddModsInModPackList" 
-                                 d:ItemsSource="{d:SampleData ItemCount=3}" 
-                                 FontSize="11" Foreground="{DynamicResource MainForegroundBrush}"/>
+                <TextBlock x:Name="TxtQueue" Text="До черги встановлення" FontSize="12" Margin="0,0,0,5" FontWeight="SemiBold" Foreground="{DynamicResource MainForegroundBrush}"/>
+                <Border Grid.Row="1" Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="8">
+                    <ListView x:Name="AddModsInModPackList" Background="Transparent" BorderThickness="0" Foreground="{DynamicResource MainForegroundBrush}"/>
                 </Border>
             </Grid>
         </Grid>
 
-        <Border Grid.Row="3" Padding="10">
+        <Grid Grid.Row="3" Margin="0,10,0,0">
             <ui:Button x:Name="CreateModPacksButton" 
-                       Content="Завантажити та Додати" 
+                       Style="{StaticResource ActionButtonStyle}"
+                       Height="40" HorizontalAlignment="Stretch"
                        Icon="{ui:SymbolIcon ArrowDownload24}"
-                       Appearance="Primary" 
-                       HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                       FontSize="14" Cursor="Hand"
-                       Click="CreateModPacksButton_MouseDown" Background="{DynamicResource MainBackgroundButton}" BorderBrush="{x:Null}" Foreground="{DynamicResource MainForegroundBrush}"/>
-        </Border>
-        <Grid x:Name="MenuInstaller" Background="#99000000" Grid.RowSpan="4" Visibility="Collapsed">
-            <Border Background="Transparent" MouseDown="GirdModsDowload_MouseDown"/>
+                       Click="CreateModPacksButton_MouseDown" Foreground="{DynamicResource MainForegroundBrush}" Background="{DynamicResource MainBackgroundButton}" Cursor="Hand">
+                <TextBlock Text="ВСТАНОВИТИ ОБРАНИЙ КОНТЕНТ" FontWeight="Bold" Foreground="{DynamicResource MainForegroundBrush}"/>
+            </ui:Button>
+        </Grid>
 
-            <Border Width="300" Height="250" 
-                    Background="{DynamicResource MainBackgroundBrush}" 
-                    BorderBrush="{DynamicResource MainBackgroundBrushServer}" BorderThickness="1"
-                    CornerRadius="12" Padding="15" 
-                    VerticalAlignment="Center" HorizontalAlignment="Center">
+        <Grid x:Name="MenuInstaller" Grid.RowSpan="4" Visibility="Collapsed">
+            <Border Background="{DynamicResource MainBackgroundBrush}" Opacity="0.7" MouseDown="GirdModsDowload_MouseDown" Cursor="Hand"/>
 
-                <Grid>
+            <Border Width="350" Height="300" 
+                    Background="{DynamicResource MainBackgroundBrushServer}" 
+                    CornerRadius="15" VerticalAlignment="Center" HorizontalAlignment="Center"
+                    BorderBrush="#33FFFFFF" BorderThickness="1">
+                <Grid Margin="20">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <TextBlock x:Name="TxtInstallMod" Text="Встановлення мода" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center"/>
+                    <TextBlock x:Name="TxtInstallMod" Text="Вибір версії" FontSize="18" FontWeight="Bold" Margin="0,0,0,15" Foreground="{DynamicResource MainForegroundBrush}"/>
 
-                    <TextBlock Grid.Row="1" x:Name="TitleModsDowload" 
-                               Text="Оберіть версію файлу:" 
-                               Margin="0,10,0,5" Opacity="0.7" HorizontalAlignment="Center"/>
+                    <ListView Grid.Row="1" x:Name="VersionMods" Background="{DynamicResource MainBackgroundBrush}" Margin="0,0,0,15" Foreground="{DynamicResource MainForegroundBrush}" Cursor="Hand"/>
 
-                    <Border Grid.Row="2" Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="6">
-                        <ui:ListView x:Name="VersionMods" Margin="2"
-                                     d:ItemsSource="{d:SampleData ItemCount=5}"/>
-                    </Border>
-
-                    <ui:Button Grid.Row="3" x:Name="DowloadTXT" 
-                               Content="Встановити" 
-                               Appearance="Primary" Margin="0,15,0,0"
-                               HorizontalAlignment="Stretch" 
-                               Click="DowloadTXT_MouseDown"/>
+                    <ui:Button Grid.Row="2" x:Name="DowloadTXT" Icon="{ui:SymbolIcon ArrowDownload24}"
+                               Content="Додати до черги" Appearance="Primary" 
+                               HorizontalAlignment="Stretch" Height="40"
+                               Click="DowloadTXT_MouseDown" Foreground="{DynamicResource MainForegroundBrush}" Background="{DynamicResource MainBackgroundButton}" Cursor="Hand"/>
                 </Grid>
             </Border>
         </Grid>
-
     </Grid>
 </ui:FluentWindow>

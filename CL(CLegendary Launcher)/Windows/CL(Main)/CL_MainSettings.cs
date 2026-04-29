@@ -3,6 +3,7 @@ using CL_CLegendary_Launcher_.Models;
 using CL_CLegendary_Launcher_.Windows;
 using System;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -14,6 +15,283 @@ namespace CL_CLegendary_Launcher_
 {
     public partial class CL_Main_
     {
+        public void InitializeModules()
+        {
+            ToggleMod_Modpacks.IsChecked = SettingsManager.Default.EnableModpacks;
+            ToggleMod_Mods.IsChecked = SettingsManager.Default.EnableMods;
+            ToggleMod_Servers.IsChecked = SettingsManager.Default.EnableServers;
+            ToggleMod_Gallery.IsChecked = SettingsManager.Default.EnableGallery;
+            ToggleMod_AI.IsChecked = SettingsManager.Default.EnableAIAgent;
+
+            ToggleSub_FilesMods.IsChecked = SettingsManager.Default.EnableSubFiles;
+            ToggleSub_FilesBackups.IsChecked = SettingsManager.Default.EnableSubFiles_Backups;
+
+            ToggleSub_InfoBug.IsChecked = SettingsManager.Default.EnableSubInfo_Bug;
+            ToggleSub_InfoNews.IsChecked = SettingsManager.Default.EnableSubInfo_News;
+            ToggleSub_InfoWiki.IsChecked = SettingsManager.Default.EnableSubInfo_Wiki;
+            ToggleSub_InfoGithub.IsChecked = SettingsManager.Default.EnableSubInfo_Github;
+            ToggleSub_InfoCredits.IsChecked = SettingsManager.Default.EnableSubInfo_Credits;
+            ToggleSub_InfoSupport.IsChecked = SettingsManager.Default.EnableSubInfo_Support;
+
+            ToggleMod_Changelog.IsChecked = SettingsManager.Default.EnableMod_Changelog;
+            ToggleMod_Actions.IsChecked = SettingsManager.Default.EnableMod_LatestActions;
+            ToggleMod_Discord.IsChecked = SettingsManager.Default.EnableMod_DiscordRPC;
+            ToggleMod_Stats.IsChecked = SettingsManager.Default.EnableMod_Statistics;
+
+            _ = ApplyModuleVisibility();
+            _ = ClearDisabledModulesData();
+        }
+        private void SaveAndApplyModules()
+        {
+            SettingsManager.Default.EnableModpacks = ToggleMod_Modpacks.IsChecked ?? true;
+            SettingsManager.Default.EnableMods = ToggleMod_Mods.IsChecked ?? true;
+            SettingsManager.Default.EnableServers = ToggleMod_Servers.IsChecked ?? true;
+            SettingsManager.Default.EnableGallery = ToggleMod_Gallery.IsChecked ?? true;
+            SettingsManager.Default.EnableAIAgent = ToggleMod_AI.IsChecked ?? true;
+
+            SettingsManager.Default.EnableSubFiles = ToggleSub_FilesMods.IsChecked ?? true;
+            SettingsManager.Default.EnableSubFiles_Backups = ToggleSub_FilesBackups.IsChecked ?? true;
+
+            FilesMenuGrid.Visibility = (!SettingsManager.Default.EnableSubFiles && !SettingsManager.Default.EnableSubFiles_Backups)
+                ? Visibility.Collapsed
+                : Visibility.Visible;
+
+            SettingsManager.Default.EnableSubInfo_Bug = ToggleSub_InfoBug.IsChecked ?? true;
+            SettingsManager.Default.EnableSubInfo_News = ToggleSub_InfoNews.IsChecked ?? true;
+            SettingsManager.Default.EnableSubInfo_Wiki = ToggleSub_InfoWiki.IsChecked ?? true;
+            SettingsManager.Default.EnableSubInfo_Github = ToggleSub_InfoGithub.IsChecked ?? true;
+            SettingsManager.Default.EnableSubInfo_Credits = ToggleSub_InfoCredits.IsChecked ?? true;
+            SettingsManager.Default.EnableSubInfo_Support = ToggleSub_InfoSupport.IsChecked ?? true;
+
+            InfoPanel.Visibility = (!SettingsManager.Default.EnableSubInfo_Bug &&
+                                    !SettingsManager.Default.EnableSubInfo_News &&
+                                    !SettingsManager.Default.EnableSubInfo_Wiki &&
+                                    !SettingsManager.Default.EnableSubInfo_Github &&
+                                    !SettingsManager.Default.EnableSubInfo_Credits &&
+                                    !SettingsManager.Default.EnableSubInfo_Support)
+                ? Visibility.Collapsed
+                : Visibility.Visible;
+
+            SettingsManager.Default.EnableMod_Changelog = ToggleMod_Changelog.IsChecked ?? true;
+            SettingsManager.Default.EnableMod_LatestActions = ToggleMod_Actions.IsChecked ?? true;
+            SettingsManager.Default.EnableMod_DiscordRPC = ToggleMod_Discord.IsChecked ?? true;
+            SettingsManager.Default.EnableMod_Statistics = ToggleMod_Stats.IsChecked ?? true;
+
+            SettingsManager.Save();
+
+            _ = ApplyModuleVisibility();
+            _ = ClearDisabledModulesData();
+        }
+
+        private void ModuleToggle_Click(object sender, RoutedEventArgs e)
+        {
+            SoundManager.Click();
+            SaveAndApplyModules();
+        }
+
+        private async Task ApplyModuleVisibility()
+        {
+            if (ModpacksBtnBorder != null) ModpacksBtnBorder.Visibility = SettingsManager.Default.EnableModpacks ? Visibility.Visible : Visibility.Collapsed;
+            if (ModsBtnBorder != null) ModsBtnBorder.Visibility = SettingsManager.Default.EnableMods ? Visibility.Visible : Visibility.Collapsed;
+            if (ServersBtnBorder != null) ServersBtnBorder.Visibility = SettingsManager.Default.EnableServers ? Visibility.Visible : Visibility.Collapsed;
+            if (GalleryBtnBorder != null) GalleryBtnBorder.Visibility = SettingsManager.Default.EnableGallery ? Visibility.Visible : Visibility.Collapsed;
+
+            if (Loc_MenuOpenFolder != null) Loc_MenuOpenFolder.Visibility = SettingsManager.Default.EnableSubFiles ? Visibility.Visible : Visibility.Collapsed;
+            if (Loc_MenuBackupsFolder != null) Loc_MenuBackupsFolder.Visibility = SettingsManager.Default.EnableSubFiles_Backups ? Visibility.Visible : Visibility.Collapsed;
+            if (SettingsBackupBorder != null) SettingsBackupBorder.Visibility = SettingsManager.Default.EnableSubFiles_Backups ? Visibility.Visible : Visibility.Collapsed;
+
+            if (Loc_MenuReportBug != null) Loc_MenuReportBug.Visibility = SettingsManager.Default.EnableSubInfo_Bug ? Visibility.Visible : Visibility.Collapsed;
+            if (Loc_MenuLauncherNews != null) Loc_MenuLauncherNews.Visibility = SettingsManager.Default.EnableSubInfo_News ? Visibility.Visible : Visibility.Collapsed;
+            if (Loc_MenuWiki != null) Loc_MenuWiki.Visibility = SettingsManager.Default.EnableSubInfo_Wiki ? Visibility.Visible : Visibility.Collapsed;
+
+            if (Loc_MenuGithub != null) Loc_MenuGithub.Visibility = SettingsManager.Default.EnableSubInfo_Github ? Visibility.Visible : Visibility.Collapsed;
+            if (InfoSep1 != null) InfoSep1.Visibility = SettingsManager.Default.EnableSubInfo_Github ? Visibility.Visible : Visibility.Collapsed;
+
+            if (Loc_MenuCredits != null) Loc_MenuCredits.Visibility = SettingsManager.Default.EnableSubInfo_Credits ? Visibility.Visible : Visibility.Collapsed;
+            if (InfoSep2 != null) InfoSep2.Visibility = SettingsManager.Default.EnableSubInfo_Credits ? Visibility.Visible : Visibility.Collapsed;
+
+            if (Loc_MenuSupportProject != null && Loc_MenuSupport3OSHBr != null)
+            {
+                Visibility supportVis = SettingsManager.Default.EnableSubInfo_Support ? Visibility.Visible : Visibility.Collapsed;
+                Loc_MenuSupportProject.Visibility = supportVis;
+                Loc_MenuSupport3OSHBr.Visibility = supportVis;
+                if (InfoSep3 != null) InfoSep3.Visibility = supportVis;
+            }
+
+            if (ChangelogHeaderPanel != null) ChangelogHeaderPanel.Visibility = SettingsManager.Default.EnableMod_Changelog ? Visibility.Visible : Visibility.Collapsed;
+            if (VersionMinecraftChangeLog != null) VersionMinecraftChangeLog.Visibility = SettingsManager.Default.EnableMod_Changelog ? Visibility.Visible : Visibility.Collapsed;
+
+            if (SettingsManager.Default.EnableMod_Changelog && VersionMinecraftChangeLog != null && VersionMinecraftChangeLog.Items.Count == 0)
+            {
+                LoadChangeLogMinecraft();
+            }
+
+            if (LatestActionsHeaderPanel != null) LatestActionsHeaderPanel.Visibility = SettingsManager.Default.EnableMod_LatestActions ? Visibility.Visible : Visibility.Collapsed;
+            if (ServerMonitoring != null) ServerMonitoring.Visibility = SettingsManager.Default.EnableMod_LatestActions ? Visibility.Visible : Visibility.Collapsed;
+
+            if (SettingsManager.Default.EnableMod_LatestActions && ServerMonitoring != null && ServerMonitoring.Items.Count == 0)
+            {
+                await _lastActionService.LoadLastActionsFromJsonAsync();
+            }
+
+            if (StatsTextOpen != null) StatsTextOpen.Visibility = SettingsManager.Default.EnableMod_Statistics ? Visibility.Visible : Visibility.Collapsed;
+
+            if (SettingsManager.Default.EnableMod_DiscordRPC)
+            {
+                await DiscordController.Initialize("В головному вікні");
+            }
+            else
+            {
+                DiscordController.Deinitialize();
+            }
+
+            if (FilesMenuGrid != null)
+                FilesMenuGrid.Visibility = (!SettingsManager.Default.EnableSubFiles && !SettingsManager.Default.EnableSubFiles_Backups) ? Visibility.Collapsed : Visibility.Visible;
+
+            if (InfoPanel != null)
+                InfoPanel.Visibility = (!SettingsManager.Default.EnableSubInfo_Bug &&
+                                        !SettingsManager.Default.EnableSubInfo_News &&
+                                        !SettingsManager.Default.EnableSubInfo_Wiki &&
+                                        !SettingsManager.Default.EnableSubInfo_Github &&
+                                        !SettingsManager.Default.EnableSubInfo_Credits &&
+                                        !SettingsManager.Default.EnableSubInfo_Support) ? Visibility.Collapsed : Visibility.Visible;
+
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                MoveMenuSelector(PlayBtnBorder);
+            }), System.Windows.Threading.DispatcherPriority.Loaded);
+        }
+
+        private void SetPresets(bool isLite = false, bool isBalance = false, bool isUltra = false)
+        {
+            ToggleMod_Modpacks.IsChecked = true;
+            ToggleMod_Mods.IsChecked = !isLite;
+            ToggleMod_Servers.IsChecked = !isLite;
+            ToggleMod_Gallery.IsChecked = isUltra;
+            ToggleMod_AI.IsChecked = isUltra;
+
+            ToggleSub_FilesMods.IsChecked = !isLite;
+            ToggleSub_FilesBackups.IsChecked = !isLite;
+
+            ToggleSub_InfoBug.IsChecked = !isLite;
+            ToggleSub_InfoNews.IsChecked = !isLite;
+            ToggleSub_InfoWiki.IsChecked = !isLite;
+            ToggleSub_InfoGithub.IsChecked = isUltra;
+            ToggleSub_InfoCredits.IsChecked = isUltra;
+            ToggleSub_InfoSupport.IsChecked = !isLite;
+
+            ToggleMod_Changelog.IsChecked = !isLite;
+            ToggleMod_Actions.IsChecked = !isLite;
+            ToggleMod_Discord.IsChecked = !isLite;
+            ToggleMod_Stats.IsChecked = !isLite;
+
+            SaveAndApplyModules();
+        }
+        private void PresetLiteBtn_Click(object sender, RoutedEventArgs e)
+        {
+            SoundManager.Click();
+            SetPresets(isLite: true);
+            _ = MemoryCleaner.FlushMemoryAsync(true);
+        }
+
+        private void PresetBalanceBtn_Click(object sender, RoutedEventArgs e)
+        {
+            SoundManager.Click();
+            SetPresets(isBalance: true);
+            _ = MemoryCleaner.FlushMemoryAsync(true);
+        }
+
+        private void PresetUltraBtn_Click(object sender, RoutedEventArgs e)
+        {
+            SoundManager.Click();
+            SetPresets(isUltra: true);
+            _ = MemoryCleaner.FlushMemoryAsync(true);
+        }
+        private async Task ClearDisabledModulesData()
+        {
+            bool memoryNeedsFlush = false;
+
+            if (!SettingsManager.Default.EnableServers && _allServerCards?.Count > 0)
+            {
+                _allServerCards.Clear();
+                _filteredServerCards?.Clear();
+                memoryNeedsFlush = true;
+            }
+
+            if (!SettingsManager.Default.EnableSubInfo_News && ListNews?.Items.Count > 0)
+            {
+                if (TextNews != null) TextNews.Text = string.Empty;
+                ListNews.Items.Clear();
+                memoryNeedsFlush = true;
+            }
+
+            if (!SettingsManager.Default.EnableMods && _currentModVersions?.Count > 0)
+            {
+                ModsDowloadList?.Items.Clear();
+                _currentModVersions.Clear();
+                memoryNeedsFlush = true;
+            }
+
+            if (!SettingsManager.Default.EnableModpacks && allInstalledModpacks?.Count > 0)
+            {
+                ModsDowloadList1?.Items.Clear();
+                allInstalledModpacks.Clear();
+                memoryNeedsFlush = true;
+            }
+
+            if (!SettingsManager.Default.EnableMod_Changelog && VersionMinecraftChangeLog?.Items.Count > 0)
+            {
+                VersionMinecraftChangeLog.Items.Clear();
+                memoryNeedsFlush = true;
+            }
+
+            if (!SettingsManager.Default.EnableMod_LatestActions && ServerMonitoring?.Items.Count > 0)
+            {
+                ServerMonitoring.Items.Clear();
+                memoryNeedsFlush = true;
+            }
+
+            if (!SettingsManager.Default.EnableMod_Statistics && !string.IsNullOrEmpty(StatsTextOpen?.Text))
+            {
+                StatsTextOpen.Text = string.Empty;
+                memoryNeedsFlush = true;
+            }
+
+            if (!SettingsManager.Default.EnableSubInfo_Support && FundraisersList?.Items.Count > 0)
+            {
+                FundraisersList.Items.Clear();
+                memoryNeedsFlush = true;
+            }
+
+            if (!SettingsManager.Default.EnableGallery && SourceSelector?.Items.Count > 0)
+            {
+                SourceSelector.Items.Clear();
+                memoryNeedsFlush = true;
+            }
+
+            if (memoryNeedsFlush)
+            {
+                await MemoryCleaner.FlushMemoryAsync(trimWorkingSet: true);
+            }
+        }
+        private void ToggleCrashReports_Click(object sender, RoutedEventArgs e)
+        {
+            bool isEnabled = ToggleCrashReports.IsChecked == true;
+            SoundManager.Click();
+
+            SettingsManager.Default.IsCrashReportingEnabled = isEnabled;
+            SettingsManager.Save();
+
+            if (isEnabled)
+            {
+                CrashReportManager.Enable();
+            }
+            else
+            {
+                CrashReportManager.Disable();
+            }
+        }
+
         private void LoadCustomSettings()
         {
             string savedColor = SettingsManager.Default.LoadScreenBarColor;
@@ -31,7 +309,6 @@ namespace CL_CLegendary_Launcher_
 
         private void InitToggles()
         {
-            MemToggle.IsChecked = SettingsManager.Default.EnableMemeSound;
             DebugToggle.IsChecked = SettingsManager.Default.EnableLog;
             CloseLauncherToggle.IsChecked = SettingsManager.Default.CloseLaucnher;
             ModDepsToggle.IsChecked = SettingsManager.Default.ModDep;
@@ -39,6 +316,7 @@ namespace CL_CLegendary_Launcher_
             FullScreenToggle.IsChecked = SettingsManager.Default.FullScreen;
             AutoBackupToggle.IsChecked = SettingsManager.Default.EnableAutoBackup;
             BackupCountText.Text = SettingsManager.Default.MaxAutoBackups.ToString();
+            ToggleCrashReports.IsChecked = SettingsManager.Default.IsCrashReportingEnabled;
         }
 
         private void LauncherFloderButton_Click(object sender, RoutedEventArgs e)
@@ -63,7 +341,7 @@ namespace CL_CLegendary_Launcher_
 
         private void MincraftWindowSize_Click(object sender, RoutedEventArgs e)
         {
-            Click();
+            SoundManager.Click();
             if (EditWditXHeghit.Visibility == Visibility.Visible)
             {
                 EditWditXHeghit.Visibility = Visibility.Collapsed;
@@ -92,23 +370,20 @@ namespace CL_CLegendary_Launcher_
                 }
             }
         }
+        private void LanguageComboBox_PreviewMouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            SoundManager.Click();
+        }
         private async void LanguageComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            DateTime today = DateTime.Now;
-            bool isAprilFoolsWeek = today.Month == 4 && today.Day >= 1 && today.Day <= 7;
-
             if (!IsLoaded || LanguageComboBox.SelectedItem is not LanguageItem selectedLang) return;
+            SoundManager.Click();
 
             if (LocalizationManager.CurrentLanguage != selectedLang.Code)
             {
                 LanguageComboBox.IsEnabled = false;
 
                 bool success = await LocalizationFetcher.DownloadLanguageAsync(selectedLang);
-                if (selectedLang.Code == "uk_UA" && isAprilFoolsWeek)
-                {
-                    _1AprilGird.Visibility = Visibility.Visible;
-                }
-                else { _1AprilGird.Visibility = Visibility.Collapsed; }
 
                 if (success)
                 {
@@ -194,6 +469,9 @@ namespace CL_CLegendary_Launcher_
             if (Loc_Settings_AutoDepDesc != null) Loc_Settings_AutoDepDesc.Text = LocalizationManager.GetString("Settings.AutoDepDesc", "Автоматично додає потрібні бібліотеки");
             if (Loc_Settings_GlassTitle != null) Loc_Settings_GlassTitle.Text = LocalizationManager.GetString("Settings.GlassTitle", "Ефект прозорості (Скло)");
             if (Loc_Settings_GlassDesc != null) Loc_Settings_GlassDesc.Text = LocalizationManager.GetString("Settings.GlassDesc", "Напівпрозорий фон вікна (Mica).");
+            if (Loc_Settings_CrashReportTitle != null) Loc_Settings_CrashReportTitle.Text = LocalizationManager.GetString("Settings.CrashReportTitle", "Звіт про помилки");
+            if (Loc_Settings_CrashReportDesc != null) Loc_Settings_CrashReportDesc.Text = LocalizationManager.GetString("Settings.CrashReportDesc", "Надсилає звіт про помилки для покращення лаунчера.");
+
 
             if (Loc_Settings_ThemeTitle != null) Loc_Settings_ThemeTitle.Text = LocalizationManager.GetString("Settings.ThemeTitle", "Тема інтерфейсу");
             if (Loc_Settings_ThemeDesc != null) Loc_Settings_ThemeDesc.Text = LocalizationManager.GetString("Settings.ThemeDesc", "Оберіть готовий стиль");
@@ -317,6 +595,68 @@ namespace CL_CLegendary_Launcher_
             if (Beta != null) Beta.Content = LocalizationManager.GetString("Versions.Beta", "Бета");
             if (Alpha != null) Alpha.Content = LocalizationManager.GetString("Versions.Alpha", "Альфа");
             if (SettingTXT1_Копировать != null) SettingTXT1_Копировать.Text = LocalizationManager.GetString("Versions.Vanilla", "Ваніла");
+
+            if (Loc_Settings_ModulesTitle != null) Loc_Settings_ModulesTitle.Text = LocalizationManager.GetString("Settings.ModulesTitle", "Модульність (Кастомізація)");
+            if (Loc_Settings_ModulesDesc != null) Loc_Settings_ModulesDesc.Text = LocalizationManager.GetString("Settings.ModulesDesc", "Оберіть готовий шаблон або вимкніть непотрібні функції власноруч:");
+
+            if (Loc_Settings_PresetLiteBtn != null)
+            {
+                Loc_Settings_PresetLiteBtn.Content = LocalizationManager.GetString("Settings.PresetLiteBtn", "Мінімалізм");
+                Loc_Settings_PresetLiteBtn.ToolTip = LocalizationManager.GetString("Settings.PresetLiteTooltip", "Вимкнути все зайве");
+            }
+            if (Loc_Settings_PresetBalanceBtn != null)
+            {
+                Loc_Settings_PresetBalanceBtn.Content = LocalizationManager.GetString("Settings.PresetBalanceBtn", "Баланс");
+                Loc_Settings_PresetBalanceBtn.ToolTip = LocalizationManager.GetString("Settings.PresetBalanceTooltip", "Оптимальний набір функцій");
+            }
+            if (Loc_Settings_PresetUltraBtn != null)
+            {
+                Loc_Settings_PresetUltraBtn.Content = LocalizationManager.GetString("Settings.PresetUltraBtn", "Ультра");
+                Loc_Settings_PresetUltraBtn.ToolTip = LocalizationManager.GetString("Settings.PresetUltraTooltip", "Увімкнути всі можливості (Комбайн)");
+            }
+
+            if (Loc_Settings_ModModpacksTitle != null) Loc_Settings_ModModpacksTitle.Text = LocalizationManager.GetString("Settings.ModModpacksTitle", "Вкладка «Збірки»");
+            if (Loc_Settings_ModModpacksDesc != null) Loc_Settings_ModModpacksDesc.Text = LocalizationManager.GetString("Settings.ModModpacksDesc", "Відображає розділ створення та гри з модовими збірками");
+
+            if (Loc_Settings_ModModsTitle != null) Loc_Settings_ModModsTitle.Text = LocalizationManager.GetString("Settings.ModModsTitle", "Вкладка «Моди»");
+            if (Loc_Settings_ModModsDesc != null) Loc_Settings_ModModsDesc.Text = LocalizationManager.GetString("Settings.ModModsDesc", "Вбудований завантажувач модифікацій, ресурспаків та шейдерів");
+
+            if (Loc_Settings_ModServersTitle != null) Loc_Settings_ModServersTitle.Text = LocalizationManager.GetString("Settings.ModServersTitle", "Вкладка «Сервери»");
+            if (Loc_Settings_ModServersDesc != null) Loc_Settings_ModServersDesc.Text = LocalizationManager.GetString("Settings.ModServersDesc", "Загальний моніторинг серверів (Плашка партнерів не вимикається)");
+
+            if (Loc_Settings_ModGalleryTitle != null) Loc_Settings_ModGalleryTitle.Text = LocalizationManager.GetString("Settings.ModGalleryTitle", "Вкладка «Галерея»");
+            if (Loc_Settings_ModGalleryDesc != null) Loc_Settings_ModGalleryDesc.Text = LocalizationManager.GetString("Settings.ModGalleryDesc", "Перегляд та управління скріншотами з гри");
+
+            if (Loc_Settings_ModAITitle != null) Loc_Settings_ModAITitle.Text = LocalizationManager.GetString("Settings.ModAITitle", "ШІ-Асистент (Agent C.L.)");
+            if (Loc_Settings_ModAIDesc != null) Loc_Settings_ModAIDesc.Text = LocalizationManager.GetString("Settings.ModAIDesc", "Розумний аналіз помилок у вікні логів гри");
+
+            if (Loc_Settings_ModFilesTitle != null) Loc_Settings_ModFilesTitle.Text = LocalizationManager.GetString("Settings.ModFilesTitle", "Кнопка «Файли та Бекапи»");
+            if (Loc_Settings_ModFilesDesc != null) Loc_Settings_ModFilesDesc.Text = LocalizationManager.GetString("Settings.ModFilesDesc", "Швидкий доступ до папок та управління архівами світів");
+
+            if (Loc_Settings_SubFilesMods != null) Loc_Settings_SubFilesMods.Text = LocalizationManager.GetString("Settings.SubFilesMods", "↳ Показувати функцію «Відкрити папку...»");
+            if (Loc_Settings_SubFilesBackups != null) Loc_Settings_SubFilesBackups.Text = LocalizationManager.GetString("Settings.SubFilesBackups", "↳ Показувати функцію «Менеджер світів (Backups)»");
+
+            if (Loc_Settings_ModInfoTitle != null) Loc_Settings_ModInfoTitle.Text = LocalizationManager.GetString("Settings.ModInfoTitle", "Кнопка «Інформація»");
+            if (Loc_Settings_ModInfoDesc != null) Loc_Settings_ModInfoDesc.Text = LocalizationManager.GetString("Settings.ModInfoDesc", "Меню з посиланнями на новини, Wiki, GitHub та подяки");
+
+            if (Loc_Settings_SubInfoBug != null) Loc_Settings_SubInfoBug.Text = LocalizationManager.GetString("Settings.SubInfoBug", "↳ Показувати «Повідомити про баг»");
+            if (Loc_Settings_SubInfoNews != null) Loc_Settings_SubInfoNews.Text = LocalizationManager.GetString("Settings.SubInfoNews", "↳ Показувати «Новини запускача»");
+            if (Loc_Settings_SubInfoWiki != null) Loc_Settings_SubInfoWiki.Text = LocalizationManager.GetString("Settings.SubInfoWiki", "↳ Показувати «Документація (Wiki)»");
+            if (Loc_Settings_SubInfoGithub != null) Loc_Settings_SubInfoGithub.Text = LocalizationManager.GetString("Settings.SubInfoGithub", "↳ Показувати «GitHub (Код)»");
+            if (Loc_Settings_SubInfoCredits != null) Loc_Settings_SubInfoCredits.Text = LocalizationManager.GetString("Settings.SubInfoCredits", "↳ Показувати «Подяки (Автори та Перекладачі)»");
+            if (Loc_Settings_SubInfoSupport != null) Loc_Settings_SubInfoSupport.Text = LocalizationManager.GetString("Settings.SubInfoSupport", "↳ Показувати кнопки підтримки та донатів");
+
+            if (Loc_Settings_ModChangelogTitle != null) Loc_Settings_ModChangelogTitle.Text = LocalizationManager.GetString("Settings.ModChangelogTitle", "Блок «Що нового? (Changelog)»");
+            if (Loc_Settings_ModChangelogDesc != null) Loc_Settings_ModChangelogDesc.Text = LocalizationManager.GetString("Settings.ModChangelogDesc", "Відображає список змін оновлень гри на головному екрані");
+
+            if (Loc_Settings_ModActionsTitle != null) Loc_Settings_ModActionsTitle.Text = LocalizationManager.GetString("Settings.ModActionsTitle", "Блок «Останні дії»");
+            if (Loc_Settings_ModActionsDesc != null) Loc_Settings_ModActionsDesc.Text = LocalizationManager.GetString("Settings.ModActionsDesc", "Відображає історію запусків та дій на головному екрані");
+
+            if (Loc_Settings_ModDiscordTitle != null) Loc_Settings_ModDiscordTitle.Text = LocalizationManager.GetString("Settings.ModDiscordTitle", "Discord RPC (Ігрова активність)");
+            if (Loc_Settings_ModDiscordDesc != null) Loc_Settings_ModDiscordDesc.Text = LocalizationManager.GetString("Settings.ModDiscordDesc", "Відображає ваш статус та ігрову активність у профілі Discord");
+
+            if (Loc_Settings_ModStatsTitle != null) Loc_Settings_ModStatsTitle.Text = LocalizationManager.GetString("Settings.ModStatsTitle", "Функція Статистики");
+            if (Loc_Settings_ModStatsDesc != null) Loc_Settings_ModStatsDesc.Text = LocalizationManager.GetString("Settings.ModStatsDesc", "Ви можете дивитися скільки ви награли на Серверах на Модових на Ванільних");
         }
         private void OpenCredits_Click(object sender, RoutedEventArgs e)
         {
@@ -410,7 +750,7 @@ namespace CL_CLegendary_Launcher_
 
         private void FullScreenOff_On_MouseDown(object sender, RoutedEventArgs e)
         {
-            Click();
+            SoundManager.Click();
             SettingsManager.Default.FullScreen = !SettingsManager.Default.FullScreen;
             SettingsManager.Save();
             FullScreenToggle.IsChecked = SettingsManager.Default.FullScreen;
@@ -435,7 +775,7 @@ namespace CL_CLegendary_Launcher_
 
         private void OPSlider_PreviewMouseDown_1(object sender, MouseButtonEventArgs e)
         {
-            Click();
+            SoundManager.Click();
             isSliderDragging = true;
         }
 
@@ -445,16 +785,9 @@ namespace CL_CLegendary_Launcher_
             SettingsManager.Default.OP = (int)OPSlider.Value;
             SettingsManager.Save();
         }
-        private void MemToggle_Click(object sender, System.Windows.RoutedEventArgs e)
-        {
-            SettingsManager.Default.EnableMemeSound = !SettingsManager.Default.EnableMemeSound;
-            SettingsManager.Save();
-            MemToggle.IsChecked = SettingsManager.Default.EnableMemeSound;
-            Click();
-        }
         private void DebugOff_On_Click(object sender, RoutedEventArgs e)
         {
-            Click();
+            SoundManager.Click();
             SettingsManager.Default.EnableLog = !SettingsManager.Default.EnableLog;
             SettingsManager.Save();
             DebugToggle.IsChecked = SettingsManager.Default.EnableLog;
@@ -462,7 +795,7 @@ namespace CL_CLegendary_Launcher_
 
         private void CloseLaucnherPlayMinecraft_MouseDown(object sender, RoutedEventArgs e)
         {
-            Click();
+            SoundManager.Click();
             SettingsManager.Default.CloseLaucnher = !SettingsManager.Default.CloseLaucnher;
             SettingsManager.Save();
             CloseLauncherToggle.IsChecked = SettingsManager.Default.CloseLaucnher;
@@ -470,7 +803,7 @@ namespace CL_CLegendary_Launcher_
 
         private void DisableGlassEffectToggle_MouseDown(object sender, RoutedEventArgs e)
         {
-            Click();
+            SoundManager.Click();
 
             SettingsManager.Default.DisableGlassEffect = !SettingsManager.Default.DisableGlassEffect;
             SettingsManager.Save();
@@ -492,16 +825,20 @@ namespace CL_CLegendary_Launcher_
                 }
             }
         }
-
+        private void ThemeComboBox_PreviewMouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            SoundManager.Click();
+        }
         private void ThemeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (!IsLoaded) return;
+            SoundManager.Click();
 
             if (ThemeComboBox.SelectedItem is ComboBoxItem selectedItem)
             {
                 string selectedTheme = selectedItem.Tag.ToString();
 
-                Click();
+                SoundManager.Click();
 
                 _themeService.ApplyTheme(selectedTheme);
 
@@ -519,6 +856,7 @@ namespace CL_CLegendary_Launcher_
 
         private void OnThemeColorButtonClicked(object sender, RoutedEventArgs e)
         {
+            SoundManager.Click();
             if (sender is Button btn && btn.Tag is string tagData)
             {
                 var parts = tagData.Split('|');
@@ -538,6 +876,7 @@ namespace CL_CLegendary_Launcher_
 
         private void CopyLoadScreen_Click(object sender, RoutedEventArgs e)
         {
+            SoundManager.Click();
             string code = _themeService.ExportLoadScreen();
             LoadScreenCodeBox.Text = code;
             Clipboard.SetText(code);
@@ -546,6 +885,7 @@ namespace CL_CLegendary_Launcher_
 
         private void CopyTheme_Click(object sender, RoutedEventArgs e)
         {
+            SoundManager.Click();
             string code = _themeService.ExportMainTheme();
             ThemeCodeBox.Text = code;
             Clipboard.SetText(code);
@@ -554,18 +894,21 @@ namespace CL_CLegendary_Launcher_
 
         private void PasteTheme_Click(object sender, RoutedEventArgs e)
         {
+            SoundManager.Click();
             string code = Clipboard.ContainsText() ? Clipboard.GetText().Trim() : ThemeCodeBox.Text.Trim();
             if (!string.IsNullOrEmpty(code)) _themeService.ImportMainTheme(code);
         }
 
         private void PasteLoadScreen_Click(object sender, RoutedEventArgs e)
         {
+            SoundManager.Click();
             string code = Clipboard.ContainsText() ? Clipboard.GetText().Trim() : LoadScreenCodeBox.Text.Trim();
             if (!string.IsNullOrEmpty(code)) _themeService.ImportLoadScreen(code);
         }
 
         private void AutoBackupToggle_Click(object sender, RoutedEventArgs e)
         {
+            SoundManager.Click();
             if (sender is Wpf.Ui.Controls.ToggleSwitch toggle)
             {
                 SettingsManager.Default.EnableAutoBackup = toggle.IsChecked ?? false;
@@ -576,6 +919,7 @@ namespace CL_CLegendary_Launcher_
         private void BackupCountMinus_Click(object sender, RoutedEventArgs e)
         {
             byte current = byte.Parse(BackupCountText.Text);
+            SoundManager.Click();
             if (current > 1)
             {
                 current--;
@@ -586,6 +930,7 @@ namespace CL_CLegendary_Launcher_
         private void BackupCountPlus_Click(object sender, RoutedEventArgs e)
         {
             byte current = byte.Parse(BackupCountText.Text);
+            SoundManager.Click();
             if (current < 20)
             {
                 current++;

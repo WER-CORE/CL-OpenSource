@@ -19,6 +19,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Shapes;
+using Application = System.Windows.Application;
 using MessageBox = System.Windows.Forms.MessageBox;
 using Path = System.IO.Path;
 
@@ -40,6 +41,7 @@ namespace CL_CLegendary_Launcher_.Class
         public int Height { get; set; } = 600;
         public bool EnterInServer { get; set; } = false;
         public string ServerIP { get; set; } = "IP Сервера";
+        public string JavaPath { get; set; } = string.Empty;
     }
 
     public static class ModpackPaths
@@ -55,7 +57,7 @@ namespace CL_CLegendary_Launcher_.Class
         private readonly ModDownloadService _modDownloadService;
 
         private readonly SemaphoreSlim _downloadSemaphore = new SemaphoreSlim(20);
-        private readonly ApiClient _cfApiClient;
+        private static ApiClient _cfApiClientInstance;
         private readonly HttpClient _httpClient;
 
         public ModpackService(CL_Main_ main, GameSessionManager gameSessionManager, GameLaunchService gameLaunchService, ModDownloadService modDownloadService)
@@ -67,9 +69,27 @@ namespace CL_CLegendary_Launcher_.Class
 
             _httpClient = new HttpClient { Timeout = TimeSpan.FromMinutes(10) };
             _httpClient.DefaultRequestHeaders.ConnectionClose = false;
-            _cfApiClient = new ApiClient(Secrets.CurseForgeKey);
         }
-
+        private async Task<ApiClient> GetCfClientAsync()
+        {
+            if (_cfApiClientInstance != null) return _cfApiClientInstance;
+            try
+            {
+                using var client = new HttpClient();
+                client.DefaultRequestHeaders.Add("", "");
+                var response = await client.GetAsync($"{Secrets.CurseForgeKey}");
+                if (response.IsSuccessStatusCode)
+                {
+                    string json = await response.Content.ReadAsStringAsync();
+                    var data = JObject.Parse(json);
+                    string key = data["key"]?.ToString();
+                    _cfApiClientInstance = new ApiClient(key);
+                    return _cfApiClientInstance;
+                }
+            }
+            catch { }
+            return null;
+        }
         public List<InstalledModpack> LoadInstalledModpacks()
         {
             string jsonPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "installed_modpacks.json");
@@ -96,21 +116,36 @@ namespace CL_CLegendary_Launcher_.Class
                 File.WriteAllText(pathToJson, newJson);
             }
         }
-
         public void DeleteModpackFolder(InstalledModpack value)
         {
-            string modpackFolder = Path.Combine(SettingsManager.Default.PathLacunher, "CLModpack", value.Name);
-            if (Directory.Exists(modpackFolder))
+            try
             {
-                Directory.Delete(modpackFolder, true);
-            }
+                string modpackFolder = Path.Combine(SettingsManager.Default.PathLacunher, "CLModpack", value.Name);
 
-            if (Directory.Exists(value.Path))
+                if (Directory.Exists(modpackFolder))
+                {
+                    Directory.Delete(modpackFolder, true);
+                }
+
+                if (!string.IsNullOrEmpty(value.Path) && Directory.Exists(value.Path))
+                {
+                    Directory.Delete(value.Path, true);
+                }
+            }
+            catch (Exception ex)
             {
-                Directory.Delete(value.Path, true);
+                System.Diagnostics.Debug.WriteLine($"[CL Launcher] Помилка видалення папки збірки: {ex.Message}");
+
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    MascotMessageBox.Show(
+                        LocalizationManager.GetString("Modpacks.DeleteFolderError", "Не вдалося повністю видалити файли збірки. Можливо, якась програма (або сама гра) досі використовує ці файли.\nСпробуйте пізніше або видаліть папку вручну."),
+                        LocalizationManager.GetString("Dialogs.Error", "Помилка доступу"),
+                        MascotEmotion.Alert);
+                });
             }
         }
-        public async void PlayModPack(string version, string versionMod, string loader, string nameModPack, string pathModPack, string pathJson, string typeSite)
+        public async void PlayModPack(string version, string versionMod, string loader, string nameModPack, string pathModPack, string pathJson, string typeSite, string javaPath)
         {
             if (_main.InstallVersionOnPlay) return;
 
@@ -142,7 +177,7 @@ namespace CL_CLegendary_Launcher_.Class
                 string savesPath = Path.Combine(finalModPath, "saves");
                 System.Diagnostics.Debug.WriteLine($"[DEBUG] Шлях до сейвів: {savesPath}");
 
-                if (SettingsManager.Default.EnableAutoBackup)
+                if (SettingsManager.Default.EnableAutoBackup && SettingsManager.Default.EnableSubFiles_Backups)
                 {
                     if (Directory.Exists(savesPath))
                     {
@@ -244,7 +279,11 @@ namespace CL_CLegendary_Launcher_.Class
                     ScreenHeight = installedModpack.Height,
                     ServerIp = (installedModpack.EnterInServer && !string.IsNullOrWhiteSpace(installedModpack.ServerIP)) ? installedModpack.ServerIP.Split(':')[0] : null,
                     ServerPort = (installedModpack.EnterInServer && !string.IsNullOrWhiteSpace(installedModpack.ServerIP) && installedModpack.ServerIP.Contains(':') && int.TryParse(installedModpack.ServerIP.Split(':')[1], out int port)) ? port : 0,
-                };
+
+                    JavaPath = !string.IsNullOrWhiteSpace(javaPath)
+                                ? javaPath
+                                : (!string.IsNullOrWhiteSpace(installedModpack.JavaPath) ? installedModpack.JavaPath : null)
+                }; 
                 var activeJvmArgs = new List<string>();
 
                 if (_main.selectAccountNow == AccountType.LittleSkin)
@@ -278,7 +317,7 @@ namespace CL_CLegendary_Launcher_.Class
                     if (Enum.TryParse(typeof(LoaderType), loader, true, out object result))
                         loaderType = (LoaderType)result;
                     else
-                        loaderType = LoaderType.Custom_Local;
+                        loaderType = LoaderType.Vanilla;
                 }
 
                 string versionName;
@@ -315,7 +354,7 @@ namespace CL_CLegendary_Launcher_.Class
                     process = await launcher.InstallAndBuildProcessAsync(versionName, mLaunch, token);
                 }
 
-                _gameSessionManager.StartGameSession("mod");
+                if (SettingsManager.Default.EnableMod_Statistics) { _gameSessionManager.StartGameSession("mod"); }
 
                 _main.Dispatcher.Invoke(() =>
                 {
@@ -336,6 +375,34 @@ namespace CL_CLegendary_Launcher_.Class
                 }
                 await MemoryCleaner.FlushMemoryAsync(trimWorkingSet: true);
                 await process.WaitForExitAsync();
+                int exitCode = process.ExitCode;
+
+                if (exitCode != 0)
+                {
+                    _main.Dispatcher.Invoke(() =>
+                    {
+                        _main.Show();
+                        _main.WindowState = WindowState.Normal;
+
+                        if (!installedModpack.IsConsoleLogOpened)
+                        {
+                            string logFilePath = Path.Combine(finalModPath, "logs", "latest.log");
+                            _main.ShowGameLogFromFile(logFilePath);
+                        }
+
+                        MascotMessageBox.Show(
+                            string.Format(LocalizationManager.GetString("GameLaunch.CrashDesc", "Йой! Майнкрафт впав (Код помилки: {0}).\nЯ відкрила логи, щоб ми могли знайти конфліктний мод або помилку."), exitCode),
+                            LocalizationManager.GetString("GameLaunch.CrashTitle", "Краш гри!"),
+                            MascotEmotion.Sad);
+                    });
+                }
+                else
+                {
+                    if (SettingsManager.Default.CloseLaucnher)
+                    {
+                        _main.Dispatcher.Invoke(() => Application.Current.Shutdown());
+                    }
+                }
             }
             catch (OperationCanceledException)
             {
@@ -389,7 +456,9 @@ namespace CL_CLegendary_Launcher_.Class
                             int projectId = modEntry.Value<int>("projectID");
                             int fileId = modEntry.Value<int>("fileID");
 
-                            var file = await _cfApiClient.GetModFileAsync(projectId, fileId);
+                            var cfApi = await GetCfClientAsync();
+                            if (cfApi == null) return;
+                            var file = await cfApi.GetModFileAsync(projectId, fileId);
                             var data = file?.Data;
                             if (data == null) return;
 

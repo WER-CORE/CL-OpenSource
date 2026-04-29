@@ -17,7 +17,34 @@
         FontFamily="Inter"
         Icon="/Icon/IconCL(Common).png"
         AllowsTransparency="True">
+    <Window.Resources>
+        <ControlTemplate x:Key="ModCardSkeletonTemplate">
+            <Border Height="40" Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="8" Margin="0,0,0,5">
+                <Grid Margin="10,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
 
+                    <Border Grid.Column="0" 
+                            Width="20" Height="20" 
+                            CornerRadius="4" 
+                            Background="{DynamicResource MainBackgroundBrush}" 
+                            VerticalAlignment="Center"/>
+
+                    <Border Grid.Column="1" 
+                            Height="12" Width="180" 
+                            CornerRadius="3" 
+                            Background="{DynamicResource MainBackgroundBrush}" 
+                            HorizontalAlignment="Left" 
+                            VerticalAlignment="Center" 
+                            Margin="10,0"/>
+
+                </Grid>
+            </Border>
+        </ControlTemplate>
+    </Window.Resources>
     <Border Background="{DynamicResource MainBackgroundBrush}" CornerRadius="12" BorderThickness="1" BorderBrush="#33808080">
         <Grid>
             <Grid.RowDefinitions>
@@ -154,12 +181,21 @@
                                      ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                                      ScrollViewer.VerticalScrollBarVisibility="Auto"
                                      Margin="0,0,0,10"></ui:ListView>
-
+                        <StackPanel x:Name="ModsSkeletonPanel" VerticalAlignment="Top" Visibility="Collapsed">
+                            <Control Template="{StaticResource ModCardSkeletonTemplate}"/>
+                            <Control Template="{StaticResource ModCardSkeletonTemplate}"/>
+                            <Control Template="{StaticResource ModCardSkeletonTemplate}"/>
+                            <Control Template="{StaticResource ModCardSkeletonTemplate}"/>
+                            <Control Template="{StaticResource ModCardSkeletonTemplate}"/>
+                            <Control Template="{StaticResource ModCardSkeletonTemplate}"/>
+                            <Control Template="{StaticResource ModCardSkeletonTemplate}"/>
+                            <Control Template="{StaticResource ModCardSkeletonTemplate}"/>
+                        </StackPanel>
                         <StackPanel x:Name="ModsSearchLoader" Grid.Row="0" Grid.RowSpan="2"
                                     VerticalAlignment="Center" 
                                     HorizontalAlignment="Center"
                                     Orientation="Vertical" Visibility="Collapsed" Panel.ZIndex="10">
-                            <Border Background="{DynamicResource MainBackgroundBrush}" Opacity="0.9" CornerRadius="12" Padding="25">
+                            <Border Opacity="0.9" CornerRadius="12" Padding="25">
                                 <StackPanel>
                                     <ui:ProgressRing IsIndeterminate="True" 
                                                      Width="50" Height="50" 
