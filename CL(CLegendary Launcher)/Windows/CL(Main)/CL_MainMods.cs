@@ -4,6 +4,7 @@ using CL_CLegendary_Launcher_.Windows;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -578,7 +579,13 @@ namespace CL_CLegendary_Launcher_
             SoundManager.Click();
             if (Directory.Exists(pack.Path))
             {
-                System.Diagnostics.Process.Start("explorer.exe", pack.Path);
+                var startInfo = new ProcessStartInfo
+                {
+                    FileName = "explorer.exe",
+                    Arguments = $"\"{pack.Path}\"",
+                    UseShellExecute = true
+                };
+                Process.Start(startInfo);
             }
             else
             {

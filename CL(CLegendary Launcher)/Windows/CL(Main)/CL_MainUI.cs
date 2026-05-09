@@ -136,14 +136,13 @@ namespace CL_CLegendary_Launcher_
                 }
             }
 
-            ListNews.Items?.Clear();
+            SafeClearList(ListNews);
+            SafeClearList(ScreenshotsList);
+            SafeClearList(ModsDowloadList1);
+            SafeClearList(ModsDowloadList);
+            SafeClearList(ServerList);
+
             TextNews.Text = null;
-            ScreenshotsList.Items?.Clear();
-            ModsDowloadList1.Items?.Clear();
-            ModsDowloadList.Items?.Clear();
-
-            ServerList.Items?.Clear();
-
             DescriptionServer.Text = null;
 
             if (animationStarted)
@@ -151,7 +150,19 @@ namespace CL_CLegendary_Launcher_
                 await Task.Delay(300);
             }
         }
+        private void SafeClearList(System.Windows.Controls.ItemsControl listControl)
+        {
+            if (listControl == null) return;
 
+            if (listControl.ItemsSource != null)
+            {
+                listControl.ItemsSource = null;
+            }
+            else
+            {
+                listControl.Items.Clear();
+            }
+        }
         private void PlayTXTPanelSelect_MouseDown(object sender, MouseButtonEventArgs e)
         {
             _navigationService.NavigateToHome();
@@ -218,7 +229,13 @@ namespace CL_CLegendary_Launcher_
                 {
                     Directory.CreateDirectory(path);
                 }
-                Process.Start(new ProcessStartInfo("explorer.exe", path));
+                var startInfo = new ProcessStartInfo
+                {
+                    FileName = "explorer.exe",
+                    Arguments = $"\"{path}\"",
+                    UseShellExecute = true
+                };
+                Process.Start(startInfo);
             }
             catch (Exception ex)
             {
@@ -289,12 +306,24 @@ namespace CL_CLegendary_Launcher_
 
                 if (Directory.Exists(path))
                 {
-                    Process.Start("explorer.exe", path);
+                    var startInfo = new ProcessStartInfo
+                    {
+                        FileName = "explorer.exe",
+                        Arguments = $"\"{path}\"",
+                        UseShellExecute = true
+                    };
+                    Process.Start(startInfo);
                 }
                 else
                 {
                     Directory.CreateDirectory(path);
-                    Process.Start("explorer.exe", path);
+                    var startInfo = new ProcessStartInfo
+                    {
+                        FileName = "explorer.exe",
+                        Arguments = $"\"{path}\"",
+                        UseShellExecute = true
+                    };
+                    Process.Start(startInfo);
                 }
             }
             catch (Exception ex)
@@ -408,7 +437,13 @@ namespace CL_CLegendary_Launcher_
             if (!string.IsNullOrEmpty(currentScreenshotsPath))
             {
                 if (!Directory.Exists(currentScreenshotsPath)) Directory.CreateDirectory(currentScreenshotsPath);
-                System.Diagnostics.Process.Start("explorer.exe", currentScreenshotsPath);
+                var startInfo = new ProcessStartInfo
+                {
+                    FileName = "explorer.exe",
+                    Arguments = $"\"{currentScreenshotsPath}\"",
+                    UseShellExecute = true
+                };
+                Process.Start(startInfo);
             }
         }
 

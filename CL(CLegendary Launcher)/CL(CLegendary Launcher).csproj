@@ -13,8 +13,8 @@
     <UseWPF>true</UseWPF>
     <ApplicationIcon>Icon\IconCL(Winter).ico</ApplicationIcon>
     <UseWindowsForms>true</UseWindowsForms>
-    <FileVersion>0.9.0.0</FileVersion>
-    <AssemblyVersion>0.9.0.0</AssemblyVersion>
+    <FileVersion>0.9.1.0</FileVersion>
+    <AssemblyVersion>0.9.1.0</AssemblyVersion>
     <PackageIcon></PackageIcon>
     <Copyright></Copyright>
     <NeutralLanguage>uk-UA</NeutralLanguage>
@@ -225,7 +225,7 @@
     <PackageReference Include="CmlLib.Core" Version="4.0.6" />
     <PackageReference Include="CmlLib.Core.Auth.Microsoft" Version="3.3.1" />
     <PackageReference Include="CmlLib.Core.Installer.Forge" Version="1.1.1" />
-    <PackageReference Include="CmlLib.Core.Installer.NeoForge" Version="4.0.0" />
+    <PackageReference Include="CmlLib.Core.Installer.NeoForge" Version="4.0.1" />
     <PackageReference Include="CurseForge.APIClient" Version="5.0.0" />
     <PackageReference Include="DiscordRichPresence" Version="1.6.1.70" />
     <PackageReference Include="HtmlAgilityPack" Version="1.12.4" />
@@ -235,11 +235,11 @@
     <PackageReference Include="MojangAPI" Version="1.2.1" />
     <PackageReference Include="Optifine.Installer" Version="1.0.1" />
     <PackageReference Include="RestSharp" Version="114.0.0" />
-    <PackageReference Include="Sentry" Version="6.4.1" />
-    <PackageReference Include="SharpCompress" Version="0.47.4" />
+    <PackageReference Include="Sentry" Version="6.5.0" />
+    <PackageReference Include="SharpCompress" Version="0.48.0" />
     <PackageReference Include="System.Management" Version="10.0.7" />
-    <PackageReference Include="WPF-UI" Version="4.2.1" />
-    <PackageReference Include="XamlAnimatedGif" Version="2.3.1" />
+    <PackageReference Include="WPF-UI" Version="4.3.0" />
+    <PackageReference Include="XamlAnimatedGif" Version="2.3.2" />
   </ItemGroup>
 
   <ItemGroup>
