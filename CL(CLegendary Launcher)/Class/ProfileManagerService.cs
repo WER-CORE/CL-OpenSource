@@ -74,6 +74,7 @@ namespace CL_CLegendary_Launcher_.Class
             SaveProfiles(profiles);
             return true;
         }
+
         public List<ProfileItem> LoadProfiles()
         {
             if (!File.Exists(_profilesManegerPath)) return new List<ProfileItem>();
@@ -119,6 +120,20 @@ namespace CL_CLegendary_Launcher_.Class
                     File.Move(_profilesManegerPath, _profilesManegerPath + ".corrupted");
                     return new List<ProfileItem>();
                 }
+            }
+        }
+
+        public void UpdateProfile(ProfileItem updatedProfile)
+        {
+            var profiles = LoadProfiles();
+            var target = profiles.FirstOrDefault(p => p.NameAccount == updatedProfile.NameAccount && p.TypeAccount == updatedProfile.TypeAccount);
+
+            if (target != null)
+            {
+                target.AccessToken = updatedProfile.AccessToken;
+                target.LastAuthTime = updatedProfile.LastAuthTime;
+
+                SaveProfiles(profiles);
             }
         }
 

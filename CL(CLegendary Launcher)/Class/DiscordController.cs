@@ -65,6 +65,14 @@ namespace CL_CLegendary_Launcher_.Class
                     {
                         LargeImageKey = "frame_73",
                         SmallImageKey = "ua",
+                    },
+                    Buttons = new[]
+                    {
+                        new Button()
+                        {
+                            Label = "Репозиторій",
+                            Url = "https://github.com/WER-CORE/CL-OpenSource"
+                        }
                     }
                 });
             }

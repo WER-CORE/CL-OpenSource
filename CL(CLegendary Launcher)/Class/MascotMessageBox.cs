@@ -11,9 +11,19 @@ namespace CL_CLegendary_Launcher_.Class
     {
         public static void Show(string message, string title = null, MascotEmotion emotion = MascotEmotion.Normal)
         {
-            string actualTitle = title ?? LocalizationManager.GetString("Dialogs.InfoTitle", "Інформація");
-            var dialog = new MascotDialogWindow(message, actualTitle, emotion, isQuestion: false);
-            dialog.ShowDialog();
+            if (System.Windows.Application.Current.Dispatcher.CheckAccess())
+            {
+                var dialog = new MascotDialogWindow(message, title, emotion, false);
+                dialog.ShowDialog();
+            }
+            else
+            {
+                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                {
+                    var dialog = new MascotDialogWindow(message, title, emotion, false);
+                    dialog.ShowDialog();
+                });
+            }
         }
 
         public static bool Ask(string message, string title = null, MascotEmotion emotion = MascotEmotion.Alert)

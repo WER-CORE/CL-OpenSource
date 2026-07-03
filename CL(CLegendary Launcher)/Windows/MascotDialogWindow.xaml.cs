@@ -71,24 +71,45 @@ namespace CL_CLegendary_Launcher_.Windows
 
         private void BtnOK_Click(object sender, RoutedEventArgs e)
         {
-            DialogResult = true;
-            Close();
+            SoundManager.Click();
+
+            if (System.Windows.Interop.ComponentDispatcher.IsThreadModal)
+            {
+                this.DialogResult = true;
+            }
+            else
+            {
+                this.Close();
+            }
         }
 
         private void BtnCancel_Click(object sender, RoutedEventArgs e)
         {
             SoundManager.Click();
 
-            DialogResult = false;
-            Close();
+
+            if (System.Windows.Interop.ComponentDispatcher.IsThreadModal)
+            {
+                this.DialogResult = false;
+            }
+            else
+            {
+                this.Close();
+            }
         }
 
         private void Close_MouseDown(object sender, MouseButtonEventArgs e)
         {
             SoundManager.Click();
 
-            DialogResult = false;
-            Close();
+            if (System.Windows.Interop.ComponentDispatcher.IsThreadModal)
+            {
+                this.DialogResult = false;
+            }
+            else
+            {
+                this.Close();
+            }
         }
 
         private void MainBorder_MouseDown(object sender, MouseButtonEventArgs e)

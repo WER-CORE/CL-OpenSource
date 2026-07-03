@@ -14,6 +14,7 @@ namespace CL_CLegendary_Launcher_.Models
         public string ImageUrl { get; set; }
         public int Index { get; set; }
         public AccountType TypeAccount { get; set; }
+        public string LicenseType { get; set; } = "None";
+        public string LastAuthTime { get; set; } = string.Empty;
     }
-
 }

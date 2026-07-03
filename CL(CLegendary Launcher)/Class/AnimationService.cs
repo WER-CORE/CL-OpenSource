@@ -169,7 +169,7 @@ namespace CL_CLegendary_Launcher_.Class
 
             element.Visibility = Visibility.Visible;
             element.Opacity = 0;
-            transform.Y = startOffset; 
+            transform.Y = startOffset;
 
             var duration = TimeSpan.FromSeconds(durationSeconds);
             var easing = new CircleEase { EasingMode = EasingMode.EaseOut };
@@ -184,8 +184,8 @@ namespace CL_CLegendary_Launcher_.Class
 
             DoubleAnimation slideAnim = new DoubleAnimation
             {
-                From = startOffset, 
-                To = 0,             
+                From = startOffset,
+                To = 0,
                 Duration = duration,
                 EasingFunction = easing
             };
@@ -204,7 +204,7 @@ namespace CL_CLegendary_Launcher_.Class
 
             var transform = (TranslateTransform)element.RenderTransform;
             var duration = TimeSpan.FromSeconds(durationSeconds);
-            var easing = new CircleEase { EasingMode = EasingMode.EaseIn }; 
+            var easing = new CircleEase { EasingMode = EasingMode.EaseIn };
 
             DoubleAnimation opacityAnim = new DoubleAnimation
             {

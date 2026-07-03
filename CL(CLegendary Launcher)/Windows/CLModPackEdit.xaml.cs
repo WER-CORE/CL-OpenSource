@@ -438,6 +438,52 @@ namespace CL_CLegendary_Launcher_.Windows
             IPAdressServer.IsEnabled = newState;
             EditInstalledModpack(CurrentModpack.Name, "EnterInServer", newState);
         }
+
+        private void BtnResetOptions_Click(object sender, RoutedEventArgs e)
+        {
+            SoundManager.Click();
+
+            string overridePath = Path.Combine(CurrentModpack.Path, "override");
+            string overridesPath = Path.Combine(CurrentModpack.Path, "overrides");
+
+            string finalModPath = Path.Combine(overridePath, "options.txt");
+            if (!Directory.Exists(overridePath) && Directory.Exists(overridesPath))
+            {
+                finalModPath = Path.Combine(overridesPath, "options.txt");
+            }
+
+            if (File.Exists(finalModPath))
+            {
+                bool? isSure = MascotMessageBox.Ask(
+                    LocalizationManager.GetString("Modpacks.AskResetOptions", "Ви дійсно хочете скинути налаштування гри? Це скине керування, звук та графіку до стандартних."),
+                    LocalizationManager.GetString("Dialogs.Alert", "Увага"),
+                    MascotEmotion.Alert);
+
+                if (isSure == true)
+                {
+                    try
+                    {
+                        File.Delete(finalModPath);
+                        MascotMessageBox.Show(
+                            LocalizationManager.GetString("Modpacks.SuccessResetOptions", "Налаштування гри успішно скинуто!"),
+                            LocalizationManager.GetString("Dialogs.Success", "Успіх"),
+                            MascotEmotion.Happy);
+                    }
+                    catch (Exception ex)
+                    {
+                        MascotMessageBox.Show($"Не вдалося скинути налаштування: {ex.Message}", "Помилка", MascotEmotion.Sad);
+                    }
+                }
+            }
+            else
+            {
+                MascotMessageBox.Show(
+                    LocalizationManager.GetString("Modpacks.OptionsNotFound", "Файл налаштувань не знайдено. Схоже, ви ще жодного разу не запускали цю збірку."),
+                    LocalizationManager.GetString("Dialogs.Info", "Інформація"),
+                    MascotEmotion.Confused);
+            }
+        }
+
         private void HeghitTXT_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (HeghitTXT == null || CurrentModpack == null) return;
@@ -546,6 +592,7 @@ namespace CL_CLegendary_Launcher_.Windows
                     0 => "mods",
                     1 => "resourcepacks",
                     2 => "shaderpacks",
+                    4 => "datapacks",
                     _ => "mods"
                 };
 

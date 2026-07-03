@@ -76,7 +76,7 @@ namespace CL_CLegendary_Launcher_.Class
             try
             {
                 using var client = new HttpClient();
-                client.DefaultRequestHeaders.Add("", "");
+                client.DefaultRequestHeaders.Add("x-launcher-secret", "CL-Super-Secret-2026");
                 var response = await client.GetAsync($"{Secrets.CurseForgeKey}");
                 if (response.IsSuccessStatusCode)
                 {
@@ -226,8 +226,14 @@ namespace CL_CLegendary_Launcher_.Class
                         downloadSuccess = await DownloadModsFromIndexJsonAsync(pathJson, finalModPath, versionDownloadWindow, token);
                     else if (typeSite == "CurseForge")
                         downloadSuccess = await DownloadModsFromManifestJsonAsync(pathJson, finalModPath, versionDownloadWindow, token);
-                    else if (typeSite == "Custom")
-                        downloadSuccess = await DownloadModsFromCustomJsonAsync(Path.Combine(pathModPack, "modpack.json"), finalModPath, versionDownloadWindow, token);
+                    else
+                    {
+                        string customJsonPath = Path.Combine(pathModPack, "modpack.json");
+                        if (File.Exists(customJsonPath))
+                        {
+                            downloadSuccess = await DownloadModsFromCustomJsonAsync(customJsonPath, finalModPath, versionDownloadWindow, token);
+                        }
+                    }
                 }
 
                 var installedModpack = LoadInstalledModpacks().FirstOrDefault(m => m.Name.Equals(nameModPack, StringComparison.OrdinalIgnoreCase));
@@ -609,26 +615,63 @@ namespace CL_CLegendary_Launcher_.Class
                                 "mod" => "mods",
                                 "shader" => "shaderpacks",
                                 "resourcepack" => "resourcepacks",
+                                "datapack" => "datapacks",
+                                "map" => "saves",
                                 _ => "mods"
                             };
 
                             string targetDir = Path.Combine(packFolder, subFolder);
                             Directory.CreateDirectory(targetDir);
 
+                            string actualDownloadUrl = currentMod.Url;
+                            if (string.IsNullOrEmpty(actualDownloadUrl) && !string.IsNullOrEmpty(currentMod.ProjectId) && !string.IsNullOrEmpty(currentMod.FileId))
+                            {
+                                try
+                                {
+                                    var cfApi = await GetCfClientAsync();
+                                    if (cfApi != null)
+                                    {
+                                        var fileData = await cfApi.GetModFileAsync(int.Parse(currentMod.ProjectId), int.Parse(currentMod.FileId));
+                                        if (fileData?.Data != null && !string.IsNullOrEmpty(fileData.Data.DownloadUrl))
+                                        {
+                                            actualDownloadUrl = fileData.Data.DownloadUrl;
+                                        }
+                                    }
+                                }
+                                catch { }
+                            }
+
+                            if (string.IsNullOrEmpty(actualDownloadUrl) && !string.IsNullOrEmpty(currentMod.FileId) && !string.IsNullOrEmpty(currentMod.FileName))
+                            {
+                                string fId = currentMod.FileId;
+                                if (fId.Length >= 7)
+                                {
+                                    string part1 = fId.Substring(0, 4);
+                                    string part2 = fId.Substring(4);
+                                    actualDownloadUrl = $"https://edge.forgecdn.net/files/{part1}/{part2}/{Uri.EscapeDataString(currentMod.FileName)}";
+                                }
+                            }
+
                             string fileName = !string.IsNullOrEmpty(currentMod.FileName)
                                 ? currentMod.FileName
-                                : Path.GetFileName(currentMod.Url);
+                                : (string.IsNullOrEmpty(actualDownloadUrl) ? $"{currentMod.Name.Replace(" ", "_")}.jar" : Path.GetFileName(actualDownloadUrl));
 
                             if (!fileName.EndsWith(".jar") && !fileName.EndsWith(".zip"))
-                                fileName = $"{currentMod.Name.Replace(" ", "_")}.jar";
+                                fileName = $"{currentMod.Name.Replace(" ", "_")}.zip";
 
                             string filePath = Path.Combine(targetDir, fileName);
 
                             if (!File.Exists(filePath))
                             {
                                 _main.Dispatcher.BeginInvoke(() => progress.DowloadProgressBarFileTask(totalTasks, completed, fileName));
-                                bool success = await DownloadFileWithProgress(currentMod.Url, filePath, progress, token);
-                                if (!success) await HandleManualDownloadPrompt(currentMod.Url, filePath, fileName);
+
+                                bool success = false;
+                                if (!string.IsNullOrEmpty(actualDownloadUrl))
+                                {
+                                    success = await DownloadFileWithProgress(actualDownloadUrl, filePath, progress, token);
+                                }
+
+                                if (!success) await HandleManualDownloadPrompt(actualDownloadUrl ?? "Порожнє посилання", filePath, fileName);
                             }
 
                             if (SettingsManager.Default.ModDep && currentMod.Type == "mod" && !string.IsNullOrEmpty(currentMod.FileId))
@@ -648,6 +691,50 @@ namespace CL_CLegendary_Launcher_.Class
                                     }
                                 }
                                 catch (Exception ex) { Debug.WriteLine($"Dependency Error for {currentMod.Name}: {ex.Message}"); }
+                            }
+                            if (currentMod.Type == "map" && filePath.EndsWith(".zip", StringComparison.OrdinalIgnoreCase) && File.Exists(filePath))
+                            {
+                                try
+                                {
+                                    _main.Dispatcher.BeginInvoke(() => progress.DowloadProgressBarFileTask(totalTasks, completed, $"Розпакування: {fileName}"));
+
+                                    string extractTarget = Path.Combine(targetDir, Path.GetFileNameWithoutExtension(fileName));
+
+                                    if (Directory.Exists(extractTarget))
+                                        Directory.Delete(extractTarget, true);
+
+                                    ZipFile.ExtractToDirectory(filePath, extractTarget);
+
+                                    File.Delete(filePath);
+
+                                    var rootDir = new DirectoryInfo(extractTarget);
+                                    var subDirs = rootDir.GetDirectories();
+                                    var filesInRoot = rootDir.GetFiles();
+
+                                    if (filesInRoot.Length == 0 && subDirs.Length == 1)
+                                    {
+                                        var nestedDir = subDirs[0];
+
+                                        foreach (var file in nestedDir.GetFiles())
+                                        {
+                                            string destFile = Path.Combine(extractTarget, file.Name);
+                                            file.MoveTo(destFile);
+                                        }
+
+                                        foreach (var dir in nestedDir.GetDirectories())
+                                        {
+                                            string destDir = Path.Combine(extractTarget, dir.Name);
+                                            if (Directory.Exists(destDir)) Directory.Delete(destDir, true);
+                                            dir.MoveTo(destDir);
+                                        }
+
+                                        nestedDir.Delete();
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    System.Diagnostics.Debug.WriteLine($"[CL Launcher] Помилка розпакування карти {fileName}: {ex.Message}");
+                                }
                             }
                         }
                         catch { }
@@ -891,13 +978,18 @@ namespace CL_CLegendary_Launcher_.Class
         }
         public async Task<InstalledModpack> ImportModpackFromFileAsync(string zipFilePath)
         {
-            string packName = Path.GetFileNameWithoutExtension(zipFilePath);
+            string originalPackName = Path.GetFileNameWithoutExtension(zipFilePath);
+            string packName = originalPackName;
             string extractPath = Path.Combine(SettingsManager.Default.PathLacunher, "CLModpack", packName);
 
-            if (Directory.Exists(extractPath))
+            int counter = 1;
+            while (Directory.Exists(extractPath))
             {
-                throw new Exception(string.Format(LocalizationManager.GetString("Modpacks.ImportExists", "Збірка з назвою '{0}' вже існує! Видаліть її або перейменуйте архів."), packName));
+                packName = $"{originalPackName} ({counter})";
+                extractPath = Path.Combine(SettingsManager.Default.PathLacunher, "CLModpack", packName);
+                counter++;
             }
+
             Directory.CreateDirectory(extractPath);
 
             await Task.Run(() => ZipFile.ExtractToDirectory(zipFilePath, extractPath));
@@ -925,6 +1017,27 @@ namespace CL_CLegendary_Launcher_.Class
 
                 nestedDir.Delete();
             }
+
+            string clientOverridesPath = Path.Combine(extractPath, "client-overrides");
+            string overridesPath = Path.Combine(extractPath, "overrides");
+
+            if (Directory.Exists(clientOverridesPath))
+            {
+                if (!Directory.Exists(overridesPath)) Directory.CreateDirectory(overridesPath);
+
+                foreach (var dirPath in Directory.GetDirectories(clientOverridesPath, "*", SearchOption.AllDirectories))
+                {
+                    Directory.CreateDirectory(dirPath.Replace(clientOverridesPath, overridesPath));
+                }
+
+                foreach (var newPath in Directory.GetFiles(clientOverridesPath, "*.*", SearchOption.AllDirectories))
+                {
+                    File.Move(newPath, newPath.Replace(clientOverridesPath, overridesPath), true);
+                }
+
+                Directory.Delete(clientOverridesPath, true);
+            }
+
             string modrinthPath = Path.Combine(extractPath, "modrinth.index.json");
             string cursePath = Path.Combine(extractPath, "manifest.json");
             string customPath = Path.Combine(extractPath, "modpack.json");

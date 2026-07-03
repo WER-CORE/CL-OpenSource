@@ -6,7 +6,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:CL_CLegendary_Launcher_.Windows"
         mc:Ignorable="d"
-        Title="CL - Створення модової збірок" Height="600" Width="850" 
+        Title="CL - Create Modpack" Height="600" Width="850" 
         Background="{x:Null}" 
         Foreground="{DynamicResource MainForegroundBrush}" 
         FontFamily="Inter"
@@ -184,6 +184,8 @@
                 <Button x:Name="BtnMods" Content="Моди" Style="{StaticResource TabButtonStyle}" Click="ModsTxt_MouseDown" Foreground="{DynamicResource MainForegroundBrush}" Background="{x:Null}"/>
                 <Button x:Name="BtnResourcePacks" Content="Ресурс-паки" Style="{StaticResource TabButtonStyle}" Click="ResourcePackTxt_MouseDown" Foreground="{DynamicResource MainForegroundBrush}" Background="{x:Null}"/>
                 <Button x:Name="BtnShaders" Content="Шейдери" Style="{StaticResource TabButtonStyle}" Click="ShaderPackTxt_MouseDown" Foreground="{DynamicResource MainForegroundBrush}" Background="{x:Null}"/>
+                <Button x:Name="BtnDatapacks" Content="Датапаки" Style="{StaticResource TabButtonStyle}" Click="DatapackTxt_MouseDown" Foreground="{DynamicResource MainForegroundBrush}" Background="{x:Null}"/>
+                <Button x:Name="BtnMaps" Content="Карти" Style="{StaticResource TabButtonStyle}" Click="MapTxt_MouseDown" Foreground="{DynamicResource MainForegroundBrush}" Background="{x:Null}"/>
             </StackPanel>
 
             <ui:TextBox Grid.Column="2" x:Name="SearchSystemModsTXT" PlaceholderText="Пошук модів..." Margin="10,0" TextChanged="SearchSystemModsTXT_TextChanged" Foreground="{DynamicResource MainForegroundBrush}" Background="{DynamicResource MainBackgroundBrush}"/>

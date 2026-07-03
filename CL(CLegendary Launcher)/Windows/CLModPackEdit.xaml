@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         mc:Ignorable="d"
-        Title="Налаштування збірки" Height="500" Width="800" 
+        Title="CL - Build Editor" Height="500" Width="800" 
         FontFamily="Inter" ResizeMode="NoResize" WindowStyle="None" 
         Icon="/Icon/IconCL(Common).png" Loaded="Window_Loaded" ExtendsContentIntoTitleBar="True"
         WindowBackdropType="Mica"
@@ -313,6 +313,24 @@
                                     </StackPanel>
 
                                     <ui:ToggleSwitch x:Name="OnJoinServerOff_On" Click="OnJoinServerOff_On_Click" Margin="500,0,0,0" Width="48" Cursor="Hand"/>
+                                </Grid>
+                                <Separator Background="#20FFFFFF" Margin="0,5"/>
+
+                                <Grid Height="40">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <ui:SymbolIcon Symbol="ArrowUndo24" FontSize="18" Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,10,0"/>
+                                        <StackPanel>
+                                            <TextBlock Text="Скинути налаштування гри" Foreground="{DynamicResource MainForegroundBrush}" FontSize="14"/>
+                                            <TextBlock Text="Видаляє options.txt (допомагає, якщо гра крашиться через графіку)" Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.5" FontSize="11"/>
+                                        </StackPanel>
+                                    </StackPanel>
+
+                                    <ui:Button Grid.Column="1" x:Name="BtnResetOptions" Foreground="{DynamicResource MainForegroundBrush}" Background="{DynamicResource MainBackgroundButton}" Content="Скинути" Height="30" Padding="15,0" Appearance="Danger" Click="BtnResetOptions_Click" Cursor="Hand"/>
                                 </Grid>
                             </StackPanel>
                         </Border>

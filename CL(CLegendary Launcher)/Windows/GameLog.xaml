@@ -7,7 +7,7 @@
         xmlns:local="clr-namespace:CL_CLegendary_Launcher_.Windows"
         x:Class="CL_CLegendary_Launcher_.Windows.GameLog"
         mc:Ignorable="d"
-        Title="GameLog" Height="565" Width="879" 
+        Title="CL - GameLog" Height="565" Width="879" 
         WindowStyle="None" Background="{x:Null}" 
         Foreground="{DynamicResource MainForegroundBrush}" 
         FontFamily="Inter 18pt 18pt" 
@@ -201,7 +201,7 @@
                                 <TextBlock x:Name="TutorialStep2Desc" Text="Натисніть велику синю кнопку «Get API Key»." TextWrapping="Wrap" Margin="0,5,0,10"/>
 
                                 <TextBlock x:Name="TutorialStep3Title" Text="Крок 3:" FontWeight="Bold" Foreground="{DynamicResource MainBackgroundProgressBar}"/>
-                                <TextBlock x:Name="TutorialStep3Desc" Text="Натисніть «Create API Key» -> «Create API key in new project»." TextWrapping="Wrap" Margin="0,5,0,10"/>
+                                <TextBlock x:Name="TutorialStep3Desc" Text="Натисніть «Create API Key» -&gt; «Create API key in new project»." TextWrapping="Wrap" Margin="0,5,0,10"/>
 
                                 <TextBlock x:Name="TutorialStep4Title" Text="Крок 4:" FontWeight="Bold" Foreground="{DynamicResource MainBackgroundProgressBar}"/>
                                 <TextBlock x:Name="TutorialStep4Desc" Text="Скопіюйте згенерований довгий код і вставте його в поле в лаунчері." TextWrapping="Wrap" Margin="0,5,0,15"/>

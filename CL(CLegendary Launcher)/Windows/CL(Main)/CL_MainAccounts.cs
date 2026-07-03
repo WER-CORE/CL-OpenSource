@@ -201,72 +201,50 @@ namespace CL_CLegendary_Launcher_
             SoundManager.Click();
             if (string.IsNullOrWhiteSpace(NameNikManeger.Text)) return;
 
-            try
+            var newProfile = await _accountService.AddOfflineAccountAsync(NameNikManeger.Text);
+            if (newProfile != null)
             {
-                await _accountService.AddOfflineAccountAsync(NameNikManeger.Text);
                 NameNikManeger.Text = null;
-
                 CloseAccountSelectionUI();
 
                 if (PanelManegerAccount.Visibility == Visibility.Visible)
                     await LoadProfilesAsync();
-            }
-            catch (Exception ex)
-            {
-                MascotMessageBox.Show(
-                    string.Format(LocalizationManager.GetString("Accounts.ProfileCreateError", "Не вдалося створити профіль: {0}"), ex.Message),
-                    LocalizationManager.GetString("Dialogs.Error", "Помилка"),
-                    MascotEmotion.Sad);
             }
         }
 
         private async void MicrosoftLoginButton_Click(object sender, RoutedEventArgs e)
         {
             SoundManager.Click();
-            try
+
+            var newProfile = await _accountService.AddMicrosoftAccountAsync();
+
+            if (newProfile != null)
             {
                 CloseAccountSelectionUI();
-
-                await _accountService.AddMicrosoftAccountAsync();
 
                 SettingsManager.Default.MicrosoftAccount = true;
                 SettingsManager.Save();
 
                 await LoadProfilesAsync();
-                MascotMessageBox.Show(
-                    LocalizationManager.GetString("Accounts.LoginSuccess", "Вхід успішний!"),
-                    LocalizationManager.GetString("Accounts.LoginSuccessTitle", "Ура"),
-                    MascotEmotion.Happy);
-            }
-            catch (Exception ex)
-            {
-                MascotMessageBox.Show(
-                    ex.Message,
-                    LocalizationManager.GetString("Dialogs.Error", "Помилка"),
-                    MascotEmotion.Sad);
             }
         }
 
         private async void LoginAccountLittleSkin_Click(object sender, RoutedEventArgs e)
         {
             SoundManager.Click();
-            try
-            {
-                await _accountService.AddLittleSkinAccountAsync(Login_LittleSkin.Text, PasswordLittleSkin.Password);
 
+            if (string.IsNullOrWhiteSpace(Login_LittleSkin.Text) || string.IsNullOrWhiteSpace(PasswordLittleSkin.Password))
+                return;
+
+            var newProfile = await _accountService.AddLittleSkinAccountAsync(Login_LittleSkin.Text, PasswordLittleSkin.Password);
+
+            if (newProfile != null)
+            {
                 Login_LittleSkin.Text = null;
                 PasswordLittleSkin.Password = null;
 
                 CloseAccountSelectionUI();
                 await LoadProfilesAsync();
-            }
-            catch (Exception ex)
-            {
-                MascotMessageBox.Show(
-                    string.Format(LocalizationManager.GetString("Accounts.LittleSkinError", "Ех, біда! Не вдалося підключитися до LittleSkin.\nДеталі: {0}"), ex.Message),
-                    LocalizationManager.GetString("Accounts.LittleSkinErrorTitle", "Помилка LittleSkin"),
-                    MascotEmotion.Sad
-                );
             }
         }
 

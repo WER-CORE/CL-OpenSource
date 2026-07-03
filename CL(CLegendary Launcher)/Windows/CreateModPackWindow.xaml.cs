@@ -31,7 +31,6 @@ namespace CL_CLegendary_Launcher_.Windows
 {
     public partial class CreateModPackWindow : FluentWindow
     {
-        private readonly ThemeService _themeService;
         private readonly ModDownloadService _modDownloadService;
         private readonly ModpackService _modpackService;
 
@@ -135,15 +134,27 @@ namespace CL_CLegendary_Launcher_.Windows
                 }
                 else
                 {
-                    var allVersions = await launcher.GetAllVersionsAsync();
-                    foreach (var ver in allVersions)
+                    for (int i = 0; i < 5; i++)
                     {
-                        if (ver.Type == "release")
+                        try
                         {
-                            if (LoderNow == "NeoForge" && ver.Name == "1.20.1") break;
-                            if (LoderNow == "Forge" && ver.Name == "1.7.10") break;
+                            var allVersions = await launcher.GetAllVersionsAsync();
+                            foreach (var ver in allVersions)
+                            {
+                                if (ver.Type == "release")
+                                {
+                                    if (LoderNow == "NeoForge" && ver.Name == "1.20.1") break;
+                                    if (LoderNow == "Forge" && ver.Name == "1.7.10") break;
 
-                            VersionVanilBox.Items.Add(ver.Name);
+                                    VersionVanilBox.Items.Add(ver.Name);
+                                }
+                            }
+                            break;
+                        }
+                        catch (IOException)
+                        {
+                            if (i == 4) throw;
+                            await Task.Delay(500);
                         }
                     }
                 }
@@ -426,7 +437,7 @@ namespace CL_CLegendary_Launcher_.Windows
                 Version = VersionVanilBox.SelectedItem.ToString(),
                 Url = selectedVerInfo.DownloadUrl,
                 LoaderType = LoderNow,
-                Type = SelectMod switch { 0 => "mod", 1 => "shader", 2 => "resourcepack", _ => "mod" },
+                Type = SelectMod switch { 0 => "mod", 1 => "shader", 2 => "resourcepack", 3 => "map", 4 => "datapack", _ => "mod" },
                 ImageURL = _currentModToInstall.IconUrl,
                 Slug = _currentModToInstall.Slug,
                 FileName = selectedVerInfo.FileName
@@ -549,12 +560,6 @@ namespace CL_CLegendary_Launcher_.Windows
                     return;
                 }
 
-                if (_tempModList.Count == 0)
-                {
-                    ShowError(LocalizationManager.GetString("Modpacks.ModpackEmptyError", "Збірка пуста. Додайте хоча б один мод!"));
-                    return;
-                }
-
                 string loaderVersion = LoaderVersionBox.SelectedItem?.ToString();
                 if (string.IsNullOrEmpty(loaderVersion))
                 {
@@ -655,10 +660,32 @@ namespace CL_CLegendary_Launcher_.Windows
             LoadModsByType("shader");
             UpdateModsList();
         }
+        private void DatapackTxt_MouseDown(object sender, RoutedEventArgs e)
+        {
+            SoundManager.Click();
+            _currentPage = 0;
+            SelectMod = 4;
+            LoadModsByType("datapack");
+            UpdateModsList();
+        }
+        private void MapTxt_MouseDown(object sender, RoutedEventArgs e)
+        {
+            SoundManager.Click();
+            _currentPage = 0;
+            SelectMod = 3;
+            LoadModsByType("map");
+            UpdateModsList();
+        }
 
         private void ModrinthSite_MouseDown(object sender, MouseButtonEventArgs e)
         {
             SoundManager.Click();
+
+            if (SelectMod == 3)
+            {
+                MascotMessageBox.Show("На жаль, сайт Modrinth не має бази карт (світів). Шукайте їх через CurseForge!", "Увага", MascotEmotion.Confused);
+                return;
+            }
 
             if (SiteDowload == "Modrinth") return;
 

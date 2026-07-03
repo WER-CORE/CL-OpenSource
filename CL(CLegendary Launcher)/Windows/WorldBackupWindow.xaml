@@ -6,7 +6,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:CL_CLegendary_Launcher_.Windows"
         mc:Ignorable="d"
-        Title="Менеджер бекапів" Height="600" Width="900"
+        Title="CL - Backup Manager" Height="600" Width="900"
         WindowStartupLocation="CenterScreen" ResizeMode="NoResize" WindowStyle="None"
         Background="Transparent" FontFamily="Inter" ExtendsContentIntoTitleBar="True"
         WindowBackdropType="Mica" Foreground="{DynamicResource MainForegroundBrush}" Icon="/Icon/IconCL(Common).png">

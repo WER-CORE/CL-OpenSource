@@ -2552,7 +2552,7 @@
                          Background="Transparent" BorderThickness="0"
                          ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                          SelectionMode="Single"
-                         SelectionChanged="ScreenshotsList_SelectionChanged">
+                         SelectionChanged="ScreenshotsList_SelectionChanged" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
 
                         <ui:ListView.ItemsPanel>
                             <ItemsPanelTemplate>

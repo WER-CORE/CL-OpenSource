@@ -4,7 +4,9 @@ using CL_CLegendary_Launcher_.Windows;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -251,13 +253,23 @@ namespace CL_CLegendary_Launcher_
             {
                 if (CollectionList.SelectedItem is InstalledModpack pack)
                 {
-                    string folderName = _modDownloadService.GetTargetFolderPath(pack, selectmodificed);
+                    string subFolder = selectmodificed switch
+                    {
+                        1 => "shaderpacks",
+                        2 => "resourcepacks",
+                        3 => "saves",
+                        4 => "datapacks",
+                        _ => "mods"
+                    };
 
-                    targetPath = Path.Combine(pack.Path, "override", folderName);
-                    if (!Directory.Exists(targetPath)) targetPath = Path.Combine(pack.Path, "overrides", folderName);
+                    targetPath = Path.Combine(pack.Path, "override", subFolder);
+
+                    if (!Directory.Exists(targetPath))
+                        targetPath = Path.Combine(pack.Path, "overrides", subFolder);
+
                     if (!Directory.Exists(targetPath))
                     {
-                        targetPath = Path.Combine(pack.Path, "override", folderName);
+                        targetPath = Path.Combine(pack.Path, "override", subFolder);
                         Directory.CreateDirectory(targetPath);
                     }
                 }
@@ -576,9 +588,28 @@ namespace CL_CLegendary_Launcher_
         private void OnOpenModpackFolder(InstalledModpack pack)
         {
             SoundManager.Click();
+
             if (Directory.Exists(pack.Path))
             {
-                System.Diagnostics.Process.Start("explorer.exe", pack.Path);
+                try
+                {
+                    var startInfo = new ProcessStartInfo
+                    {
+                        FileName = "explorer.exe",
+                        Arguments = $"\"{pack.Path}\"",
+                        UseShellExecute = true,
+                        WorkingDirectory = pack.Path
+                    };
+
+                    Process.Start(startInfo);
+                }
+                catch (Exception ex)
+                {
+                    MascotMessageBox.Show(
+                        string.Format(LocalizationManager.GetString("Dialogs.FolderOpenAccessDenied", "Не вдалося відкрити папку. Можливо, Windows заблокувала доступ.\n\nДеталі: {0}"), ex.Message),
+                        LocalizationManager.GetString("Dialogs.Error", "Помилка доступу"),
+                        MascotEmotion.Confused);
+                }
             }
             else
             {
@@ -643,13 +674,13 @@ namespace CL_CLegendary_Launcher_
             editWindow.Show();
         }
 
-        private void OnExportModpackClicked(InstalledModpack pack)
+        private async void OnExportModpackClicked(InstalledModpack pack)
         {
             SoundManager.Click();
 
             var saveDialog = new Microsoft.Win32.SaveFileDialog
             {
-                Title = $"Експорт збірки {pack.Name}",
+                Title = $"Export {pack.Name}",
                 FileName = $"{pack.Name}_{DateTime.Now:yyyy-MM-dd}.zip",
                 Filter = "Archive (*.zip)|*.zip"
             };
@@ -684,32 +715,78 @@ namespace CL_CLegendary_Launcher_
                     };
 
                     string existingJsonPath = Path.Combine(pack.Path, "modpack.json");
+                    List<ModInfo> oldList = new List<ModInfo>();
+
                     if (File.Exists(existingJsonPath))
                     {
                         try
                         {
                             string oldJson = File.ReadAllText(existingJsonPath);
-                            var oldList = JsonConvert.DeserializeObject<List<ModInfo>>(oldJson);
-                            if (oldList != null) manifest.Files = oldList;
+                            oldList = JsonConvert.DeserializeObject<List<ModInfo>>(oldJson) ?? new List<ModInfo>();
                         }
-                        catch
+                        catch { }
+                    }
+
+                    string modsFolder = Path.Combine(pack.Path, "override", "mods");
+
+                    if (!Directory.Exists(modsFolder))
+                    {
+                        modsFolder = Path.Combine(pack.Path, "overrides", "mods");
+                    }
+
+                    foreach (var oldMod in oldList)
+                    {
+                        manifest.Files.Add(oldMod);
+                    }
+
+                    if (Directory.Exists(modsFolder))
+                    {
+                        var physicalMods = new DirectoryInfo(modsFolder).GetFiles("*.jar", SearchOption.TopDirectoryOnly);
+
+                        foreach (var file in physicalMods)
                         {
+                            bool existsInManifest = manifest.Files.Any(m =>
+                                (!string.IsNullOrEmpty(m.FileName) && m.FileName == file.Name) ||
+                                (m.Name + ".jar" == file.Name));
+
+                            if (!existsInManifest)
+                            {
+                                manifest.Files.Add(new ModInfo
+                                {
+                                    Name = Path.GetFileNameWithoutExtension(file.Name),
+                                    FileName = file.Name
+                                });
+                            }
                         }
                     }
 
                     string newJsonContent = JsonConvert.SerializeObject(manifest, Formatting.Indented);
                     File.WriteAllText(existingJsonPath, newJsonContent);
+                    await Task.Run(() =>
+                    {
+                        using (var archive = ZipFile.Open(saveDialog.FileName, ZipArchiveMode.Create))
+                        {
+                            var dirInfo = new DirectoryInfo(pack.Path);
+                            foreach (var file in dirInfo.GetFiles("*", SearchOption.AllDirectories))
+                            {
+                                if (file.FullName.Contains(@"\logs\") ||
+                                    file.FullName.Contains(@"\crash-reports\") ||
+                                    file.FullName.Contains(@"\.mixin.out\") ||
+                                    file.FullName.Contains(@"\saves\") ||
+                                    file.Name == "options.txt")
+                                {
+                                    continue;
+                                }
 
-                    System.IO.Compression.ZipFile.CreateFromDirectory(
-                        pack.Path,
-                        saveDialog.FileName,
-                        System.IO.Compression.CompressionLevel.Optimal,
-                        true
-                    );
+                                string entryName = file.FullName.Substring(dirInfo.FullName.Length + 1);
+                                archive.CreateEntryFromFile(file.FullName, entryName, CompressionLevel.Optimal);
+                            }
+                        }
+                    });
 
                     NotificationService.ShowNotification(
                         LocalizationManager.GetString("Dialogs.Success", "Успіх!"),
-                        LocalizationManager.GetString("Modpacks.ExportSuccess", "Збірку експортовано з новим маніфестом!"),
+                        LocalizationManager.GetString("Modpacks.ExportSuccess", "Збірку успішно експортовано!"),
                         SnackbarPresenter);
                 }
                 catch (Exception ex)

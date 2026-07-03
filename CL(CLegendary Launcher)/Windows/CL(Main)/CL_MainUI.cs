@@ -22,6 +22,7 @@ namespace CL_CLegendary_Launcher_
         private string currentScreenshotsPath;
         internal int serverCount;
         internal int loadedCount;
+        private bool _isSectionSwitching;
 
         private async void CL_CLegendary_Launcher__Loaded_1(object sender, RoutedEventArgs e)
         {
@@ -136,14 +137,13 @@ namespace CL_CLegendary_Launcher_
                 }
             }
 
-            ListNews.Items?.Clear();
+            SafeClearList(ListNews);
+            SafeClearList(ScreenshotsList);
+            SafeClearList(ModsDowloadList1);
+            SafeClearList(ModsDowloadList);
+            SafeClearList(ServerList);
+
             TextNews.Text = null;
-            ScreenshotsList.Items?.Clear();
-            ModsDowloadList1.Items?.Clear();
-            ModsDowloadList.Items?.Clear();
-
-            ServerList.Items?.Clear();
-
             DescriptionServer.Text = null;
 
             if (animationStarted)
@@ -151,34 +151,73 @@ namespace CL_CLegendary_Launcher_
                 await Task.Delay(300);
             }
         }
-
-        private void PlayTXTPanelSelect_MouseDown(object sender, MouseButtonEventArgs e)
+        private void SafeClearList(System.Windows.Controls.ItemsControl listControl)
         {
+            if (listControl == null) return;
+
+            if (listControl.ItemsSource != null)
+            {
+                listControl.ItemsSource = null;
+            }
+            else
+            {
+                listControl.Items.Clear();
+            }
+        }
+        private async void PlayTXTPanelSelect_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (_isSectionSwitching) return;
+            _isSectionSwitching = true;
+
             _navigationService.NavigateToHome();
             MoveMenuSelector(PlayBtnBorder);
+
+            await Task.Delay(350);
+            _isSectionSwitching = false;
         }
 
-        private void ModsTXTPanelSelect_MouseDown(object sender, MouseButtonEventArgs e)
+        private async void ModsTXTPanelSelect_MouseDown(object sender, MouseButtonEventArgs e)
         {
+            if (_isSectionSwitching) return;
+            _isSectionSwitching = true;
+
             _navigationService.NavigateToMods();
             MoveMenuSelector(ModsBtnBorder);
+
+            await Task.Delay(350);
+            _isSectionSwitching = false;
         }
 
-        private void modbuilds_MouseDown(object sender, MouseButtonEventArgs e)
+        private async void modbuilds_MouseDown(object sender, MouseButtonEventArgs e)
         {
+            if (_isSectionSwitching) return;
+            _isSectionSwitching = true;
+
             _navigationService.NavigateToModPacks();
             MoveMenuSelector(ModpacksBtnBorder);
+
+            await Task.Delay(350);
+            _isSectionSwitching = false;
         }
 
-        private void PhotoMinecraftTXT_MouseDown(object sender, MouseButtonEventArgs e)
+        private async void PhotoMinecraftTXT_MouseDown(object sender, MouseButtonEventArgs e)
         {
+            if (_isSectionSwitching) return;
+            _isSectionSwitching = true;
+
             _navigationService.NavigateToGallery();
             MoveMenuSelector(GalleryBtnBorder);
+
+            await Task.Delay(350);
+            _isSectionSwitching = false;
         }
+
         private void MoveMenuSelector(Border targetButton)
         {
+            if (_isSectionSwitching) return;
             AnimationService.AnimateMenuSelector(targetButton, SelectPanelGrid, PanelSelectNow, PanelTranslateTransform);
         }
+
         private async void SettingPanel_MouseDown(object sender, MouseButtonEventArgs e)
         {
             SoundManager.Click();
@@ -218,7 +257,13 @@ namespace CL_CLegendary_Launcher_
                 {
                     Directory.CreateDirectory(path);
                 }
-                Process.Start(new ProcessStartInfo("explorer.exe", path));
+                var startInfo = new ProcessStartInfo
+                {
+                    FileName = "explorer.exe",
+                    Arguments = $"\"{path}\"",
+                    UseShellExecute = true
+                };
+                Process.Start(startInfo);
             }
             catch (Exception ex)
             {
@@ -289,12 +334,24 @@ namespace CL_CLegendary_Launcher_
 
                 if (Directory.Exists(path))
                 {
-                    Process.Start("explorer.exe", path);
+                    var startInfo = new ProcessStartInfo
+                    {
+                        FileName = "explorer.exe",
+                        Arguments = $"\"{path}\"",
+                        UseShellExecute = true
+                    };
+                    Process.Start(startInfo);
                 }
                 else
                 {
                     Directory.CreateDirectory(path);
-                    Process.Start("explorer.exe", path);
+                    var startInfo = new ProcessStartInfo
+                    {
+                        FileName = "explorer.exe",
+                        Arguments = $"\"{path}\"",
+                        UseShellExecute = true
+                    };
+                    Process.Start(startInfo);
                 }
             }
             catch (Exception ex)
@@ -408,7 +465,13 @@ namespace CL_CLegendary_Launcher_
             if (!string.IsNullOrEmpty(currentScreenshotsPath))
             {
                 if (!Directory.Exists(currentScreenshotsPath)) Directory.CreateDirectory(currentScreenshotsPath);
-                System.Diagnostics.Process.Start("explorer.exe", currentScreenshotsPath);
+                var startInfo = new ProcessStartInfo
+                {
+                    FileName = "explorer.exe",
+                    Arguments = $"\"{currentScreenshotsPath}\"",
+                    UseShellExecute = true
+                };
+                Process.Start(startInfo);
             }
         }
 
