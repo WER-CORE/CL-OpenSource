@@ -7,7 +7,7 @@
         xmlns:local="clr-namespace:CL_CLegendary_Launcher_.Windows"
         mc:Ignorable="d"
         
-        Title="CL - Створення ванільної збірки" 
+        Title="CL - Create Vanilla Modpack" 
         
         Height="600" 
         Width="850" 
@@ -87,7 +87,27 @@
                 </Grid>
             </Border>
         </ControlTemplate>
-
+        <Style x:Key="TabButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="{DynamicResource MainForegroundBrush}"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" Padding="10,5">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Foreground" Value="#FF00Aaff"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
     </Window.Resources>
 
     <Grid Margin="10" Background="{DynamicResource MainBackgroundBrush}">
@@ -152,8 +172,11 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <TextBlock x:Name="TxtResourcePacksOpt" Text="Ресурс-паки (Опціонально)" VerticalAlignment="Center" FontWeight="Bold" Foreground="{DynamicResource MainForegroundBrush}"/>
-
+            <StackPanel Orientation="Horizontal" Grid.Column="0">
+                <Button x:Name="BtnResourcePacks" Content="Ресурс-паки" Style="{StaticResource TabButtonStyle}" Click="ResourcePackTxt_MouseDown" Foreground="{DynamicResource MainForegroundBrush}" Background="{x:Null}"/>
+                <Button x:Name="BtnMaps" Content="Карти" Style="{StaticResource TabButtonStyle}" Click="MapTxt_MouseDown" Foreground="{DynamicResource MainForegroundBrush}" Background="{x:Null}"/>
+            </StackPanel>
+            
             <ui:TextBox Grid.Column="2" x:Name="SearchSystemModsTXT" PlaceholderText="Пошук ресурс-паків..." Margin="10,0" TextChanged="SearchSystemModsTXT_TextChanged" Foreground="{DynamicResource MainForegroundBrush}" Background="{DynamicResource MainBackgroundBrushServer}"/>
 
             <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center">

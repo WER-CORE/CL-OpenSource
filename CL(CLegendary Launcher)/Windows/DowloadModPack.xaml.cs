@@ -193,7 +193,7 @@ namespace CL_CLegendary_Launcher_.Windows
             try
             {
                 using var client = new HttpClient();
-                client.DefaultRequestHeaders.Add("", "");
+                client.DefaultRequestHeaders.Add("x-launcher-secret", "CL-Super-Secret-2026");
                 var response = await client.GetAsync($"{Secrets.CurseForgeKey}");
                 if (response.IsSuccessStatusCode)
                 {

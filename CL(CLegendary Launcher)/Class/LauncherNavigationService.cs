@@ -64,7 +64,7 @@ namespace CL_CLegendary_Launcher_.Class
 
         public async void NavigateToMods()
         {
-            await NavigateToPage(_main.ListModsGird, 190, LocalizationManager.GetString("DiscordRPC.SearchingMods", "Шукає моди"), async () =>
+            await NavigateToPage(_main.ListModsGird, 200, LocalizationManager.GetString("DiscordRPC.SearchingMods", "Шукає моди"), async () =>
             {
                 if (_main.ModsDowloadList.Items.Count == 0)
                 {
@@ -75,7 +75,7 @@ namespace CL_CLegendary_Launcher_.Class
 
         public async void NavigateToModPacks()
         {
-            await NavigateToPage(_main.ListModsBuild, 95, LocalizationManager.GetString("DiscordRPC.ViewingModpacks", "Дивиться збірки"), async () =>
+            await NavigateToPage(_main.ListModsBuild, 105, LocalizationManager.GetString("DiscordRPC.ViewingModpacks", "Дивиться збірки"), async () =>
             {
                 var valueList = _main._modpackService.LoadInstalledModpacks();
                 var installedPacks = valueList.Where(x => Directory.Exists(x.Path)).ToList();
@@ -87,7 +87,7 @@ namespace CL_CLegendary_Launcher_.Class
 
         public async void NavigateToServers()
         {
-            await NavigateToPage(_main.ServerName, 285, LocalizationManager.GetString("DiscordRPC.ViewingServers", "Дивиться список серверів"), async () =>
+            await NavigateToPage(_main.ServerName, 295, LocalizationManager.GetString("DiscordRPC.ViewingServers", "Дивиться список серверів"), async () =>
             {
                 if (_main.ServerList.Items.Count == 0)
                 {
@@ -98,7 +98,7 @@ namespace CL_CLegendary_Launcher_.Class
 
         public async void NavigateToGallery()
         {
-            await NavigateToPage(_main.GalleryContainer, 385, LocalizationManager.GetString("DiscordRPC.ViewingGallery", "Переглядає галерею"), () =>
+            await NavigateToPage(_main.GalleryContainer, 400, LocalizationManager.GetString("DiscordRPC.ViewingGallery", "Переглядає галерею"), () =>
             {
                 _main.InitializeGallery();
                 return Task.CompletedTask;

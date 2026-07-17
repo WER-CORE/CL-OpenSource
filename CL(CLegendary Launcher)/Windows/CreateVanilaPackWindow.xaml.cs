@@ -66,7 +66,8 @@ namespace CL_CLegendary_Launcher_.Windows
 
             TxtMcVersion.Text = LocalizationManager.GetString("Modpacks.ModpackMcVersion", "Версія Minecraft");
 
-            TxtResourcePacksOpt.Text = LocalizationManager.GetString("Modpacks.ResourcePacksOptionalTitle", "Ресурс-паки (Опціонально)");
+            BtnResourcePacks.Content = LocalizationManager.GetString("Modpacks.ResourcePacksTitle", "Ресурс-паки");
+            BtnMaps.Content = LocalizationManager.GetString("Modpacks.MapsTitle", "Карти");
             SearchSystemModsTXT.PlaceholderText = LocalizationManager.GetString("Modpacks.SearchResourcePacksPlaceholder", "Пошук ресурс-паків...");
 
             TxtFoundResourcePacks.Text = LocalizationManager.GetString("Modpacks.FoundResourcePacksTitle", "Знайдені ресурс-паки");
@@ -276,11 +277,13 @@ namespace CL_CLegendary_Launcher_.Windows
             {
                 Name = _currentModToInstall.Title,
                 ProjectId = selectedVerInfo.ModId,
+                FileId = selectedVerInfo.VersionId,
+                FileName = selectedVerInfo.FileName,
                 Loader = "Vanilla",
                 Version = VersionVanilBox.SelectedItem.ToString(),
                 Url = selectedVerInfo.DownloadUrl,
                 LoaderType = "Vanilla",
-                Type = "resourcepack",
+                Type = SelectMod == 3 ? "map" : "resourcepack",
                 ImageURL = _currentModToInstall.IconUrl
             };
 
@@ -426,6 +429,12 @@ namespace CL_CLegendary_Launcher_.Windows
         {
             SoundManager.Click();
 
+            if (SelectMod == 3)
+            {
+                MascotMessageBox.Show("На жаль, сайт Modrinth не має бази карт (світів). Шукайте їх через CurseForge!", "Увага", MascotEmotion.Confused);
+                return;
+            }
+
             if (SiteDowload == "Modrinth") return;
 
             SiteDowload = "Modrinth";
@@ -446,6 +455,42 @@ namespace CL_CLegendary_Launcher_.Windows
 
             UpdateProviderUI();
             UpdateModsList();
+        }
+
+        private void ResourcePackTxt_MouseDown(object sender, RoutedEventArgs e)
+        {
+            SoundManager.Click();
+            _currentPage = 0;
+            SelectMod = 2;
+            LoadModsByType("resourcepack");
+            UpdateModsList();
+        }
+
+        private void MapTxt_MouseDown(object sender, RoutedEventArgs e)
+        {
+            SoundManager.Click();
+            _currentPage = 0;
+            SelectMod = 3;
+
+            if (SiteDowload == "Modrinth")
+            {
+                SiteDowload = "CurseForge";
+                UpdateProviderUI();
+            }
+
+            LoadModsByType("map");
+            UpdateModsList();
+        }
+
+        private void LoadModsByType(string type)
+        {
+            AddModsInModPackList.Items.Clear();
+            var filtered = _tempResourcePacks.Where(m => m.Type == type).ToList();
+
+            foreach (var m in filtered)
+            {
+                AddItemToRightList(m);
+            }
         }
         private void UpdateProviderUI()
         {
@@ -495,12 +540,5 @@ namespace CL_CLegendary_Launcher_.Windows
 
         private void ShowError(string msg) => MascotMessageBox.Show(msg, LocalizationManager.GetString("Dialogs.Error", "Помилка"), MascotEmotion.Sad);
         private void ExitLauncher_MouseDown(object sender, RoutedEventArgs e) => this.Close();
-
-        private void Window_Closed(object sender, EventArgs e)
-        {
-            if (!IsModPackCreated)
-            {
-            }
-        }
     }
 }

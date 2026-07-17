@@ -22,6 +22,7 @@ namespace CL_CLegendary_Launcher_
         private string currentScreenshotsPath;
         internal int serverCount;
         internal int loadedCount;
+        private bool _isSectionSwitching;
 
         private async void CL_CLegendary_Launcher__Loaded_1(object sender, RoutedEventArgs e)
         {
@@ -163,33 +164,60 @@ namespace CL_CLegendary_Launcher_
                 listControl.Items.Clear();
             }
         }
-        private void PlayTXTPanelSelect_MouseDown(object sender, MouseButtonEventArgs e)
+        private async void PlayTXTPanelSelect_MouseDown(object sender, MouseButtonEventArgs e)
         {
+            if (_isSectionSwitching) return;
+            _isSectionSwitching = true;
+
             _navigationService.NavigateToHome();
             MoveMenuSelector(PlayBtnBorder);
+
+            await Task.Delay(350);
+            _isSectionSwitching = false;
         }
 
-        private void ModsTXTPanelSelect_MouseDown(object sender, MouseButtonEventArgs e)
+        private async void ModsTXTPanelSelect_MouseDown(object sender, MouseButtonEventArgs e)
         {
+            if (_isSectionSwitching) return;
+            _isSectionSwitching = true;
+
             _navigationService.NavigateToMods();
             MoveMenuSelector(ModsBtnBorder);
+
+            await Task.Delay(350);
+            _isSectionSwitching = false;
         }
 
-        private void modbuilds_MouseDown(object sender, MouseButtonEventArgs e)
+        private async void modbuilds_MouseDown(object sender, MouseButtonEventArgs e)
         {
+            if (_isSectionSwitching) return;
+            _isSectionSwitching = true;
+
             _navigationService.NavigateToModPacks();
             MoveMenuSelector(ModpacksBtnBorder);
+
+            await Task.Delay(350);
+            _isSectionSwitching = false;
         }
 
-        private void PhotoMinecraftTXT_MouseDown(object sender, MouseButtonEventArgs e)
+        private async void PhotoMinecraftTXT_MouseDown(object sender, MouseButtonEventArgs e)
         {
+            if (_isSectionSwitching) return;
+            _isSectionSwitching = true;
+
             _navigationService.NavigateToGallery();
             MoveMenuSelector(GalleryBtnBorder);
+
+            await Task.Delay(350);
+            _isSectionSwitching = false;
         }
+
         private void MoveMenuSelector(Border targetButton)
         {
+            if (_isSectionSwitching) return;
             AnimationService.AnimateMenuSelector(targetButton, SelectPanelGrid, PanelSelectNow, PanelTranslateTransform);
         }
+
         private async void SettingPanel_MouseDown(object sender, MouseButtonEventArgs e)
         {
             SoundManager.Click();

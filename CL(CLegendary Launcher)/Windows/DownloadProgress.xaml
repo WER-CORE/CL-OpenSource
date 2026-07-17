@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:CL_CLegendary_Launcher_"
         mc:Ignorable="d"
-        Title="Download Progress" Height="300" Width="600" 
+        Title="CL - Download Progress" Height="300" Width="600" 
         Background="Transparent" 
         AllowsTransparency="True"
         ResizeMode="NoResize" 

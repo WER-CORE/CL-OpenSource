@@ -33,29 +33,19 @@ namespace CL_CLegendary_Launcher_.Windows
             {
                 CrashReportManager.Enable();
             }
+
             if (string.IsNullOrEmpty(SettingsManager.Default.LanguageCode))
             {
                 string osLang = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName.ToLower();
-
                 string autoLang = "en_US";
 
                 switch (osLang)
                 {
-                    case "uk":
-                        autoLang = "uk_UA";
-                        break;
-                    case "be":
-                        autoLang = "be_BY";
-                        break;
-                    case "pl":
-                        autoLang = "pl_PL";
-                        break;
-                    case "cs":
-                        autoLang = "cs_CZ";
-                        break;
-                    case "ru":
-                        autoLang = "uk_UA";
-                        break;
+                    case "uk": autoLang = "uk_UA"; break;
+                    case "be": autoLang = "be_BY"; break;
+                    case "pl": autoLang = "pl_PL"; break;
+                    case "cs": autoLang = "cs_CZ"; break;
+                    case "ru": autoLang = "uk_UA"; break;
                 }
 
                 SettingsManager.Default.LanguageCode = autoLang;
@@ -70,9 +60,7 @@ namespace CL_CLegendary_Launcher_.Windows
             LoadingText.Text = LocalizationManager.GetString("LoadScreen.LoadingText", "Завантаження ресурсів...");
 
             LoadLocalizedPhrases();
-
             LoadCustomPhrases();
-
             ApplyCustomSettings();
 
             Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this, WindowBackdropType.Mica);
@@ -83,9 +71,34 @@ namespace CL_CLegendary_Launcher_.Windows
 
             Loaded += LoadScreen_Loaded;
         }
-
-        private void LoadLocalizedPhrases()
+        private async Task UpdateLocalizationsAsync()
         {
+            try
+            {
+                var availableLangs = await LocalizationFetcher.GetAvailableLanguagesAsync();
+
+                if (availableLangs != null && availableLangs.Count > 0)
+                {
+                    var downloadTasks = availableLangs.Select(lang => LocalizationFetcher.DownloadLanguageAsync(lang));
+                    await Task.WhenAll(downloadTasks);
+                }
+
+                string savedLang = SettingsManager.Default.LanguageCode;
+
+                LocalizationManager.LoadLanguage(savedLang);
+
+                LoadingText.Text = LocalizationManager.GetString("LoadScreen.LoadingText", "Завантаження ресурсів...");
+                LoadLocalizedPhrases();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Помилка оновлення локалізацій: {ex.Message}");
+            }
+        }
+
+        private async Task LoadLocalizedPhrases()
+        {
+            await UpdateLocalizationsAsync();
             RandomPhrases.Clear();
 
             for (int i = 1; i <= 30; i++)
@@ -101,24 +114,21 @@ namespace CL_CLegendary_Launcher_.Windows
             {
                 RandomPhrases = new List<string>
                 {
-                    "Перша зелена травичка пробивається крізь землю...",
-                    "Заварюємо свіжий фруктовий чай...",
-                    "Homka саджає перші весняні квіти...",
-                    "Deeplay фотографує цвітіння сакур на камеру 🌸...",
-                    "Теплий весняний дощик стукає по вікнах...",
-                    "Час ховати зимові куртки далеко в шафу...",
-                    "Пахне свіжоскошеною травою та бузком...",
-                    "Дерева вкриваються ніжним білим цвітом...",
-                    "Данило готує мангал для перших шашликів...",
-                    "WER_Clegendary шукає ідеальне місце для пікніка...",
-                    "Природа нарешті прокидається за вікном...",
-                    "Мружимося від яскравого весняного сонечка...",
-                    "Пелюстки вишень кружляють у теплому повітрі...",
-                    "Час виходити на довгі вечірні прогулянки...",
-                    "Свіже весняне повітря надихає на пригоди...",
-                    "Готуємось до теплих травневих вихідних...",
-                    "Всі чекають на потепління (або вже садять картоплю)...",
-                    "Тепло на вулиці, сонячно на душі..."
+                    "Сонце пече так, що навіть кулери ПК просять про холодний лимонад...",
+                    "Захист проєктів позаду, нарешті час для безтурботного літа!...",
+                    "Homka будує епічні піщані замки на пляжі...",
+                    "Deeplay ловить найкращі літні заходи сонця в об'єктив...",
+                    "Заряджаємо акумулятор електровелосипеда для вечірньої прохолодної поїздки...",
+                    "Данило розставляє вентилятори по всій кімнаті...",
+                    "WER_Clegendary тестує нові збірки, ховаючись від спеки в тіні...",
+                    "кабанчік прокладає найкоротший маршрут до найближчої річки...",
+                    "Обережно чистимо капелюшки улюблених плюшевих іграшок від літнього пилу...",
+                    "Готуємо крижаний квас і плануємо грандіозні будівлі...",
+                    "Світлячки за вікном блимають, немов ідеально налаштований редстоун...",
+                    "Раптовий літній злива приносить довгоочікувану свіжість...",
+                    "Час відчиняти вікна навстіж і ловити нічний вітерець...",
+                    "Збираємо рюкзак для вилазки на природу з друзями...",
+                    "Літо на вулиці, спека в грі, затишок на душі..."
                 };
             }
         }

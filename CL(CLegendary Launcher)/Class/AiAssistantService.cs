@@ -19,6 +19,7 @@ namespace CL_CLegendary_Launcher_.Class
 
     public class AiAssistantService
     {
+        private static readonly SemaphoreSlim _kbFileLock = new SemaphoreSlim(1, 1);
         private List<KnownIssue> _knowledgeBase;
         private static readonly HttpClient _client = new HttpClient();
 
@@ -39,7 +40,16 @@ namespace CL_CLegendary_Launcher_.Class
                 if (data?.KnownIssues != null)
                 {
                     _knowledgeBase = data.KnownIssues;
-                    await File.WriteAllTextAsync(_localKbPath, json);
+
+                    await _kbFileLock.WaitAsync();
+                    try
+                    {
+                        await File.WriteAllTextAsync(_localKbPath, json);
+                    }
+                    finally
+                    {
+                        _kbFileLock.Release();
+                    }
                 }
             }
             catch (Exception ex)
@@ -55,7 +65,18 @@ namespace CL_CLegendary_Launcher_.Class
             {
                 try
                 {
-                    string localJson = await File.ReadAllTextAsync(_localKbPath);
+                    string localJson;
+
+                    await _kbFileLock.WaitAsync();
+                    try
+                    {
+                        localJson = await File.ReadAllTextAsync(_localKbPath);
+                    }
+                    finally
+                    {
+                        _kbFileLock.Release();
+                    }
+
                     var localData = JsonConvert.DeserializeObject<KnowledgeBaseRoot>(localJson);
                     if (localData?.KnownIssues != null)
                     {
@@ -86,7 +107,16 @@ namespace CL_CLegendary_Launcher_.Class
 
             var root = new KnowledgeBaseRoot { KnownIssues = _knowledgeBase };
             string jsonToSave = JsonConvert.SerializeObject(root, Formatting.Indented);
-            await File.WriteAllTextAsync(_localKbPath, jsonToSave);
+
+            await _kbFileLock.WaitAsync();
+            try
+            {
+                await File.WriteAllTextAsync(_localKbPath, jsonToSave);
+            }
+            finally
+            {
+                _kbFileLock.Release();
+            }
         }
 
         public async Task<string> AnalyzeCrashLogAsync(string logContent, AiProvider provider = AiProvider.Gemini, string customApiKey = null, string ollamaModel = "llama3")

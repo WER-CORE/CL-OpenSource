@@ -12,6 +12,7 @@ namespace CL_CLegendary_Launcher_
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
+            System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Tls12 | System.Net.SecurityProtocolType.Tls13;
             SoundManager.Initialize();
 
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
@@ -46,15 +47,9 @@ namespace CL_CLegendary_Launcher_
         private void App_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
         {
             LogException("Dispatcher", e.Exception);
-
-            string errorTitle = LocalizationManager.GetString("Crash.Title", "Помилка CL Launcher");
-            string errorMessage = LocalizationManager.GetString("Crash.Message",
-                "Ой-йой! Лаунчер зіткнувся з критичною помилкою.\nЯкщо ви давали згоду, розробник вже отримав звіт.\n\nДеталі можна знайти в папці logs.");
-
-            MascotMessageBox.Show(errorMessage, errorTitle, MascotEmotion.Sad);
-
-            e.Handled = false;
+            e.Handled = true;
         }
+
         private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             LogException("AppDomain", e.ExceptionObject as Exception);
