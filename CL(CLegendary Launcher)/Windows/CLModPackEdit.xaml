@@ -1,33 +1,36 @@
 ﻿<ui:FluentWindow x:Class="CL_CLegendary_Launcher_.Windows.CLModPackEdit"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-        mc:Ignorable="d"
-        Title="CL - Build Editor" Height="500" Width="800" 
-        FontFamily="Inter" ResizeMode="NoResize" WindowStyle="None" 
-        Icon="/Icon/IconCL(Common).png" Loaded="Window_Loaded" ExtendsContentIntoTitleBar="True"
-        WindowBackdropType="Mica"
-        Background="{x:Null}">
+                 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                 xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+                 mc:Ignorable="d"
+                 Title="CL - Build Editor" Height="500" Width="800"
+                 FontFamily="Inter" ResizeMode="NoResize" WindowStyle="None"
+                 Icon="/Icon/IconCL(Common).png" Loaded="Window_Loaded" ExtendsContentIntoTitleBar="True"
+                 WindowBackdropType="Mica"
+                 Background="{x:Null}">
 
     <Window.Resources>
         <DataTemplate x:Key="ModItemTemplate">
-            <Border Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="8" Padding="10,5" Margin="0,0,0,5">
+            <Border Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="8" Padding="10,5"
+                    Margin="0,0,0,5">
                 <Grid>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
-                    <ui:SymbolIcon Symbol="Document24" FontSize="18" Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.7"/>
+                    <ui:SymbolIcon Symbol="Document24" FontSize="18" Foreground="{DynamicResource MainForegroundBrush}"
+                                   Opacity="0.7" />
 
-                    <TextBlock Grid.Column="1" Text="{Binding Name}" VerticalAlignment="Center" Margin="10,0" 
-                               Foreground="{DynamicResource MainForegroundBrush}" FontSize="14" TextTrimming="CharacterEllipsis"/>
+                    <TextBlock Grid.Column="1" Text="{Binding Name}" VerticalAlignment="Center" Margin="10,0"
+                               Foreground="{DynamicResource MainForegroundBrush}" FontSize="14"
+                               TextTrimming="CharacterEllipsis" />
 
-                    <ui:Button Grid.Column="2" Icon="{ui:SymbolIcon Delete24}" Appearance="Transparent" 
-                               Foreground="#FF5555" ToolTip="Видалити файл" Cursor="Hand"/>
+                    <ui:Button Grid.Column="2" Icon="{ui:SymbolIcon Delete24}" Appearance="Transparent"
+                               Foreground="#FF5555" ToolTip="Видалити файл" Cursor="Hand" />
                 </Grid>
             </Border>
         </DataTemplate>
@@ -35,75 +38,88 @@
 
     <Grid Background="{DynamicResource MainBackgroundBrush}">
         <Grid.RowDefinitions>
-            <RowDefinition Height="35"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="35" />
+            <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
         <Border x:Name="BorderTool" Grid.Row="0" Background="Transparent" MouseDown="BorderTool_MouseDown">
             <Grid Margin="10,0">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock x:Name="NameWin" Text="Налаштування збірки" 
+                    <TextBlock x:Name="NameWin" Text="Налаштування збірки"
                                VerticalAlignment="Center" FontWeight="SemiBold"
-                               Foreground="{DynamicResource MainForegroundBrush}" FontSize="12"/>
+                               Foreground="{DynamicResource MainForegroundBrush}" FontSize="12" />
                 </StackPanel>
 
-                <ui:Button Grid.Column="1" Icon="{ui:SymbolIcon Dismiss24}" 
+                <ui:Button Grid.Column="1" Icon="{ui:SymbolIcon Dismiss24}"
                            Appearance="Transparent" Foreground="{DynamicResource MainForegroundBrush}"
-                           Width="35" Height="30" Padding="0" 
-                           Click="ExitLauncher_MouseDown" Cursor="Hand"/>
+                           Width="35" Height="30" Padding="0"
+                           Click="ExitLauncher_MouseDown" Cursor="Hand" />
             </Grid>
         </Border>
 
         <Grid Grid.Row="1" Margin="15,0,15,15">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="200"/>
-                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="200" />
+                <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <Border Grid.Column="0" Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="12" Margin="0,0,15,0" Padding="10">
+            <Border Grid.Column="0" Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="12"
+                    Margin="0,0,15,0" Padding="10">
                 <Grid>
                     <Border x:Name="PanelSelectNowSiteMods" VerticalAlignment="Top" HorizontalAlignment="Stretch"
                             Height="35" CornerRadius="8" Background="{DynamicResource MainBackgroundButton}"
                             RenderTransformOrigin="0.5,0.5">
                         <Border.Effect>
-                            <DropShadowEffect BlurRadius="10" Opacity="0.2" ShadowDepth="2"/>
+                            <DropShadowEffect BlurRadius="10" Opacity="0.2" ShadowDepth="2" />
                         </Border.Effect>
                         <Border.RenderTransform>
-                            <TranslateTransform x:Name="PanelTranslateTransform7" Y="0"/>
+                            <TranslateTransform x:Name="PanelTranslateTransform7" Y="0" />
                         </Border.RenderTransform>
                     </Border>
 
                     <StackPanel>
-                        <Border x:Name="ModsPack" Height="35" Cursor="Hand" MouseDown="ModsPack_MouseDown" Background="Transparent">
+                        <Border x:Name="ModsPack" Height="35" Cursor="Hand" MouseDown="ModsPack_MouseDown"
+                                Background="Transparent">
                             <StackPanel Orientation="Horizontal" Margin="15,0">
-                                <ui:SymbolIcon Symbol="Box24" FontSize="18" Foreground="{DynamicResource MainForegroundBrush}"/>
-                                <TextBlock x:Name="TxtMods" Text="Моди" VerticalAlignment="Center" Margin="10,0,0,0" Foreground="{DynamicResource MainForegroundBrush}"/>
+                                <ui:SymbolIcon Symbol="Box24" FontSize="18"
+                                               Foreground="{DynamicResource MainForegroundBrush}" />
+                                <TextBlock x:Name="TxtMods" Text="Моди" VerticalAlignment="Center" Margin="10,0,0,0"
+                                           Foreground="{DynamicResource MainForegroundBrush}" />
                             </StackPanel>
                         </Border>
 
-                        <Border x:Name="Resource_packPack" Height="35" Cursor="Hand" MouseDown="Resource_packPack_MouseDown" Background="Transparent" Margin="0,5,0,0">
+                        <Border x:Name="Resource_packPack" Height="35" Cursor="Hand"
+                                MouseDown="Resource_packPack_MouseDown" Background="Transparent" Margin="0,5,0,0">
                             <StackPanel Orientation="Horizontal" Margin="15,0">
-                                <ui:SymbolIcon Symbol="Color24" FontSize="18" Foreground="{DynamicResource MainForegroundBrush}"/>
-                                <TextBlock x:Name="TxtResourcePacks" Text="Ресурспаки" VerticalAlignment="Center" Margin="10,0,0,0" Foreground="{DynamicResource MainForegroundBrush}"/>
+                                <ui:SymbolIcon Symbol="Color24" FontSize="18"
+                                               Foreground="{DynamicResource MainForegroundBrush}" />
+                                <TextBlock x:Name="TxtResourcePacks" Text="Ресурспаки" VerticalAlignment="Center"
+                                           Margin="10,0,0,0" Foreground="{DynamicResource MainForegroundBrush}" />
                             </StackPanel>
                         </Border>
 
-                        <Border x:Name="ShaderPack" Height="35" Cursor="Hand" MouseDown="ShaderPack_MouseDown" Background="Transparent" Margin="0,5,0,0">
+                        <Border x:Name="ShaderPack" Height="35" Cursor="Hand" MouseDown="ShaderPack_MouseDown"
+                                Background="Transparent" Margin="0,5,0,0">
                             <StackPanel Orientation="Horizontal" Margin="15,0">
-                                <ui:SymbolIcon Symbol="Lightbulb24" FontSize="18" Foreground="{DynamicResource MainForegroundBrush}"/>
-                                <TextBlock x:Name="TxtShaders" Text="Шейдери" VerticalAlignment="Center" Margin="10,0,0,0" Foreground="{DynamicResource MainForegroundBrush}"/>
+                                <ui:SymbolIcon Symbol="Lightbulb24" FontSize="18"
+                                               Foreground="{DynamicResource MainForegroundBrush}" />
+                                <TextBlock x:Name="TxtShaders" Text="Шейдери" VerticalAlignment="Center"
+                                           Margin="10,0,0,0" Foreground="{DynamicResource MainForegroundBrush}" />
                             </StackPanel>
                         </Border>
 
-                        <Border x:Name="SettingPack" Height="35" Cursor="Hand" MouseDown="SettingPack_MouseDown" Background="Transparent" Margin="0,5,0,0">
+                        <Border x:Name="SettingPack" Height="35" Cursor="Hand" MouseDown="SettingPack_MouseDown"
+                                Background="Transparent" Margin="0,5,0,0">
                             <StackPanel Orientation="Horizontal" Margin="15,0">
-                                <ui:SymbolIcon Symbol="Settings24" FontSize="18" Foreground="{DynamicResource MainForegroundBrush}"/>
-                                <TextBlock x:Name="TxtOptions" Text="Опції" VerticalAlignment="Center" Margin="10,0,0,0" Foreground="{DynamicResource MainForegroundBrush}"/>
+                                <ui:SymbolIcon Symbol="Settings24" FontSize="18"
+                                               Foreground="{DynamicResource MainForegroundBrush}" />
+                                <TextBlock x:Name="TxtOptions" Text="Опції" VerticalAlignment="Center"
+                                           Margin="10,0,0,0" Foreground="{DynamicResource MainForegroundBrush}" />
                             </StackPanel>
                         </Border>
                     </StackPanel>
@@ -114,245 +130,362 @@
 
                 <Grid x:Name="ManegerPack">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
 
                     <Grid Grid.Row="0" Margin="0,0,0,15">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
 
-                        <ui:TextBox x:Name="SearchSystem" PlaceholderText="Пошук файлів..." 
+                        <ui:TextBox x:Name="SearchSystem" PlaceholderText="Пошук файлів..."
                                     Icon="{ui:SymbolIcon Search24}" IconPlacement="Left"
                                     Background="{DynamicResource MainBackgroundBrushServer}" BorderThickness="0"
-                                    TextChanged="SearchSystem_TextChanged" Height="40" Margin="0,0,10,0" Foreground="{DynamicResource MainForegroundBrush}"/>
+                                    TextChanged="SearchSystem_TextChanged" Height="40" Margin="0,0,10,0"
+                                    Foreground="{DynamicResource MainForegroundBrush}" />
 
                         <StackPanel Grid.Column="1" Orientation="Horizontal">
-                            <ui:Button x:Name="DownloadAddMod" Icon="{ui:SymbolIcon ArrowDownload24}" Content="Завантажити" 
+                            <ui:Button x:Name="DownloadAddMod" Icon="{ui:SymbolIcon ArrowDownload24}"
+                                       Content="Завантажити"
                                        Height="40" CornerRadius="8" Appearance="Primary"
-                                       Click="DownloadAddMod_MouseDown" Margin="0,0,5,0" Background="{DynamicResource MainBackgroundButton}" Foreground="{DynamicResource MainForegroundBrush}" Cursor="Hand"/>
+                                       Click="DownloadAddMod_MouseDown" Margin="0,0,5,0"
+                                       Background="{DynamicResource MainBackgroundButton}"
+                                       Foreground="{DynamicResource MainForegroundBrush}" Cursor="Hand" />
 
-                            <ui:Button x:Name="AddFileInPack" Icon="{ui:SymbolIcon Add24}" Content="Додати файл" 
+                            <ui:Button x:Name="AddFileInPack" Icon="{ui:SymbolIcon Add24}" Content="Додати файл"
                                        Height="40" CornerRadius="8" Appearance="Secondary"
-                                       Click="AddFileInPack_MouseDown" Background="{DynamicResource MainBackgroundButton}" Foreground="{DynamicResource MainForegroundBrush}" Cursor="Hand"/>
+                                       Click="AddFileInPack_MouseDown"
+                                       Background="{DynamicResource MainBackgroundButton}"
+                                       Foreground="{DynamicResource MainForegroundBrush}" Cursor="Hand" />
                         </StackPanel>
                     </Grid>
 
-                    <Border Grid.Row="1" Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="12" Padding="10">
-                        <ListView x:Name="ModsManegerList" 
-                                  Background="Transparent" BorderThickness="0" 
+                    <Border Grid.Row="1" Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="12"
+                            Padding="10">
+                        <ListView x:Name="ModsManegerList"
+                                  Background="Transparent" BorderThickness="0"
                                   ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                         </ListView>
                     </Border>
                 </Grid>
 
-                <ScrollViewer x:Name="SettingPack_Mod" VerticalScrollBarVisibility="Hidden" Margin="0,-10,0,0" Visibility="Collapsed">
+                <ScrollViewer x:Name="SettingPack_Mod" VerticalScrollBarVisibility="Hidden" Margin="0,-10,0,0"
+                              Visibility="Collapsed">
                     <StackPanel Margin="0,10,0,0">
 
-                        <TextBlock x:Name="TxtVersionTitle" Text="Версія" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource MainForegroundBrush}" Margin="5,0,0,5"/>
-                        <Border CornerRadius="8" Background="{DynamicResource MainBackgroundBrushServer}" Margin="0,0,0,15" Padding="10">
+                        <TextBlock x:Name="TxtVersionTitle" Text="Версія" FontSize="14" FontWeight="Bold"
+                                   Foreground="{DynamicResource MainForegroundBrush}" Margin="5,0,0,5" />
+                        <Border CornerRadius="8" Background="{DynamicResource MainBackgroundBrushServer}"
+                                Margin="0,0,0,15" Padding="10">
                             <StackPanel>
                                 <Grid Height="35">
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
 
                                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                        <ui:SymbolIcon Symbol="Cube24" FontSize="18" Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,10,0"/>
-                                        <TextBlock x:Name="TxtMcVersion" Text="Версія Minecraft" VerticalAlignment="Center" Foreground="{DynamicResource MainForegroundBrush}" FontSize="14"/>
+                                        <ui:SymbolIcon Symbol="Cube24" FontSize="18"
+                                                       Foreground="{DynamicResource MainForegroundBrush}"
+                                                       Margin="0,0,10,0" />
+                                        <TextBlock x:Name="TxtMcVersion" Text="Версія Minecraft"
+                                                   VerticalAlignment="Center"
+                                                   Foreground="{DynamicResource MainForegroundBrush}" FontSize="14" />
                                     </StackPanel>
 
                                     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                        <TextBlock x:Name="PackMcVersionText" Text="1.20.1" VerticalAlignment="Center" Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,10,0" FontWeight="Bold" Opacity="0.5"/>
-                                        <ui:SymbolIcon x:Name="IconMcVersionLock" Symbol="LockClosed24" FontSize="16" Foreground="Gray" ToolTip="Версію гри змінювати не можна"/>
+                                        <TextBlock x:Name="PackMcVersionText" Text="1.20.1" VerticalAlignment="Center"
+                                                   Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,10,0"
+                                                   FontWeight="Bold" />
+
+                                        <ui:Button x:Name="BtnChangeMcVersion" Content="Змінити"
+                                                   Icon="{ui:SymbolIcon Edit24}" Height="30" Padding="10,0"
+                                                   Appearance="Secondary"
+                                                   Background="{DynamicResource MainBackgroundButton}"
+                                                   Click="ChangeMcVersion_Click" Cursor="Hand"
+                                                   Foreground="{DynamicResource MainForegroundBrush}" />
                                     </StackPanel>
                                 </Grid>
 
-                                <Separator Background="#20FFFFFF" Margin="0,5"/>
+                                <Separator Background="#20FFFFFF" Margin="0,5" />
 
-                                <Grid x:Name="LoaderVersionPanel" Height="35">
+                                <Grid x:Name="LoaderTypePanel" Height="35">
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
 
                                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                        <ui:SymbolIcon Symbol="PuzzlePiece24" FontSize="18" Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,10,0"/>
-                                        <TextBlock x:Name="TxtLoaderVersion" Text="Версія Ядра" VerticalAlignment="Center" Foreground="{DynamicResource MainForegroundBrush}" FontSize="14"/>
+                                        <ui:SymbolIcon Symbol="Cube24" FontSize="18"
+                                                       Foreground="{DynamicResource MainForegroundBrush}"
+                                                       Margin="0,0,10,0" />
+                                        <TextBlock x:Name="TxtLoaderType" Text="Тип Ядра" VerticalAlignment="Center"
+                                                       Foreground="{DynamicResource MainForegroundBrush}" FontSize="14" />
                                     </StackPanel>
 
                                     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                        <TextBlock x:Name="PackLoaderVersionText" Text="Forge 47.2.0" VerticalAlignment="Center" Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,10,0"/>
+                                        <TextBlock x:Name="PackLoaderTypeText" Text="Forge" VerticalAlignment="Center"
+                                                   Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,10,0" />
 
-                                        <ui:Button x:Name="BtnChangeLoader" Content="Змінити" Icon="{ui:SymbolIcon Edit24}" Height="30" Padding="10,0"
-                                   Appearance="Secondary" Background="{DynamicResource MainBackgroundButton}" 
-                                   Click="ChangeLoaderVersion_Click" Cursor="Hand" Foreground="{DynamicResource MainForegroundBrush}"/>
+                                        <ui:Button x:Name="BtnChangeLoaderType" Content="Змінити"
+                                                   Icon="{ui:SymbolIcon Edit24}" Height="30" Padding="10,0"
+                                                   Appearance="Secondary"
+                                                   Background="{DynamicResource MainBackgroundButton}"
+                                                   Click="ChangeLoaderType_Click" Cursor="Hand"
+                                                   Foreground="{DynamicResource MainForegroundBrush}" />
+                                    </StackPanel>
+                                </Grid>
+
+                                <Separator x:Name="LoaderVersionSeparator" Background="#20FFFFFF" Margin="0,5" />
+
+                                <Grid x:Name="LoaderVersionPanel" Height="35">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <ui:SymbolIcon Symbol="PuzzlePiece24" FontSize="18"
+                                                       Foreground="{DynamicResource MainForegroundBrush}"
+                                                       Margin="0,0,10,0" />
+                                        <TextBlock x:Name="TxtLoaderVersion" Text="Версія Ядра" VerticalAlignment="Center"
+                                                       Foreground="{DynamicResource MainForegroundBrush}" FontSize="14" />
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                        <TextBlock x:Name="PackLoaderVersionText" Text="47.2.0"
+                                                   VerticalAlignment="Center"
+                                                   Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,10,0" />
+
+                                        <ui:Button x:Name="BtnChangeLoaderVersion" Content="Змінити"
+                                                   Icon="{ui:SymbolIcon Edit24}" Height="30" Padding="10,0"
+                                                   Appearance="Secondary"
+                                                   Background="{DynamicResource MainBackgroundButton}"
+                                                   Click="ChangeLoaderVersion_Click" Cursor="Hand"
+                                                   Foreground="{DynamicResource MainForegroundBrush}" />
                                     </StackPanel>
                                 </Grid>
                             </StackPanel>
                         </Border>
 
-                        <TextBlock x:Name="TxtSystemTitle" Text="Система" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource MainForegroundBrush}" Margin="5,0,0,5"/>
-                        <Border CornerRadius="8" Background="{DynamicResource MainBackgroundBrushServer}" Margin="0,0,0,15" Padding="10">
+                        <TextBlock x:Name="TxtSystemTitle" Text="Система" FontSize="14" FontWeight="Bold"
+                                   Foreground="{DynamicResource MainForegroundBrush}" Margin="5,0,0,5" />
+                        <Border CornerRadius="8" Background="{DynamicResource MainBackgroundBrushServer}"
+                                Margin="0,0,0,15" Padding="10">
                             <StackPanel>
                                 <Grid Height="35">
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
 
                                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                        <ui:SymbolIcon Symbol="DocumentText24" FontSize="18" Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,10,0"/>
-                                        <TextBlock x:Name="TxtLogs" Text="Консоль розробника (Logs)" VerticalAlignment="Center" Foreground="{DynamicResource MainForegroundBrush}" FontSize="14"/>
+                                        <ui:SymbolIcon Symbol="DocumentText24" FontSize="18"
+                                                       Foreground="{DynamicResource MainForegroundBrush}"
+                                                       Margin="0,0,10,0" />
+                                        <TextBlock x:Name="TxtLogs" Text="Консоль розробника (Logs)"
+                                                   VerticalAlignment="Center"
+                                                   Foreground="{DynamicResource MainForegroundBrush}" FontSize="14" />
                                     </StackPanel>
 
-                                    <ui:ToggleSwitch x:Name="DebugOff_On" Click="DebugOff_On_Click" Margin="500,0,2,0" Cursor="Hand"/>
+                                    <ui:ToggleSwitch x:Name="DebugOff_On" Click="DebugOff_On_Click" Margin="500,0,2,0"
+                                                     Cursor="Hand" />
                                 </Grid>
 
-                                <Separator Background="#20FFFFFF" Margin="0,5"/>
+                                <Separator Background="#20FFFFFF" Margin="0,5" />
 
                                 <Grid Margin="0,5,0,0">
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
 
-                                    <ui:SymbolIcon Symbol="Ram20" FontSize="18" Foreground="{DynamicResource MainForegroundBrush}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                    <ui:SymbolIcon Symbol="Ram20" FontSize="18"
+                                                   Foreground="{DynamicResource MainForegroundBrush}"
+                                                   VerticalAlignment="Center" Margin="0,0,10,0" />
 
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                        <TextBlock x:Name="TxtRam" Text="Оперативна пам’ять" Foreground="{DynamicResource MainForegroundBrush}" FontSize="14"/>
-                                        <TextBlock x:Name="SliderOPTXT" Text="2048 MB" Foreground="{DynamicResource MainForegroundBrush}" FontSize="11"/>
+                                        <TextBlock x:Name="TxtRam" Text="Оперативна пам’ять"
+                                                   Foreground="{DynamicResource MainForegroundBrush}" FontSize="14" />
+                                        <TextBlock x:Name="SliderOPTXT" Text="2048 MB"
+                                                   Foreground="{DynamicResource MainForegroundBrush}" FontSize="11" />
                                     </StackPanel>
 
-                                    <Slider Grid.Column="2" x:Name="OPSlider" Width="150" Minimum="2048" Maximum="8192" Value="2048"
-                            SmallChange="512" LargeChange="1024" IsSnapToTickEnabled="True" TickFrequency="512"
-                            VerticalAlignment="Center" ValueChanged="OPSlider_ValueChanged" PreviewMouseUp="OPSlider_PreviewMouseUp" Cursor="Hand"/>
+                                    <Slider Grid.Column="2" x:Name="OPSlider" Width="150" Minimum="2048" Maximum="8192"
+                                            Value="2048"
+                                            SmallChange="512" LargeChange="1024" IsSnapToTickEnabled="True"
+                                            TickFrequency="512"
+                                            VerticalAlignment="Center" ValueChanged="OPSlider_ValueChanged"
+                                            PreviewMouseUp="OPSlider_PreviewMouseUp" Cursor="Hand" />
                                 </Grid>
-                                <Separator Background="#20FFFFFF" Margin="0,5"/>
+                                <Separator Background="#20FFFFFF" Margin="0,5" />
                                 <Grid>
                                     <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
                                     </Grid.RowDefinitions>
 
                                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,0,8">
-                                        <ui:SymbolIcon Symbol="Code24" FontSize="18" Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,10,0"/>
+                                        <ui:SymbolIcon Symbol="Code24" FontSize="18"
+                                                       Foreground="{DynamicResource MainForegroundBrush}"
+                                                       Margin="0,0,10,0" />
                                         <StackPanel>
-                                            <TextBlock x:Name="TxtJavaPath" Text="Кастомний шлях до Java" Foreground="{DynamicResource MainForegroundBrush}" FontSize="14"/>
-                                            <TextBlock x:Name="TxtJavaPathDesc" Text="Залиште пустим для авто-пошуку" Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.5" FontSize="11"/>
+                                            <TextBlock x:Name="TxtJavaPath" Text="Кастомний шлях до Java"
+                                                       Foreground="{DynamicResource MainForegroundBrush}" FontSize="14" />
+                                            <TextBlock x:Name="TxtJavaPathDesc" Text="Залиште пустим для авто-пошуку"
+                                                       Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.5"
+                                                       FontSize="11" />
                                         </StackPanel>
                                     </StackPanel>
 
                                     <Grid Grid.Row="1">
                                         <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
-                                        <ComboBox Grid.Column="0" x:Name="JavaPathComboBox" IsEditable="True" FontSize="12" 
-                                                  Background="{DynamicResource MainBackgroundBrush}" BorderThickness="0" Foreground="{DynamicResource MainForegroundBrush}" 
+                                        <ComboBox Grid.Column="0" x:Name="JavaPathComboBox" IsEditable="True"
+                                                  FontSize="12"
+                                                  Background="{DynamicResource MainBackgroundBrush}"
+                                                  BorderThickness="0"
+                                                  Foreground="{DynamicResource MainForegroundBrush}"
                                                   VerticalContentAlignment="Center" Cursor="Hand"
                                                   TextBoxBase.TextChanged="JavaPathComboBox_TextChanged"
-                                                  SelectionChanged="JavaPathComboBox_SelectionChanged" BorderBrush="{x:Null}"/>
-                                        <ui:Button Grid.Column="1" x:Name="BtnBrowseJava" Content="Огляд" Height="30" Margin="5,0,0,0"
-                                                   Appearance="Secondary" Background="{DynamicResource MainBackgroundButton}" 
-                                                   Click="BtnBrowseJava_Click" Cursor="Hand" Foreground="{DynamicResource MainForegroundBrush}"/>
+                                                  SelectionChanged="JavaPathComboBox_SelectionChanged"
+                                                  BorderBrush="{x:Null}" />
+                                        <ui:Button Grid.Column="1" x:Name="BtnBrowseJava" Content="Огляд" Height="30"
+                                                   Margin="5,0,0,0"
+                                                   Appearance="Secondary"
+                                                   Background="{DynamicResource MainBackgroundButton}"
+                                                   Click="BtnBrowseJava_Click" Cursor="Hand"
+                                                   Foreground="{DynamicResource MainForegroundBrush}" />
                                     </Grid>
                                 </Grid>
                             </StackPanel>
                         </Border>
 
-                        <TextBlock x:Name="TxtGameTitle" Text="Гра" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource MainForegroundBrush}" Margin="5,0,0,5"/>
-                        <Border CornerRadius="8" Background="{DynamicResource MainBackgroundBrushServer}" Margin="0,0,0,15" Padding="10">
+                        <TextBlock x:Name="TxtGameTitle" Text="Гра" FontSize="14" FontWeight="Bold"
+                                   Foreground="{DynamicResource MainForegroundBrush}" Margin="5,0,0,5" />
+                        <Border CornerRadius="8" Background="{DynamicResource MainBackgroundBrushServer}"
+                                Margin="0,0,0,15" Padding="10">
                             <StackPanel>
                                 <Grid Height="40">
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
 
                                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                        <ui:SymbolIcon Symbol="Maximize24" FontSize="18" Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,10,0"/>
-                                        <TextBlock x:Name="TxtWindowSize" Text="Розмір вікна" VerticalAlignment="Center" Foreground="{DynamicResource MainForegroundBrush}" FontSize="14"/>
+                                        <ui:SymbolIcon Symbol="Maximize24" FontSize="18"
+                                                       Foreground="{DynamicResource MainForegroundBrush}"
+                                                       Margin="0,0,10,0" />
+                                        <TextBlock x:Name="TxtWindowSize" Text="Розмір вікна"
+                                                   VerticalAlignment="Center"
+                                                   Foreground="{DynamicResource MainForegroundBrush}" FontSize="14" />
                                     </StackPanel>
 
                                     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                        <TextBox x:Name="WdithTXT" Text="800" Width="60" TextAlignment="Center" 
-                                 Background="{DynamicResource MainBackgroundBrush}" BorderThickness="0" 
-                                 Foreground="{DynamicResource MainForegroundBrush}" VerticalContentAlignment="Center"
-                                 TextChanged="WdithTXT_TextChanged"/>
+                                        <TextBox x:Name="WdithTXT" Text="800" Width="60" TextAlignment="Center"
+                                                 Background="{DynamicResource MainBackgroundBrush}" BorderThickness="0"
+                                                 Foreground="{DynamicResource MainForegroundBrush}"
+                                                 VerticalContentAlignment="Center"
+                                                 TextChanged="WdithTXT_TextChanged" />
 
-                                        <TextBlock Text="x" VerticalAlignment="Center" Foreground="Gray" Margin="5,0"/>
+                                        <TextBlock Text="x" VerticalAlignment="Center" Foreground="Gray" Margin="5,0" />
 
-                                        <TextBox x:Name="HeghitTXT" Text="600" Width="60" TextAlignment="Center" 
-                                 Background="{DynamicResource MainBackgroundBrush}" BorderThickness="0" 
-                                 Foreground="{DynamicResource MainForegroundBrush}" VerticalContentAlignment="Center"
-                                 TextChanged="HeghitTXT_TextChanged"/>
+                                        <TextBox x:Name="HeghitTXT" Text="600" Width="60" TextAlignment="Center"
+                                                 Background="{DynamicResource MainBackgroundBrush}" BorderThickness="0"
+                                                 Foreground="{DynamicResource MainForegroundBrush}"
+                                                 VerticalContentAlignment="Center"
+                                                 TextChanged="HeghitTXT_TextChanged" />
                                     </StackPanel>
                                 </Grid>
 
-                                <Separator Background="#20FFFFFF" Margin="0,5"/>
+                                <Separator Background="#20FFFFFF" Margin="0,5" />
 
                                 <Grid Height="40">
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
 
                                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                        <ui:SymbolIcon Symbol="ArrowAutofitContent20" FontSize="18" Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,10,0"/>
+                                        <ui:SymbolIcon Symbol="ArrowAutofitContent20" FontSize="18"
+                                                       Foreground="{DynamicResource MainForegroundBrush}"
+                                                       Margin="0,0,10,0" />
                                         <StackPanel>
-                                            <TextBlock x:Name="TxtAutoJoin" Text="Авто-вхід на сервер" Foreground="{DynamicResource MainForegroundBrush}" FontSize="14"/>
-                                            <TextBox x:Name="IPAdressServer" Text="IP Сервера" FontSize="11" 
-                                     Background="Transparent" BorderThickness="0" Foreground="{DynamicResource MainForegroundBrush}" Padding="0"
-                                     IsEnabled="False" TextChanged="IPAdressServer_TextChanged" Width="443"/>
+                                            <TextBlock x:Name="TxtAutoJoin" Text="Авто-вхід на сервер"
+                                                       Foreground="{DynamicResource MainForegroundBrush}" FontSize="14" />
+                                            <TextBox x:Name="IPAdressServer" Text="IP Сервера" FontSize="11"
+                                                     Background="Transparent" BorderThickness="0"
+                                                     Foreground="{DynamicResource MainForegroundBrush}" Padding="0"
+                                                     IsEnabled="False" TextChanged="IPAdressServer_TextChanged"
+                                                     Width="443" />
                                         </StackPanel>
                                     </StackPanel>
 
-                                    <ui:ToggleSwitch x:Name="OnJoinServerOff_On" Click="OnJoinServerOff_On_Click" Margin="500,0,0,0" Width="48" Cursor="Hand"/>
+                                    <ui:ToggleSwitch x:Name="OnJoinServerOff_On" Click="OnJoinServerOff_On_Click"
+                                                     Margin="500,0,0,0" Width="48" Cursor="Hand" />
                                 </Grid>
-                                <Separator Background="#20FFFFFF" Margin="0,5"/>
+                                <Separator Background="#20FFFFFF" Margin="0,5" />
 
                                 <Grid Height="40">
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
 
                                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                        <ui:SymbolIcon Symbol="ArrowUndo24" FontSize="18" Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,10,0"/>
+                                        <ui:SymbolIcon Symbol="ArrowUndo24" FontSize="18"
+                                                       Foreground="{DynamicResource MainForegroundBrush}"
+                                                       Margin="0,0,10,0" />
                                         <StackPanel>
-                                            <TextBlock Text="Скинути налаштування гри" Foreground="{DynamicResource MainForegroundBrush}" FontSize="14"/>
-                                            <TextBlock Text="Видаляє options.txt (допомагає, якщо гра крашиться через графіку)" Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.5" FontSize="11"/>
+                                            <TextBlock x:Name="TxtResetOptionsTitle" Text="Скинути налаштування гри"
+               Foreground="{DynamicResource MainForegroundBrush}" FontSize="14" />
+                                            <TextBlock x:Name="TxtResetOptionsDesc"
+        Text="Видаляє options.txt (допомагає, якщо гра крашиться через графіку)"
+        Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.5"
+        FontSize="11" />
                                         </StackPanel>
                                     </StackPanel>
 
-                                    <ui:Button Grid.Column="1" x:Name="BtnResetOptions" Foreground="{DynamicResource MainForegroundBrush}" Background="{DynamicResource MainBackgroundButton}" Content="Скинути" Height="30" Padding="15,0" Appearance="Danger" Click="BtnResetOptions_Click" Cursor="Hand"/>
+                                    <ui:Button Grid.Column="1" x:Name="BtnResetOptions"
+                                               Foreground="{DynamicResource MainForegroundBrush}"
+                                               Background="{DynamicResource MainBackgroundButton}" Content="Скинути"
+                                               Height="30" Padding="15,0" Appearance="Danger"
+                                               Click="BtnResetOptions_Click" Cursor="Hand" />
                                 </Grid>
                             </StackPanel>
                         </Border>
-                        <TextBlock x:Name="TxtCustomizationTitle" Text="Кастомізація" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource MainForegroundBrush}" Margin="5,0,0,5"/>
-                        <Border CornerRadius="8" Background="{DynamicResource MainBackgroundBrushServer}" Margin="0,0,0,15" Padding="10">
+                        <TextBlock x:Name="TxtCustomizationTitle" Text="Кастомізація" FontSize="14" FontWeight="Bold"
+                                   Foreground="{DynamicResource MainForegroundBrush}" Margin="5,0,0,5" />
+                        <Border CornerRadius="8" Background="{DynamicResource MainBackgroundBrushServer}"
+                                Margin="0,0,0,15" Padding="10">
                             <StackPanel>
                                 <Grid Height="40">
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
 
                                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                        <Border Width="24" Height="24" CornerRadius="4" Margin="0,0,10,0" Background="#20FFFFFF">
-                                            <Image x:Name="PackIconImage" Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                        <Border Width="24" Height="24" CornerRadius="4" Margin="0,0,10,0"
+                                                Background="#20FFFFFF">
+                                            <Image x:Name="PackIconImage" Stretch="UniformToFill"
+                                                   RenderOptions.BitmapScalingMode="HighQuality" />
                                         </Border>
-                                        <TextBlock x:Name="TxtPackIcon" Text="Іконка збірки" VerticalAlignment="Center" Foreground="{DynamicResource MainForegroundBrush}" FontSize="14"/>
+                                        <TextBlock x:Name="TxtPackIcon" Text="Іконка збірки" VerticalAlignment="Center"
+                                                   Foreground="{DynamicResource MainForegroundBrush}" FontSize="14" />
                                     </StackPanel>
 
-                                    <ui:Button Grid.Column="1" x:Name="BtnChangeIcon" Content="Змінити..." Height="30" Padding="15,0"
-                                               Appearance="Secondary" Background="{DynamicResource MainBackgroundButton}" 
-                                               Click="BtnChangeIcon_Click" Cursor="Hand" Foreground="{DynamicResource MainForegroundBrush}"/>
+                                    <ui:Button Grid.Column="1" x:Name="BtnChangeIcon" Content="Змінити..." Height="30"
+                                               Padding="15,0"
+                                               Appearance="Secondary"
+                                               Background="{DynamicResource MainBackgroundButton}"
+                                               Click="BtnChangeIcon_Click" Cursor="Hand"
+                                               Foreground="{DynamicResource MainForegroundBrush}" />
                                 </Grid>
                             </StackPanel>
                         </Border>

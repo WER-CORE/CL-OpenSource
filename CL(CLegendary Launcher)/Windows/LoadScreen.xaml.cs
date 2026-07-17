@@ -64,7 +64,7 @@ namespace CL_CLegendary_Launcher_.Windows
             ApplyCustomSettings();
 
             Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this, WindowBackdropType.Mica);
-            VersionLauncherTXT.Text = versionLauncher + "-Rel";
+            VersionLauncherTXT.Text = versionLauncher + "-Beta";
 
             SettingsManager.Default.OfflineModLauncher = false;
             SettingsManager.Save();

@@ -12,6 +12,7 @@ namespace CL_CLegendary_Launcher_
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
+            System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Tls12 | System.Net.SecurityProtocolType.Tls13;
             SoundManager.Initialize();
 
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
