@@ -13,17 +13,14 @@
     <UseWPF>true</UseWPF>
     <ApplicationIcon>Icon\IconCL(Common).ico</ApplicationIcon>
     <UseWindowsForms>true</UseWindowsForms>
-    <FileVersion>1.0.0.0</FileVersion>
-    <AssemblyVersion>1.0.0.0</AssemblyVersion>
-    <PackageIcon></PackageIcon>
-    <Copyright></Copyright>
+    <FileVersion>1.0.0.1</FileVersion>
+    <AssemblyVersion>1.0.0.1</AssemblyVersion>
     <NeutralLanguage>uk-UA</NeutralLanguage>
     <SupportedOSPlatformVersion>7.0</SupportedOSPlatformVersion>
     <GenerateDocumentationFile>False</GenerateDocumentationFile>
     <SignAssembly>False</SignAssembly>
     <ServerGarbageCollection>false</ServerGarbageCollection>
     <DelaySign>False</DelaySign>
-    <AssemblyOriginatorKeyFile></AssemblyOriginatorKeyFile>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>

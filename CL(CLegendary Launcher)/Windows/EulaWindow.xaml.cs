@@ -1,6 +1,7 @@
 ﻿using CL_CLegendary_Launcher_.Class;
 using CL_CLegendary_Launcher_.Models;
 using System;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using Wpf.Ui.Appearance;
@@ -31,43 +32,34 @@ namespace CL_CLegendary_Launcher_.Windows
                 _versionDate = DateTime.Now;
             }
         }
+
         private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            LanguageComboBox.SelectionChanged -= LanguageComboBox_SelectionChanged;
+
             var languages = await LocalizationFetcher.GetAvailableLanguagesAsync();
             LanguageComboBox.ItemsSource = languages;
 
             string currentLangCode = SettingsManager.Default.LanguageCode ?? "uk_UA";
-            foreach (LanguageItem item in LanguageComboBox.Items)
+
+            var targetLanguage = System.Linq.Enumerable.FirstOrDefault(languages, l => l.Code == currentLangCode)
+                              ?? System.Linq.Enumerable.FirstOrDefault(languages);
+
+            if (targetLanguage != null)
             {
-                if (item.Code == currentLangCode)
+                LanguageComboBox.SelectedItem = targetLanguage;
+
+                if (LocalizationManager.CurrentLanguage != targetLanguage.Code ||
+                    !LocalizationManager.IsLanguageFileExists(targetLanguage.Code))
                 {
-                    LanguageComboBox.SelectionChanged -= LanguageComboBox_SelectionChanged;
-                    LanguageComboBox.SelectedItem = item;
-                    LanguageComboBox.SelectionChanged += LanguageComboBox_SelectionChanged;
-                    break;
+                    await LoadAndApplyLanguageAsync(targetLanguage);
                 }
-            }
-        }
-        private async void LanguageComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (!IsLoaded || LanguageComboBox.SelectedItem is not LanguageItem selectedLang) return;
-            SoundManager.Click();
-
-            if (LocalizationManager.CurrentLanguage != selectedLang.Code)
-            {
-                LanguageComboBox.IsEnabled = false;
-
-                bool success = await LocalizationFetcher.DownloadLanguageAsync(selectedLang);
-
-                if (success)
+                else
                 {
-                    LocalizationManager.LoadLanguage(selectedLang.Code);
-                    SettingsManager.Default.LanguageCode = selectedLang.Code;
-                    SettingsManager.Save();
-
+                    LocalizationManager.LoadLanguage(targetLanguage.Code);
                     ApplyLocalization();
 
-                    var newConfig = await EulaService.GetEulaAsync(selectedLang.Code);
+                    var newConfig = await EulaService.GetEulaAsync(targetLanguage.Code);
                     if (newConfig != null)
                     {
                         EulaContentText.Text = newConfig.Text;
@@ -75,16 +67,23 @@ namespace CL_CLegendary_Launcher_.Windows
                         _versionDate = newConfig.LastUpdated;
                     }
                 }
-                else
-                {
-                    MascotMessageBox.Show(
-                        LocalizationManager.GetString("Dialogs.Error", "Не вдалося завантажити мову."),
-                        "Error", MascotEmotion.Sad);
-                }
+            }
 
-                LanguageComboBox.IsEnabled = true;
+            LanguageComboBox.SelectionChanged += LanguageComboBox_SelectionChanged;
+        }
+
+        private async void LanguageComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (!IsLoaded || LanguageComboBox.SelectedItem is not LanguageItem selectedLang) return;
+
+            SoundManager.Click();
+
+            if (LocalizationManager.CurrentLanguage != selectedLang.Code)
+            {
+                await LoadAndApplyLanguageAsync(selectedLang);
             }
         }
+
         private void ApplyLocalization()
         {
             this.Title = LocalizationManager.GetString("Eula.WindowTitle", "Угода");
@@ -93,12 +92,44 @@ namespace CL_CLegendary_Launcher_.Windows
             BtnDecline.Content = LocalizationManager.GetString("Eula.DeclineBtn", "Я не згоден (Вихід)");
             BtnAccept.Content = LocalizationManager.GetString("Eula.AcceptBtn", "Згода!");
 
-            MascotMessageText.Text = LocalizationManager.GetString("Eula.UpdateMessage", MascotMessageText.Text);
+            MascotMessageText.Text = LocalizationManager.GetString("Eula.UpdateMessage", "Привіт! Я оновила правила нашої Спільноти. Перед тим як ми продовжимо, будь ласка, прочитай і підтвердь їх, щоб ми були на одній хвилі! (´• ω •`)");
 
             if (RunCrashTitle != null)
                 RunCrashTitle.Text = LocalizationManager.GetString("Eula.CrashTitle", "Дозволити анонімну відправку звітів про помилки.");
             if (RunCrashDesc != null)
                 RunCrashDesc.Text = LocalizationManager.GetString("Eula.CrashDesc", "Це допоможе нам швидше виправляти баги. Жодні особисті дані не збираються.");
+        }
+
+        private async Task LoadAndApplyLanguageAsync(LanguageItem selectedLang)
+        {
+            if (selectedLang == null) return;
+
+            LanguageComboBox.IsEnabled = false;
+
+            bool success = await LocalizationFetcher.DownloadLanguageAsync(selectedLang);
+
+            if (success)
+            {
+                LocalizationManager.LoadLanguage(selectedLang.Code);
+                SettingsManager.Default.LanguageCode = selectedLang.Code;
+                SettingsManager.Save();
+
+                ApplyLocalization();
+
+                var newConfig = await EulaService.GetEulaAsync(selectedLang.Code);
+                if (newConfig != null)
+                {
+                    EulaContentText.Text = newConfig.Text;
+                    MascotMessageText.Text = newConfig.MascotMessage;
+                    _versionDate = newConfig.LastUpdated;
+                }
+            }
+            else
+            {
+                MascotMessageBox.Show("Не вдалося завантажити мову.", "Помилка");
+            }
+
+            LanguageComboBox.IsEnabled = true;
         }
 
         private void Accept_Click(object sender, RoutedEventArgs e)
@@ -118,6 +149,7 @@ namespace CL_CLegendary_Launcher_.Windows
             this.DialogResult = true;
             this.Close();
         }
+
         private void Decline_Click(object sender, RoutedEventArgs e)
         {
             SoundManager.Click();
