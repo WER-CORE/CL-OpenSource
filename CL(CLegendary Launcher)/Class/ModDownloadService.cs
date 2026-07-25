@@ -299,7 +299,7 @@ namespace CL_CLegendary_Launcher_.Class
             {
                 1 => "shader",
                 2 => "resourcepack",
-                3 => null,
+                3 => "no",
                 4 => "datapacks",
                 _ => "mod"
             };

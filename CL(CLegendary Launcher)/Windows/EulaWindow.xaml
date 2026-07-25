@@ -71,12 +71,13 @@
                         </Grid.ColumnDefinitions>
 
                         <ComboBox Grid.Column="0" x:Name="LanguageComboBox" 
-                              Width="160" Height="40" 
-                              SelectionChanged="LanguageComboBox_SelectionChanged"
-                              Background="#2B2B2B" Foreground="{DynamicResource MainForegroundBrush}" BorderBrush="#333333" Cursor="Hand">
+                            Width="160" Height="40" 
+                            VerticalContentAlignment="Center" HorizontalContentAlignment="Stretch"
+                            SelectionChanged="LanguageComboBox_SelectionChanged"
+                            Background="#2B2B2B" Foreground="{DynamicResource MainForegroundBrush}" BorderBrush="#333333" Cursor="Hand">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate>
-                                    <StackPanel Orientation="Horizontal" Margin="2">
+                                    <StackPanel Orientation="Horizontal" Margin="2" Background="Transparent">
                                         <Border CornerRadius="3" ClipToBounds="True" Width="24" Height="16" Margin="0,0,10,0" VerticalAlignment="Center">
                                             <Image Source="{Binding FlagUrl}" Stretch="UniformToFill" />
                                         </Border>
@@ -85,7 +86,6 @@
                                 </DataTemplate>
                             </ComboBox.ItemTemplate>
                         </ComboBox>
-
                         <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
                             <ui:Button x:Name="BtnDecline" Content="Я не згоден (Вихід)" Height="40" Padding="20,0"
                                    Background="Transparent" Foreground="#FF5555" BorderThickness="0"

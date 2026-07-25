@@ -231,12 +231,12 @@ namespace CL_CLegendary_Launcher_
 
             await DowloadVanila(selectedVersion, ip, port, NameNik.Text);
         }
-
-        public void ServerTXTPanelSelect_MouseDown(object sender, MouseButtonEventArgs e)
+        
+        private void ServerTXTPanelSelect_MouseDown(object sender, MouseButtonEventArgs e)
         {
             _navigationService.NavigateToServers();
-            MoveMenuSelector(ServersBtnBorder);
         }
+
         private void SearchSystem_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (_allServerCards == null || _allServerCards.Count == 0) return;

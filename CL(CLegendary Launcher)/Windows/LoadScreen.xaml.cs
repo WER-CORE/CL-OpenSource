@@ -59,18 +59,18 @@ namespace CL_CLegendary_Launcher_.Windows
 
             LoadingText.Text = LocalizationManager.GetString("LoadScreen.LoadingText", "Завантаження ресурсів...");
 
-            LoadLocalizedPhrases();
             LoadCustomPhrases();
             ApplyCustomSettings();
 
             Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this, WindowBackdropType.Mica);
-            VersionLauncherTXT.Text = versionLauncher + "-Beta";
+            VersionLauncherTXT.Text = versionLauncher + "-Rel";
 
             SettingsManager.Default.OfflineModLauncher = false;
             SettingsManager.Save();
 
             Loaded += LoadScreen_Loaded;
         }
+
         private async Task UpdateLocalizationsAsync()
         {
             try
@@ -186,6 +186,7 @@ namespace CL_CLegendary_Launcher_.Windows
 
         private async Task RunStartupProcessAsync()
         {
+            await LoadLocalizedPhrases();
             await DiscordController.Initialize(LocalizationManager.GetString("LoadScreen.DiscordRPC", "У віконці завантаження"));
 
             var animationTask = SimulateLoadingAnimationAsync();
@@ -330,7 +331,9 @@ namespace CL_CLegendary_Launcher_.Windows
 
         private async Task<bool> CheckEulaAsync()
         {
-            var eulaConfig = await EulaService.GetEulaAsync();
+            string currentLang = SettingsManager.Default.LanguageCode ?? "uk_UA";
+
+            var eulaConfig = await EulaService.GetEulaAsync(currentLang);
             bool showEula = false;
 
             if (eulaConfig != null)
