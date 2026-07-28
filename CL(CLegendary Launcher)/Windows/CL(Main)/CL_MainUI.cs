@@ -122,9 +122,9 @@ namespace CL_CLegendary_Launcher_
             {
                 SelectGirdAccount, ScrollSetting, SettingPanelMinecraft, PanelManegerAccount,
                 ServerName, ListModsGird, ListModsBuild, GalleryContainer,
-                GirdPanelFooter, GirdNews, ListNews, GirdTXTNews
+                GirdPanelFooter, GirdNews, ListNews, GirdTXTNews,SelectVersionTypeGird,
+                SelectVersion,SelectVersionMod
             };
-
             bool animationStarted = false;
 
             foreach (var page in allPages)

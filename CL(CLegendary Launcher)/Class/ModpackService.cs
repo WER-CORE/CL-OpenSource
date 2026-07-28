@@ -299,7 +299,7 @@ namespace CL_CLegendary_Launcher_.Class
 
                 if (activeJvmArgs.Count > 0)
                 {
-                    mLaunch.JvmArgumentOverrides = activeJvmArgs
+                    mLaunch.ExtraJvmArguments = activeJvmArgs
                         .Select(arg => new MArgument { Values = new[] { arg } })
                         .ToArray();
                 }

@@ -2,6 +2,7 @@
 using CL_CLegendary_Launcher_.Models;
 using CL_CLegendary_Launcher_.Windows;
 using System;
+using System.DirectoryServices.ActiveDirectory;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
@@ -317,6 +318,7 @@ namespace CL_CLegendary_Launcher_
             AutoBackupToggle.IsChecked = SettingsManager.Default.EnableAutoBackup;
             BackupCountText.Text = SettingsManager.Default.MaxAutoBackups.ToString();
             ToggleCrashReports.IsChecked = SettingsManager.Default.IsCrashReportingEnabled;
+            SoundToggle.IsChecked = SettingsManager.Default.EnableSound;
         }
 
         private void LauncherFloderButton_Click(object sender, RoutedEventArgs e)
@@ -393,6 +395,9 @@ namespace CL_CLegendary_Launcher_
                     SettingsManager.Save();
 
                     UpdateLocalization();
+                    this.UpdateLayout();
+
+                    MoveMenuSelector(PlayBtnBorder);
                 }
                 else
                 {
@@ -657,6 +662,8 @@ namespace CL_CLegendary_Launcher_
 
             if (Loc_Settings_ModStatsTitle != null) Loc_Settings_ModStatsTitle.Text = LocalizationManager.GetString("Settings.ModStatsTitle", "Функція Статистики");
             if (Loc_Settings_ModStatsDesc != null) Loc_Settings_ModStatsDesc.Text = LocalizationManager.GetString("Settings.ModStatsDesc", "Ви можете дивитися скільки ви награли на Серверах на Модових на Ванільних");
+            if (Loc_Settings_SoundTitle != null) Loc_Settings_SoundTitle.Text = LocalizationManager.GetString("Settings.SoundTitle", "Звуки інтерфейсу");
+            if (Loc_Settings_SoundDesc != null) Loc_Settings_SoundDesc.Text = LocalizationManager.GetString("Settings.SoundDesc", "Озвучка кліків та натискань кнопок");
         }
         private void OpenCredits_Click(object sender, RoutedEventArgs e)
         {
@@ -747,6 +754,13 @@ namespace CL_CLegendary_Launcher_
                 this.WindowState = WindowState.Maximized;
             }
         }
+        private void SoundToggle_Click(object sender, RoutedEventArgs e)
+        {
+            SoundManager.Click();
+
+            SettingsManager.Default.EnableSound = SoundToggle.IsChecked ?? true;
+            SettingsManager.Save();
+        }
 
         private void FullScreenOff_On_MouseDown(object sender, RoutedEventArgs e)
         {
@@ -825,6 +839,7 @@ namespace CL_CLegendary_Launcher_
                 }
             }
         }
+
         private void ThemeComboBox_PreviewMouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             SoundManager.Click();

@@ -521,6 +521,14 @@ namespace CL_CLegendary_Launcher_
         {
             SoundManager.Click();
             var dowloadModPack = new DowloadModPack(_modpackService);
+            dowloadModPack.Closed += (s, args) =>
+            {
+                if (dowloadModPack.IsModPackCreated)
+                {
+                    RefreshModpacksList();
+                }
+            };
+
             dowloadModPack.Show();
         }
 
@@ -579,6 +587,28 @@ namespace CL_CLegendary_Launcher_
             }
         }
 
+        public void RefreshModpacksList()
+        {
+            var valueList = _modpackService.LoadInstalledModpacks();
+            allInstalledModpacks = valueList.Where(x => Directory.Exists(x.Path)).ToList();
+
+            string query = SearchSystemModsTXT1?.Text.Trim().ToLower() ?? "";
+            string defaultSearch = LocalizationManager.GetString("Generic.Search", "Пошук...").ToLower();
+
+            if (query != defaultSearch && query != "пошук" && !string.IsNullOrEmpty(query))
+            {
+                var filtered = allInstalledModpacks
+                    .Where(m => !string.IsNullOrWhiteSpace(m.Name) && m.Name.ToLower().Contains(query))
+                    .ToList();
+
+                UpdateDisplayedModpacks(filtered);
+            }
+            else
+            {
+                UpdateDisplayedModpacks(allInstalledModpacks);
+            }
+        }
+
         private void OnPlayModpackClicked(InstalledModpack pack)
         {
             SoundManager.Click();
@@ -605,7 +635,7 @@ namespace CL_CLegendary_Launcher_
                 allInstalledModpacks.Remove(pack);
                 _modpackService.DeleteModpack(pack.Name);
                 _modpackService.DeleteModpackFolder(pack);
-                UpdateDisplayedModpacks(allInstalledModpacks);
+                RefreshModpacksList();
             }
         }
 
@@ -969,11 +999,29 @@ namespace CL_CLegendary_Launcher_
             if (SelectModPackCreate == 1)
             {
                 var createModPackWindow = new CreateModPackWindow(_modDownloadService, _modpackService);
+
+                createModPackWindow.Closed += (s, args) =>
+                {
+                    if (createModPackWindow.IsModPackCreated)
+                    {
+                        RefreshModpacksList();
+                    }
+                };
+
                 createModPackWindow.Show();
             }
             else
             {
                 var createVanilaPackWindow = new CreateVanilaPackWindow(_modDownloadService, _modpackService);
+
+                createVanilaPackWindow.Closed += (s, args) =>
+                {
+                    if (createVanilaPackWindow.IsModPackCreated)
+                    {
+                        RefreshModpacksList();
+                    }
+                };
+
                 createVanilaPackWindow.Show();
             }
         }

@@ -317,8 +317,8 @@ namespace CL_CLegendary_Launcher_.Class
             switch (loaderType)
             {
                 case LoaderType.Forge:
-                    var forge = new ForgeInstaller(launcher);
-                    return await forge.Install(mcVersion, loaderVersion, new ForgeInstallOptions { CancellationToken = token });
+                    var forge = new NoAdForgeInstaller(launcher);
+                    return await forge.Install(mcVersion, loaderVersion, new CmlLib.Core.Installer.Forge.ForgeInstallOptions { CancellationToken = token });
 
                 case LoaderType.Fabric:
                     var fabricInstaller = new FabricInstaller(new HttpClient());
@@ -329,8 +329,8 @@ namespace CL_CLegendary_Launcher_.Class
                     return await quiltInstaller.Install($"{mcVersion}", $"{loaderVersion}", launcher.MinecraftPath);
 
                 case LoaderType.NeoForge:
-                    var neoForge = new NeoForgeInstaller(launcher);
-                    return await neoForge.Install($"{mcVersion}", $"{loaderVersion}", new NeoForgeInstallOptions { CancellationToken = token });
+                    var neoForge = new NoAdNeoForgeInstaller(launcher);
+                    return await neoForge.Install(mcVersion, loaderVersion, new CmlLib.Core.Installer.NeoForge.Installers.NeoForgeInstallOptions { CancellationToken = token });
 
                 case LoaderType.Optifine:
                     {
@@ -401,7 +401,7 @@ namespace CL_CLegendary_Launcher_.Class
                         Values = new[] { $@"-javaagent:{AppContext.BaseDirectory}authlib-injector-1.2.7.jar=https://littleskin.cn/api/yggdrasil" }
                     }
                 };
-                baseOptions.JvmArgumentOverrides = jvmArgs;
+                baseOptions.ExtraJvmArguments = jvmArgs;
             }
 
             return baseOptions;

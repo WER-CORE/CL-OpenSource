@@ -30,6 +30,7 @@ namespace CL_CLegendary_Launcher_.Class
         }
         public static void Click()
         {
+            if (!SettingsManager.Default.EnableSound) return;
             try
             {
                 _clickPlayer?.Play();

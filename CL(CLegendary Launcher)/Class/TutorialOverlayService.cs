@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -12,7 +8,7 @@ namespace CL_CLegendary_Launcher_.Class
 {
     public class TutorialOverlayService
     {
-        private readonly Window _window;
+        private readonly FrameworkElement _rootContainer;
         private readonly Grid _overlayGrid;
         private readonly RectangleGeometry _holeRect;
         private readonly RectangleGeometry _screenRect;
@@ -22,15 +18,15 @@ namespace CL_CLegendary_Launcher_.Class
         private readonly TextBlock _bodyText;
 
         public TutorialOverlayService(
-            Window window,
+            FrameworkElement rootContainer,
             Grid overlayGrid,
             RectangleGeometry holeRect,
             RectangleGeometry screenRect,
             FrameworkElement messageContainer,
-            TextBlock titleText, 
-            TextBlock bodyText) 
+            TextBlock titleText,
+            TextBlock bodyText)
         {
-            _window = window;
+            _rootContainer = rootContainer;
             _overlayGrid = overlayGrid;
             _holeRect = holeRect;
             _screenRect = screenRect;
@@ -48,7 +44,7 @@ namespace CL_CLegendary_Launcher_.Class
             else
                 _messageContainer.Height = double.NaN;
 
-            Point relativePoint = targetButton.TransformToAncestor(_window)
+            Point relativePoint = targetButton.TransformToAncestor(_rootContainer)
                                               .Transform(new Point(0, 0));
 
             double padding = 5;
@@ -60,14 +56,20 @@ namespace CL_CLegendary_Launcher_.Class
                 targetButton.ActualHeight + (padding * 2)
             );
 
-            _screenRect.Rect = new Rect(0, 0, _window.ActualWidth, _window.ActualHeight);
+            _screenRect.Rect = new Rect(0, 0, _rootContainer.ActualWidth, _rootContainer.ActualHeight);
 
             double finalY = relativePoint.Y + verticalOffset;
-            double finalX = relativePoint.X - 310; 
+            double finalX = relativePoint.X - 310;
 
             if (relativePoint.X < 320)
             {
                 finalX = relativePoint.X + targetButton.ActualWidth + 20;
+            }
+
+            double popupWidth = _messageContainer.Width > 0 ? _messageContainer.Width : 300;
+            if (finalX + popupWidth > _rootContainer.ActualWidth)
+            {
+                finalX = _rootContainer.ActualWidth - popupWidth - 20;
             }
 
             _messageContainer.Margin = new Thickness(finalX, finalY, 0, 0);
@@ -78,6 +80,7 @@ namespace CL_CLegendary_Launcher_.Class
             DoubleAnimation fadeIn = new DoubleAnimation(0, 1, TimeSpan.FromSeconds(0.3));
             _overlayGrid.BeginAnimation(Grid.OpacityProperty, fadeIn);
         }
+
         public void ShowTutorial(FrameworkElement targetButton, string title, string body, double? customHeight = null, double verticalOffset = 0)
         {
             if (_titleText != null) _titleText.Text = title;
@@ -92,7 +95,7 @@ namespace CL_CLegendary_Launcher_.Class
             fadeOut.Completed += (s, a) =>
             {
                 _overlayGrid.Visibility = Visibility.Collapsed;
-                onClosed?.Invoke(); 
+                onClosed?.Invoke();
             };
 
             _overlayGrid.BeginAnimation(Grid.OpacityProperty, fadeOut);

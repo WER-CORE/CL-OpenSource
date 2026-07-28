@@ -34,6 +34,7 @@ namespace CL_CLegendary_Launcher_.Windows
 
     public partial class DowloadModPack : Window
     {
+        public bool IsModPackCreated = false;
         private List<string> iconUrl = new List<string>();
         private string LoderNow = "Forge";
         private string SiteDowload = "Modrinth"; 
@@ -591,7 +592,6 @@ namespace CL_CLegendary_Launcher_.Windows
 
                 string localIconPath = await DownloadAndSaveIconAsync(remoteIconUrl, extractPath);
                 string finalIconPath = !string.IsNullOrEmpty(localIconPath) ? localIconPath : DefaultIconPath;
-
                 SaveModpackToJson(new InstalledModpack
                 {
                     Name = selectedModpack.Name,
@@ -603,11 +603,13 @@ namespace CL_CLegendary_Launcher_.Windows
                     UrlImage = finalIconPath,
                     PathJson = pathJson
                 });
+                IsModPackCreated = true;
 
                 MascotMessageBox.Show(
                     string.Format(LocalizationManager.GetString("Modpacks.ModpackDownloadSuccess", "Ура! Мод-пак '{0}' успішно завантажено!"), selectedFile.Name),
                     LocalizationManager.GetString("Dialogs.Success", "Готово!"),
                     MascotEmotion.Happy);
+                this.Close();
             }
             catch (Exception ex)
             {
@@ -644,11 +646,13 @@ namespace CL_CLegendary_Launcher_.Windows
                     ImportFileModPacks.IsEnabled = false;
 
                     var importedPack = await _modpackService.ImportModpackFromFileAsync(dialog.FileName);
+                    IsModPackCreated = true;
 
                     MascotMessageBox.Show(
                         string.Format(LocalizationManager.GetString("Modpacks.ModpackImportSuccess", "Збірка '{0}' успішно імпортована!"), importedPack.Name),
                         LocalizationManager.GetString("Dialogs.Success", "Успіх"),
                         MascotEmotion.Happy);
+                    this.Close();
                 }
                 catch (Exception ex)
                 {
