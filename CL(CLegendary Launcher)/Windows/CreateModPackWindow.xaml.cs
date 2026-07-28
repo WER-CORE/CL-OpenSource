@@ -132,6 +132,24 @@ namespace CL_CLegendary_Launcher_.Windows
 
                     foreach (var version in gameVersions) VersionVanilBox.Items.Add(version);
                 }
+                else if (LoderNow == "Optifine")
+                {
+                    var optifineInstaller = new OptifineInstaller(httpClient);
+                    var optifineVersions = await optifineInstaller.GetOptifineVersionsAsync();
+
+                    var gameVersions = optifineVersions
+                        .Select(x => x.MinecraftVersion)
+                        .Distinct()
+                        .OrderByDescending(v =>
+                        {
+                            if (System.Version.TryParse(v, out var ver))
+                                return ver;
+                            return new System.Version(0, 0, 0);
+                        })
+                        .ToList();
+
+                    foreach (var version in gameVersions) VersionVanilBox.Items.Add(version);
+                }
                 else
                 {
                     for (int i = 0; i < 5; i++)
@@ -166,7 +184,6 @@ namespace CL_CLegendary_Launcher_.Windows
                 ShowError(string.Format(LocalizationManager.GetString("Modpacks.VersionLoadError", "Помилка завантаження версій гри: {0}"), ex.Message));
             }
         }
-
         public async Task UpdateLoaderVersionsList(string? targetVersionToSelect = null)
         {
             if (VersionVanilBox.SelectedItem == null) return;

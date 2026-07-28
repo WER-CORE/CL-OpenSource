@@ -57,6 +57,7 @@ namespace CL_CLegendary_Launcher_.Models
         public bool EnableMod_LatestActions { get; set; } = true;
         public bool EnableMod_DiscordRPC { get; set; } = true;
         public bool EnableMod_Statistics { get; set; } = true;
+        public bool EnableSound { get; set; } = true;
         public object this[string propertyName]
         {
             get

@@ -2,10 +2,12 @@
 using CL_CLegendary_Launcher_.Models;
 using CL_CLegendary_Launcher_.Windows;
 using CmlLib.Core;
+using Optifine.Installer;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -19,6 +21,8 @@ namespace CL_CLegendary_Launcher_
     public partial class CL_Main_
     {
         public bool isMouseClickSelection = false;
+        private static HashSet<string> _cachedOptifineVersions = null;
+        private HttpClient httpClient;
 
         async void AddVersion()
         {
@@ -62,6 +66,65 @@ namespace CL_CLegendary_Launcher_
             catch (Exception) { }
         }
 
+        private async Task<HashSet<string>> GetOptifineSupportedVersionsAsync()
+        {
+            if (_cachedOptifineVersions != null)
+                return _cachedOptifineVersions;
+
+            var fallbackVersions = new HashSet<string>
+            {
+                "1.21.1", "1.21",
+                "1.20.6", "1.20.4", "1.20.2", "1.20.1", "1.20",
+                "1.19.4", "1.19.3", "1.19.2", "1.19",
+                "1.18.2", "1.18.1", "1.18",
+                "1.17.1", "1.17",
+                "1.16.5", "1.16.4", "1.16.3", "1.16.2", "1.16.1",
+                "1.15.2", "1.15.1", "1.15",
+                "1.14.4", "1.14.3", "1.14.2", "1.14.1", "1.14",
+                "1.13.2", "1.13.1", "1.13",
+                "1.12.2", "1.12.1", "1.12",
+                "1.11.2", "1.11",
+                "1.10.2", "1.10",
+                "1.9.4", "1.9.2", "1.9",
+                "1.8.9", "1.8.8", "1.8.7", "1.8.1", "1.8",
+                "1.7.10", "1.7.2"
+            };
+
+            try
+            {
+                using (var client = new System.Net.Http.HttpClient())
+                {
+                    client.Timeout = TimeSpan.FromSeconds(5);
+
+                    var optifineInstaller = new OptifineInstaller(client);
+                    var optifineList = await optifineInstaller.GetOptifineVersionsAsync();
+
+                    var gameVersions = optifineList
+                        .Select(x => x.MinecraftVersion)
+                        .Distinct()
+                        .OrderByDescending(v =>
+                        {
+                            if (System.Version.TryParse(v, out var ver))
+                                return ver;
+                            return new System.Version(0, 0, 0);
+                        });
+
+                    var versionsHashSet = new HashSet<string>(gameVersions);
+
+                    if (versionsHashSet.Count > 0)
+                    {
+                        _cachedOptifineVersions = versionsHashSet;
+                        return _cachedOptifineVersions;
+                    }
+                }
+            }
+            catch (Exception)
+            {
+            }
+
+            return fallbackVersions;
+        }
+
         public async Task AddVersionOptifine()
         {
             try
@@ -89,8 +152,16 @@ namespace CL_CLegendary_Launcher_
                 }
                 else
                 {
+                    // 1. Отримуємо всі ванільні версії
                     var versions = await _versionService.GetFilteredVersionsAsync(searchText, true, false, false, false);
-                    var filteredVersions = versions.Where(v => v != "1.6.4").ToArray();
+
+                    // 2. Отримуємо актуальний список підтримки OptiFine з API (або кешу)
+                    var supportedOptifineVersions = await GetOptifineSupportedVersionsAsync();
+
+                    // 3. Фільтруємо: залишаємо тільки ті ванільні версії, які підтримуються
+                    var filteredVersions = versions
+                        .Where(v => supportedOptifineVersions.Contains(v))
+                        .ToArray();
 
                     foreach (var v in filteredVersions) VersionListVanila.Items.Add(v);
                     SearchSystemTXT2.ItemsSource = string.IsNullOrEmpty(searchText) ? null : filteredVersions;

@@ -7,7 +7,6 @@ using System.IO;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Forms;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Wpf.Ui.Appearance;
@@ -354,7 +353,9 @@ namespace CL_CLegendary_Launcher_.Class
         {
             try
             {
-                var colorHex = ShowColorDialog();
+                string existingColorHex = SettingsManager.Default[settingKey]?.ToString();
+
+                var colorHex = ShowColorDialog(existingColorHex);
                 if (!string.IsNullOrEmpty(colorHex))
                 {
                     button.Content = CreateColorButtonContent(colorHex);
@@ -379,6 +380,80 @@ namespace CL_CLegendary_Launcher_.Class
             }
         }
 
+        private string ShowColorDialog(string currentColorHex = null)
+        {
+            System.Windows.Media.Color initialColor = System.Windows.Media.Colors.White;
+
+            if (!string.IsNullOrEmpty(currentColorHex))
+            {
+                try
+                {
+                    initialColor = (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(currentColorHex);
+                }
+                catch { }
+            }
+
+            var colorDialog = new PixiColorDialog(initialColor);
+
+            if (Application.Current.MainWindow != null && Application.Current.MainWindow.IsVisible)
+            {
+                colorDialog.Owner = Application.Current.MainWindow;
+            }
+            else
+            {
+                colorDialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+            }
+
+            if (colorDialog.ShowDialog() == true)
+            {
+                var c = colorDialog.SelectedColor;
+                return $"#{c.R:X2}{c.G:X2}{c.B:X2}";
+            }
+
+            return null;
+        }
+
+        public void HandleLoadScreenColorClick(Button previewButton)
+        {
+            SoundManager.Click();
+
+            string existingColorHex = SettingsManager.Default.LoadScreenBarColor;
+            System.Windows.Media.Color initialColor = System.Windows.Media.Colors.Red;
+
+            if (!string.IsNullOrEmpty(existingColorHex))
+            {
+                try
+                {
+                    initialColor = (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(existingColorHex);
+                }
+                catch { }
+            }
+
+            var colorDialog = new PixiColorDialog(initialColor);
+
+            if (Application.Current.MainWindow != null && Application.Current.MainWindow.IsVisible)
+            {
+                colorDialog.Owner = Application.Current.MainWindow;
+            }
+            else
+            {
+                colorDialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+            }
+
+            if (colorDialog.ShowDialog() == true)
+            {
+                var c = colorDialog.SelectedColor;
+                string hexColor = $"#{c.R:X2}{c.G:X2}{c.B:X2}";
+
+                SettingsManager.Default.LoadScreenBarColor = hexColor;
+                SettingsManager.Save();
+
+                if (previewButton != null)
+                {
+                    previewButton.Content = CreateColorButtonContent(hexColor);
+                }
+            }
+        }
         public void HandleSaveCustomThemeClick()
         {
             SoundManager.Click();
@@ -386,18 +461,6 @@ namespace CL_CLegendary_Launcher_.Class
             ApplyTheme("Custom");
             SettingsManager.Default.Them = "Custom";
             SettingsManager.Save();
-        }
-        private string ShowColorDialog()
-        {
-            using (var colorDialog = new System.Windows.Forms.ColorDialog())
-            {
-                colorDialog.FullOpen = true;
-                if (colorDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-                {
-                    return $"#{colorDialog.Color.R:X2}{colorDialog.Color.G:X2}{colorDialog.Color.B:X2}";
-                }
-            }
-            return null;
         }
 
         private void UpdateColorForElement(string resourceFilePath, string key, string colorHex)
@@ -457,13 +520,17 @@ namespace CL_CLegendary_Launcher_.Class
                 return null;
             }
         }
+
         public void HandleLoadScreenBackgroundClick()
         {
             SoundManager.Click();
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "Image files (*.png;*.jpg;*.jpeg)|*.png;*.jpg;*.jpeg|All files (*.*)|*.*";
 
-            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            var openFileDialog = new Microsoft.Win32.OpenFileDialog
+            {
+                Filter = "Image files (*.png;*.jpg;*.jpeg)|*.png;*.jpg;*.jpeg|All files (*.*)|*.*"
+            };
+
+            if (openFileDialog.ShowDialog() == true)
             {
                 SettingsManager.Default.LoadScreenBackground = openFileDialog.FileName;
                 SettingsManager.Save();
@@ -477,6 +544,7 @@ namespace CL_CLegendary_Launcher_.Class
                         );
             }
         }
+
         public void HandleEditPhrasesClick()
         {
             SoundManager.Click();
@@ -507,26 +575,7 @@ namespace CL_CLegendary_Launcher_.Class
                         );
             }
         }
-        public void HandleLoadScreenColorClick(Button previewButton)
-        {
-            SoundManager.Click();
-            ColorDialog colorDialog = new ColorDialog();
-            colorDialog.FullOpen = true;
 
-            if (colorDialog.ShowDialog() == DialogResult.OK)
-            {
-                var c = colorDialog.Color;
-                string hexColor = $"#{c.R:X2}{c.G:X2}{c.B:X2}";
-
-                SettingsManager.Default.LoadScreenBarColor = hexColor;
-                SettingsManager.Save();
-
-                if (previewButton != null)
-                {
-                    previewButton.Content = CreateColorButtonContent(hexColor);
-                }
-            }
-        }
         public void HandleResetLoadScreenClick(Button previewButton)
         {
             SoundManager.Click();

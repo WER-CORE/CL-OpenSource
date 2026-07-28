@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
@@ -32,6 +33,8 @@ namespace CL_CLegendary_Launcher_
     {
         byte VersionSelect = 0;
         public bool InstallVersionOnPlay = false;
+        private bool _isFullScreen = false;
+        private bool _isUpdatingState = false;
 
         public AccountType selectAccountNow;
         public MSession session;
@@ -150,6 +153,52 @@ namespace CL_CLegendary_Launcher_
         private async void MainTitleBar_MinimizeClicked(TitleBar sender, System.Windows.RoutedEventArgs args)
         {
             await MemoryCleaner.FlushMemoryAsync(true);
+        }
+
+        private void CL_CLegendary_Launcher__KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key == Key.F11 || e.Key == Key.F12)
+            {
+                ToggleFullScreen();
+            }
+        }
+
+        private void Window_StateChanged(object sender, EventArgs e)
+        {
+            if (_isUpdatingState) return;
+
+            if (this.WindowState == WindowState.Maximized)
+            {
+                _isUpdatingState = true;
+
+                this.MaxWidth = double.PositiveInfinity;
+                this.MaxHeight = double.PositiveInfinity;
+
+                this.WindowState = WindowState.Normal;
+                this.WindowState = WindowState.Maximized;
+
+                _isFullScreen = true;
+                _isUpdatingState = false;
+            }
+            else if (this.WindowState == WindowState.Normal)
+            {
+                this.MaxWidth = 960;
+                this.MaxHeight = 542;
+
+                _isFullScreen = false;
+            }
+        }
+
+        private void ToggleFullScreen()
+        {
+            if (this.WindowState == WindowState.Normal)
+            {
+                this.WindowState = WindowState.Maximized;
+            }
+            else
+            {
+                this.WindowState = WindowState.Normal;
+            }
         }
     }
 }

@@ -48,8 +48,7 @@ namespace CL_CLegendary_Launcher_
                 OnSelectProfileClicked(profiles[savedIndex]);
             }
         }
-
-        private void IconAccount_MouseDown(object sender, MouseButtonEventArgs e)
+        private async void IconAccount_MouseDown(object sender, MouseButtonEventArgs e)
         {
             try
             {
@@ -59,6 +58,7 @@ namespace CL_CLegendary_Launcher_
                 {
                     AnimationService.AnimateRotation(CheckMarkAccount, 0);
                     AnimationService.AnimatePageTransitionExit(PanelManegerAccount, -20);
+                    await Task.Delay(300);
 
                     ListAccount.Items?.Clear();
                 }

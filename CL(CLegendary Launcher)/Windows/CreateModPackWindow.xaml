@@ -100,16 +100,16 @@
         </ControlTemplate>
     </Window.Resources>
 
-    <Grid Margin="10" Background="{DynamicResource MainBackgroundBrush}">
+    <Grid Background="{DynamicResource MainBackgroundBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="30"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="50"/>
+            <RowDefinition/>
+            <RowDefinition Height="65.2"/>
         </Grid.RowDefinitions>
 
-        <Grid Grid.Row="0" MouseLeftButtonDown="Header_MouseLeftButtonDown" Margin="-9,-10,-8,0">
+        <Grid Grid.Row="0" MouseLeftButtonDown="Header_MouseLeftButtonDown">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
@@ -134,7 +134,7 @@
                Cursor="Hand"/>
         </Grid>
 
-        <Border Grid.Row="1" Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="8" Padding="15" Margin="0,10">
+        <Border Grid.Row="1" Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="8" Padding="15" Margin="0,10,0,10">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="1.5*"/>
@@ -188,7 +188,7 @@
                 <Button x:Name="BtnMaps" Content="Карти" Style="{StaticResource TabButtonStyle}" Click="MapTxt_MouseDown" Foreground="{DynamicResource MainForegroundBrush}" Background="{x:Null}"/>
             </StackPanel>
 
-            <ui:TextBox Grid.Column="2" x:Name="SearchSystemModsTXT" PlaceholderText="Пошук модів..." Margin="10,0" TextChanged="SearchSystemModsTXT_TextChanged" Foreground="{DynamicResource MainForegroundBrush}" Background="{DynamicResource MainBackgroundBrush}"/>
+            <ui:TextBox Grid.Column="2" x:Name="SearchSystemModsTXT" PlaceholderText="Пошук..." Margin="10,0" TextChanged="SearchSystemModsTXT_TextChanged" Foreground="{DynamicResource MainForegroundBrush}" Background="{DynamicResource MainBackgroundBrush}"/>
 
             <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center">
                 <Image x:Name="ModrinthSite" 
@@ -214,7 +214,7 @@
             </StackPanel>
         </Grid>
 
-        <Grid Grid.Row="3">
+        <Grid Grid.Row="3" Margin="0,0,0,10">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="1.5*"/>
                 <ColumnDefinition Width="10"/>
@@ -368,9 +368,9 @@
         </Grid>
 
 
-        <Grid x:Name="MenuInstaller" Grid.Row="0" Grid.RowSpan="5" 
-              HorizontalAlignment="Center" VerticalAlignment="Center" 
-              Width="254" Height="206" Visibility="Collapsed">
+        <Grid x:Name="MenuInstaller" Grid.Row="3" 
+              HorizontalAlignment="Center" VerticalAlignment="Top" 
+              Width="254" Height="206" Visibility="Collapsed" Margin="0,25,0,0">
 
             <Border Background="{DynamicResource MainBackgroundBrush}" CornerRadius="14" Margin="-298,-162,-298,-192" Panel.ZIndex="-1" MouseDown="CloseMenu_MouseDown" Opacity="0.8"/>
 
