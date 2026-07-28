@@ -47,7 +47,7 @@
   <img width="750" height="438" alt="image" src="https://github.com/user-attachments/assets/ee937845-e937-4756-8809-577f7342e666" />
   <img width="1200" height="678" alt="image" src="https://github.com/user-attachments/assets/18b91731-1da7-4c08-896b-3acca5e2f92f" />
 
-  <p><i>Інтерфейс версії 1.0.0.1R</i></p>
+  <p><i>Інтерфейс версії 1.0.0.3R</i></p>
 </div>
 
 ---
