@@ -225,23 +225,37 @@ namespace CL_CLegendary_Launcher_.Windows
                 if (string.IsNullOrEmpty(version)) return;
 
                 int offset = _currentPage * ITEMS_PER_PAGE;
-                string url = $"https://api.modrinth.com/v2/search?query={searchText}&facets=[[\"categories:{LoderNow}\"],[\"project_type:modpack\"],[\"versions:{version}\"]]&limit={ITEMS_PER_PAGE}&offset={offset}&sort=downloads";
+
+                string safeSearch = searchText;
+                if (safeSearch == LocalizationManager.GetString("Modpacks.SearchModpacksPlaceholder", "Пошук збірок..."))
+                    safeSearch = "";
+
+                string safeLoader = LoderNow.ToLower();
+
+                string url = $"https://api.modrinth.com/v2/search?query={Uri.EscapeDataString(safeSearch)}&facets=[[\"categories:{safeLoader}\"],[\"project_type:modpack\"],[\"versions:{version}\"]]&limit={ITEMS_PER_PAGE}&offset={offset}&sort=downloads";
 
                 var response = await httpClient.GetStringAsync(url);
                 dynamic result = JsonConvert.DeserializeObject(response);
 
-                foreach (var mod in result["hits"])
+                if (result != null && result["hits"] != null)
                 {
-                    var item = CreateItemJarFromModrinth(mod);
-                    await AddItemWithAnimation(item);
-                }
+                    foreach (var mod in result["hits"])
+                    {
+                        var item = CreateItemJarFromModrinth(mod);
+                        await AddItemWithAnimation(item);
+                    }
 
-                int count = ((JArray)result["hits"]).Count;
-                if (NextPageBtn != null) NextPageBtn.IsEnabled = count >= ITEMS_PER_PAGE;
+                    int count = ((JArray)result["hits"]).Count;
+                    if (NextPageBtn != null) NextPageBtn.IsEnabled = count >= ITEMS_PER_PAGE;
+                }
             }
             catch (Exception ex)
             {
-                MascotMessageBox.Show($"Помилка Modrinth: {ex.Message}", LocalizationManager.GetString("Dialogs.Error", "Збій"), MascotEmotion.Sad);
+                System.Diagnostics.Debug.WriteLine($"[CL Launcher] Помилка пошуку Modrinth: {ex.Message}");
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    MascotMessageBox.Show($"Помилка Modrinth: {ex.Message}", LocalizationManager.GetString("Dialogs.Error", "Збій"), MascotEmotion.Sad);
+                });
             }
             finally
             {
@@ -250,7 +264,6 @@ namespace CL_CLegendary_Launcher_.Windows
                 ModsDowloadList.Visibility = Visibility.Visible;
             }
         }
-
         private async Task LoadCurseForgeModpacksAsync(string searchText)
         {
             ModsSearchLoader.Visibility = Visibility.Visible;
