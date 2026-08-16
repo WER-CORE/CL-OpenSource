@@ -1,4 +1,4 @@
-﻿using CL_CLegendary_Launcher_.Class;
+using CL_CLegendary_Launcher_.Class;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -59,7 +59,6 @@ namespace CL_CLegendary_Launcher_.Windows
 
             LoadingText.Text = LocalizationManager.GetString("LoadScreen.LoadingText", "Завантаження ресурсів...");
 
-            LoadCustomPhrases();
             ApplyCustomSettings();
 
             Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this, WindowBackdropType.Mica);
@@ -131,6 +130,8 @@ namespace CL_CLegendary_Launcher_.Windows
                     "Літо на вулиці, спека в грі, затишок на душі..."
                 };
             }
+
+            LoadCustomPhrases();
         }
 
         private void LoadCustomPhrases()

@@ -1,4 +1,4 @@
-﻿using CL_CLegendary_Launcher_.Windows;
+using CL_CLegendary_Launcher_.Windows;
 using CmlLib.Core;
 using CmlLib.Core.Installer.Forge;
 using CmlLib.Core.Installer.NeoForge;
@@ -168,7 +168,7 @@ namespace CL_CLegendary_Launcher_.Class
                     }
                 }
 
-                var launchOption = CreateLaunchOptions(serverIp, serverPort);
+                var launchOption = CreateLaunchOptions(serverIp, serverPort, versionName);
 
                 if (SettingsManager.Default.EnableAutoBackup && SettingsManager.Default.EnableSubFiles_Backups)
                 {
@@ -378,7 +378,7 @@ namespace CL_CLegendary_Launcher_.Class
                     return mcVersion;
             }
         }
-        public MLaunchOption CreateLaunchOptions(string serverIp, int? serverPort)
+        public MLaunchOption CreateLaunchOptions(string serverIp, int? serverPort, string versionName = "")
         {
             var baseOptions = new MLaunchOption
             {
@@ -404,7 +404,45 @@ namespace CL_CLegendary_Launcher_.Class
                 baseOptions.ExtraJvmArguments = jvmArgs;
             }
 
+            if (!string.IsNullOrEmpty(versionName))
+            {
+                string proxyPort = GetProxyPort(versionName);
+                if (proxyPort != null)
+                {
+                    var argsList = baseOptions.ExtraJvmArguments != null 
+                        ? baseOptions.ExtraJvmArguments.ToList() 
+                        : new List<MArgument>();
+
+                    argsList.Add(new MArgument("-Dhttp.proxyHost=betacraft.uk"));
+                    argsList.Add(new MArgument($"-Dhttp.proxyPort={proxyPort}"));
+                    argsList.Add(new MArgument("-Djava.util.Arrays.useLegacyMergeSort=true"));
+
+                    baseOptions.ExtraJvmArguments = argsList;
+                }
+            }
+
             return baseOptions;
+        }
+
+        public static string GetProxyPort(string version)
+        {
+            if (string.IsNullOrWhiteSpace(version)) return null;
+            
+            version = version.ToLower();
+
+            if (version.StartsWith("rd-") || version.StartsWith("c0.0") || version.StartsWith("c0.2") || version.StartsWith("c0.30"))
+                return "11701";
+
+            if (version.StartsWith("in-") || version.StartsWith("inf-") || version.StartsWith("a1.0") || version.StartsWith("a1.1"))
+                return "11702";
+
+            if (version.StartsWith("a1.2") || version.StartsWith("b1.3") || version.StartsWith("b1.4") || version.StartsWith("b1.5") || version.StartsWith("b1.6") || version.StartsWith("b1.7") || version.StartsWith("b1.8"))
+                return "11705";
+
+            if (version.StartsWith("1.0") || version.StartsWith("1.1") || version.StartsWith("1.2") || version.StartsWith("1.3") || version.StartsWith("1.4") || version.StartsWith("1.5"))
+                return "11707";
+
+            return null; 
         }
     }
 }
