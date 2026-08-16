@@ -1,4 +1,4 @@
-﻿using CL_CLegendary_Launcher_.Class;
+using CL_CLegendary_Launcher_.Class;
 using CL_CLegendary_Launcher_.Windows;
 using CmlLib.Core.Auth;
 using CmlLib.Core.Auth.Microsoft;
