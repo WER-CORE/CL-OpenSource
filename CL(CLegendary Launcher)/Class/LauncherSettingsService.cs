@@ -30,26 +30,7 @@ namespace CL_CLegendary_Launcher_.Class
         {
             if (string.IsNullOrWhiteSpace(SettingsManager.Default.PathLacunher))
             {
-                string basePath;
-
-                if (OperatingSystem.IsWindows())
-                {
-                    basePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".ClMinecraft");
-                }
-                else if (OperatingSystem.IsLinux())
-                {
-                    basePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".clminecraft");
-                }
-                else if (OperatingSystem.IsMacOS())
-                {
-                    basePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Library", "Application Support", "CLMinecraft");
-                }
-                else
-                {
-                    basePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".clminecraft");
-                }
-
-                SettingsManager.Default.PathLacunher = basePath;
+                SettingsManager.Default.PathLacunher = PlatformPaths.DefaultLauncherPath();
                 SettingsManager.Save();
             }
 
@@ -237,19 +218,11 @@ namespace CL_CLegendary_Launcher_.Class
         {
             SoundManager.Click();
 
-            string defaultPath = "";
-            if (OperatingSystem.IsWindows())
-            {
-                defaultPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".ClMinecraft");
-            }
-            else
-            {
-                defaultPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".ClMinecraft");
-            }
+            string defaultPath = PlatformPaths.DefaultLauncherPath();
 
             string currentPath = SettingsManager.Default.PathLacunher;
 
-            if (string.Equals(Path.GetFullPath(currentPath).TrimEnd('\\'), Path.GetFullPath(defaultPath).TrimEnd('\\'), StringComparison.OrdinalIgnoreCase))
+            if (PlatformPaths.PathsEqual(currentPath, defaultPath))
             {
                 MascotMessageBox.Show(
                     LocalizationManager.GetString("GameLaunch.PathAlreadyDefaultDesc", "Шлях вже встановлено за замовчуванням!"),
