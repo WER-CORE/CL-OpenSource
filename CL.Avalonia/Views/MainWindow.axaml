@@ -22,17 +22,28 @@
           <Separator Margin="0,4" />
           <TextBlock Text="Перевірка CL.Core" FontWeight="SemiBold" FontSize="13" />
           <TextBlock Name="CoreStatusText" TextWrapping="Wrap" FontSize="12" Opacity="0.85" />
+
+          <Separator Margin="0,4" />
+
+          <TextBlock Text="Запуск гри" FontWeight="SemiBold" FontSize="13" />
+          <TextBox Name="NicknameBox" Text="Player" Watermark="Нікнейм" />
+          <ComboBox Name="JavaBox" HorizontalAlignment="Stretch" />
+          <Button Name="PlayButton" Content="Грати" IsEnabled="False"
+                  HorizontalAlignment="Stretch" />
+
           <Button Name="OpenSiteButton" Content="Відкрити Discord (xdg-open)"
                   HorizontalAlignment="Stretch" Margin="0,8,0,0" />
         </StackPanel>
       </Border>
 
       <Border Grid.Column="2" CornerRadius="8" Padding="16" Background="#20808080">
-        <Grid RowDefinitions="Auto,Auto,*">
+        <Grid RowDefinitions="Auto,Auto,*,Auto">
           <TextBlock Grid.Row="0" Text="Версії Minecraft" FontWeight="SemiBold" FontSize="15" />
           <Button Grid.Row="1" Name="LoadVersionsButton" Content="Завантажити список"
                   HorizontalAlignment="Left" Margin="0,10" />
           <ListBox Grid.Row="2" Name="VersionsList" />
+          <TextBlock Grid.Row="3" Name="SelectedVersionText" Margin="0,10,0,0"
+                     FontSize="12" Opacity="0.7" TextWrapping="Wrap" />
         </Grid>
       </Border>
 

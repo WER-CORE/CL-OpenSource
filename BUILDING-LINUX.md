@@ -12,9 +12,10 @@
 `CL.Core` - спільне ядро (моделі, сервіси, робота з мережею та файлами). Обидва
 UI підключають його як `ProjectReference`, тому логіка не дублюється.
 
-`CL.Avalonia` - кросплатформенний інтерфейс. Наразі це каркас: він перевіряє,
-що ядро працює (шлях гри, мова, знайдені Java, список версій з Mojang).
-Перенесення екранів з WPF - робота, що триває.
+`CL.Avalonia` - кросплатформенний інтерфейс. Наразі це каркас, але він уже
+**запускає гру**: обери версію зі списку, нікнейм і Java, далі "Грати".
+Перевірено на Linux з Minecraft 1.20.4 (Java 25). Перенесення решти екранів
+з WPF - робота, що триває.
 
 WPF-проєкт **не збирається** ніде, крім Windows: `dotnet build` на Linux падає
 з внутрішньою помилкою CLR, тому для крос-платформенної роботи є окремий
@@ -85,7 +86,10 @@ DOTNET_ROLL_FORWARD=Major dotnet run --project CL.Avalonia
 - **Файлові діалоги** - `Microsoft.Win32.OpenFileDialog` та
   `System.Windows.Forms.FolderBrowserDialog` (потрібен спільний інтерфейс,
   реалізації WPF і Avalonia `IStorageProvider`)
-- **Запуск гри** - `GameLaunchService`, `ModpackService` тягнуть WPF
+- **Запуск гри**: базовий (ваніль, офлайн-акаунт) уже працює через
+  `MinecraftLaunchService` у ядрі. Модлоадери, акаунти Microsoft/LittleSkin,
+  прогрес завантаження та модпаки лишились у `GameLaunchService` і
+  `ModpackService`, які тягнуть WPF
 - **Звук** - `SoundManager` на `System.Media.SoundPlayer` (лише Windows)
 - **Екрани** - 37 `.xaml` та 56 code-behind ще на WPF
 
