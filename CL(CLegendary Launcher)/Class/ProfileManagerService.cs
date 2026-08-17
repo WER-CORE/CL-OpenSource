@@ -1,4 +1,4 @@
-﻿using CL_CLegendary_Launcher_.Models;
+using CL_CLegendary_Launcher_.Models;
 using CL_CLegendary_Launcher_.Windows;
 using CmlLib.Core.Auth;
 using CmlLib.Core.Auth.Microsoft;
@@ -161,8 +161,7 @@ namespace CL_CLegendary_Launcher_.Class
 
         public async Task<MSession> LoginLittleSkinAsync(string email, string password)
         {
-            using (var http = new HttpClient())
-            {
+            var http = WebHelper.Client;
                 var payload = new JObject
                 {
                     ["agent"] = new JObject { ["name"] = "Minecraft", ["version"] = 1 },
@@ -199,7 +198,6 @@ namespace CL_CLegendary_Launcher_.Class
                     AccessToken = token,
                     UserType = "custom"
                 };
-            }
         }
 
 

@@ -14,6 +14,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using Wpf.Ui.Appearance;
@@ -165,28 +166,30 @@ namespace CL_CLegendary_Launcher_
 
         private void Window_StateChanged(object sender, EventArgs e)
         {
-            if (_isUpdatingState) return;
-
             if (this.WindowState == WindowState.Maximized)
             {
-                _isUpdatingState = true;
-
-                this.MaxWidth = double.PositiveInfinity;
-                this.MaxHeight = double.PositiveInfinity;
-
-                this.WindowState = WindowState.Normal;
-                this.WindowState = WindowState.Maximized;
-
                 _isFullScreen = true;
-                _isUpdatingState = false;
             }
             else if (this.WindowState == WindowState.Normal)
             {
-                this.MaxWidth = 960;
-                this.MaxHeight = 542;
-
                 _isFullScreen = false;
             }
+            
+            ApplyUIScale();
+        }
+        
+        public void ApplyUIScale()
+        {
+            if (MainContentGrid == null) return;
+            
+            double scale = 1.0;
+            if (this.WindowState == WindowState.Maximized)
+            {
+                scale = Class.SettingsManager.Default.UIScale;
+                if (scale <= 0.1) scale = 1.0;
+            }
+            
+            MainContentGrid.LayoutTransform = new ScaleTransform(scale, scale);
         }
 
         private void ToggleFullScreen()

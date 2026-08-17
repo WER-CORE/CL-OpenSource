@@ -1,4 +1,4 @@
-﻿using CL_CLegendary_Launcher_.Class;
+using CL_CLegendary_Launcher_.Class;
 using CmlLib.Core;
 using CurseForge.APIClient;
 using CurseForge.APIClient.Models.Mods;
@@ -41,7 +41,7 @@ namespace CL_CLegendary_Launcher_.Windows
         private ModSearchResult _currentModToInstall;
         private List<ModVersionInfo> _currentAvailableVersions;
 
-        private static readonly HttpClient httpClient = new HttpClient();
+
 
         public CreateVanilaPackWindow(ModDownloadService modDownloadService, ModpackService modpackService)
         {
@@ -363,7 +363,33 @@ namespace CL_CLegendary_Launcher_.Windows
                 string newJson = JsonConvert.SerializeObject(_tempResourcePacks, Formatting.Indented);
                 File.WriteAllText(pathJson, newJson);
 
-                string imageUrl = iconUrl.FirstOrDefault() ?? "pack://application:,,,/Icon/IconCL(Common).png";
+                string iconDestPath = Path.Combine(basePath, "icon.png");
+                string imageUrl = iconUrl.FirstOrDefault();
+                
+                if (string.IsNullOrEmpty(imageUrl))
+                {
+                    try
+                    {
+                        var uri = new Uri("pack://application:,,,/Icon/IconCL(Common).png");
+                        var streamInfo = System.Windows.Application.GetResourceStream(uri);
+                        if (streamInfo != null)
+                        {
+                            using (var fileStream = File.Create(iconDestPath))
+                            {
+                                streamInfo.Stream.CopyTo(fileStream);
+                            }
+                            imageUrl = iconDestPath;
+                        }
+                        else
+                        {
+                            imageUrl = "pack://application:,,,/Icon/IconCL(Common).png";
+                        }
+                    }
+                    catch
+                    {
+                        imageUrl = "pack://application:,,,/Icon/IconCL(Common).png";
+                    }
+                }
 
                 var modpack = new InstalledModpack
                 {

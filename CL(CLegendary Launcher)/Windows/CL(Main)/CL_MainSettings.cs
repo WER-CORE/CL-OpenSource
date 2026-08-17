@@ -1,4 +1,4 @@
-﻿using CL_CLegendary_Launcher_.Class;
+using CL_CLegendary_Launcher_.Class;
 using CL_CLegendary_Launcher_.Models;
 using CL_CLegendary_Launcher_.Windows;
 using System;
@@ -353,7 +353,7 @@ namespace CL_CLegendary_Launcher_
                 EditWditXHeghit.Visibility = Visibility.Visible;
             }
         }
-        private async void InitializeLanguagesAsync()
+        private async Task InitializeLanguagesAsync()
         {
             var languages = await LocalizationFetcher.GetAvailableLanguagesAsync();
 
@@ -503,6 +503,9 @@ namespace CL_CLegendary_Launcher_
             if (Loc_BtnPasteLoadScreen != null) Loc_BtnPasteLoadScreen.Content = LocalizationManager.GetString("Settings.PasteBtn", "Вставити");
             if (Loc_ThemeDark != null) Loc_ThemeDark.Content = LocalizationManager.GetString("Settings.ThemeDark", "Темна");
             if (Loc_ThemeLight != null) Loc_ThemeLight.Content = LocalizationManager.GetString("Settings.ThemeLight", "Світла");
+            if (Loc_ThemeOcean != null) Loc_ThemeOcean.Content = LocalizationManager.GetString("Settings.ThemeOcean", "Океан");
+            if (Loc_ThemeForest != null) Loc_ThemeForest.Content = LocalizationManager.GetString("Settings.ThemeForest", "Ліс");
+            if (Loc_ThemeSunset != null) Loc_ThemeSunset.Content = LocalizationManager.GetString("Settings.ThemeSunset", "Захід Сонця");
             if (Loc_ThemeCustom != null) Loc_ThemeCustom.Content = LocalizationManager.GetString("Settings.ThemeCustom", "Кастомна");
             if (Background_imageButton != null) Background_imageButton.Content = LocalizationManager.GetString("Settings.FileBtn", "Файл...");
             if (LoadScreenBgButton != null) LoadScreenBgButton.Content = LocalizationManager.GetString("Settings.FileBtn", "Файл...");
@@ -664,6 +667,8 @@ namespace CL_CLegendary_Launcher_
             if (Loc_Settings_ModStatsDesc != null) Loc_Settings_ModStatsDesc.Text = LocalizationManager.GetString("Settings.ModStatsDesc", "Ви можете дивитися скільки ви награли на Серверах на Модових на Ванільних");
             if (Loc_Settings_SoundTitle != null) Loc_Settings_SoundTitle.Text = LocalizationManager.GetString("Settings.SoundTitle", "Звуки інтерфейсу");
             if (Loc_Settings_SoundDesc != null) Loc_Settings_SoundDesc.Text = LocalizationManager.GetString("Settings.SoundDesc", "Озвучка кліків та натискань кнопок");
+            if (Loc_Settings_ScaleTitle != null) Loc_Settings_ScaleTitle.Text = LocalizationManager.GetString("Settings.ScaleTitle", "Масштаб інтерфейсу");
+            if (Loc_Settings_ScaleDesc != null) Loc_Settings_ScaleDesc.Text = LocalizationManager.GetString("Settings.ScaleDesc", "Збільшує або зменшує розмір всіх елементів у лаунчері");
         }
         private void OpenCredits_Click(object sender, RoutedEventArgs e)
         {
@@ -958,6 +963,41 @@ namespace CL_CLegendary_Launcher_
             BackupCountText.Text = count.ToString();
             SettingsManager.Default.MaxAutoBackups = count;
             SettingsManager.Save();
+        }
+
+        private void UIScaleComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (MainContentGrid == null || UIScaleComboBox.SelectedItem == null) return;
+            
+            var selectedItem = (ComboBoxItem)UIScaleComboBox.SelectedItem;
+            if (selectedItem.Tag != null && double.TryParse(selectedItem.Tag.ToString(), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double scale))
+            {
+                SettingsManager.Default.UIScale = scale;
+                SettingsManager.Save();
+                
+                ApplyUIScale();
+            }
+        }
+
+        private void ResetUIScale_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            SetComboBoxScale(1.0);
+        }
+        
+        public void SetComboBoxScale(double scale)
+        {
+            if (UIScaleComboBox == null) return;
+            foreach (ComboBoxItem item in UIScaleComboBox.Items)
+            {
+                if (item.Tag != null && double.TryParse(item.Tag.ToString(), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double itemScale))
+                {
+                    if (Math.Abs(itemScale - scale) < 0.01)
+                    {
+                        UIScaleComboBox.SelectedItem = item;
+                        return;
+                    }
+                }
+            }
         }
     }
 }

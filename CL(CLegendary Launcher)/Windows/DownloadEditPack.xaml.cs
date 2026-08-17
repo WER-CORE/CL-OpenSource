@@ -1,4 +1,4 @@
-﻿using CL_CLegendary_Launcher_.Class;
+using CL_CLegendary_Launcher_.Class;
 using CL_CLegendary_Launcher_.Models;
 using CurseForge.APIClient;
 using CurseForge.APIClient.Models.Mods;
@@ -30,7 +30,7 @@ namespace CL_CLegendary_Launcher_.Windows
         public string LoderNow = "Forge";
         private string SiteDowload = "Modrinth";
 
-        private static readonly HttpClient httpClient = new HttpClient();
+
         List<string> fileUrlDowload = new List<string>();
         List<string> versionIds = new List<string>();
 
@@ -60,7 +60,7 @@ namespace CL_CLegendary_Launcher_.Windows
             if (_cfApiClientInstance != null) return _cfApiClientInstance;
             try
             {
-                using var client = new HttpClient();
+                var client = WebHelper.Client;
                 client.DefaultRequestHeaders.Add("x-launcher-secret", "CL-Super-Secret-2026");
                 var response = await client.GetAsync($"{Secrets.CurseForgeKey}");
                 if (response.IsSuccessStatusCode)
@@ -164,7 +164,7 @@ namespace CL_CLegendary_Launcher_.Windows
                         $"https://api.modrinth.com/v2/search?query={SearchSystem.Text}&facets=[[%22project_type:shader%22]]&limit={PageSize}&offset={offset}",
                     };
 
-                    var response = await httpClient.GetStringAsync(urls[SelectMod]);
+                    var response = await WebHelper.Client.GetStringAsync(urls[SelectMod]);
                     dynamic result = JsonConvert.DeserializeObject(response);
 
                     BtnNextPage.IsEnabled = result["hits"].Count >= PageSize;
@@ -343,7 +343,7 @@ namespace CL_CLegendary_Launcher_.Windows
                 try
                 {
                     string url = $"https://api.modrinth.com/v2/project/{mod.ProjectId}/version";
-                    var response = await httpClient.GetAsync(url);
+                    var response = await WebHelper.Client.GetAsync(url);
                     response.EnsureSuccessStatusCode();
 
                     string responseBody = await response.Content.ReadAsStringAsync();
@@ -706,8 +706,7 @@ namespace CL_CLegendary_Launcher_.Windows
         {
             try
             {
-                using var client = new HttpClient();
-                using var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
+                using var response = await WebHelper.Client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
                 response.EnsureSuccessStatusCode();
                 long totalBytes = response.Content.Headers.ContentLength ?? -1;
                 using var stream = await response.Content.ReadAsStreamAsync();

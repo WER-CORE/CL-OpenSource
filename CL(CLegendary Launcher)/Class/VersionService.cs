@@ -1,4 +1,4 @@
-﻿using CL_CLegendary_Launcher_.Models;
+using CL_CLegendary_Launcher_.Models;
 using CmlLib.Core;
 using Newtonsoft.Json.Linq;
 using Optifine.Installer;
@@ -45,7 +45,7 @@ namespace CL_CLegendary_Launcher_.Class
         }
         public async Task<List<string>> GetOptifineVersionsAsync(string mcVersion)
         {
-            var installer = new OptifineInstaller(new HttpClient());
+            var installer = new OptifineInstaller(WebHelper.Client);
             var all = await installer.GetOptifineVersionsAsync();
             return all.Where(v => v.MinecraftVersion == mcVersion).Select(v => v.Version).ToList();
         }
@@ -56,11 +56,7 @@ namespace CL_CLegendary_Launcher_.Class
 
             try
             {
-                using (HttpClient httpClient = new HttpClient())
-                {
-                    httpClient.DefaultRequestHeaders.UserAgent.ParseAdd($"CL-Legendary-Launcher/{Assembly.GetExecutingAssembly().GetName().Version}");
-
-                    string json = await httpClient.GetStringAsync(url);
+                    string json = await WebHelper.Client.GetStringAsync(url);
                     JObject manifest = JObject.Parse(json);
                     JArray versions = (JArray)manifest["versions"];
 
@@ -98,7 +94,6 @@ namespace CL_CLegendary_Launcher_.Class
 
                         if (id == "a1.0.4") break;
                     }
-                }
             }
             catch (Exception ex)
             {

@@ -1,4 +1,4 @@
-﻿<ui:FluentWindow
+<ui:FluentWindow
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -16,8 +16,7 @@
     WindowStartupLocation="CenterScreen" Icon="/Icon/IconCL(Common).png"
     HorizontalContentAlignment="Stretch" HorizontalAlignment="Left" VerticalAlignment="Top"
     Width="960" Height="542" 
-    MinWidth="960" MinHeight="542" 
-    MaxWidth="960" MaxHeight="542"
+    MinWidth="960" MinHeight="542"
     Loaded="CL_CLegendary_Launcher__Loaded_1" Background="{x:Null}" AllowDrop="True"
     Closed="CL_CLegendary_Launcher__Closed" WindowStyle="None"
     ResizeMode="CanResize" ExtendsContentIntoTitleBar="True" 
@@ -178,8 +177,7 @@
                    IsHitTestVisible="False"
                    Source="/Assets/DarkThemBG.png" />
         </Grid>
-        <Viewbox Stretch="Uniform" StretchDirection="Both">
-            <Grid x:Name="MainContentGrid" Width="960" Height="542" HorizontalAlignment="Center" VerticalAlignment="Center" Background="Transparent">
+        <Grid x:Name="MainContentGrid" Background="Transparent">
                 <Grid.RowDefinitions>
                     <RowDefinition />
                 </Grid.RowDefinitions>
@@ -2140,32 +2138,32 @@
                             <TextBlock x:Name="Loc_Settings_TitleLauncher" Text="Запускач" Height="40" FontSize="24"
                                HorizontalAlignment="Left" Margin="0,10,0,0"
                                FontFamily="Inter" FontWeight="Bold" Foreground="{DynamicResource MainForegroundBrush}" />
-                            <Grid Margin="0,0,0,15">
+                            <Grid Margin="0,5,0,15">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition />
                                     <ColumnDefinition Width="Auto" MinWidth="218.2" />
                                 </Grid.ColumnDefinitions>
 
                                 <Border Grid.ColumnSpan="2" BorderThickness="1" CornerRadius="15"
-                                Background="{DynamicResource MainBackgroundBrushServer}" Margin="0,0,0,-10" />
+                                Background="{DynamicResource MainBackgroundBrushServer}" />
 
-                                <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,15,0">
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="15,10,15,10">
                                     <TextBlock x:Name="LanguageTitleTXT" Text="Мова інтерфейсу (Language)"
                                        Foreground="{DynamicResource MainForegroundBrush}" FontSize="20"
-                                       FontFamily="Inter" TextWrapping="Wrap" Width="648" />
+                                       FontFamily="Inter" TextWrapping="Wrap" />
 
                                     <TextBlock x:Name="LanguageDescTXT" Text="Оберіть мову для лаунчера. Оновлюється миттєво."
                                        Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6" FontSize="12"
-                                       FontFamily="Inter" Margin="0,2,0,0" TextWrapping="Wrap" Width="648" />
+                                       FontFamily="Inter" Margin="0,2,0,0" TextWrapping="Wrap" />
 
                                     <ui:HyperlinkButton x:Name="HelpTranslateTXT" Content="Як допомогти з перекладом?"
                                                 NavigateUri="https://uk.crowdin.com/project/clegendary-launcher"
                                                 Foreground="#FF005DF1" Background="{x:Null}" BorderBrush="{x:Null}"
-                                                Width="650" HorizontalContentAlignment="Left" />
+                                                HorizontalContentAlignment="Left" Padding="0" Margin="0,2,0,0" />
                                 </StackPanel>
 
                                 <ComboBox Grid.Column="1" x:Name="LanguageComboBox" Height="40"
-                                  VerticalAlignment="Top" Margin="2,5,16,0"
+                                  VerticalAlignment="Center" Margin="2,0,16,0"
                                   SelectionChanged="LanguageComboBox_SelectionChanged"
                                   Background="{DynamicResource MainBackgroundButton}"
                                   Foreground="{DynamicResource MainForegroundBrush}" Cursor="Hand"
@@ -2215,6 +2213,43 @@
                                 <ui:ToggleSwitch Grid.Column="1" x:Name="SoundToggle"
                                          VerticalAlignment="Center" Margin="0,0,20,0"
                                          Click="SoundToggle_Click" Height="30" Cursor="Hand" IsChecked="True" />
+                            </Grid>
+
+                            <Grid Height="55" Margin="0,5">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <Border Grid.ColumnSpan="2" BorderThickness="1" CornerRadius="15"
+                                Background="{DynamicResource MainBackgroundBrushServer}" />
+
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="15,0,0,0">
+                                    <TextBlock x:Name="Loc_Settings_ScaleTitle" Text="Масштаб інтерфейсу"
+                                       Foreground="{DynamicResource MainForegroundBrush}" FontSize="20"
+                                       FontFamily="Inter" />
+                                    <TextBlock x:Name="Loc_Settings_ScaleDesc"
+                                       Text="Збільшує або зменшує розмір всіх елементів у лаунчері"
+                                       Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6" FontSize="12"
+                                       FontFamily="Inter" Margin="0,2,0,0" />
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="0,0,15,0" VerticalAlignment="Center">
+                                    <ComboBox x:Name="UIScaleComboBox" Width="100" Height="30" Margin="0,0,10,0"
+                                      Background="{DynamicResource MainBackgroundButton}"
+                                      Foreground="{DynamicResource MainForegroundBrush}" Cursor="Hand"
+                                      SelectionChanged="UIScaleComboBox_SelectionChanged">
+                                        <ComboBoxItem Content="1.0x" Tag="1.0" />
+                                        <ComboBoxItem Content="1.25x" Tag="1.25" />
+                                        <ComboBoxItem Content="1.5x" Tag="1.5" />
+                                        <ComboBoxItem Content="1.75x" Tag="1.75" />
+                                        <ComboBoxItem Content="2.0x" Tag="2.0" />
+                                    </ComboBox>
+
+                                    <Path
+                                Data="M17.65,6.35C16.2,4.9 14.21,4 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20C15.73,20 18.84,17.45 19.73,14H17.65C16.83,16.33 14.61,18 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6C13.66,6 15.14,6.69 16.22,7.78L13,11H20V4L17.65,6.35Z"
+                                Fill="{DynamicResource MainForegroundBrush}" Stretch="Uniform" Width="20" Height="20"
+                                Cursor="Hand" ToolTip="Скинути масштаб" MouseDown="ResetUIScale_MouseDown" />
+                                </StackPanel>
                             </Grid>
 
                             <Grid Height="55" Margin="0,5">
@@ -2685,6 +2720,9 @@
                                           PreviewMouseDown="ThemeComboBox_PreviewMouseDown">
                                             <ComboBoxItem x:Name="Loc_ThemeDark" Content="Темна" Tag="Dark" />
                                             <ComboBoxItem x:Name="Loc_ThemeLight" Content="Світла" Tag="Light" />
+                                            <ComboBoxItem x:Name="Loc_ThemeOcean" Content="Океан" Tag="Ocean" />
+                                            <ComboBoxItem x:Name="Loc_ThemeForest" Content="Ліс" Tag="Forest" />
+                                            <ComboBoxItem x:Name="Loc_ThemeSunset" Content="Захід Сонця" Tag="Sunset" />
                                             <ComboBoxItem x:Name="Loc_ThemeCustom" Content="Кастомна" Tag="Custom" />
                                         </ComboBox>
                                     </Grid>
@@ -3251,21 +3289,22 @@
                         <RowDefinition />
                     </Grid.RowDefinitions>
 
-                    <Grid x:Name="SelectGirdPage" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" VerticalAlignment="Top" Margin="0,35,0,0">
+                    <Grid x:Name="SelectGirdPage" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" VerticalAlignment="Top" Margin="0,30,0,0">
 
                         <Border x:Name="SelectPanel"
-                        Height="45"
+                        Height="52"
                         HorizontalAlignment="Center"
                         BorderThickness="1"
-                        CornerRadius="16"
-                        BorderBrush="#33FFFFFF"
+                        CornerRadius="26"
+                        BorderBrush="#15FFFFFF"
+                        Padding="4,4"
                         Background="{DynamicResource GlassTintBrush}">
                             <Grid x:Name="SelectPanelGrid">
 
                                 <Grid.OpacityMask>
                                     <VisualBrush Stretch="Fill">
                                         <VisualBrush.Visual>
-                                            <Border Background="Black" CornerRadius="16"
+                                            <Border Background="Black" CornerRadius="26"
                                             Width="{Binding ActualWidth, ElementName=SelectPanelGrid}"
                                             Height="{Binding ActualHeight, ElementName=SelectPanelGrid}" />
                                         </VisualBrush.Visual>
@@ -3282,13 +3321,13 @@
                                     </Border.Effect>
                                 </Border>
 
-                                <Border Background="{DynamicResource GlassTintBrush}" CornerRadius="16" />
+                                <Border Background="{DynamicResource GlassTintBrush}" CornerRadius="26" />
 
                                 <Border x:Name="PanelSelectNow"
                                 BorderThickness="1"
-                                CornerRadius="11"
+                                CornerRadius="22"
                                 Background="{DynamicResource MainBackgroundBrushServer}"
-                                Height="40" Width="90"
+                                Height="44" Width="90"
                                 HorizontalAlignment="Left" VerticalAlignment="Center">
                                     <Border.RenderTransform>
                                         <TranslateTransform x:Name="PanelTranslateTransform" />
@@ -3297,7 +3336,7 @@
 
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
 
-                                    <Border x:Name="PlayBtnBorder" CornerRadius="11" Margin="0,0,5,0" Padding="12,0"
+                                    <Border x:Name="PlayBtnBorder" CornerRadius="22" Height="44" Margin="0,0,2,0" Padding="12,0"
                                     Background="Transparent" Cursor="Hand" MouseDown="PlayTXTPanelSelect_MouseDown"
                                     ToolTip="Головна сторінка"
                                     MouseEnter="MenuButton_MouseEnter" MouseLeave="MenuButton_MouseLeave">
@@ -3312,7 +3351,7 @@
                                         </StackPanel>
                                     </Border>
 
-                                    <Border x:Name="ModpacksBtnBorder" CornerRadius="11" Margin="0,0,5,0" Padding="12,0"
+                                    <Border x:Name="ModpacksBtnBorder" CornerRadius="22" Height="44" Margin="0,0,2,0" Padding="12,0"
                                     Background="Transparent" Cursor="Hand" MouseDown="modbuilds_MouseDown"
                                     ToolTip="Створити або імпортувати збірку"
                                     MouseEnter="MenuButton_MouseEnter" MouseLeave="MenuButton_MouseLeave">
@@ -3329,7 +3368,7 @@
                                         </StackPanel>
                                     </Border>
 
-                                    <Border x:Name="ModsBtnBorder" CornerRadius="11" Margin="0,0,5,0" Padding="12,0"
+                                    <Border x:Name="ModsBtnBorder" CornerRadius="22" Height="44" Margin="0,0,2,0" Padding="12,0"
                                     Background="Transparent" Cursor="Hand" MouseDown="ModsTXTPanelSelect_MouseDown"
                                     ToolTip="Завантаження модів"
                                     MouseEnter="MenuButton_MouseEnter" MouseLeave="MenuButton_MouseLeave">
@@ -3345,7 +3384,7 @@
                                         </StackPanel>
                                     </Border>
 
-                                    <Border x:Name="ServersBtnBorder" CornerRadius="11" Margin="0,0,5,0" Padding="12,0"
+                                    <Border x:Name="ServersBtnBorder" CornerRadius="22" Height="44" Margin="0,0,2,0" Padding="12,0"
                                     Background="Transparent" Cursor="Hand" MouseDown="ServerTXTPanelSelect_MouseDown"
                                     ToolTip="Список серверів"
                                     MouseEnter="MenuButton_MouseEnter" MouseLeave="MenuButton_MouseLeave">
@@ -3362,7 +3401,7 @@
                                         </StackPanel>
                                     </Border>
 
-                                    <Border x:Name="GalleryBtnBorder" CornerRadius="11" Margin="0" Padding="12,0"
+                                    <Border x:Name="GalleryBtnBorder" CornerRadius="22" Height="44" Margin="0" Padding="12,0"
                                     Background="Transparent" Cursor="Hand" MouseDown="PhotoMinecraftTXT_MouseDown"
                                     ToolTip="Скріншоти"
                                     MouseEnter="MenuButton_MouseEnter" MouseLeave="MenuButton_MouseLeave">
@@ -3393,25 +3432,25 @@
 
                     </Grid>
                     <Grid x:Name="SelectGirdAccount" Grid.Row="0" Grid.Column="2" HorizontalAlignment="Right"
-                  VerticalAlignment="Top" Margin="0,33,25,0">
+                  VerticalAlignment="Top" Margin="0,30,25,0">
 
                         <Border x:Name="SelectPanelAccount"
                         BorderThickness="1"
-                        CornerRadius="16"
-                        BorderBrush="#33FFFFFF"
+                        CornerRadius="26"
+                        BorderBrush="#15FFFFFF"
                         Background="{x:Null}"
-                        Height="45"
-                        Width="200">
+                        Height="52"
+                        Width="180">
                             <Grid>
                                 <Grid.OpacityMask>
                                     <VisualBrush>
                                         <VisualBrush.Visual>
-                                            <Border Background="Black" Width="200" Height="45" CornerRadius="16" />
+                                            <Border Background="Black" Width="{Binding ActualWidth, ElementName=SelectPanelAccount}" Height="{Binding ActualHeight, ElementName=SelectPanelAccount}" CornerRadius="26" />
                                         </VisualBrush.Visual>
                                     </VisualBrush>
                                 </Grid.OpacityMask>
 
-                                <Border Visibility="{DynamicResource GlassVisibility}" Margin="-25,33,25,-33">
+                                <Border Visibility="{DynamicResource GlassVisibility}" Margin="-25,30,25,-30">
                                     <Border.Effect>
                                         <BlurEffect Radius="{DynamicResource GlassBlurRadius}" />
                                     </Border.Effect>
@@ -3422,11 +3461,11 @@
                                              AlignmentY="Top" />
                                     </Border.Background>
                                     <Border.RenderTransform>
-                                        <TranslateTransform X="25" Y="-33" />
+                                        <TranslateTransform X="25" Y="-30" />
                                     </Border.RenderTransform>
                                 </Border>
 
-                                <Border Background="{DynamicResource GlassTintBrush}" CornerRadius="16" />
+                                <Border Background="{DynamicResource GlassTintBrush}" CornerRadius="26" />
 
                                 <Grid Cursor="Hand" MouseDown="IconAccount_MouseDown" Background="Transparent">
                                     <Grid.ColumnDefinitions>
@@ -4074,6 +4113,5 @@
             ShowMaximize="True"
             ShowMinimize="True" MinimizeClicked="MainTitleBar_MinimizeClicked" ApplicationTheme="Light"/>
             </Grid>
-        </Viewbox>
 </Grid>
 </ui:FluentWindow>

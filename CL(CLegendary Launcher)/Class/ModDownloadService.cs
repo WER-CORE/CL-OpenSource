@@ -1,4 +1,4 @@
-﻿using CL_CLegendary_Launcher_.Windows;
+using CL_CLegendary_Launcher_.Windows;
 using CurseForge.APIClient;
 using CurseForge.APIClient.Models.Files;
 using CurseForge.APIClient.Models.Mods;
@@ -47,7 +47,6 @@ namespace CL_CLegendary_Launcher_.Class
 
     public class ModDownloadService
     {
-        private static readonly HttpClient _httpClient = new HttpClient { Timeout = TimeSpan.FromMinutes(10) };
         private static ApiClient _cfApiClientInstance;
 
         private static readonly SemaphoreSlim _downloadSemaphore = new SemaphoreSlim(3);
@@ -55,7 +54,7 @@ namespace CL_CLegendary_Launcher_.Class
 
         static ModDownloadService()
         {
-            _httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("CL-Legendary-Launcher/1.0");
+            WebHelper.Client.DefaultRequestHeaders.UserAgent.ParseAdd("CL-Legendary-Launcher/1.0");
         }
 
         public ModDownloadService()
@@ -82,10 +81,9 @@ namespace CL_CLegendary_Launcher_.Class
 
             try
             {
-                using var client = new HttpClient();
-                client.DefaultRequestHeaders.Add("x-launcher-secret", "CL-Super-Secret-2026");
+                WebHelper.Client.DefaultRequestHeaders.Add("x-launcher-secret", "CL-Super-Secret-2026");
 
-                var response = await client.GetAsync($"{Secrets.CurseForgeKey}");
+                var response = await WebHelper.Client.GetAsync($"{Secrets.CurseForgeKey}");
                 if (response.IsSuccessStatusCode)
                 {
                     string json = await response.Content.ReadAsStringAsync();
@@ -171,12 +169,21 @@ namespace CL_CLegendary_Launcher_.Class
 
                 ((IProgress<DownloadProgressInfo>)progressReporter).Report(new DownloadProgressInfo("Start", 0, 0, totalFiles));
 
-                var tasks = filesToDownload.Select(async url =>
+                var tasks = filesToDownload
+                    .Where(url => !string.IsNullOrEmpty(url))
+                    .Select(async url =>
                 {
                     await _downloadSemaphore.WaitAsync(cts.Token);
                     try
                     {
-                        string fileName = Path.GetFileName(new Uri(url).AbsolutePath);
+                        if (!Uri.TryCreate(url, UriKind.Absolute, out Uri parsedUri))
+                        {
+                            System.Diagnostics.Debug.WriteLine($"[CL] Некоректний URL залежності: {url}");
+                            return;
+                        }
+
+                        string fileName = Path.GetFileName(parsedUri.AbsolutePath);
+                        if (string.IsNullOrWhiteSpace(fileName)) fileName = $"mod_{Guid.NewGuid():N}.jar";
                         string filePath = Path.Combine(modsFolder, fileName);
 
                         if (!System.IO.File.Exists(filePath))
@@ -229,7 +236,7 @@ namespace CL_CLegendary_Launcher_.Class
                 {
                     try
                     {
-                        using var response = await _httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, token);
+                        using var response = await WebHelper.Client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, token);
 
                         if (response.StatusCode == System.Net.HttpStatusCode.ServiceUnavailable ||
                             response.StatusCode == (System.Net.HttpStatusCode)429)
@@ -329,7 +336,7 @@ namespace CL_CLegendary_Launcher_.Class
 
             try
             {
-                var response = await _httpClient.GetStringAsync(url);
+                var response = await WebHelper.Client.GetStringAsync(url);
                 var result = JObject.Parse(response);
                 var hits = result["hits"] as JArray;
 
@@ -365,7 +372,7 @@ namespace CL_CLegendary_Launcher_.Class
             string url = $"https://api.modrinth.com/v2/project/{modId}/version";
             try
             {
-                var response = await _httpClient.GetStringAsync(url);
+                var response = await WebHelper.Client.GetStringAsync(url);
                 var versions = JsonConvert.DeserializeObject<List<ModVersionInfo>>(response, _modrinthSettings);
 
                 if (versions == null) return new List<ModVersionInfo>();
@@ -521,7 +528,7 @@ namespace CL_CLegendary_Launcher_.Class
             string url = $"https://api.modrinth.com/v2/version/{parentMod.VersionId}";
             try
             {
-                var response = await _httpClient.GetStringAsync(url);
+                var response = await WebHelper.Client.GetStringAsync(url);
                 var versionData = JObject.Parse(response);
                 var dependencies = versionData["dependencies"] as JArray;
 
@@ -535,7 +542,7 @@ namespace CL_CLegendary_Launcher_.Class
                             if (depProjectId == null) continue;
 
                             string depUrl = $"https://api.modrinth.com/v2/project/{depProjectId}/version?loaders=[%22{loader}%22]&game_versions=[%22{gameVersion}%22]";
-                            var depResponse = await _httpClient.GetStringAsync(depUrl);
+                            var depResponse = await WebHelper.Client.GetStringAsync(depUrl);
                             var depVersions = JArray.Parse(depResponse);
 
                             if (depVersions.Count > 0)
@@ -614,7 +621,7 @@ namespace CL_CLegendary_Launcher_.Class
             try
             {
                 string url = $"https://api.modrinth.com/v2/version/{parentMod.VersionId}";
-                var response = await _httpClient.GetStringAsync(url);
+                var response = await WebHelper.Client.GetStringAsync(url);
                 var versionData = JObject.Parse(response);
                 var dependencies = versionData["dependencies"] as JArray;
 
@@ -628,13 +635,13 @@ namespace CL_CLegendary_Launcher_.Class
                             if (string.IsNullOrEmpty(depProjectId)) continue;
 
                             string projectUrl = $"https://api.modrinth.com/v2/project/{depProjectId}";
-                            var projResponse = await _httpClient.GetStringAsync(projectUrl);
+                            var projResponse = await WebHelper.Client.GetStringAsync(projectUrl);
                             var projData = JObject.Parse(projResponse);
                             string depName = projData["title"]?.ToString();
                             string depIcon = projData["icon_url"]?.ToString();
 
                             string verUrl = $"https://api.modrinth.com/v2/project/{depProjectId}/version?loaders=[%22{loader.ToLower()}%22]&game_versions=[%22{gameVersion}%22]";
-                            var verResponse = await _httpClient.GetStringAsync(verUrl);
+                            var verResponse = await WebHelper.Client.GetStringAsync(verUrl);
                             var verArray = JArray.Parse(verResponse);
 
                             if (verArray.Count > 0)
@@ -669,7 +676,9 @@ namespace CL_CLegendary_Launcher_.Class
         private async Task<List<ModInfo>> GetCurseForgeDependenciesInfo(ModVersionInfo parentMod, string loader, string typeStr)
         {
             var list = new List<ModInfo>();
-            string gameVersion = parentMod.GameVersions.FirstOrDefault(v => v.StartsWith("1."));
+            string gameVersion = parentMod.GameVersions
+                .FirstOrDefault(v => v.StartsWith("1.") || v.StartsWith("b") || v.StartsWith("a") || v.StartsWith("rd-") || v.StartsWith("inf") || v.StartsWith("in-"))
+                ?? parentMod.GameVersions.FirstOrDefault();
             if (string.IsNullOrEmpty(gameVersion)) return list;
 
             try

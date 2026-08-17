@@ -1,4 +1,4 @@
-﻿using CL_CLegendary_Launcher_.Class;
+using CL_CLegendary_Launcher_.Class;
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -33,11 +33,10 @@ namespace CL_CLegendary_Launcher_.Windows
         {
             try
             {
-                using (HttpClient client = new HttpClient())
                 {
                     string urlWithNoCache = $"{Secrets.CreditsUrl}?v={DateTime.Now.Ticks}";
 
-                    string creditsText = await client.GetStringAsync(urlWithNoCache);
+                    string creditsText = await WebHelper.Client.GetStringAsync(urlWithNoCache);
 
                     LoadingRing.Visibility = Visibility.Collapsed;
                     CreditsContentText.HorizontalAlignment = HorizontalAlignment.Left;

@@ -57,6 +57,7 @@
     <None Remove="Assets\faArrowRotateBack.png" />
     <None Remove="Assets\fabric.png" />
     <None Remove="Assets\folder-solid.png" />
+    <None Remove="Assets\ForestBG.png" />
     <None Remove="Assets\ForgeIcon.jpg" />
     <None Remove="Assets\gear-solid.png" />
     <None Remove="Assets\history_1000dp_FFFFFF_FILL0_wght400_GRAD0_opsz48.png" />
@@ -70,12 +71,14 @@
     <None Remove="Assets\LittleSkinAccount.png" />
     <None Remove="Assets\microsoft logo.png" />
     <None Remove="Assets\newspaper_1000dp_E8EAED_FILL0_wght400_GRAD0_opsz48.png" />
+    <None Remove="Assets\OceanBG.png" />
     <None Remove="Assets\person_1000dp_FFFFFF_FILL0_wght400_GRAD0_opsz48.png" />
     <None Remove="Assets\search.png" />
     <None Remove="Assets\server-solid.png" />
     <None Remove="Assets\SettingReset.png" />
     <None Remove="Assets\Steve.obj" />
     <None Remove="Assets\StoneIconBeta.png" />
+    <None Remove="Assets\SunSetBG.png" />
     <None Remove="Assets\upload_1000dp_B7B7B7_FILL0_wght400_GRAD0_opsz48.png" />
     <None Remove="Assets\upload_file_1000dp_FFFFFF_FILL0_wght400_GRAD0_opsz48.png" />
     <None Remove="Assets\VanilaVersion.png" />
@@ -159,7 +162,10 @@
 
   <ItemGroup>
     <Resource Include="Assets\DarkThemBG.png" />
+    <Resource Include="Assets\ForestBG.png" />
     <Resource Include="Assets\LightThemBG.png" />
+    <Resource Include="Assets\OceanBG.png" />
+    <Resource Include="Assets\SunSetBG.png" />
     <Resource Include="Icon\IconCL(Winter).ico" />
   </ItemGroup>
 

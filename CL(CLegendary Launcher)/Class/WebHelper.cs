@@ -1,4 +1,4 @@
-﻿using CL_CLegendary_Launcher_.Class;
+using CL_CLegendary_Launcher_.Class;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -10,6 +10,13 @@ namespace CL_CLegendary_Launcher_.Class
 {
     public static class WebHelper
     {
+        public static readonly System.Net.Http.HttpClient Client = new System.Net.Http.HttpClient { Timeout = TimeSpan.FromMinutes(10) };
+
+        static WebHelper()
+        {
+            Client.DefaultRequestHeaders.UserAgent.ParseAdd("CL-Legendary-Launcher/1.0");
+        }
+
         private static readonly List<BrowserInfo> _supportedBrowsers = new List<BrowserInfo>
         {
             new BrowserInfo("chrome.exe", @"Google\Chrome\Application\chrome.exe"),

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -44,9 +44,7 @@ namespace CL_CLegendary_Launcher_.Class
         {
             try
             {
-                using HttpClient client = new HttpClient();
-
-                string mainJson = await client.GetStringAsync(PATCH_NOTES_URL);
+                string mainJson = await WebHelper.Client.GetStringAsync(PATCH_NOTES_URL);
                 var response = JsonSerializer.Deserialize<PatchNotesResponse>(mainJson);
                 var entry = response?.Entries?.FirstOrDefault(e => e.Version == targetVersion);
 
@@ -55,7 +53,7 @@ namespace CL_CLegendary_Launcher_.Class
                 if (string.IsNullOrEmpty(entry.ContentPath)) return $"# {entry.Title}\n\n{entry.ShortText}";
 
                 string fullArticleUrl = BASE_URL + entry.ContentPath;
-                string articleJson = await client.GetStringAsync(fullArticleUrl);
+                string articleJson = await WebHelper.Client.GetStringAsync(fullArticleUrl);
 
                 var fullNote = JsonSerializer.Deserialize<FullPatchNote>(articleJson);
 
@@ -170,8 +168,7 @@ namespace CL_CLegendary_Launcher_.Class
             try
             {
                 string url = $"https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl={targetLang}&dt=t&q={Uri.EscapeDataString(text)}";
-                using HttpClient client = new HttpClient();
-                string response = await client.GetStringAsync(url);
+                string response = await WebHelper.Client.GetStringAsync(url);
 
                 using var doc = JsonDocument.Parse(response);
                 var root = doc.RootElement;

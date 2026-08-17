@@ -1,4 +1,4 @@
-﻿using CL_CLegendary_Launcher_.Class;
+using CL_CLegendary_Launcher_.Class;
 using CL_CLegendary_Launcher_.Models;
 using CL_CLegendary_Launcher_.Windows;
 using System;
@@ -25,6 +25,9 @@ namespace CL_CLegendary_Launcher_
 
         private async void CL_CLegendary_Launcher__Loaded_1(object sender, RoutedEventArgs e)
         {
+            if (SettingsManager.Default.UIScale <= 0.1) SettingsManager.Default.UIScale = 1.0;
+            SetComboBoxScale(SettingsManager.Default.UIScale);
+
             if (!SettingsManager.Default.TutorialComplete) { AnimationService.AnimatePageTransition(TutorialGrid); }
             else { TutorialGrid.Visibility = Visibility.Collapsed; }
 
@@ -389,7 +392,7 @@ namespace CL_CLegendary_Launcher_
             });
         }
 
-        private async void LoadScreenshots()
+        private async Task LoadScreenshots()
         {
             ScreenshotsList.Items.Clear();
             NoScreenshotsText.Visibility = Visibility.Visible;
@@ -408,9 +411,9 @@ namespace CL_CLegendary_Launcher_
             }
         }
 
-        public void InitializeGallery()
+        public async void InitializeGallery()
         {
-            var sources = _screenshotService.GetScreenshotSources(SettingsManager.Default.PathLacunher);
+            var sources = await Task.Run(() => _screenshotService.GetScreenshotSources(SettingsManager.Default.PathLacunher));
 
             SourceSelector.ItemsSource = sources;
             SourceSelector.DisplayMemberPath = "Name";

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace CL_CLegendary_Launcher_.Models
 {
@@ -58,6 +58,7 @@ namespace CL_CLegendary_Launcher_.Models
         public bool EnableMod_DiscordRPC { get; set; } = true;
         public bool EnableMod_Statistics { get; set; } = true;
         public bool EnableSound { get; set; } = true;
+        public double UIScale { get; set; } = 1.0;
         public object this[string propertyName]
         {
             get

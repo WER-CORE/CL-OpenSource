@@ -1,0 +1,8 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <SolidColorBrush x:Key="MainBackgroundBrush" Color="#FF0F1E38" />
+    <SolidColorBrush x:Key="MainForegroundBrush" Color="#FFE2EDF8" />
+    <SolidColorBrush x:Key="MainBorderBrush" Color="#FF345288" />
+    <SolidColorBrush x:Key="MainBackgroundButton" Color="#FF1C3056" />
+    <SolidColorBrush x:Key="MainBackgroundProgressBar" Color="#FF00D2FF" />
+</ResourceDictionary>
