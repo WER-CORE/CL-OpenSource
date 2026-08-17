@@ -9,13 +9,6 @@ namespace CL_CLegendary_Launcher_.Windows
     {
         public event EventHandler SkinEditClicked;
 
-        public enum AccountType
-        {
-            Microsoft,
-            LittleSkin,
-            Offline
-        }
-
         public string NameAccount2 { get; set; }
         public string UUID { get; set; }
         public string AccessToken { get; set; }

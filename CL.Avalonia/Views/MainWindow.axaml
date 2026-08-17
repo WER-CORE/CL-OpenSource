@@ -1,0 +1,56 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="CL_CLegendary_Launcher_.Avalonia.Views.MainWindow"
+        Title="CL Launcher - Linux Edition"
+        Width="900" Height="600"
+        MinWidth="700" MinHeight="480">
+
+  <Grid RowDefinitions="Auto,*,Auto" Margin="20">
+
+    <StackPanel Grid.Row="0" Spacing="4" Margin="0,0,0,16">
+      <TextBlock Text="CL Launcher" FontSize="26" FontWeight="SemiBold" />
+      <TextBlock Name="PlatformText" Opacity="0.7" FontSize="13" />
+    </StackPanel>
+
+    <Grid Grid.Row="1" ColumnDefinitions="*,20,1.2*">
+
+      <Border Grid.Column="0" CornerRadius="8" Padding="16"
+              Background="#20808080" VerticalAlignment="Stretch">
+        <StackPanel Spacing="10">
+          <TextBlock Text="Стан ядра" FontWeight="SemiBold" FontSize="15" />
+          <TextBlock Name="PathText" TextWrapping="Wrap" FontSize="12" Opacity="0.85" />
+          <Separator Margin="0,4" />
+          <TextBlock Text="Перевірка CL.Core" FontWeight="SemiBold" FontSize="13" />
+          <TextBlock Name="CoreStatusText" TextWrapping="Wrap" FontSize="12" Opacity="0.85" />
+
+          <Separator Margin="0,4" />
+
+          <TextBlock Text="Запуск гри" FontWeight="SemiBold" FontSize="13" />
+          <TextBox Name="NicknameBox" Text="Player" Watermark="Нікнейм" />
+          <ComboBox Name="JavaBox" HorizontalAlignment="Stretch" />
+          <Button Name="PlayButton" Content="Грати" IsEnabled="False"
+                  HorizontalAlignment="Stretch" />
+
+          <Button Name="OpenSiteButton" Content="Відкрити Discord (xdg-open)"
+                  HorizontalAlignment="Stretch" Margin="0,8,0,0" />
+        </StackPanel>
+      </Border>
+
+      <Border Grid.Column="2" CornerRadius="8" Padding="16" Background="#20808080">
+        <Grid RowDefinitions="Auto,Auto,*,Auto">
+          <TextBlock Grid.Row="0" Text="Версії Minecraft" FontWeight="SemiBold" FontSize="15" />
+          <Button Grid.Row="1" Name="LoadVersionsButton" Content="Завантажити список"
+                  HorizontalAlignment="Left" Margin="0,10" />
+          <ListBox Grid.Row="2" Name="VersionsList" />
+          <TextBlock Grid.Row="3" Name="SelectedVersionText" Margin="0,10,0,0"
+                     FontSize="12" Opacity="0.7" TextWrapping="Wrap" />
+        </Grid>
+      </Border>
+
+    </Grid>
+
+    <TextBlock Grid.Row="2" Name="StatusText" Margin="0,14,0,0"
+               FontSize="12" Opacity="0.6" />
+
+  </Grid>
+</Window>

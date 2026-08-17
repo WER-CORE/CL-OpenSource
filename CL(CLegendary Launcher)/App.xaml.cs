@@ -15,6 +15,11 @@ namespace CL_CLegendary_Launcher_
             System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Tls12 | System.Net.SecurityProtocolType.Tls13;
             SoundManager.Initialize();
 
+            UrlOpener.ErrorHandler = (ex, url) => MascotMessageBox.Show(
+                string.Format(LocalizationManager.GetString("Dialogs.UrlOpenErrorDesc", "Не вдалося відкрити посилання.\nДеталі: {0}"), ex.Message),
+                LocalizationManager.GetString("Dialogs.UrlOpenErrorTitle", "Помилка браузера"),
+                MascotEmotion.Sad);
+
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
             DispatcherUnhandledException += App_DispatcherUnhandledException;
             TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;

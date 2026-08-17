@@ -23,13 +23,6 @@ using Path = System.IO.Path;
 
 namespace CL_CLegendary_Launcher_
 {
-    public enum AccountType
-    {
-        Microsoft,
-        LittleSkin,
-        Offline
-    }
-
     public partial class CL_Main_ : FluentWindow
     {
         byte VersionSelect = 0;
@@ -142,7 +135,7 @@ namespace CL_CLegendary_Launcher_
         {
             if (string.IsNullOrWhiteSpace(SettingsManager.Default.PathLacunher))
             {
-                string defaultPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".ClMinecraft");
+                string defaultPath = PlatformPaths.DefaultLauncherPath();
                 if (!Directory.Exists(defaultPath))
                 {
                     Directory.CreateDirectory(defaultPath);

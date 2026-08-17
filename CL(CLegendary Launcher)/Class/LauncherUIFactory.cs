@@ -437,7 +437,7 @@ namespace CL_CLegendary_Launcher_.Class
                 NameAccount2 = profile.NameAccount,
                 UUID = profile.UUID,
                 index = index,
-                TypeAccount = (ItemManegerProfile.AccountType)profile.TypeAccount,
+                TypeAccount = profile.TypeAccount,
                 Cursor = System.Windows.Input.Cursors.Hand
             };
 

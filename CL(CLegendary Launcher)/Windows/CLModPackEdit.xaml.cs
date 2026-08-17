@@ -740,55 +740,7 @@ namespace CL_CLegendary_Launcher_.Windows
         }
 
         private List<string> FindInstalledJavas()
-        {
-            List<string> javaPaths = new List<string>();
-
-            try
-            {
-                string runtimePath = Path.Combine(SettingsManager.Default.PathLacunher, "runtime");
-                if (Directory.Exists(runtimePath))
-                {
-                    var mojangJavas = Directory.GetFiles(runtimePath, "javaw.exe", SearchOption.AllDirectories);
-                    javaPaths.AddRange(mojangJavas);
-                }
-            }
-            catch
-            {
-            }
-
-            string[] baseDirs =
-            {
-                @"C:\Program Files\Java",
-                @"C:\Program Files (x86)\Java",
-                @"C:\Program Files\Eclipse Adoptium",
-                @"C:\Program Files\AdoptOpenJDK",
-                @"C:\Program Files\BellSoft"
-            };
-
-            foreach (var baseDir in baseDirs)
-            {
-                if (Directory.Exists(baseDir))
-                {
-                    try
-                    {
-                        var dirs = Directory.GetDirectories(baseDir);
-                        foreach (var dir in dirs)
-                        {
-                            string javaw = Path.Combine(dir, "bin", "javaw.exe");
-                            if (File.Exists(javaw))
-                            {
-                                javaPaths.Add(javaw);
-                            }
-                        }
-                    }
-                    catch
-                    {
-                    }
-                }
-            }
-
-            return javaPaths.Distinct().ToList();
-        }
+            => JavaLocator.FindInstalled(SettingsManager.Default.PathLacunher);
 
         private void BtnChangeIcon_Click(object sender, RoutedEventArgs e)
         {
