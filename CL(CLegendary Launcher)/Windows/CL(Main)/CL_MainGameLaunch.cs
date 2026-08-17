@@ -1,4 +1,4 @@
-﻿using CL_CLegendary_Launcher_.Class;
+using CL_CLegendary_Launcher_.Class;
 using CL_CLegendary_Launcher_.Models;
 using CL_CLegendary_Launcher_.Windows;
 using CmlLib.Core;
@@ -22,9 +22,8 @@ namespace CL_CLegendary_Launcher_
     {
         public bool isMouseClickSelection = false;
         private static HashSet<string> _cachedOptifineVersions = null;
-        private HttpClient httpClient;
 
-        async void AddVersion()
+        async Task AddVersion()
         {
             try
             {
@@ -35,7 +34,7 @@ namespace CL_CLegendary_Launcher_
 
                 if (isOffline)
                 {
-                    var localVersions = GetLocalVersions(search);
+                    var localVersions = await Task.Run(() => GetLocalVersions(search));
 
                     var vanillaLocals = localVersions.Where(v =>
                         !v.ToLower().Contains("forge") &&
@@ -63,7 +62,10 @@ namespace CL_CLegendary_Launcher_
                     SearchSystemTXT1.ItemsSource = string.IsNullOrEmpty(search) ? null : list;
                 }
             }
-            catch (Exception) { }
+            catch (Exception ex) 
+            { 
+                System.Diagnostics.Debug.WriteLine(ex.Message);
+            }
         }
 
         private async Task<HashSet<string>> GetOptifineSupportedVersionsAsync()
@@ -92,34 +94,30 @@ namespace CL_CLegendary_Launcher_
 
             try
             {
-                using (var client = new System.Net.Http.HttpClient())
-                {
-                    client.Timeout = TimeSpan.FromSeconds(5);
+                var optifineInstaller = new OptifineInstaller(WebHelper.Client);
+                var optifineList = await optifineInstaller.GetOptifineVersionsAsync();
 
-                    var optifineInstaller = new OptifineInstaller(client);
-                    var optifineList = await optifineInstaller.GetOptifineVersionsAsync();
-
-                    var gameVersions = optifineList
-                        .Select(x => x.MinecraftVersion)
-                        .Distinct()
-                        .OrderByDescending(v =>
-                        {
-                            if (System.Version.TryParse(v, out var ver))
-                                return ver;
-                            return new System.Version(0, 0, 0);
-                        });
-
-                    var versionsHashSet = new HashSet<string>(gameVersions);
-
-                    if (versionsHashSet.Count > 0)
+                var gameVersions = optifineList
+                    .Select(x => x.MinecraftVersion)
+                    .Distinct()
+                    .OrderByDescending(v =>
                     {
-                        _cachedOptifineVersions = versionsHashSet;
-                        return _cachedOptifineVersions;
-                    }
+                        if (System.Version.TryParse(v, out var ver))
+                            return ver;
+                        return new System.Version(0, 0, 0);
+                    });
+
+                var versionsHashSet = new HashSet<string>(gameVersions);
+
+                if (versionsHashSet.Count > 0)
+                {
+                    _cachedOptifineVersions = versionsHashSet;
+                    return _cachedOptifineVersions;
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"Error fetching OptiFine versions: {ex.Message}");
             }
 
             return fallbackVersions;
@@ -152,13 +150,9 @@ namespace CL_CLegendary_Launcher_
                 }
                 else
                 {
-                    // 1. Отримуємо всі ванільні версії
                     var versions = await _versionService.GetFilteredVersionsAsync(searchText, true, false, false, false);
-
-                    // 2. Отримуємо актуальний список підтримки OptiFine з API (або кешу)
                     var supportedOptifineVersions = await GetOptifineSupportedVersionsAsync();
 
-                    // 3. Фільтруємо: залишаємо тільки ті ванільні версії, які підтримуються
                     var filteredVersions = versions
                         .Where(v => supportedOptifineVersions.Contains(v))
                         .ToArray();
@@ -197,9 +191,9 @@ namespace CL_CLegendary_Launcher_
             return localVersions;
         }
 
-        private async void AddVersionModeVersion()
+        private async Task AddVersionModeVersion()
         {
-            cancellationTokenSource?.Cancel();
+            cancellationTokenSource?.Dispose();
             cancellationTokenSource = new CancellationTokenSource();
             var token = cancellationTokenSource.Token;
 
@@ -241,7 +235,7 @@ namespace CL_CLegendary_Launcher_
 
             _ = gameLogWindow.LoadLogFromFileAsync(logFilePath);
         }
-        private async void DownloadVersionOptifine(string effectiveVersion = null, string effectiveVersionMod = null)
+        private async Task DownloadVersionOptifine(string effectiveVersion = null, string effectiveVersionMod = null)
         {
             string mcVersion = !string.IsNullOrEmpty(effectiveVersion)
                 ? effectiveVersion
@@ -375,7 +369,7 @@ namespace CL_CLegendary_Launcher_
             process.BeginErrorReadLine();
         }
 
-        private async void LoadChangeLogMinecraft()
+        private async Task LoadChangeLogMinecraft()
         {
             if (SettingsManager.Default.OfflineModLauncher) { return; }
 

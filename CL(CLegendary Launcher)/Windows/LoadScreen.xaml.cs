@@ -268,12 +268,8 @@ namespace CL_CLegendary_Launcher_.Windows
 
         private async Task<bool> CheckForUpdatesAsync()
         {
-            using (HttpClient client = new HttpClient())
             {
-                client.DefaultRequestHeaders.UserAgent.ParseAdd("CL-Launcher");
-                client.Timeout = TimeSpan.FromSeconds(5);
-
-                string json = await client.GetStringAsync(Secrets.UpdateUrlCheckLoadScreen);
+                string json = await WebHelper.Client.GetStringAsync(Secrets.UpdateUrlCheckLoadScreen);
 
                 var info = JsonSerializer.Deserialize<UpdateInfo>(json);
 

@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -26,13 +26,9 @@ namespace CL_CLegendary_Launcher_.Class
         {
             try
             {
-                using (HttpClient client = new HttpClient())
-                {
-                    client.DefaultRequestHeaders.Add("User-Agent", "CL-Launcher");
-                    string jsonContent = await client.GetStringAsync(url);
+                string jsonContent = await WebHelper.Client.GetStringAsync(url);
 
-                    return JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, object>>>(jsonContent);
-                }
+                return JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, object>>>(jsonContent);
             }
             catch (Exception ex)
             {

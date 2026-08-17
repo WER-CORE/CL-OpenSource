@@ -1,4 +1,4 @@
-﻿using CL_CLegendary_Launcher_.Class;
+using CL_CLegendary_Launcher_.Class;
 using CL_CLegendary_Launcher_.Models;
 using CmlLib.Core;
 using CmlLib.Core.Installer.Forge.Versions;
@@ -37,7 +37,7 @@ namespace CL_CLegendary_Launcher_.Windows
 
         byte selectmodPack = 0;
         public event Action ModpackUpdated;
-        private readonly HttpClient httpClient = new HttpClient();
+
         private bool _isDataLoaded = false;
 
         public CLModPackEdit()
@@ -284,21 +284,21 @@ namespace CL_CLegendary_Launcher_.Windows
             {
                 if (loaderType == "Forge")
                 {
-                    var versionLoader = new ForgeVersionLoader(httpClient);
+                    var versionLoader = new ForgeVersionLoader(WebHelper.Client);
                     var forgeList = await versionLoader.GetForgeVersions(mcVersion);
                     foreach (var forge in forgeList)
                         versions.Add(forge.ForgeVersionName);
                 }
                 else if (loaderType == "Fabric")
                 {
-                    var fabricInstaller = new FabricInstaller(httpClient);
+                    var fabricInstaller = new FabricInstaller(WebHelper.Client);
                     var fabricVersions = await fabricInstaller.GetLoaders(mcVersion);
                     foreach (var fabric in fabricVersions)
                         versions.Add(fabric.Version);
                 }
                 else if (loaderType == "Quilt")
                 {
-                    var quiltInstaller = new QuiltInstaller(httpClient);
+                    var quiltInstaller = new QuiltInstaller(WebHelper.Client);
                     var quiltVersions = await quiltInstaller.GetLoaders(mcVersion);
                     foreach (var quilt in quiltVersions)
                         versions.Add(quilt.Version);
@@ -314,7 +314,7 @@ namespace CL_CLegendary_Launcher_.Windows
                 }
                 else if (loaderType == "LiteLoader")
                 {
-                    var liteLoaderInstaller = new LiteLoaderInstaller(httpClient);
+                    var liteLoaderInstaller = new LiteLoaderInstaller(WebHelper.Client);
                     var loaders = await liteLoaderInstaller.GetAllLiteLoaders();
                     var compatibleLoaders = loaders.Where(l => l.BaseVersion == mcVersion);
                     foreach (var loader in compatibleLoaders)
@@ -322,7 +322,7 @@ namespace CL_CLegendary_Launcher_.Windows
                 }
                 else if (loaderType == "Optifine")
                 {
-                    var loader = new OptifineInstaller(httpClient);
+                    var loader = new OptifineInstaller(WebHelper.Client);
                     var allVersions = await loader.GetOptifineVersionsAsync();
                     var compatible = allVersions.Where(v => v.MinecraftVersion == mcVersion);
                     foreach (var v in compatible)
@@ -363,6 +363,8 @@ namespace CL_CLegendary_Launcher_.Windows
             var files = patterns.SelectMany(p => Directory.GetFiles(modsDirectory, p)).ToArray();
             string search = SearchSystem.Text.ToLower();
 
+            var modsToLoad = new System.Collections.Generic.List<(string file, ItemManegerPack item)>();
+
             foreach (var file in files)
             {
                 string fileName = Path.GetFileName(file);
@@ -386,7 +388,36 @@ namespace CL_CLegendary_Launcher_.Windows
                 item.IsOnOffSwitch.Click += item.Off_OnMods_Click;
 
                 ModsManegerList.Items.Add(item);
+
+                if (file.EndsWith(".jar") || file.EndsWith(".jar.disabled") ||
+                    file.EndsWith(".zip") || file.EndsWith(".zip.disabled"))
+                {
+                    modsToLoad.Add((file, item));
+                }
             }
+
+            _ = Task.Run(async () =>
+            {
+                foreach (var tuple in modsToLoad)
+                {
+                    var metadata = await ModMetadataReader.ReadMetadataAsync(tuple.file);
+                    if (metadata != null)
+                    {
+                        System.Windows.Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+                        {
+                            if (!string.IsNullOrEmpty(metadata.Name))
+                                tuple.item.Title.Text = metadata.Name;
+                            if (!string.IsNullOrEmpty(metadata.Description))
+                            {
+                                tuple.item.Description.Text = metadata.Description;
+                                tuple.item.Description.ToolTip = metadata.Description;
+                            }
+                            if (metadata.IconBytes != null)
+                                tuple.item.SetIcon(metadata.IconBytes);
+                        }));
+                    }
+                }
+            });
         }
 
         private bool EditInstalledModpack(string modpackName, string propertyName, object newValue)

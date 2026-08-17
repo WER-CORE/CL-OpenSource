@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -37,9 +37,7 @@ namespace CL_CLegendary_Launcher_.Class
         {
             try
             {
-                using HttpClient client = new HttpClient();
-
-                string json = await client.GetStringAsync($"{Secrets.EulaUrl}Lang/{langCode}/eula_{langCode}.json?v={DateTime.Now.Ticks}"); 
+                string json = await WebHelper.Client.GetStringAsync($"{Secrets.EulaUrl}Lang/{langCode}/eula_{langCode}.json?v={DateTime.Now.Ticks}"); 
                 return JsonConvert.DeserializeObject<EulaConfig>(json);
             }
             catch

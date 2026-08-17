@@ -1,4 +1,4 @@
-﻿using CL_CLegendary_Launcher_.Class;
+using CL_CLegendary_Launcher_.Class;
 using CL_CLegendary_Launcher_.Windows;
 using Microsoft.Win32;
 using System;
@@ -57,10 +57,7 @@ namespace CL_CLegendary_Launcher_
             {
                 StatusText.Text = LocalizationManager.GetString("Updater.CheckingData", "Отримання даних...");
 
-                using HttpClient client = new HttpClient();
-                client.DefaultRequestHeaders.UserAgent.ParseAdd("CL-Launcher-Updater");
-
-                string json = await client.GetStringAsync(Secrets.updateInfoUrl);
+                string json = await WebHelper.Client.GetStringAsync(Secrets.updateInfoUrl);
                 var info = JsonSerializer.Deserialize<UpdateInfo>(json);
 
                 if (info == null || string.IsNullOrEmpty(info.Version))
@@ -154,8 +151,7 @@ namespace CL_CLegendary_Launcher_
 
         private async Task DownloadFileAsync(string url)
         {
-            using var client = new HttpClient();
-            using var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
+            using var response = await WebHelper.Client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
             var totalBytes = response.Content.Headers.ContentLength ?? -1L;
             using var fileStream = new FileStream(tempZipPath, FileMode.Create, FileAccess.Write, FileShare.None);
             using var contentStream = await response.Content.ReadAsStreamAsync();

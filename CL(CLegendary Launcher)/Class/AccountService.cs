@@ -1,4 +1,4 @@
-﻿using CL_CLegendary_Launcher_.Models;
+using CL_CLegendary_Launcher_.Models;
 using CL_CLegendary_Launcher_.Windows;
 using CmlLib.Core.Auth;
 using CmlLib.Core.Auth.Microsoft;
@@ -46,7 +46,7 @@ namespace CL_CLegendary_Launcher_.Class
                     bool isTokenValid = false;
                     try
                     {
-                        var mojangApi = new Mojang(new HttpClient());
+                        var mojangApi = new Mojang(WebHelper.Client);
                         isTokenValid = await mojangApi.CheckGameOwnership(profile.AccessToken);
                     }
                     catch { }
@@ -139,7 +139,7 @@ namespace CL_CLegendary_Launcher_.Class
 
                 var session = await authenticator.ExecuteForLauncherAsync();
 
-                var mojangApi = new Mojang(new HttpClient());
+                var mojangApi = new Mojang(WebHelper.Client);
                 bool ownsGame = await mojangApi.CheckGameOwnership(session.AccessToken);
 
                 if (!ownsGame)

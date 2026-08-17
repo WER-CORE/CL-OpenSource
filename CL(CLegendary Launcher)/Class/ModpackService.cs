@@ -1,4 +1,4 @@
-﻿using CL_CLegendary_Launcher_.Models;
+using CL_CLegendary_Launcher_.Models;
 using CL_CLegendary_Launcher_.Windows;
 using CmlLib.Core;
 using CmlLib.Core.Installers;
@@ -58,7 +58,6 @@ namespace CL_CLegendary_Launcher_.Class
 
         private readonly SemaphoreSlim _downloadSemaphore = new SemaphoreSlim(20);
         private static ApiClient _cfApiClientInstance;
-        private readonly HttpClient _httpClient;
 
         public ModpackService(CL_Main_ main, GameSessionManager gameSessionManager, GameLaunchService gameLaunchService, ModDownloadService modDownloadService)
         {
@@ -66,18 +65,17 @@ namespace CL_CLegendary_Launcher_.Class
             _gameSessionManager = gameSessionManager;
             _gameLaunchService = gameLaunchService;
             _modDownloadService = modDownloadService;
-
-            _httpClient = new HttpClient { Timeout = TimeSpan.FromMinutes(10) };
-            _httpClient.DefaultRequestHeaders.ConnectionClose = false;
         }
         private async Task<ApiClient> GetCfClientAsync()
         {
             if (_cfApiClientInstance != null) return _cfApiClientInstance;
             try
             {
-                using var client = new HttpClient();
-                client.DefaultRequestHeaders.Add("x-launcher-secret", "CL-Super-Secret-2026");
-                var response = await client.GetAsync($"{Secrets.CurseForgeKey}");
+                if (!WebHelper.Client.DefaultRequestHeaders.Contains("x-launcher-secret"))
+                {
+                    WebHelper.Client.DefaultRequestHeaders.Add("x-launcher-secret", "CL-Super-Secret-2026");
+                }
+                var response = await WebHelper.Client.GetAsync($"{Secrets.CurseForgeKey}");
                 if (response.IsSuccessStatusCode)
                 {
                     string json = await response.Content.ReadAsStringAsync();
@@ -105,14 +103,14 @@ namespace CL_CLegendary_Launcher_.Class
             if (!File.Exists(pathToJson)) return;
 
             var jsonText = File.ReadAllText(pathToJson);
-            var modpacks = System.Text.Json.JsonSerializer.Deserialize<List<InstalledModpack>>(jsonText);
+            var modpacks = JsonConvert.DeserializeObject<List<InstalledModpack>>(jsonText);
             if (modpacks == null) return;
 
             var modpackToDelete = modpacks.Find(mp => mp.Name == modpackName);
             if (modpackToDelete != null)
             {
                 modpacks.Remove(modpackToDelete);
-                var newJson = System.Text.Json.JsonSerializer.Serialize(modpacks, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+                var newJson = JsonConvert.SerializeObject(modpacks, Formatting.Indented);
                 File.WriteAllText(pathToJson, newJson);
             }
         }
@@ -225,7 +223,26 @@ namespace CL_CLegendary_Launcher_.Class
                     if (typeSite == "Modrinth")
                         downloadSuccess = await DownloadModsFromIndexJsonAsync(pathJson, finalModPath, versionDownloadWindow, token);
                     else if (typeSite == "CurseForge")
+                    {
                         downloadSuccess = await DownloadModsFromManifestJsonAsync(pathJson, finalModPath, versionDownloadWindow, token);
+
+                        string cfOverridesPath = Path.Combine(pathModPack, "overrides");
+                        if (Directory.Exists(cfOverridesPath))
+                        {
+                            try
+                            {
+                                foreach (var dirPath in Directory.GetDirectories(cfOverridesPath, "*", SearchOption.AllDirectories))
+                                    Directory.CreateDirectory(dirPath.Replace(cfOverridesPath, finalModPath));
+
+                                foreach (var filePath in Directory.GetFiles(cfOverridesPath, "*.*", SearchOption.AllDirectories))
+                                    File.Copy(filePath, filePath.Replace(cfOverridesPath, finalModPath), overwrite: true);
+                            }
+                            catch (Exception ex)
+                            {
+                                System.Diagnostics.Debug.WriteLine($"[CL] Помилка копіювання overrides CurseForge: {ex.Message}");
+                            }
+                        }
+                    }
                     else
                     {
                         string customJsonPath = Path.Combine(pathModPack, "modpack.json");
@@ -242,14 +259,13 @@ namespace CL_CLegendary_Launcher_.Class
                 var path = new MinecraftPath(finalModPath);
                 System.Net.ServicePointManager.DefaultConnectionLimit = 256;
 
-                var httpClient = new HttpClient();
                 int safeThreads = Math.Clamp(Environment.ProcessorCount * 2, 4, 16);
 
                 var parallelInstaller = new ParallelGameInstaller(
                     maxChecker: 32,
                     maxDownloader: safeThreads,
                     boundedCapacity: 2048,
-                    httpClient
+                    WebHelper.Client
                 );
 
                 var parameters = MinecraftLauncherParameters.CreateDefault(path);
@@ -279,6 +295,7 @@ namespace CL_CLegendary_Launcher_.Class
 
                 MLaunchOption mLaunch = new MLaunchOption
                 {
+                    MinimumRamMb = Math.Max(512, installedModpack.OPack / 4),
                     MaximumRamMb = installedModpack.OPack,
                     Session = _main.session,
                     ScreenWidth = installedModpack.Wdith,
@@ -451,6 +468,26 @@ namespace CL_CLegendary_Launcher_.Class
                 int completed = 0;
                 var downloadTasks = new List<Task>();
 
+                var cfApi = await GetCfClientAsync();
+                if (cfApi == null) return false;
+
+                var allFiles = new Dictionary<int, CurseForge.APIClient.Models.Files.File>();
+                var fileIds = files.Select(m => m.Value<int>("fileID")).Distinct().ToList();
+
+                for (int i = 0; i < fileIds.Count; i += 50)
+                {
+                    var chunk = fileIds.Skip(i).Take(50).ToList();
+                    try
+                    {
+                        var resp = await cfApi.GetFilesAsync(new CurseForge.APIClient.Models.Files.GetModFilesRequestBody { FileIds = chunk });
+                        if (resp?.Data != null)
+                        {
+                            foreach (var f in resp.Data) allFiles[f.Id] = f;
+                        }
+                    }
+                    catch { }
+                }
+
                 foreach (var modEntry in files)
                 {
                     downloadTasks.Add(Task.Run(async () =>
@@ -462,14 +499,38 @@ namespace CL_CLegendary_Launcher_.Class
                             int projectId = modEntry.Value<int>("projectID");
                             int fileId = modEntry.Value<int>("fileID");
 
-                            var cfApi = await GetCfClientAsync();
-                            if (cfApi == null) return;
-                            var file = await cfApi.GetModFileAsync(projectId, fileId);
-                            var data = file?.Data;
+                            CurseForge.APIClient.Models.Files.File data = null;
+                            if (allFiles.TryGetValue(fileId, out var batchedData) && batchedData != null)
+                            {
+                                data = batchedData;
+                            }
+                            else
+                            {
+                                await Task.Delay(150, token);
+                                try 
+                                { 
+                                    var file = await cfApi.GetModFileAsync(projectId, fileId); 
+                                    data = file?.Data;
+                                } 
+                                catch { }
+                            }
+
                             if (data == null) return;
 
                             string downloadUrl = data.DownloadUrl;
                             string fileName = data.FileName;
+                            long fileLength = data.FileLength;
+
+                            if (string.IsNullOrEmpty(downloadUrl) && !string.IsNullOrEmpty(fileName))
+                            {
+                                string strId = fileId.ToString();
+                                if (strId.Length >= 4)
+                                {
+                                    string p1 = strId.Substring(0, strId.Length - 3);
+                                    string p2 = strId.Substring(strId.Length - 3);
+                                    downloadUrl = $"https://edge.forgecdn.net/files/{p1}/{p2}/{fileName}";
+                                }
+                            }
 
                             if (!string.IsNullOrEmpty(downloadUrl) && !string.IsNullOrEmpty(fileName))
                             {
@@ -478,14 +539,30 @@ namespace CL_CLegendary_Launcher_.Class
                                 Directory.CreateDirectory(targetDir);
                                 string fullPath = Path.Combine(targetDir, fileName);
 
-                                if (!File.Exists(fullPath))
+                                bool needsDownload = !File.Exists(fullPath) && !File.Exists(fullPath + ".disabled");
+                                if (!needsDownload)
                                 {
-                                    _main.Dispatcher.BeginInvoke(() => progress.DowloadProgressBarFileTask(total, completed, fileName));
-                                    bool success = await DownloadFileWithProgress(downloadUrl, fullPath, progress, token);
+                                    long actualLength = new FileInfo(fullPath).Length;
+                                    if (actualLength == 0 || (fileLength > 0 && actualLength != fileLength))
+                                    {
+                                        needsDownload = true;
+                                    }
+                                }
+
+                                if (needsDownload)
+                                {
+                                    var activeItem = new ConcurrentDownloadItem { FileName = fileName, Progress = 0, Status = "Завантаження" };
+                                    progress.AddActiveDownload(activeItem);
+
+                                    _main.Dispatcher.BeginInvoke(() => progress.DowloadProgressBarFileTask(total, completed, ""));
+                                    bool success = await DownloadFileWithProgress(downloadUrl, fullPath, progress, token, activeItem);
+                                    
+                                    progress.RemoveActiveDownload(activeItem);
                                     if (!success) await HandleManualDownloadPrompt(downloadUrl, fullPath, fileName);
                                 }
                             }
                         }
+                        catch (OperationCanceledException) { throw; }
                         catch { }
                         finally
                         {
@@ -495,9 +572,11 @@ namespace CL_CLegendary_Launcher_.Class
                         }
                     }, token));
                 }
-                await Task.WhenAll(downloadTasks);
+                try { await Task.WhenAll(downloadTasks); }
+                catch (OperationCanceledException) { return false; }
                 return true;
             }
+            catch (OperationCanceledException) { return false; }
             catch { return false; }
         }
 
@@ -528,6 +607,7 @@ namespace CL_CLegendary_Launcher_.Class
                             string relativePath = file["path"]?.ToString();
                             var urls = file["downloads"] as JArray;
                             string downloadUrl = urls?[0]?.ToString();
+                            string expectedSha1 = file["hashes"]?["sha1"]?.ToString();
 
                             if (!string.IsNullOrWhiteSpace(relativePath) && !string.IsNullOrWhiteSpace(downloadUrl))
                             {
@@ -536,15 +616,31 @@ namespace CL_CLegendary_Launcher_.Class
                                 string targetDir = Path.Combine(packFolder, subFolder);
                                 Directory.CreateDirectory(targetDir);
                                 string fullPath = Path.Combine(targetDir, fileName);
-
-                                if (!File.Exists(fullPath))
+                                bool needsDownload = !File.Exists(fullPath) && !File.Exists(fullPath + ".disabled");
+                                if (!needsDownload && !string.IsNullOrEmpty(expectedSha1))
                                 {
-                                    _main.Dispatcher.BeginInvoke(() => progress.DowloadProgressBarFileTask(total, completed, fileName));
-                                    bool success = await DownloadFileWithProgress(downloadUrl, fullPath, progress, token);
+                                    string actualSha1 = await ComputeSha1Async(fullPath);
+                                    if (!string.Equals(actualSha1, expectedSha1, StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        System.Diagnostics.Debug.WriteLine($"[CL] SHA1 не збігається для {fileName}, перезавантажуємо.");
+                                        needsDownload = true;
+                                    }
+                                }
+
+                                if (needsDownload)
+                                {
+                                    var activeItem = new ConcurrentDownloadItem { FileName = fileName, Progress = 0, Status = "Завантаження" };
+                                    progress.AddActiveDownload(activeItem);
+
+                                    _main.Dispatcher.BeginInvoke(() => progress.DowloadProgressBarFileTask(total, completed, ""));
+                                    bool success = await DownloadFileWithProgress(downloadUrl, fullPath, progress, token, activeItem);
+                                    
+                                    progress.RemoveActiveDownload(activeItem);
                                     if (!success) await HandleManualDownloadPrompt(downloadUrl, fullPath, fileName);
                                 }
                             }
                         }
+                        catch (OperationCanceledException) { throw; }
                         catch { }
                         finally
                         {
@@ -554,9 +650,11 @@ namespace CL_CLegendary_Launcher_.Class
                         }
                     }, token));
                 }
-                await Task.WhenAll(downloadTasks);
+                try { await Task.WhenAll(downloadTasks); }
+                catch (OperationCanceledException) { return false; }
                 return true;
             }
+            catch (OperationCanceledException) { return false; }
             catch { return false; }
         }
         private async Task<bool> DownloadModsFromCustomJsonAsync(string jsonPath, string packFolder, DowloadProgress progress, CancellationToken token)
@@ -661,14 +759,19 @@ namespace CL_CLegendary_Launcher_.Class
 
                             string filePath = Path.Combine(targetDir, fileName);
 
-                            if (!File.Exists(filePath))
+                            if (!File.Exists(filePath) && !File.Exists(filePath + ".disabled"))
                             {
-                                _main.Dispatcher.BeginInvoke(() => progress.DowloadProgressBarFileTask(totalTasks, completed, fileName));
+                                _main.Dispatcher.BeginInvoke(() => progress.DowloadProgressBarFileTask(totalTasks, completed, ""));
 
                                 bool success = false;
                                 if (!string.IsNullOrEmpty(actualDownloadUrl))
                                 {
-                                    success = await DownloadFileWithProgress(actualDownloadUrl, filePath, progress, token);
+                                    var activeItem = new ConcurrentDownloadItem { FileName = fileName, Progress = 0, Status = "Завантаження" };
+                                    progress.AddActiveDownload(activeItem);
+
+                                    success = await DownloadFileWithProgress(actualDownloadUrl, filePath, progress, token, activeItem);
+
+                                    progress.RemoveActiveDownload(activeItem);
                                 }
 
                                 if (!success) await HandleManualDownloadPrompt(actualDownloadUrl ?? "Порожнє посилання", filePath, fileName);
@@ -799,11 +902,11 @@ namespace CL_CLegendary_Launcher_.Class
                 Loaders = new List<string> { mod.Loader }
             };
         }
-        private async Task<bool> DownloadFileWithProgress(string url, string savePath, DowloadProgress progress, CancellationToken token)
+        private async Task<bool> DownloadFileWithProgress(string url, string savePath, DowloadProgress progress, CancellationToken token, ConcurrentDownloadItem activeItem = null)
         {
             try
             {
-                using var response = await _httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, token);
+                using var response = await WebHelper.Client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, token);
                 response.EnsureSuccessStatusCode();
 
                 long totalBytes = response.Content.Headers.ContentLength ?? -1;
@@ -830,7 +933,14 @@ namespace CL_CLegendary_Launcher_.Class
                         {
                             lastReportedBytes = totalRead;
                             int percent = (int)(totalRead * 100 / totalBytes);
-                            _main.Dispatcher.BeginInvoke(() => progress.DowloadProgressBarFile(percent));
+                            if (activeItem != null)
+                            {
+                                activeItem.Progress = percent;
+                            }
+                            else
+                            {
+                                _main.Dispatcher.BeginInvoke(() => progress.DowloadProgressBarFile(percent));
+                            }
                         }
                     }
                 }
@@ -845,17 +955,28 @@ namespace CL_CLegendary_Launcher_.Class
             }
         }
 
+        private static async Task<string> ComputeSha1Async(string filePath)
+        {
+            using var sha1 = System.Security.Cryptography.SHA1.Create();
+            using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read, 81920, true);
+            byte[] hash = await Task.Run(() => sha1.ComputeHash(stream));
+            return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
+        }
+
         private string GetFolderByFileType(string fileName)
         {
             string ext = Path.GetExtension(fileName).ToLower();
 
-            if (ext == ".jar")
+            if (ext == ".jar" || ext == ".litemod")
                 return "mods";
+
+            if (ext == ".cfg" || ext == ".toml" || ext == ".properties")
+                return "config";
 
             if (ext == ".zip")
             {
                 string name = fileName.ToLower();
-                if (name.Contains("shader") || name.Contains("bsl") || name.Contains("seus") || name.Contains("sildur"))
+                if (name.Contains("shader") || name.Contains("bsl") || name.Contains("seus") || name.Contains("sildur") || name.Contains("complementary"))
                     return "shaderpacks";
                 if (name.Contains("resource") || name.Contains("pack") || name.Contains("texture"))
                     return "resourcepacks";

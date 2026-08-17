@@ -1,4 +1,4 @@
-﻿using CL_CLegendary_Launcher_.Class;
+using CL_CLegendary_Launcher_.Class;
 using CmlLib.Core;
 using CmlLib.Core.Installer.Forge.Versions;
 using CmlLib.Core.Installer.NeoForge;
@@ -48,7 +48,7 @@ namespace CL_CLegendary_Launcher_.Windows
         private ModSearchResult _currentModToInstall;
         private List<ModVersionInfo> _currentAvailableVersions;
 
-        private HttpClient httpClient = new HttpClient();
+
 
         public CreateModPackWindow(ModDownloadService modDownloadService, ModpackService modpackService)
         {
@@ -104,19 +104,19 @@ namespace CL_CLegendary_Launcher_.Windows
 
                 if (LoderNow == "Fabric")
                 {
-                    var fabricInstaller = new FabricInstaller(httpClient);
+                    var fabricInstaller = new FabricInstaller(WebHelper.Client);
                     var versions = await fabricInstaller.GetSupportedVersionNames();
                     foreach (var version in versions) VersionVanilBox.Items.Add(version);
                 }
                 else if (LoderNow == "Quilt")
                 {
-                    var quiltInstaller = new QuiltInstaller(httpClient);
+                    var quiltInstaller = new QuiltInstaller(WebHelper.Client);
                     var versions = await quiltInstaller.GetSupportedVersionNames();
                     foreach (var version in versions) VersionVanilBox.Items.Add(version);
                 }
                 else if (LoderNow == "LiteLoader")
                 {
-                    var liteLoaderInstaller = new LiteLoaderInstaller(httpClient);
+                    var liteLoaderInstaller = new LiteLoaderInstaller(WebHelper.Client);
                     var loaders = await liteLoaderInstaller.GetAllLiteLoaders();
 
                     var gameVersions = loaders
@@ -134,7 +134,7 @@ namespace CL_CLegendary_Launcher_.Windows
                 }
                 else if (LoderNow == "Optifine")
                 {
-                    var optifineInstaller = new OptifineInstaller(httpClient);
+                    var optifineInstaller = new OptifineInstaller(WebHelper.Client);
                     var optifineVersions = await optifineInstaller.GetOptifineVersionsAsync();
 
                     var gameVersions = optifineVersions
@@ -199,21 +199,21 @@ namespace CL_CLegendary_Launcher_.Windows
             {
                 if (LoderNow == "Forge")
                 {
-                    var versionLoader = new ForgeVersionLoader(httpClient);
+                    var versionLoader = new ForgeVersionLoader(WebHelper.Client);
                     var forgeList = await versionLoader.GetForgeVersions(gameVersion);
                     foreach (var forge in forgeList)
                         LoaderVersionBox.Items.Add(forge.ForgeVersionName);
                 }
                 else if (LoderNow == "Fabric")
                 {
-                    var fabricInstaller = new FabricInstaller(httpClient);
+                    var fabricInstaller = new FabricInstaller(WebHelper.Client);
                     var fabricVersions = await fabricInstaller.GetLoaders(gameVersion);
                     foreach (var fabric in fabricVersions)
                         LoaderVersionBox.Items.Add(fabric.Version);
                 }
                 else if (LoderNow == "Quilt")
                 {
-                    var quiltInstaller = new QuiltInstaller(httpClient);
+                    var quiltInstaller = new QuiltInstaller(WebHelper.Client);
                     var quiltVersions = await quiltInstaller.GetLoaders(gameVersion);
                     foreach (var quilt in quiltVersions)
                         LoaderVersionBox.Items.Add(quilt.Version);
@@ -229,7 +229,7 @@ namespace CL_CLegendary_Launcher_.Windows
                 }
                 else if (LoderNow == "LiteLoader")
                 {
-                    var liteLoaderInstaller = new LiteLoaderInstaller(httpClient);
+                    var liteLoaderInstaller = new LiteLoaderInstaller(WebHelper.Client);
                     var loaders = await liteLoaderInstaller.GetAllLiteLoaders();
 
                     var compatibleLoaders = loaders.Where(l => l.BaseVersion == gameVersion);
@@ -238,7 +238,7 @@ namespace CL_CLegendary_Launcher_.Windows
                 }
                 else if (LoderNow == "Optifine")
                 {
-                    var loader = new OptifineInstaller(httpClient);
+                    var loader = new OptifineInstaller(WebHelper.Client);
                     var versions = await loader.GetOptifineVersionsAsync();
 
                     var compatible = versions.Where(v => v.MinecraftVersion == gameVersion);
@@ -592,7 +592,33 @@ namespace CL_CLegendary_Launcher_.Windows
                 string newJson = JsonConvert.SerializeObject(_tempModList, Formatting.Indented);
                 File.WriteAllText(pathJson, newJson);
 
-                string imageUrl = iconUrl.FirstOrDefault() ?? "pack://application:,,,/Icon/IconCL(Common).png";
+                string iconDestPath = Path.Combine(basePath, "icon.png");
+                string imageUrl = iconUrl.FirstOrDefault();
+                
+                if (string.IsNullOrEmpty(imageUrl))
+                {
+                    try
+                    {
+                        var uri = new Uri("pack://application:,,,/Icon/IconCL(Common).png");
+                        var streamInfo = System.Windows.Application.GetResourceStream(uri);
+                        if (streamInfo != null)
+                        {
+                            using (var fileStream = File.Create(iconDestPath))
+                            {
+                                streamInfo.Stream.CopyTo(fileStream);
+                            }
+                            imageUrl = iconDestPath;
+                        }
+                        else
+                        {
+                            imageUrl = "pack://application:,,,/Icon/IconCL(Common).png";
+                        }
+                    }
+                    catch
+                    {
+                        imageUrl = "pack://application:,,,/Icon/IconCL(Common).png";
+                    }
+                }
 
                 var modpack = new InstalledModpack
                 {

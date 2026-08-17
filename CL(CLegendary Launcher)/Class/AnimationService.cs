@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -83,19 +83,29 @@ namespace CL_CLegendary_Launcher_.Class
         {
             if (targetButton == null || targetButton.Visibility != Visibility.Visible) return;
 
+            var oldTransform = targetButton.RenderTransform;
+            targetButton.RenderTransform = null;
+
             var transform = targetButton.TransformToAncestor(containerGrid);
             var targetPosition = transform.Transform(new Point(0, 0));
 
-            movingPanel.Width = targetButton.ActualWidth;
+            targetButton.RenderTransform = oldTransform;
 
-            var animation = new DoubleAnimation
+            var animationX = new DoubleAnimation
             {
                 To = targetPosition.X,
                 Duration = TimeSpan.FromMilliseconds(300),
                 EasingFunction = new BackEase { EasingMode = EasingMode.EaseOut, Amplitude = 0.5 }
             };
+            translateTransform.BeginAnimation(TranslateTransform.XProperty, animationX);
 
-            translateTransform.BeginAnimation(TranslateTransform.XProperty, animation);
+            var animationWidth = new DoubleAnimation
+            {
+                To = targetButton.ActualWidth,
+                Duration = TimeSpan.FromMilliseconds(300),
+                EasingFunction = new BackEase { EasingMode = EasingMode.EaseOut, Amplitude = 0.5 }
+            };
+            movingPanel.BeginAnimation(FrameworkElement.WidthProperty, animationWidth);
         }
         public static void AnimateRotation(UIElement element, double targetAngle, double durationSeconds = 0.2)
         {

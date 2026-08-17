@@ -1,4 +1,4 @@
-﻿using CL_CLegendary_Launcher_.Class;
+using CL_CLegendary_Launcher_.Class;
 using CL_CLegendary_Launcher_.Models;
 using Newtonsoft.Json;
 using System;
@@ -27,6 +27,24 @@ namespace CL_CLegendary_Launcher_.Windows
         public bool Off_OnMod = true;
         public bool IsModPack = false;
         public int Index { get; set; }
+
+        public void SetIcon(byte[] iconData)
+        {
+            try
+            {
+                using (var ms = new System.IO.MemoryStream(iconData))
+                {
+                    var bitmap = new System.Windows.Media.Imaging.BitmapImage();
+                    bitmap.BeginInit();
+                    bitmap.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.OnLoad;
+                    bitmap.StreamSource = ms;
+                    bitmap.EndInit();
+                    bitmap.Freeze();
+                    ImageIcon.Source = bitmap;
+                }
+            }
+            catch { }
+        }
 
         public ItemManegerPack()
         {
@@ -129,14 +147,14 @@ namespace CL_CLegendary_Launcher_.Windows
                                 var manifest = JsonConvert.DeserializeObject<CustomModpackManifest>(jsonContent);
                                 if (manifest != null && manifest.Files != null)
                                 {
-                                    var itemToRemove = manifest.Files.FirstOrDefault(m =>
+                                    int removedCount = manifest.Files.RemoveAll(m =>
                                         (m.FileName != null && m.FileName.Equals(fileNameToDelete, StringComparison.OrdinalIgnoreCase)) ||
-                                        (m.Name != null && m.Name.Equals(Title.Text, StringComparison.OrdinalIgnoreCase))
+                                        (m.Name != null && m.Name.Equals(Title.Text, StringComparison.OrdinalIgnoreCase)) ||
+                                        (m.Url != null && m.Url.Contains(fileNameToDelete))
                                     );
 
-                                    if (itemToRemove != null)
+                                    if (removedCount > 0)
                                     {
-                                        manifest.Files.Remove(itemToRemove);
                                         newJsonContent = JsonConvert.SerializeObject(manifest, Formatting.Indented);
                                         updated = true;
                                     }
@@ -153,14 +171,14 @@ namespace CL_CLegendary_Launcher_.Windows
                                     var modsList = JsonConvert.DeserializeObject<List<ModInfo>>(jsonContent);
                                     if (modsList != null)
                                     {
-                                        var itemToRemove = modsList.FirstOrDefault(m =>
+                                        int removedCount = modsList.RemoveAll(m =>
                                             (m.FileName != null && m.FileName.Equals(fileNameToDelete, StringComparison.OrdinalIgnoreCase)) ||
-                                            (m.Name != null && m.Name.Equals(Title.Text, StringComparison.OrdinalIgnoreCase))
+                                            (m.Name != null && m.Name.Equals(Title.Text, StringComparison.OrdinalIgnoreCase)) ||
+                                            (m.Url != null && m.Url.Contains(fileNameToDelete))
                                         );
 
-                                        if (itemToRemove != null)
+                                        if (removedCount > 0)
                                         {
-                                            modsList.Remove(itemToRemove);
                                             newJsonContent = JsonConvert.SerializeObject(modsList, Formatting.Indented);
                                             updated = true;
                                         }

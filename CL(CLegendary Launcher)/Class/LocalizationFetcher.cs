@@ -11,7 +11,6 @@ namespace CL_CLegendary_Launcher_.Class
     public static class LocalizationFetcher
     {
         public static string LocalesFolder => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Locales");
-        private static readonly HttpClient _httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
 
         public static async Task<List<LanguageItem>> GetAvailableLanguagesAsync()
         {
@@ -20,7 +19,7 @@ namespace CL_CLegendary_Launcher_.Class
                 if (!Directory.Exists(LocalesFolder))
                     Directory.CreateDirectory(LocalesFolder);
 
-                string json = await _httpClient.GetStringAsync($"{Secrets.LocalizationURL}?v={DateTime.Now.Ticks}");
+                string json = await WebHelper.Client.GetStringAsync($"{Secrets.LocalizationURL}?v={DateTime.Now.Ticks}");
                 return JsonConvert.DeserializeObject<List<LanguageItem>>(json) ?? GetFallbackLanguages();
             }
             catch (Exception ex)
@@ -37,7 +36,7 @@ namespace CL_CLegendary_Launcher_.Class
                 if (!Directory.Exists(LocalesFolder))
                     Directory.CreateDirectory(LocalesFolder);
 
-                string jsonContent = await _httpClient.GetStringAsync($"{lang.DownloadUrl}?v={DateTime.Now.Ticks}");
+                string jsonContent = await WebHelper.Client.GetStringAsync($"{lang.DownloadUrl}?v={DateTime.Now.Ticks}");
                 string filePath = Path.Combine(LocalesFolder, $"{lang.Code}.json");
                 File.WriteAllText(filePath, jsonContent);
 

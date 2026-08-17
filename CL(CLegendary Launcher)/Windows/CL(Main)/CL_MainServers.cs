@@ -1,4 +1,4 @@
-﻿using CL_CLegendary_Launcher_.Class;
+using CL_CLegendary_Launcher_.Class;
 using CL_CLegendary_Launcher_.Models;
 using CL_CLegendary_Launcher_.Windows;
 using Newtonsoft.Json;
@@ -131,7 +131,10 @@ namespace CL_CLegendary_Launcher_
                     this.BG.Source = ImageHelper.LoadOptimizedImage(bgUri.ToString(), 200);
                     this.BG.Visibility = Visibility.Visible;
                 }
-                catch { }
+                catch (Exception ex) 
+                {
+                    System.Diagnostics.Debug.WriteLine($"Failed to load server bg: {ex.Message}");
+                }
             }
             if (data.ContainsKey("versions") && data["versions"] is JArray versionsArray)
             {
@@ -344,7 +347,7 @@ namespace CL_CLegendary_Launcher_
             }
         }
 
-        private async void LoadFundraiserAsync()
+        private async Task LoadFundraiserAsync()
         {
             FundLoader.Visibility = Visibility.Visible;
             FundraisersList.ItemsSource = null;
@@ -352,10 +355,8 @@ namespace CL_CLegendary_Launcher_
 
             try
             {
-                using (HttpClient client = new HttpClient())
-                {
-                    client.Timeout = TimeSpan.FromSeconds(5);
-                    string json = await client.GetStringAsync(Secrets.FundraiserURL);
+                var client = WebHelper.Client;
+                string json = await client.GetStringAsync(Secrets.FundraiserURL);
 
                     var dataList = JsonConvert.DeserializeObject<List<FundraiserData3rd>>(json);
 
@@ -371,7 +372,10 @@ namespace CL_CLegendary_Launcher_
                                 {
                                     fund.ImageBitmap = ImageHelper.LoadOptimizedImage(fund.imageUrl, 86);
                                 }
-                                catch { }
+                                catch (Exception ex)
+                                {
+                                    System.Diagnostics.Debug.WriteLine($"Failed to load fundraiser image: {ex.Message}");
+                                }
                             }
                         }
 
@@ -381,7 +385,6 @@ namespace CL_CLegendary_Launcher_
                     {
                         NoActiveFundsTXT.Visibility = Visibility.Visible;
                     }
-                }
             }
             catch (Exception ex)
             {
@@ -402,7 +405,7 @@ namespace CL_CLegendary_Launcher_
             }
         }
 
-        private async void NextIndex()
+        private async Task NextIndex()
         {
             if (PartnerServer.Items.Count < 2) return;
 

@@ -1,4 +1,4 @@
-﻿using CL_CLegendary_Launcher_.Class;
+using CL_CLegendary_Launcher_.Class;
 using CmlLib.Core;
 using CurseForge.APIClient;
 using CurseForge.APIClient.Models.Mods;
@@ -39,7 +39,7 @@ namespace CL_CLegendary_Launcher_.Windows
         private string LoderNow = "Forge";
         private string SiteDowload = "Modrinth"; 
         private static ApiClient _cfApiClientInstance;
-        private static readonly HttpClient httpClient = new HttpClient();
+
         private ModpackService _modpackService;
 
         private const string DefaultIconPath = "pack://application:,,,/Icon/IconCL(Common).png";
@@ -193,7 +193,7 @@ namespace CL_CLegendary_Launcher_.Windows
             if (_cfApiClientInstance != null) return _cfApiClientInstance;
             try
             {
-                using var client = new HttpClient();
+                var client = WebHelper.Client;
                 client.DefaultRequestHeaders.Add("x-launcher-secret", "CL-Super-Secret-2026");
                 var response = await client.GetAsync($"{Secrets.CurseForgeKey}");
                 if (response.IsSuccessStatusCode)
@@ -234,7 +234,7 @@ namespace CL_CLegendary_Launcher_.Windows
 
                 string url = $"https://api.modrinth.com/v2/search?query={Uri.EscapeDataString(safeSearch)}&facets=[[\"categories:{safeLoader}\"],[\"project_type:modpack\"],[\"versions:{version}\"]]&limit={ITEMS_PER_PAGE}&offset={offset}&sort=downloads";
 
-                var response = await httpClient.GetStringAsync(url);
+                var response = await WebHelper.Client.GetStringAsync(url);
                 dynamic result = JsonConvert.DeserializeObject(response);
 
                 if (result != null && result["hits"] != null)
@@ -407,7 +407,7 @@ namespace CL_CLegendary_Launcher_.Windows
                 if (SiteDowload == "Modrinth")
                 {
                     string url = $"https://api.modrinth.com/v2/project/{item.ProjectId}/version";
-                    var response = await httpClient.GetStringAsync(url);
+                    var response = await WebHelper.Client.GetStringAsync(url);
                     var versions = JsonConvert.DeserializeObject<List<dynamic>>(response);
 
                     foreach (var ver in versions)
@@ -707,12 +707,12 @@ namespace CL_CLegendary_Launcher_.Windows
                 }
                 else if (LoderNow == "Fabric")
                 {
-                    var fabricInstaller = new CmlLib.Core.ModLoaders.FabricMC.FabricInstaller(httpClient);
+                    var fabricInstaller = new CmlLib.Core.ModLoaders.FabricMC.FabricInstaller(WebHelper.Client);
                     versions = await fabricInstaller.GetSupportedVersionNames();
                 }
                 else if (LoderNow == "Quilt")
                 {
-                    var quiltInstaller = new CmlLib.Core.ModLoaders.QuiltMC.QuiltInstaller(httpClient);
+                    var quiltInstaller = new CmlLib.Core.ModLoaders.QuiltMC.QuiltInstaller(WebHelper.Client);
                     versions = await quiltInstaller.GetSupportedVersionNames();
                 }
                 else if (LoderNow == "NeoForge")
@@ -767,7 +767,7 @@ namespace CL_CLegendary_Launcher_.Windows
                 if (string.IsNullOrEmpty(extension) || extension.Length > 5) extension = ".png";
                 string localFileName = $"icon{extension}";
                 string localFilePath = Path.Combine(destinationFolder, localFileName);
-                using (var response = await httpClient.GetAsync(imageUrl))
+                using (var response = await WebHelper.Client.GetAsync(imageUrl))
                 {
                     if (response.IsSuccessStatusCode)
                     {
@@ -798,8 +798,7 @@ namespace CL_CLegendary_Launcher_.Windows
 
         private async Task DownloadModpackAsync(string url, string savePath)
         {
-            using (HttpClient client = new HttpClient())
-            using (HttpResponseMessage response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead))
+            using (HttpResponseMessage response = await WebHelper.Client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead))
             {
                 response.EnsureSuccessStatusCode();
                 long? totalBytes = response.Content.Headers.ContentLength;

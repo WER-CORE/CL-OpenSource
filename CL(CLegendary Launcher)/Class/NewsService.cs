@@ -1,4 +1,4 @@
-﻿using CL_CLegendary_Launcher_.Models;
+using CL_CLegendary_Launcher_.Models;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -15,15 +15,10 @@ namespace CL_CLegendary_Launcher_.Class
         {
             try
             {
-                using (var client = new HttpClient())
-                {
-                    client.DefaultRequestHeaders.Add("User-Agent", "CL-Launcher");
+                string json = await WebHelper.Client.GetStringAsync(Secrets.NewsUrl);
 
-                    string json = await client.GetStringAsync(Secrets.NewsUrl);
-
-                    var news = JsonConvert.DeserializeObject<List<NewsItem>>(json);
-                    return news ?? new List<NewsItem>();
-                }
+                var news = JsonConvert.DeserializeObject<List<NewsItem>>(json);
+                return news ?? new List<NewsItem>();
             }
             catch (Exception ex)
             {

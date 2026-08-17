@@ -101,7 +101,7 @@ namespace CL_CLegendary_Launcher_.Class
             {
                 System.Net.ServicePointManager.DefaultConnectionLimit = 256;
                 var path = new MinecraftPath(SettingsManager.Default.PathLacunher);
-                var httpClient = new HttpClient();
+                var httpClient = WebHelper.Client;
                 int safeThreads = Math.Clamp(Environment.ProcessorCount * 2, 4, 16);
 
                 var parallelInstaller = new ParallelGameInstaller(
@@ -321,11 +321,11 @@ namespace CL_CLegendary_Launcher_.Class
                     return await forge.Install(mcVersion, loaderVersion, new CmlLib.Core.Installer.Forge.ForgeInstallOptions { CancellationToken = token });
 
                 case LoaderType.Fabric:
-                    var fabricInstaller = new FabricInstaller(new HttpClient());
+                    var fabricInstaller = new FabricInstaller(WebHelper.Client);
                     return await fabricInstaller.Install($"{mcVersion}", $"{loaderVersion}", launcher.MinecraftPath);
 
                 case LoaderType.Quilt:
-                    var quiltInstaller = new QuiltInstaller(new HttpClient());
+                    var quiltInstaller = new QuiltInstaller(WebHelper.Client);
                     return await quiltInstaller.Install($"{mcVersion}", $"{loaderVersion}", launcher.MinecraftPath);
 
                 case LoaderType.NeoForge:
@@ -334,7 +334,7 @@ namespace CL_CLegendary_Launcher_.Class
 
                 case LoaderType.Optifine:
                     {
-                        var loader = new OptifineInstaller(new HttpClient());
+                        var loader = new OptifineInstaller(WebHelper.Client);
                         var versions = await loader.GetOptifineVersionsAsync();
                         var selectedVersion = versions.FirstOrDefault(x => x.Version == loaderVersion);
 
@@ -367,7 +367,7 @@ namespace CL_CLegendary_Launcher_.Class
                     }
                 case LoaderType.LiteLoader:
                     {
-                        var liteLoaderInstaller = new LiteLoaderInstaller(new HttpClient());
+                        var liteLoaderInstaller = new LiteLoaderInstaller(WebHelper.Client);
                         var loaders = await liteLoaderInstaller.GetAllLiteLoaders();
                         var loaderToInstall = loaders.First(loader => loader.BaseVersion == mcVersion);
 

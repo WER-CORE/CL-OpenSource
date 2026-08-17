@@ -1,4 +1,4 @@
-﻿using CL_CLegendary_Launcher_.Class;
+using CL_CLegendary_Launcher_.Class;
 using CL_CLegendary_Launcher_.Models;
 using CL_CLegendary_Launcher_.Windows;
 using Newtonsoft.Json;
@@ -155,8 +155,10 @@ namespace CL_CLegendary_Launcher_
 
         private async void HandleModDownloadClick(ModSearchResult mod)
         {
-            SoundManager.Click();
-            if (Version != null) Version.Items.Clear();
+            try
+            {
+                SoundManager.Click();
+                if (Version != null) Version.Items.Clear();
             if (VersionMods != null) VersionMods.Items.Clear();
             if (CollectionList != null)
             {
@@ -241,6 +243,11 @@ namespace CL_CLegendary_Launcher_
                 MascotMessageBox.Show($"{LocalizationManager.GetString("Dialogs.Error", "Помилка")}: {ex.Message}",
                     LocalizationManager.GetString("Dialogs.Oops", "Збій"), MascotEmotion.Sad);
                 CloseInstallerMenu();
+            }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(ex.Message);
             }
         }
 
@@ -587,9 +594,9 @@ namespace CL_CLegendary_Launcher_
             }
         }
 
-        public void RefreshModpacksList()
+        public async void RefreshModpacksList()
         {
-            var valueList = _modpackService.LoadInstalledModpacks();
+            var valueList = await Task.Run(() => _modpackService.LoadInstalledModpacks());
             allInstalledModpacks = valueList.Where(x => Directory.Exists(x.Path)).ToList();
 
             string query = SearchSystemModsTXT1?.Text.Trim().ToLower() ?? "";
@@ -722,9 +729,9 @@ namespace CL_CLegendary_Launcher_
 
             editWindow.CurrentModpack = modpackInfo;
 
-            editWindow.ModpackUpdated += () =>
+            editWindow.ModpackUpdated += async () =>
             {
-                var valueList = _modpackService.LoadInstalledModpacks();
+                var valueList = await Task.Run(() => _modpackService.LoadInstalledModpacks());
                 allInstalledModpacks = valueList.Where(x => Directory.Exists(x.Path)).ToList();
                 UpdateDisplayedModpacks(allInstalledModpacks);
             };
@@ -782,8 +789,9 @@ namespace CL_CLegendary_Launcher_
                             string oldJson = File.ReadAllText(existingJsonPath);
                             oldList = JsonConvert.DeserializeObject<List<ModInfo>>(oldJson) ?? new List<ModInfo>();
                         }
-                        catch
+                        catch (Exception ex)
                         {
+                            System.Diagnostics.Debug.WriteLine($"Failed to parse existing modpack.json: {ex.Message}");
                         }
                     }
 

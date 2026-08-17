@@ -1,4 +1,4 @@
-﻿using CmlLib.Core;
+using CmlLib.Core;
 using CmlLib.Core.Installer.Forge;
 using CmlLib.Core.Installer.Forge.Versions;
 using CmlLib.Core.Installer.NeoForge.Installers;
@@ -20,7 +20,7 @@ namespace CL_CLegendary_Launcher_.Class
         private readonly CmlLib.Core.Installer.Forge.Versions.IForgeInstallerVersionMapper _installerMapper;
         private readonly ForgeVersionLoader _versionLoader;
 
-        public NoAdForgeInstaller(MinecraftLauncher launcher) : this(launcher, new HttpClient())
+        public NoAdForgeInstaller(MinecraftLauncher launcher) : this(launcher, WebHelper.Client)
         {
         }
 
@@ -120,7 +120,7 @@ namespace CL_CLegendary_Launcher_.Class
         private readonly CmlLib.Core.Installer.NeoForge.Versions.IForgeInstallerVersionMapper _installerMapper;
         private readonly NeoForgeVersionLoader _versionLoader;
 
-        public NoAdNeoForgeInstaller(MinecraftLauncher launcher) : this(launcher, new HttpClient())
+        public NoAdNeoForgeInstaller(MinecraftLauncher launcher) : this(launcher, WebHelper.Client)
         {
         }
 

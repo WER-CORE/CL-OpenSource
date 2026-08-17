@@ -1,4 +1,4 @@
-﻿using CL_CLegendary_Launcher_.Windows;
+using CL_CLegendary_Launcher_.Windows;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -87,6 +87,35 @@ namespace CL_CLegendary_Launcher_.Class
                         dictionariesToAdd.Add(new ResourceDictionary { Source = new Uri("Them/LightThemeSerLisAndUpdMinecraft.xaml", UriKind.Relative) });
 
                         _main.Bg.Source = ImageHelper.LoadOptimizedImage("pack://application:,,,/Assets/LightThemBG.png", 800);
+                        break;
+
+                    case "Ocean":
+                        SettingsManager.Default.bgImage = "";
+                        SettingsManager.Save();
+
+                        dictionariesToAdd.Add(new ResourceDictionary { Source = new Uri("Them/OceanTheme.xaml", UriKind.Relative) });
+                        dictionariesToAdd.Add(new ResourceDictionary { Source = new Uri("Them/OceanThemeSerLisAndUpdMinecraft.xaml", UriKind.Relative) });
+                        _main.Bg.Source = ImageHelper.LoadOptimizedImage("pack://application:,,,/Assets/OceanBG.png", 800);
+                        break;
+
+                    case "Forest":
+                        SettingsManager.Default.bgImage = "";
+                        SettingsManager.Save();
+
+                        dictionariesToAdd.Add(new ResourceDictionary { Source = new Uri("Them/ForestTheme.xaml", UriKind.Relative) });
+                        dictionariesToAdd.Add(new ResourceDictionary { Source = new Uri("Them/ForestThemeSerLisAndUpdMinecraft.xaml", UriKind.Relative) });
+
+                        _main.Bg.Source = ImageHelper.LoadOptimizedImage("pack://application:,,,/Assets/ForestBG.png", 800);
+                        break;
+
+                    case "Sunset":
+                        SettingsManager.Default.bgImage = "";
+                        SettingsManager.Save();
+
+                        dictionariesToAdd.Add(new ResourceDictionary { Source = new Uri("Them/SunsetTheme.xaml", UriKind.Relative) });
+                        dictionariesToAdd.Add(new ResourceDictionary { Source = new Uri("Them/SunsetThemeSerLisAndUpdMinecraft.xaml", UriKind.Relative) });
+
+                        _main.Bg.Source = ImageHelper.LoadOptimizedImage("pack://application:,,,/Assets/SunSetBG.png", 800);
                         break;
 
                     case "Custom":
