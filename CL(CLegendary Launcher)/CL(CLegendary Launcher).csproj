@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup Label="Globals">
     <WebView2DispatchAdapterUseJavaScriptCase>False</WebView2DispatchAdapterUseJavaScriptCase>
@@ -13,8 +13,8 @@
     <UseWPF>true</UseWPF>
     <ApplicationIcon>Icon\IconCL(Common).ico</ApplicationIcon>
     <UseWindowsForms>true</UseWindowsForms>
-    <FileVersion>1.0.0.2</FileVersion>
-    <AssemblyVersion>1.0.0.2</AssemblyVersion>
+    <FileVersion>1.0.0.5</FileVersion>
+    <AssemblyVersion>1.0.0.5</AssemblyVersion>
     <NeutralLanguage>uk-UA</NeutralLanguage>
     <SupportedOSPlatformVersion>7.0</SupportedOSPlatformVersion>
     <GenerateDocumentationFile>False</GenerateDocumentationFile>
@@ -87,7 +87,6 @@
     <None Remove="Assets\Vector.png" />
     <None Remove="Assets\youtube_activity_1000dp_B7B7B7_FILL0_wght700_GRAD200_opsz48.png" />
     <None Remove="Assets\СMD.png" />
-    <None Remove="C:\Users\Vlad\.nuget\packages\naudio.vorbis\1.5.0\contentFiles\any\netstandard2.0\README.md" />
     <None Remove="curseforge-logo 1.png" />
     <None Remove="curseforge-logo 2.png" />
     <None Remove="editorconfig" />
@@ -197,7 +196,6 @@
 
   <ItemGroup>
     <PackageReference Include="CmlLib.Core" Version="4.0.6" />
-    <PackageReference Include="CmlLib.Core.Auth.Microsoft" Version="3.3.1" />
     <PackageReference Include="CmlLib.Core.Installer.Forge" Version="1.1.1" />
     <PackageReference Include="CmlLib.Core.Installer.NeoForge" Version="4.0.1" />
     <PackageReference Include="CurseForge.APIClient" Version="5.0.0" />
@@ -206,7 +204,6 @@
     <PackageReference Include="Markdig.Wpf" Version="0.5.0.1" />
     <PackageReference Include="MCQuery" Version="2022.7.13.192844" />
     <PackageReference Include="Microsoft.Net.Sdk.Compilers.Toolset" Version="10.0.302" />
-    <PackageReference Include="MojangAPI" Version="1.2.1" />
     <PackageReference Include="Optifine.Installer" Version="1.0.1" />
     <PackageReference Include="PixiEditor.ColorPicker" Version="3.4.2.3" />
     <PackageReference Include="RestSharp" Version="114.0.0" />
@@ -215,7 +212,6 @@
     <PackageReference Include="System.Management" Version="10.0.10" />
     <PackageReference Include="WPF-UI" Version="4.3.0" />
     <PackageReference Include="XamlAnimatedGif" Version="2.3.2" />
-    <PackageReference Include="XboxAuthNet.Game.Msal" Version="0.1.3" />
   </ItemGroup>
 
   <ItemGroup>
@@ -243,35 +239,8 @@
     <Reference Include="MojangAPI">
       <HintPath>bin\Release\3.3.9\net7.0-windows\MojangAPI.dll</HintPath>
     </Reference>
-    <Reference Include="NAudio">
-      <HintPath>bin\Release\3.3.9\net7.0-windows\NAudio.dll</HintPath>
-    </Reference>
-    <Reference Include="NAudio.Asio">
-      <HintPath>bin\Release\3.3.9\net7.0-windows\NAudio.Asio.dll</HintPath>
-    </Reference>
-    <Reference Include="NAudio.Core">
-      <HintPath>bin\Release\3.3.9\net7.0-windows\NAudio.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="NAudio.Midi">
-      <HintPath>bin\Release\3.3.9\net7.0-windows\NAudio.Midi.dll</HintPath>
-    </Reference>
-    <Reference Include="NAudio.Vorbis">
-      <HintPath>bin\Release\3.3.9\net7.0-windows\NAudio.Vorbis.dll</HintPath>
-    </Reference>
-    <Reference Include="NAudio.Wasapi">
-      <HintPath>bin\Release\3.3.9\net7.0-windows\NAudio.Wasapi.dll</HintPath>
-    </Reference>
-    <Reference Include="NAudio.WinForms">
-      <HintPath>bin\Release\3.3.9\net7.0-windows\NAudio.WinForms.dll</HintPath>
-    </Reference>
-    <Reference Include="NAudio.WinMM">
-      <HintPath>bin\Release\3.3.9\net7.0-windows\NAudio.WinMM.dll</HintPath>
-    </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>bin\Release\3.3.9\net7.0-windows\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="NVorbis">
-      <HintPath>bin\Release\3.3.9\net7.0-windows\NVorbis.dll</HintPath>
     </Reference>
     <Reference Include="SevenZip">
       <HintPath>bin\Release\3.3.9\net7.0-windows\SevenZip.dll</HintPath>

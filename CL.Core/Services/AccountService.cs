@@ -1,5 +1,7 @@
-using CL_CLegendary_Launcher_.Models;
-using CL_CLegendary_Launcher_.Windows;
+using CL.Core.Interfaces;
+using CL.Core.Platform;
+using CL.Core.Models;
+using CL.Core.Models;
 using CmlLib.Core.Auth;
 using CmlLib.Core.Auth.Microsoft;
 using MojangAPI;
@@ -12,11 +14,10 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows;
 using XboxAuthNet.Game.Msal;
 using XboxAuthNet.XboxLive;
 
-namespace CL_CLegendary_Launcher_.Class
+namespace CL.Core.Services
 {
     public class AccountService
     {
@@ -65,8 +66,8 @@ namespace CL_CLegendary_Launcher_.Class
                         bool isRefreshed = await RefreshMicrosoftSessionAsync(profile);
                         if (!isRefreshed)
                         {
-                            Application.Current.Dispatcher.Invoke(() => {
-                                MascotMessageBox.Show(
+                            ServiceLocator.Current.GetService<IDispatcherService>().Invoke(() => {
+                                ServiceLocator.Current.GetService<IDialogService>().ShowMessage(
                                     LocalizationManager.GetString("Accounts.SessionExpired", "Час вашої сесії Microsoft минув.\nБудь ласка, видаліть цей акаунт і увійдіть знову."),
                                     LocalizationManager.GetString("Accounts.NeedAuth", "Потрібна авторизація"),
                                     MascotEmotion.Alert);
@@ -94,8 +95,8 @@ namespace CL_CLegendary_Launcher_.Class
             }
             catch (Exception ex)
             {
-                Application.Current.Dispatcher.Invoke(() => {
-                    MascotMessageBox.Show(
+                ServiceLocator.Current.GetService<IDispatcherService>().Invoke(() => {
+                    ServiceLocator.Current.GetService<IDialogService>().ShowMessage(
                         string.Format(LocalizationManager.GetString("Accounts.ProfileActivationError", "Не вдалося активувати профіль:\n{0}"), ex.Message),
                         LocalizationManager.GetString("Dialogs.Error", "Помилка"),
                         MascotEmotion.Sad);
@@ -144,8 +145,8 @@ namespace CL_CLegendary_Launcher_.Class
 
                 if (!ownsGame)
                 {
-                    Application.Current.Dispatcher.Invoke(() => {
-                        MascotMessageBox.Show(
+                    ServiceLocator.Current.GetService<IDispatcherService>().Invoke(() => {
+                        ServiceLocator.Current.GetService<IDialogService>().ShowMessage(
                             LocalizationManager.GetString("Accounts.NoMinecraftOwned", "На цьому Microsoft акаунті не куплено Minecraft."),
                             LocalizationManager.GetString("Accounts.NoLicenseTitle", "Відсутня ліцензія"),
                             MascotEmotion.Sad);
@@ -157,7 +158,7 @@ namespace CL_CLegendary_Launcher_.Class
                 {
                     NameAccount = session.Username,
                     UUID = session.UUID,
-                    ImageUrl = $"https://mc-heads.net/avatar/{session.UUID}",
+                    ImageUrl = $"https://mc-heads.net/avatar/{session.Username}",
                     AccessToken = session.AccessToken,
                     TypeAccount = AccountType.Microsoft,
                     LicenseType = "Premium",
@@ -166,8 +167,8 @@ namespace CL_CLegendary_Launcher_.Class
 
                 _profileManager.SaveProfile(profile);
 
-                Application.Current.Dispatcher.Invoke(() => {
-                    MascotMessageBox.Show(
+                ServiceLocator.Current.GetService<IDispatcherService>().Invoke(() => {
+                    ServiceLocator.Current.GetService<IDialogService>().ShowMessage(
                         string.Format(LocalizationManager.GetString("Accounts.MicrosoftSuccessDesc", "Вітаємо, {0}! Ліцензію успішно підтверджено."), session.Username),
                         LocalizationManager.GetString("Accounts.LoginSuccessTitle", "Успішний вхід"),
                         MascotEmotion.Happy);
@@ -178,8 +179,8 @@ namespace CL_CLegendary_Launcher_.Class
             catch (XboxAuthException ex)
             {
                 Debug.WriteLine($"Помилка Xbox: {ex.Message}");
-                Application.Current.Dispatcher.Invoke(() => {
-                    MascotMessageBox.Show(
+                ServiceLocator.Current.GetService<IDispatcherService>().Invoke(() => {
+                    ServiceLocator.Current.GetService<IDialogService>().ShowMessage(
                         LocalizationManager.GetString("Accounts.XboxErrorDesc", "Не вдалося підключитися до Xbox. Переконайтеся, що у вас створено профіль Xbox."),
                         LocalizationManager.GetString("Accounts.XboxErrorTitle", "Помилка Xbox"),
                         MascotEmotion.Sad);
@@ -189,8 +190,8 @@ namespace CL_CLegendary_Launcher_.Class
             catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Forbidden)
             {
                 Debug.WriteLine("Отримано 403 Forbidden.");
-                Application.Current.Dispatcher.Invoke(() => {
-                    MascotMessageBox.Show(
+                ServiceLocator.Current.GetService<IDispatcherService>().Invoke(() => {
+                    ServiceLocator.Current.GetService<IDialogService>().ShowMessage(
                         LocalizationManager.GetString("Accounts.ForbiddenErrorDesc", "Доступ заборонено. Можливо, це дитячий акаунт з обмеженнями Family Safety."),
                         LocalizationManager.GetString("Accounts.ForbiddenErrorTitle", "Доступ закрито"),
                         MascotEmotion.Alert);
@@ -200,8 +201,8 @@ namespace CL_CLegendary_Launcher_.Class
             catch (Exception ex)
             {
                 Debug.WriteLine($"Помилка входу: {ex.Message}");
-                Application.Current.Dispatcher.Invoke(() => {
-                    MascotMessageBox.Show(
+                ServiceLocator.Current.GetService<IDispatcherService>().Invoke(() => {
+                    ServiceLocator.Current.GetService<IDialogService>().ShowMessage(
                         string.Format(LocalizationManager.GetString("Accounts.UnknownErrorDesc", "Щось пішло не так під час авторизації:\n{0}"), ex.Message),
                         LocalizationManager.GetString("Accounts.UnknownErrorTitle", "Невідома помилка"),
                         MascotEmotion.Sad);

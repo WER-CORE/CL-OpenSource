@@ -1,5 +1,6 @@
-﻿using CL_CLegendary_Launcher_.Class;
+using CL.Core.Services;
 using CL_CLegendary_Launcher_.Windows;
+using CL.Core.Models;
 using System;
 using System.IO;
 using System.Threading.Tasks;
@@ -12,6 +13,12 @@ namespace CL_CLegendary_Launcher_
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
+            
+            CL.Core.Platform.ServiceLocator.Current.Register<CL.Core.Interfaces.IDispatcherService, CL_CLegendary_Launcher_.PlatformImpl.WpfDispatcherService>(new CL_CLegendary_Launcher_.PlatformImpl.WpfDispatcherService());
+            CL.Core.Platform.ServiceLocator.Current.Register<CL.Core.Interfaces.IDialogService, CL_CLegendary_Launcher_.PlatformImpl.WpfDialogService>(new CL_CLegendary_Launcher_.PlatformImpl.WpfDialogService());
+            CL.Core.Platform.ServiceLocator.Current.Register<CL.Core.Interfaces.ISoundService, CL_CLegendary_Launcher_.PlatformImpl.WpfSoundService>(new CL_CLegendary_Launcher_.PlatformImpl.WpfSoundService());
+            CL.Core.Platform.ServiceLocator.Current.Register<CL.Core.Interfaces.ITaskProgressService, CL_CLegendary_Launcher_.PlatformImpl.WpfTaskProgressService>(new CL_CLegendary_Launcher_.PlatformImpl.WpfTaskProgressService());
+
             System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Tls12 | System.Net.SecurityProtocolType.Tls13;
             SoundManager.Initialize();
 

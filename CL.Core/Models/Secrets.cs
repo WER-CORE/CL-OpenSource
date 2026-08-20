@@ -1,27 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System;
 
-namespace CL_CLegendary_Launcher_.Class
+namespace CL.Core.Services
 {
     public static class Secrets
     {
-        public const string DNS_KEY_AutoReport = "ВАШ_КЛЮЧ";
-        public const string API_KEY_Gemini = "Ваш-API";
-        public const string API_URL_Gemini_Model = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent";
-        public const string CLIENT_ID_AZURE = "ВАШ_AZURE_CLIENT_ID";
+        public const string DNS_KEY_AutoReport = "";
+        public const string CLIENT_ID_AZURE = "";
+        public const string API_KEY_Gemini = "";
+        public const string API_URL_Gemini_Model = "";
+        public const string CurseForgeKey = "";
         public static string LocalizationURL = $"https://raw.githubusercontent.com/WER-CORE/CL-Win-Edition--Update/main/languages.json?v={DateTime.Now.Ticks}";
         public static string FundraiserURL => $"https://raw.githubusercontent.com/WER-CORE/CL-Win-Edition--Update/main/fundraiser.json?v={DateTime.Now.Ticks}";
-        public const string CreditsUrl = "Тут-Ваше-посилання";
-        public const string CurseForgeKey = "Ваш-API";
-        public const string EulaUrl = "YOUR_EULA_URL_HERE";
-        public const string NewsUrl = "https://raw.githubusercontent.com/WER-CORE/CL-OpenSource/main/NewsListTest.json";
+        public static string CreditsUrl => $"https://raw.githubusercontent.com/WER-CORE/CL-Win-Edition--Update/main/credits.txt?v={DateTime.Now.Ticks}";
+        public const string EulaUrl = "https://raw.githubusercontent.com/WER-CORE/CL-Win-Edition--Update/main/";
+        public const string NewsUrl = "https://drive.usercontent.google.com/u/0/uc?id=1di7dPobDy4s3Bbm7il90jObmPDS4Bwrf&export=download";
         public const string AuthUrlLittleSkin = "https://littleskin.cn/api/yggdrasil/authserver/authenticate";
-        public const string _serversUrl = "https://raw.githubusercontent.com/WER-CORE/CL-OpenSource/main/serverList.json";
-        public const string updateInfoUrl = "https://raw.githubusercontent.com/WER-CORE/CL-OpenSource/main/update.json";
-        public const string UpdateUrlCheckLoadScreen = "https://raw.githubusercontent.com/WER-CORE/CL-OpenSource/main/update.json";
+        public const string _serversUrl = "https://drive.google.com/uc?export=download&id=1AsQhx-on-dRhQu4suNd5RZM8Bqgz-XyG";
+        public static string UpdateUrlCheckLoadScreen = $"https://raw.githubusercontent.com/WER-CORE/CL-Win-Edition--Update/main/update.json?v={DateTime.Now.Ticks}";
+        public static string updateInfoUrl = $"https://raw.githubusercontent.com/WER-CORE/CL-Win-Edition--Update/main/update.json?v={DateTime.Now.Ticks}";
     }
 }

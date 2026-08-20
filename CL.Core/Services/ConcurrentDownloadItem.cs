@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace CL_CLegendary_Launcher_.Class
+namespace CL.Core.Services
 {
     public class ConcurrentDownloadItem : INotifyPropertyChanged
     {

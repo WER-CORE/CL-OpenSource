@@ -1,4 +1,4 @@
-using CL_CLegendary_Launcher_.Class;
+using CL.Core.Services;
 using CmlLib.Core;
 using CurseForge.APIClient;
 using CurseForge.APIClient.Models.Mods;

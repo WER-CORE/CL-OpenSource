@@ -1,26 +1,25 @@
-﻿using CL_CLegendary_Launcher_.Windows;
-using CmlLib.Core;
+using CL.Core.Interfaces;
+using CL.Core.Platform;
+using CL.Core.Models;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows;
 
-namespace CL_CLegendary_Launcher_.Class
+namespace CL.Core.Services
 {
     public class LastActionService
     {
         private readonly string _lastActionsPath;
         private static readonly SemaphoreSlim _fileLock = new SemaphoreSlim(1, 1);
-        private CL_Main_ _main;
 
-        public LastActionService(CL_Main_ main)
+        public event Action<List<Dictionary<string, string>>> OnActionsUpdated;
+
+        public LastActionService()
         {
-            _main = main;
             _lastActionsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "last_actions.json");
         }
 
@@ -35,18 +34,13 @@ namespace CL_CLegendary_Launcher_.Class
 
                     if (actions != null)
                     {
-                        _main.Dispatcher.Invoke(() => _main.ServerMonitoring.Items.Clear());
-
-                        foreach (var action in actions)
-                        {
-                            _main.AddActionToList(action);
-                        }
+                        OnActionsUpdated?.Invoke(actions);
                     }
                 }
             }
             catch (Exception ex)
             {
-                MascotMessageBox.Show(
+                ServiceLocator.Current.GetService<IDialogService>().ShowMessage(
                     string.Format(LocalizationManager.GetString("GameLaunch.HistoryLoadErrorDesc", "Не вдалося згадати, що ми робили минулого разу.\nФайл історії, схоже, пошкоджений.\n\nДеталі: {0}"), ex.Message),
                     LocalizationManager.GetString("GameLaunch.HistoryLoadErrorTitle", "Забудькуватість"),
                     MascotEmotion.Sad);
@@ -76,16 +70,11 @@ namespace CL_CLegendary_Launcher_.Class
                 var updatedJson = JsonConvert.SerializeObject(actions, Formatting.Indented);
                 await File.WriteAllTextAsync(_lastActionsPath, updatedJson);
 
-                _main.Dispatcher.Invoke(() =>
-                {
-                    _main.ServerMonitoring.Items.Clear();
-                    foreach (var act in actions)
-                        _main.AddActionToList(act);
-                });
+                OnActionsUpdated?.Invoke(actions);
             }
             catch (Exception ex)
             {
-                MascotMessageBox.Show(
+                ServiceLocator.Current.GetService<IDialogService>().ShowMessage(
                     string.Format(LocalizationManager.GetString("GameLaunch.HistorySaveErrorDesc", "Ой! Я намагалася записати цю дію в історію, але щось пішло не так.\n{0}"), ex.Message),
                     LocalizationManager.GetString("GameLaunch.HistorySaveErrorTitle", "Помилка запису"),
                     MascotEmotion.Confused);

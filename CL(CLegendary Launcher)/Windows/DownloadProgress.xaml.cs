@@ -1,4 +1,4 @@
-using CL_CLegendary_Launcher_.Class;
+using CL.Core.Services;
 using System.Threading;
 using System.Windows;
 using System.Windows.Input;

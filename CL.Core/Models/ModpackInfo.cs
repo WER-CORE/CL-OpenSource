@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CL_CLegendary_Launcher_.Models
+namespace CL.Core.Models
 {
     public class ModpackInfo
     {

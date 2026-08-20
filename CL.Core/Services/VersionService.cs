@@ -1,4 +1,4 @@
-using CL_CLegendary_Launcher_.Models;
+using CL.Core.Models;
 using CmlLib.Core;
 using Newtonsoft.Json.Linq;
 using Optifine.Installer;
@@ -11,7 +11,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace CL_CLegendary_Launcher_.Class
+namespace CL.Core.Services
 {
     public class VersionService
     {

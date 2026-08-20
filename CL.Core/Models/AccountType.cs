@@ -1,4 +1,4 @@
-namespace CL_CLegendary_Launcher_
+namespace CL.Core.Models
 {
     public enum AccountType
     {

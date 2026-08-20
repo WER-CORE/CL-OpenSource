@@ -1,5 +1,5 @@
-using CL_CLegendary_Launcher_.Class;
-using CL_CLegendary_Launcher_.Models;
+using CL.Core.Services;
+using CL.Core.Models;
 using CL_CLegendary_Launcher_.Windows;
 using CmlLib.Core;
 using Optifine.Installer;
@@ -262,7 +262,18 @@ namespace CL_CLegendary_Launcher_
             SettingsManager.Default.LastSelectedType = 5;
             SettingsManager.Save();
 
-            await _gameLaunchService.LaunchGameAsync(LoaderType.Optifine, mcVersion, optifineVersion);
+            var config = new LaunchConfiguration
+            {
+                IsOffline = GetLaunchConfiguration().IsOffline,
+                MinimumRamMb = (int)OPSlider.Value,
+                MaximumRamMb = (int)OPSlider.Value,
+                ScreenWidth = int.TryParse(Width.Text, out int w) ? w : 854,
+                ScreenHeight = int.TryParse(Height.Text, out int h) ? h : 480,
+                Session = session,
+                AccountType = selectAccountNow,
+                IsFullscreen = false
+            };
+            await _gameLaunchService.LaunchGameAsync(LoaderType.Optifine, mcVersion, optifineVersion, config);
         }
 
         async Task DowloadVanila(string version, string server, int? serverport, string username)
@@ -274,7 +285,21 @@ namespace CL_CLegendary_Launcher_
             SettingsManager.Default.LastSelectedType = 1;
             SettingsManager.Save();
 
-            await _gameLaunchService.LaunchGameAsync(LoaderType.Vanilla, effectiveVersion, null, server, serverport);
+            var config = new LaunchConfiguration
+            {
+                IsOffline = GetLaunchConfiguration().IsOffline,
+                MinimumRamMb = (int)OPSlider.Value,
+                MaximumRamMb = (int)OPSlider.Value,
+                ScreenWidth = int.TryParse(Width.Text, out int w) ? w : 854,
+                ScreenHeight = int.TryParse(Height.Text, out int h) ? h : 480,
+                Session = session,
+                AccountType = selectAccountNow,
+                IsFullscreen = false,
+                ServerIp = server,
+                ServerPort = serverport.GetValueOrDefault(),
+                JoinServer = !string.IsNullOrEmpty(server)
+            };
+            await _gameLaunchService.LaunchGameAsync(LoaderType.Vanilla, effectiveVersion, null, config);
         }
 
         private async void PlayTXT_MouseDown(object sender, MouseButtonEventArgs e)

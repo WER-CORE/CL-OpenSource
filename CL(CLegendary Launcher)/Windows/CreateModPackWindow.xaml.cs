@@ -1,4 +1,4 @@
-using CL_CLegendary_Launcher_.Class;
+using CL.Core.Services;
 using CmlLib.Core;
 using CmlLib.Core.Installer.Forge.Versions;
 using CmlLib.Core.Installer.NeoForge;

@@ -16,14 +16,18 @@
 
   <ItemGroup>
     <PackageReference Include="CmlLib.Core" Version="4.0.6" />
+    <PackageReference Include="CmlLib.Core.Auth.Microsoft" Version="3.3.1" />
     <PackageReference Include="CmlLib.Core.Installer.Forge" Version="1.1.1" />
     <PackageReference Include="CmlLib.Core.Installer.NeoForge" Version="4.0.1" />
+    <PackageReference Include="CurseForge.APIClient" Version="5.0.0" />
     <PackageReference Include="DiscordRichPresence" Version="1.6.1.70" />
     <PackageReference Include="HtmlAgilityPack" Version="1.12.4" />
+    <PackageReference Include="MojangAPI" Version="1.2.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Optifine.Installer" Version="1.0.1" />
     <PackageReference Include="Sentry" Version="6.8.0" />
     <PackageReference Include="SharpCompress" Version="0.50.1" />
+    <PackageReference Include="XboxAuthNet.Game.Msal" Version="0.1.3" />
   </ItemGroup>
 
 </Project>

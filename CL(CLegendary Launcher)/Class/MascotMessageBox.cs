@@ -1,4 +1,5 @@
-﻿using CL_CLegendary_Launcher_.Windows;
+using CL_CLegendary_Launcher_.Windows;
+using CL.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;

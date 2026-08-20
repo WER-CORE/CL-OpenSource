@@ -1,4 +1,4 @@
-﻿using CL_CLegendary_Launcher_.Models;
+﻿using CL.Core.Models;
 using CL_CLegendary_Launcher_.Windows;
 using MCQuery;
 using System;
@@ -88,23 +88,21 @@ namespace CL_CLegendary_Launcher_.Class
             return textBlock;
         }
         public static PartherItem CreatePartnerServerCard(
-          Dictionary<string, object> serverData,
+            CL.Core.Models.ServerInfo serverData,
           Action<string, string, int> onPlayClick,
-          Action<PartherItem, Dictionary<string, object>> onInfoClick)
+          Action<PartherItem, CL.Core.Models.ServerInfo> onInfoClick)
         {
-            var serverName = serverData.ContainsKey("name") ? serverData["name"].ToString() : LocalizationManager.GetString("Servers.UnknownServer", "Невідомий сервер");
-            int port = serverData.ContainsKey("port") ? Convert.ToInt32(serverData["port"]) : 25565;
-            string ip = serverData.ContainsKey("ip") ? serverData["ip"].ToString() : "";
-            string version = serverData.ContainsKey("version") ? serverData["version"].ToString() : "";
-            string type = serverData.ContainsKey("type") ? serverData["type"].ToString() : "";
+            var serverName = string.IsNullOrEmpty(serverData.Name) ? LocalizationManager.GetString("Servers.UnknownServer", "Невідомий сервер") : serverData.Name;
+            int port = serverData.Port;
+            string ip = serverData.Ip;
+            string version = serverData.Version;
+            string type = serverData.Type;
 
-            int priority = 0;
-            if (serverData.TryGetValue("priority", out object priorityVal)) int.TryParse(priorityVal?.ToString(), out priority);
-            else if (serverData.TryGetValue("partner", out object partnerVal) && bool.Parse(partnerVal.ToString())) priority = 10;
+            int priority = serverData.Priority;
 
-            bool isNeon = serverData.ContainsKey("neonEffect") && bool.Parse(serverData["neonEffect"].ToString());
-            string neonColorHex = serverData.ContainsKey("borderColor") ? serverData["borderColor"].ToString() : "#FFFFFF";
-            string textColorHex = serverData.ContainsKey("textColor") ? serverData["textColor"].ToString() : null;
+            bool isNeon = serverData.NeonEffect;
+            string neonColorHex = string.IsNullOrEmpty(serverData.BorderColorHex) ? "#FFFFFF" : serverData.BorderColorHex;
+            string textColorHex = serverData.TextColorHex;
 
             var item = new PartherItem
             {
@@ -132,8 +130,8 @@ namespace CL_CLegendary_Launcher_.Class
                 }
             });
 
-            if (serverData.TryGetValue("logoUrl", out object logoValue) &&
-                Uri.TryCreate(logoValue?.ToString(), UriKind.Absolute, out Uri logoUri))
+            if (!string.IsNullOrEmpty(serverData.LogoUrl) &&
+                Uri.TryCreate(serverData.LogoUrl, UriKind.Absolute, out Uri logoUri))
             {
                 if (priority > 100)
                 {
@@ -166,26 +164,23 @@ namespace CL_CLegendary_Launcher_.Class
         }
 
         public static MyItemsServer CreateRegularServerCard(
-          Dictionary<string, object> serverData,
+          CL.Core.Models.ServerInfo serverData,
           Action<string, string, int> onPlayClick,
-          Action<MyItemsServer, Dictionary<string, object>> onInfoClick
+          Action<MyItemsServer, CL.Core.Models.ServerInfo> onInfoClick
         )
         {
-            var serverName = serverData.ContainsKey("name") ? serverData["name"].ToString() : LocalizationManager.GetString("Servers.UnknownServer", "Невідомий сервер");
-            int port = serverData.ContainsKey("port") ? Convert.ToInt32(serverData["port"]) : 25565;
-            string ip = serverData.ContainsKey("ip") ? serverData["ip"].ToString() : "";
-            string version = serverData.ContainsKey("version") ? serverData["version"].ToString() : "";
-            string type = serverData.ContainsKey("type") ? serverData["type"].ToString() : "";
+            var serverName = string.IsNullOrEmpty(serverData.Name) ? LocalizationManager.GetString("Servers.UnknownServer", "Невідомий сервер") : serverData.Name;
+            int port = serverData.Port;
+            string ip = serverData.Ip;
+            string version = serverData.Version;
+            string type = serverData.Type;
 
-            bool partner = false;
-            if (serverData.TryGetValue("partner", out object partnerValue)) bool.TryParse(partnerValue?.ToString(), out partner);
-            int priority = 0;
-            if (serverData.TryGetValue("priority", out object priorityVal)) int.TryParse(priorityVal?.ToString(), out priority);
-            else if (partner) priority = 10;
+            bool partner = serverData.IsPartner;
+            int priority = serverData.Priority;
 
-            string borderColorHex = serverData.ContainsKey("borderColor") ? serverData["borderColor"].ToString() : "#FFFFFF";
-            string textColorHex = serverData.ContainsKey("textColor") ? serverData["textColor"].ToString() : null;
-            bool isNeon = serverData.TryGetValue("neonEffect", out object neonValue) && bool.Parse(neonValue?.ToString());
+            string borderColorHex = string.IsNullOrEmpty(serverData.BorderColorHex) ? "#FFFFFF" : serverData.BorderColorHex;
+            string textColorHex = serverData.TextColorHex;
+            bool isNeon = serverData.NeonEffect;
 
             var item = new MyItemsServer
             {
@@ -213,8 +208,8 @@ namespace CL_CLegendary_Launcher_.Class
                 }
             });
 
-            if (serverData.TryGetValue("logoUrl", out object logoValue) &&
-                Uri.TryCreate(logoValue?.ToString(), UriKind.Absolute, out Uri logoUri))
+            if (!string.IsNullOrEmpty(serverData.LogoUrl) &&
+                Uri.TryCreate(serverData.LogoUrl, UriKind.Absolute, out Uri logoUri))
             {
                 if (priority > 100)
                 {
@@ -241,13 +236,13 @@ namespace CL_CLegendary_Launcher_.Class
             return item;
         }
 
-        private static void ApplyServerStyles(dynamic item, Dictionary<string, object> serverData, int priority, bool isNeon, string borderColorHex, string textColorHex)
+        private static void ApplyServerStyles(dynamic item, CL.Core.Models.ServerInfo serverData, int priority, bool isNeon, string borderColorHex, string textColorHex)
         {
             bool imageLoaded = false;
 
-            if (priority > 0 && serverData.TryGetValue("bgUrl", out object bgUrlValue))
+            if (priority > 0 && !string.IsNullOrEmpty(serverData.BgUrl))
             {
-                string url = bgUrlValue?.ToString();
+                string url = serverData.BgUrl;
 
                 var bgImage = ImageHelper.LoadOptimizedImage(url, 250);
 

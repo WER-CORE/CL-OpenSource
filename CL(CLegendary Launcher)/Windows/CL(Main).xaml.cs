@@ -1,4 +1,5 @@
-using CL_CLegendary_Launcher_.Class;
+using CL.Core.Services;
+using CL.Core.Services;
 using CL_CLegendary_Launcher_.Windows;
 using CmlLib.Core.Auth;
 using CmlLib.Core.Auth.Microsoft;
@@ -11,6 +12,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using CL_CLegendary_Launcher_.PlatformImpl;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
@@ -76,12 +78,30 @@ namespace CL_CLegendary_Launcher_
 
         private int _lastIndex = 0;
         private DispatcherTimer _slideTimer;
+        
+        public LaunchConfiguration GetLaunchConfiguration()
+        {
+            return new LaunchConfiguration
+            {
+                IsOffline = SettingsManager.Default.OfflineModLauncher || !System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable(),
+                MinimumRamMb = 512,
+                MaximumRamMb = SettingsManager.Default.OP,
+                ScreenWidth = SettingsManager.Default.width,
+                ScreenHeight = SettingsManager.Default.height,
+                IsFullscreen = SettingsManager.Default.FullScreen,
+                ServerIp = null,
+                ServerPort = 0
+            };
+        }
+
         public CL_Main_()
         {
             LocalizationManager.LoadLanguage(SettingsManager.Default.LanguageCode);
             InitializeLanguagesAsync();
 
             InitializeComponent();
+            CL.Core.Platform.ServiceLocator.Current.Register<CL.Core.Interfaces.IMainWindowController, WpfMainWindowController>(new WpfMainWindowController(this));
+
             CheckAndCreateDefaultPath();
 
             InitializeServices();
@@ -96,7 +116,7 @@ namespace CL_CLegendary_Launcher_
             LoadCustomSettings();
             InitToggles();
 
-            _serverListService.InitializeServersAsync(false, null);
+            InitializeServersAsync(false, null);
             LoadProfilesAsync();
 
             _launcherSettingsService.Initialize();
@@ -122,12 +142,13 @@ namespace CL_CLegendary_Launcher_
             _profileManagerService = new ProfileManagerService();
             _accountService = new AccountService(_profileManagerService);
             _gameSessionManager = new GameSessionManager();
-            _serverListService = new ServerListService(this);
-            _lastActionService = new LastActionService(this);
-            _gameLaunchService = new GameLaunchService(this, _gameSessionManager, _lastActionService);
+            _serverListService = new ServerListService();
+            _lastActionService = new LastActionService();
+            _lastActionService.OnActionsUpdated += UpdateLastActionsUI;
+            _gameLaunchService = new GameLaunchService(_gameSessionManager, _lastActionService);
             _modDownloadService = new ModDownloadService();
 
-            _modpackService = new ModpackService(this, _gameSessionManager, _gameLaunchService, _modDownloadService);
+            _modpackService = new ModpackService(_gameSessionManager, _gameLaunchService, _modDownloadService);
             _screenshotService = new ScreenshotService();
         }
 
@@ -178,7 +199,7 @@ namespace CL_CLegendary_Launcher_
             double scale = 1.0;
             if (this.WindowState == WindowState.Maximized)
             {
-                scale = Class.SettingsManager.Default.UIScale;
+                scale = SettingsManager.Default.UIScale;
                 if (scale <= 0.1) scale = 1.0;
             }
             
@@ -195,6 +216,16 @@ namespace CL_CLegendary_Launcher_
             {
                 this.WindowState = WindowState.Normal;
             }
+        }
+    
+        private void UpdateLastActionsUI(List<Dictionary<string, string>> actions)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                ServerMonitoring.Items.Clear();
+                foreach (var act in actions)
+                    AddActionToList(act);
+            });
         }
     }
 }

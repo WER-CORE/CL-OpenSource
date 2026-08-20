@@ -1,9 +1,13 @@
 using System;
 
-namespace CL_CLegendary_Launcher_.Models
+using System;
+using System.Collections.Generic;
+namespace CL.Core.Models
 {
     public class AppSettings
     {
+        public Dictionary<string, TimeSpan> GameSessionDurations { get; set; } = new Dictionary<string, TimeSpan>();
+
         public int width { get; set; } = 800;
         public int height { get; set; } = 600;
         public bool EnableLog { get; set; } = false;

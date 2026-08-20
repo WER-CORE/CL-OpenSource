@@ -1,5 +1,7 @@
-using CL_CLegendary_Launcher_.Windows;
 using CurseForge.APIClient;
+using CL.Core.Platform;
+using CL.Core.Models;
+using CL.Core.Interfaces;
 using CurseForge.APIClient.Models.Files;
 using CurseForge.APIClient.Models.Mods;
 using Newtonsoft.Json;
@@ -13,9 +15,8 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows;
 
-namespace CL_CLegendary_Launcher_.Class
+namespace CL.Core.Services
 {
     public class ModSearchResult
     {
@@ -118,30 +119,30 @@ namespace CL_CLegendary_Launcher_.Class
             int modType,
             string? customDestinationPath = null)
         {
-            DowloadProgress progressWindow = null;
+            ITaskProgressService progressWindow = ServiceLocator.Current.GetService<ITaskProgressService>();
             var cts = new CancellationTokenSource();
 
-            Application.Current.Dispatcher.Invoke(() =>
+            ServiceLocator.Current.GetService<IDispatcherService>().Invoke(() =>
             {
-                progressWindow = new DowloadProgress();
+                
                 progressWindow.CTS = cts;
-                progressWindow.Show();
-                progressWindow.DowloadProgressBarVersion(0, version.VersionName);
-                progressWindow.DowloadProgressBarFileTask(0, 0, LocalizationManager.GetString("DownloadManager.AnalyzingDependencies", "Аналіз залежностей..."));
+                progressWindow.ShowProgressWindow();
+                progressWindow.UpdateVersionProgress(0, version.VersionName);
+                progressWindow.UpdateFileTaskProgress(0, 0, LocalizationManager.GetString("DownloadManager.AnalyzingDependencies", "Аналіз залежностей..."));
             });
 
             var progressReporter = new Progress<DownloadProgressInfo>(info =>
             {
                 if (progressWindow == null) return;
 
-                progressWindow.FileTXTName.Text = info.FileName;
-                progressWindow.DowloadProgressBarFile(info.Percent);
+                
+                progressWindow.UpdateFileProgress(info.Percent);
 
                 if (info.TotalFiles > 0)
                 {
                     int totalPercent = (int)((double)info.FilesCompleted / info.TotalFiles * 100);
-                    progressWindow.DowloadProgressBarVersion(totalPercent, version.VersionName);
-                    progressWindow.DowloadProgressBarFileTask(info.TotalFiles, info.FilesCompleted, info.FileName);
+                    progressWindow.UpdateVersionProgress(totalPercent, version.VersionName);
+                    progressWindow.UpdateFileTaskProgress(info.TotalFiles, info.FilesCompleted, info.FileName);
                 }
             });
 
@@ -213,14 +214,14 @@ namespace CL_CLegendary_Launcher_.Class
             }
             catch (Exception ex)
             {
-                MascotMessageBox.Show(
+                ServiceLocator.Current.GetService<IDialogService>().ShowMessage(
                     string.Format(LocalizationManager.GetString("DownloadManager.ErrorDesc", "Помилка: {0}"), ex.Message),
                     LocalizationManager.GetString("DownloadManager.ErrorTitle", "Помилка завантаження"),
                     MascotEmotion.Sad);
             }
             finally
             {
-                Application.Current.Dispatcher.Invoke(() => progressWindow?.Close());
+                ServiceLocator.Current.GetService<IDispatcherService>().Invoke(() => progressWindow?.CloseProgressWindow());
                 cts.Dispose();
             }
         }

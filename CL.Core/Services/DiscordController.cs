@@ -1,10 +1,10 @@
-﻿using DiscordRPC;
+using DiscordRPC;
 using System;
 using System.Threading.Tasks;
 
-namespace CL_CLegendary_Launcher_.Class
+namespace CL.Core.Services
 {
-    class DiscordController
+    public class DiscordController
     {
         public static DiscordRpcClient clientdsc;
 

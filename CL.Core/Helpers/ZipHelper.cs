@@ -1,14 +1,8 @@
-﻿using CL_CLegendary_Launcher_.Windows;
-using System;
-using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Threading;
 
-namespace CL_CLegendary_Launcher_.Class
+namespace CL.Core.Helpers
 {
     public static class ZipHelper
     {
@@ -44,9 +38,7 @@ namespace CL_CLegendary_Launcher_.Class
             }
             catch 
             {
-                
             }
         }
-
     }
 }

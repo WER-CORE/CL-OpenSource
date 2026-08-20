@@ -1,5 +1,5 @@
-using CL_CLegendary_Launcher_.Models;
-using CL_CLegendary_Launcher_.Windows;
+using CL.Core.Models;
+
 using CmlLib.Core;
 using CmlLib.Core.Installers;
 using CmlLib.Core.ProcessBuilder;
@@ -16,14 +16,13 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Forms;
-using System.Windows.Shapes;
-using Application = System.Windows.Application;
-using MessageBox = System.Windows.Forms.MessageBox;
+using CL.Core.Platform;
+using CL.Core.Interfaces;
+
+
 using Path = System.IO.Path;
 
-namespace CL_CLegendary_Launcher_.Class
+namespace CL.Core.Services
 {
     public class InstalledModpack
     {
@@ -51,7 +50,7 @@ namespace CL_CLegendary_Launcher_.Class
     }
     public class ModpackService
     {
-        private readonly CL_Main_ _main;
+        
         private readonly GameSessionManager _gameSessionManager;
         private readonly GameLaunchService _gameLaunchService;
         private readonly ModDownloadService _modDownloadService;
@@ -59,9 +58,9 @@ namespace CL_CLegendary_Launcher_.Class
         private readonly SemaphoreSlim _downloadSemaphore = new SemaphoreSlim(20);
         private static ApiClient _cfApiClientInstance;
 
-        public ModpackService(CL_Main_ main, GameSessionManager gameSessionManager, GameLaunchService gameLaunchService, ModDownloadService modDownloadService)
+        public ModpackService(GameSessionManager gameSessionManager, GameLaunchService gameLaunchService, ModDownloadService modDownloadService)
         {
-            _main = main;
+            
             _gameSessionManager = gameSessionManager;
             _gameLaunchService = gameLaunchService;
             _modDownloadService = modDownloadService;
@@ -134,32 +133,33 @@ namespace CL_CLegendary_Launcher_.Class
             {
                 System.Diagnostics.Debug.WriteLine($"[CL Launcher] Помилка видалення папки збірки: {ex.Message}");
 
-                Application.Current.Dispatcher.Invoke(() =>
+                ServiceLocator.Current.GetService<IDispatcherService>().Invoke(() =>
                 {
-                    MascotMessageBox.Show(
+                    ServiceLocator.Current.GetService<IDialogService>().ShowMessage(
                         LocalizationManager.GetString("Modpacks.DeleteFolderError", "Не вдалося повністю видалити файли збірки. Можливо, якась програма (або сама гра) досі використовує ці файли.\nСпробуйте пізніше або видаліть папку вручну."),
                         LocalizationManager.GetString("Dialogs.Error", "Помилка доступу"),
                         MascotEmotion.Alert);
                 });
             }
         }
-        public async void PlayModPack(string version, string versionMod, string loader, string nameModPack, string pathModPack, string pathJson, string typeSite, string javaPath)
+        public async void PlayModPack(string version, string versionMod, string loader, string nameModPack, string pathModPack, string pathJson, string typeSite, string javaPath, LaunchConfiguration config)
         {
-            if (_main.InstallVersionOnPlay) return;
+            
 
             var cts = new CancellationTokenSource();
             var token = cts.Token;
 
             bool isOffline = SettingsManager.Default.OfflineModLauncher || !System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable();
 
-            DowloadProgress versionDownloadWindow = new DowloadProgress() { CTS = cts };
+            var versionDownloadWindow = ServiceLocator.Current.GetService<ITaskProgressService>();
+            versionDownloadWindow.CTS = cts;
             versionDownloadWindow.Title = isOffline
                 ? LocalizationManager.GetString("Modpacks.OfflineLaunch", "ОФЛАЙН ЗАПУСК ЗБІРКИ...")
                 : LocalizationManager.GetString("Modpacks.DownloadTitle", "DownloadProgress - Завантаження версії та модів");
 
-            if (!isOffline) _main.Dispatcher.Invoke(() => versionDownloadWindow.Show());
+            if (!isOffline) versionDownloadWindow.ShowProgressWindow();
 
-            _main.InstallVersionOnPlay = true;
+            ServiceLocator.Current.GetService<IMainWindowController>().SetInstallVersionOnPlay(true);
 
             try
             {
@@ -199,8 +199,7 @@ namespace CL_CLegendary_Launcher_.Class
                                     }
                                     catch (Exception ex)
                                     {
-                                        _main.Dispatcher.Invoke(() =>
-                                            MascotMessageBox.Show($"Не змогла зберегти {worldName}.\n{ex.Message}", "Помилка", MascotEmotion.Sad));
+                                        ServiceLocator.Current.GetService<IDialogService>().ShowMessage($"Не змогла зберегти {worldName}.\n{ex.Message}", "Помилка", MascotEmotion.Sad);
                                     }
                                 }
                             });
@@ -281,15 +280,15 @@ namespace CL_CLegendary_Launcher_.Class
                 launcher.ByteProgressChanged += (sender, args) =>
                 {
                     int byteProgress = args.TotalBytes > 0 ? (int)((double)args.ProgressedBytes / args.TotalBytes * 100) : 0;
-                    if (!isOffline && versionDownloadWindow.IsLoaded) _main.Dispatcher.Invoke(() => versionDownloadWindow.DowloadProgressBarFile(byteProgress));
+                    if (!isOffline && versionDownloadWindow.IsLoaded) versionDownloadWindow.UpdateFileProgress(byteProgress);
                 };
                 launcher.FileProgressChanged += (sender, args) =>
                 {
                     int fileProgress = args.TotalTasks > 0 ? (int)((double)args.ProgressedTasks / args.TotalTasks * 100) : 0;
-                    if (!isOffline && versionDownloadWindow.IsLoaded) _main.Dispatcher.Invoke(() =>
+                    if (!isOffline && versionDownloadWindow.IsLoaded) ServiceLocator.Current.GetService<IDispatcherService>().Invoke(() =>
                     {
-                        versionDownloadWindow.DowloadProgressBarFileTask(args.TotalTasks, args.ProgressedTasks, args.Name);
-                        versionDownloadWindow.DowloadProgressBarVersion(fileProgress, version);
+                        versionDownloadWindow.UpdateFileTaskProgress(args.TotalTasks, args.ProgressedTasks, args.Name);
+                        versionDownloadWindow.UpdateVersionProgress(fileProgress, version);
                     });
                 };
 
@@ -297,7 +296,7 @@ namespace CL_CLegendary_Launcher_.Class
                 {
                     MinimumRamMb = Math.Max(512, installedModpack.OPack / 4),
                     MaximumRamMb = installedModpack.OPack,
-                    Session = _main.session,
+                    Session = config.Session,
                     ScreenWidth = installedModpack.Wdith,
                     ScreenHeight = installedModpack.Height,
                     ServerIp = (installedModpack.EnterInServer && !string.IsNullOrWhiteSpace(installedModpack.ServerIP)) ? installedModpack.ServerIP.Split(':')[0] : null,
@@ -309,9 +308,9 @@ namespace CL_CLegendary_Launcher_.Class
                 }; 
                 var activeJvmArgs = new List<string>();
 
-                if (_main.selectAccountNow == AccountType.LittleSkin)
+                if (config.AccountType == AccountType.LittleSkin)
                 {
-                    activeJvmArgs.Add($@"-javaagent:{AppContext.BaseDirectory}authlib-injector-1.2.7.jar=https://littleskin.cn/api/yggdrasil");
+                    activeJvmArgs.Add($@"-javaagent:{AppContext.BaseDirectory}authlib-injector-1.2.8.jar=https://littleskin.cn/api/yggdrasil");
                 }
 
                 if (activeJvmArgs.Count > 0)
@@ -379,22 +378,22 @@ namespace CL_CLegendary_Launcher_.Class
 
                 if (SettingsManager.Default.EnableMod_Statistics) { _gameSessionManager.StartGameSession("mod"); }
 
-                _main.Dispatcher.Invoke(() =>
+                ServiceLocator.Current.GetService<IDispatcherService>().Invoke(() =>
                 {
-                    if (versionDownloadWindow.IsLoaded) versionDownloadWindow.Close();
-                    _main.WindowState = WindowState.Minimized;
+                    if (versionDownloadWindow.IsLoaded) versionDownloadWindow.CloseProgressWindow();
+                    ServiceLocator.Current.GetService<IMainWindowController>().Minimize();
                 });
 
                 await DiscordController.UpdatePresence(string.Format(LocalizationManager.GetString("DiscordRPC.PlayingModpack", "Грає в мод-збірку {0}"), nameModPack));
 
                 if (installedModpack.IsConsoleLogOpened)
-                    _main.ShowGameLog(process);
+                    ServiceLocator.Current.GetService<IMainWindowController>().ShowGameLog(process);
                 else
                     process.Start();
 
                 if (SettingsManager.Default.CloseLaucnher)
                 {
-                    _main.Dispatcher.Invoke(() => _main.Close());
+                    ServiceLocator.Current.GetService<IMainWindowController>().Close();
                 }
                 await MemoryCleaner.FlushMemoryAsync(trimWorkingSet: true);
                 await process.WaitForExitAsync();
@@ -402,18 +401,17 @@ namespace CL_CLegendary_Launcher_.Class
 
                 if (exitCode != 0)
                 {
-                    _main.Dispatcher.Invoke(() =>
+                    ServiceLocator.Current.GetService<IDispatcherService>().Invoke(() =>
                     {
-                        _main.Show();
-                        _main.WindowState = WindowState.Normal;
+                        ServiceLocator.Current.GetService<IMainWindowController>().Restore();
 
                         if (!installedModpack.IsConsoleLogOpened)
                         {
                             string logFilePath = Path.Combine(finalModPath, "logs", "latest.log");
-                            _main.ShowGameLogFromFile(logFilePath);
+                            ServiceLocator.Current.GetService<IMainWindowController>().ShowGameLogFromFile(logFilePath);
                         }
 
-                        MascotMessageBox.Show(
+                        ServiceLocator.Current.GetService<IDialogService>().ShowMessage(
                             string.Format(LocalizationManager.GetString("GameLaunch.CrashDesc", "Йой! Майнкрафт впав (Код помилки: {0}).\nЯ відкрила логи, щоб ми могли знайти конфліктний мод або помилку."), exitCode),
                             LocalizationManager.GetString("GameLaunch.CrashTitle", "Краш гри!"),
                             MascotEmotion.Sad);
@@ -423,22 +421,22 @@ namespace CL_CLegendary_Launcher_.Class
                 {
                     if (SettingsManager.Default.CloseLaucnher)
                     {
-                        _main.Dispatcher.Invoke(() => Application.Current.Shutdown());
+                        ServiceLocator.Current.GetService<IDispatcherService>().Invoke(() => Environment.Exit(0));
                     }
                 }
             }
             catch (OperationCanceledException)
             {
-                _main.Dispatcher.Invoke(() => { if (versionDownloadWindow.IsLoaded) versionDownloadWindow.Close(); });
-                MascotMessageBox.Show(
+                ServiceLocator.Current.GetService<IDispatcherService>().Invoke(() => { if (versionDownloadWindow.IsLoaded) versionDownloadWindow.CloseProgressWindow(); });
+                ServiceLocator.Current.GetService<IDialogService>().ShowMessage(
                     LocalizationManager.GetString("Modpacks.LaunchCancelledDesc", "Добре, я зупинила завантаження модпаку.\nСпробуємо іншим разом!"),
                     LocalizationManager.GetString("GameLaunch.LaunchCancelledTitle", "Скасовано"),
                     MascotEmotion.Normal);
             }
             catch (Exception ex)
             {
-                _main.Dispatcher.Invoke(() => { if (versionDownloadWindow.IsLoaded) versionDownloadWindow.Close(); });
-                MascotMessageBox.Show(
+                ServiceLocator.Current.GetService<IDispatcherService>().Invoke(() => { if (versionDownloadWindow.IsLoaded) versionDownloadWindow.CloseProgressWindow(); });
+                ServiceLocator.Current.GetService<IDialogService>().ShowMessage(
                     string.Format(LocalizationManager.GetString("Modpacks.LaunchCrashDesc", "Біда! Щось зламалося під час запуску модпаку.\n\nДеталі: {0}"), ex.Message),
                     LocalizationManager.GetString("Modpacks.ConfigCorruptedTitle", "Помилка"),
                     MascotEmotion.Sad);
@@ -446,14 +444,14 @@ namespace CL_CLegendary_Launcher_.Class
             finally
             {
                 _gameSessionManager.StopGameSession();
-                _main.Dispatcher.Invoke(() =>
+                ServiceLocator.Current.GetService<IDispatcherService>().Invoke(() =>
                 {
-                    _main.InstallVersionOnPlay = false;
-                    _main.PlayTXT.Text = LocalizationManager.GetString("GameLaunch.PlayBtnSelect", "ОБЕРІТЬ ВЕРСІЮ");
+                    ServiceLocator.Current.GetService<IMainWindowController>().SetInstallVersionOnPlay(false);
+                    ServiceLocator.Current.GetService<IMainWindowController>().SetPlayButtonText(LocalizationManager.GetString("GameLaunch.PlayBtnSelect", "ОБЕРІТЬ ВЕРСІЮ"));
                 });
             }
         }
-        private async Task<bool> DownloadModsFromManifestJsonAsync(string pathJson, string packFolder, DowloadProgress progress, CancellationToken token)
+        private async Task<bool> DownloadModsFromManifestJsonAsync(string pathJson, string packFolder, ITaskProgressService progress, CancellationToken token)
         {
             if (!File.Exists(pathJson) || SettingsManager.Default.OfflineModLauncher) return false;
 
@@ -554,7 +552,7 @@ namespace CL_CLegendary_Launcher_.Class
                                     var activeItem = new ConcurrentDownloadItem { FileName = fileName, Progress = 0, Status = "Завантаження" };
                                     progress.AddActiveDownload(activeItem);
 
-                                    _main.Dispatcher.BeginInvoke(() => progress.DowloadProgressBarFileTask(total, completed, ""));
+                                    progress.UpdateFileTaskProgress(total, completed, "");
                                     bool success = await DownloadFileWithProgress(downloadUrl, fullPath, progress, token, activeItem);
                                     
                                     progress.RemoveActiveDownload(activeItem);
@@ -568,7 +566,7 @@ namespace CL_CLegendary_Launcher_.Class
                         {
                             _downloadSemaphore.Release();
                             Interlocked.Increment(ref completed);
-                            _main.Dispatcher.BeginInvoke(() => progress.DowloadProgressBarFileTask(total, completed, ""));
+                            progress.UpdateFileTaskProgress(total, completed, "");
                         }
                     }, token));
                 }
@@ -580,7 +578,7 @@ namespace CL_CLegendary_Launcher_.Class
             catch { return false; }
         }
 
-        private async Task<bool> DownloadModsFromIndexJsonAsync(string pathJson, string packFolder, DowloadProgress progress, CancellationToken token)
+        private async Task<bool> DownloadModsFromIndexJsonAsync(string pathJson, string packFolder, ITaskProgressService progress, CancellationToken token)
         {
             if (!File.Exists(pathJson) || SettingsManager.Default.OfflineModLauncher) return false;
             try
@@ -632,7 +630,7 @@ namespace CL_CLegendary_Launcher_.Class
                                     var activeItem = new ConcurrentDownloadItem { FileName = fileName, Progress = 0, Status = "Завантаження" };
                                     progress.AddActiveDownload(activeItem);
 
-                                    _main.Dispatcher.BeginInvoke(() => progress.DowloadProgressBarFileTask(total, completed, ""));
+                                    progress.UpdateFileTaskProgress(total, completed, "");
                                     bool success = await DownloadFileWithProgress(downloadUrl, fullPath, progress, token, activeItem);
                                     
                                     progress.RemoveActiveDownload(activeItem);
@@ -646,7 +644,7 @@ namespace CL_CLegendary_Launcher_.Class
                         {
                             _downloadSemaphore.Release();
                             Interlocked.Increment(ref completed);
-                            _main.Dispatcher.BeginInvoke(() => progress.DowloadProgressBarFileTask(total, completed, fileName));
+                            progress.UpdateFileTaskProgress(total, completed, fileName);
                         }
                     }, token));
                 }
@@ -657,7 +655,7 @@ namespace CL_CLegendary_Launcher_.Class
             catch (OperationCanceledException) { return false; }
             catch { return false; }
         }
-        private async Task<bool> DownloadModsFromCustomJsonAsync(string jsonPath, string packFolder, DowloadProgress progress, CancellationToken token)
+        private async Task<bool> DownloadModsFromCustomJsonAsync(string jsonPath, string packFolder, ITaskProgressService progress, CancellationToken token)
         {
             if (SettingsManager.Default.OfflineModLauncher || !File.Exists(jsonPath)) return false;
             try
@@ -761,7 +759,7 @@ namespace CL_CLegendary_Launcher_.Class
 
                             if (!File.Exists(filePath) && !File.Exists(filePath + ".disabled"))
                             {
-                                _main.Dispatcher.BeginInvoke(() => progress.DowloadProgressBarFileTask(totalTasks, completed, ""));
+                                progress.UpdateFileTaskProgress(totalTasks, completed, "");
 
                                 bool success = false;
                                 if (!string.IsNullOrEmpty(actualDownloadUrl))
@@ -799,7 +797,7 @@ namespace CL_CLegendary_Launcher_.Class
                             {
                                 try
                                 {
-                                    _main.Dispatcher.BeginInvoke(() => progress.DowloadProgressBarFileTask(totalTasks, completed, $"Розпакування: {fileName}"));
+                                    progress.UpdateFileTaskProgress(totalTasks, completed, $"Розпакування: {fileName}");
 
                                     string extractTarget = Path.Combine(targetDir, Path.GetFileNameWithoutExtension(fileName));
 
@@ -845,7 +843,7 @@ namespace CL_CLegendary_Launcher_.Class
                         {
                             _downloadSemaphore.Release();
                             Interlocked.Increment(ref completed);
-                            _main.Dispatcher.BeginInvoke(() => progress.DowloadProgressBarFileTask(totalTasks, completed, ""));
+                            progress.UpdateFileTaskProgress(totalTasks, completed, "");
                         }
                     }, token));
                 }
@@ -855,7 +853,7 @@ namespace CL_CLegendary_Launcher_.Class
             }
             catch { return false; }
         }
-        private async Task DownloadDependencyRecursive(ModInfo mod, string packFolder, DowloadProgress progress, CancellationToken token, HashSet<string> processedIds)
+        private async Task DownloadDependencyRecursive(ModInfo mod, string packFolder, ITaskProgressService progress, CancellationToken token, HashSet<string> processedIds)
         {
             string uniqueKey = !string.IsNullOrEmpty(mod.FileId) ? mod.FileId : mod.Url;
 
@@ -872,7 +870,7 @@ namespace CL_CLegendary_Launcher_.Class
 
             if (!File.Exists(filePath))
             {
-                _main.Dispatcher.BeginInvoke(() => progress.DowloadProgressBarFileTask(0, 0, $"Dep: {fileName}"));
+                progress.UpdateFileTaskProgress(0, 0, $"Dep: {fileName}");
                 await DownloadFileWithProgress(mod.Url, filePath, progress, token);
             }
 
@@ -902,7 +900,7 @@ namespace CL_CLegendary_Launcher_.Class
                 Loaders = new List<string> { mod.Loader }
             };
         }
-        private async Task<bool> DownloadFileWithProgress(string url, string savePath, DowloadProgress progress, CancellationToken token, ConcurrentDownloadItem activeItem = null)
+        private async Task<bool> DownloadFileWithProgress(string url, string savePath, ITaskProgressService progress, CancellationToken token, ConcurrentDownloadItem activeItem = null)
         {
             try
             {
@@ -939,7 +937,7 @@ namespace CL_CLegendary_Launcher_.Class
                             }
                             else
                             {
-                                _main.Dispatcher.BeginInvoke(() => progress.DowloadProgressBarFile(percent));
+                                progress.UpdateFileProgress(percent);
                             }
                         }
                     }
@@ -987,7 +985,7 @@ namespace CL_CLegendary_Launcher_.Class
 
         private async Task HandleManualDownloadPrompt(string url, string fullPath, string filename, string errorMessage = "")
         {
-            bool result = MascotMessageBox.Ask(
+            bool result = ServiceLocator.Current.GetService<IDialogService>().AskQuestion(
                             string.Format(LocalizationManager.GetString("DownloadManager.ManualDownloadPromptDesc", "Ой, я не змогла завантажити цей файл:\n{0}\n\nСпробуєш скачати його вручну?"), filename),
                             LocalizationManager.GetString("DownloadManager.ManualDownloadPromptTitle", "Помилка завантаження"),
                             MascotEmotion.Sad);
@@ -1002,14 +1000,14 @@ namespace CL_CLegendary_Launcher_.Class
                         UseShellExecute = true
                     });
 
-                    MascotMessageBox.Show(
+                    ServiceLocator.Current.GetService<IDialogService>().ShowMessage(
                                     string.Format(LocalizationManager.GetString("DownloadManager.ManualDownloadInstructionDesc", "Я відкрила посилання. Будь ласка, збережи файл ось сюди:\n{0}"), fullPath),
                                     LocalizationManager.GetString("DownloadManager.ManualDownloadInstructionTitle", "Інструкція"),
                                     MascotEmotion.Alert);
                 }
                 catch (Exception ex)
                 {
-                    MascotMessageBox.Show(
+                    ServiceLocator.Current.GetService<IDialogService>().ShowMessage(
                                     string.Format(LocalizationManager.GetString("DownloadManager.ManualDownloadBrowserErrorDesc", "Не вдалося відкрити посилання у браузері.\n{0}"), ex.Message),
                                     LocalizationManager.GetString("DownloadManager.ManualDownloadBrowserErrorTitle", "Збій"),
                                     MascotEmotion.Sad);
@@ -1032,7 +1030,7 @@ namespace CL_CLegendary_Launcher_.Class
                 }
                 catch (Exception ex)
                 {
-                    MascotMessageBox.Show(
+                    ServiceLocator.Current.GetService<IDialogService>().ShowMessage(
                         string.Format(LocalizationManager.GetString("Modpacks.ConfigCorruptedDesc", "Ой! Файл конфігурації збірок пошкоджено.\n{0}"), ex.Message),
                         LocalizationManager.GetString("Modpacks.ConfigCorruptedTitle", "Помилка"),
                         MascotEmotion.Sad);

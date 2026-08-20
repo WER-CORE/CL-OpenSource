@@ -1,5 +1,5 @@
-using CL_CLegendary_Launcher_.Class;
-using CL_CLegendary_Launcher_.Models;
+using CL.Core.Services;
+using CL.Core.Models;
 using CL_CLegendary_Launcher_.Windows;
 using Newtonsoft.Json;
 using System;
@@ -325,7 +325,7 @@ namespace CL_CLegendary_Launcher_
                     string downloadedFile = Path.Combine(targetPath, selectedVersionInfo.FileName);
                     if (File.Exists(downloadedFile) && Path.GetExtension(downloadedFile).ToLower() == ".zip")
                     {
-                        await Task.Run(() => ZipHelper.ExtractMap(downloadedFile, targetPath));
+                        await Task.Run(() => CL.Core.Helpers.ZipHelper.ExtractMap(downloadedFile, targetPath));
                         NotificationService.ShowNotification(
                             LocalizationManager.GetString("Dialogs.Success", "Успіх!"),
                             LocalizationManager.GetString("Mods.MapInstalled", "Мапа завантажена та розпакована!"),
@@ -619,6 +619,10 @@ namespace CL_CLegendary_Launcher_
         private void OnPlayModpackClicked(InstalledModpack pack)
         {
             SoundManager.Click();
+            var config = GetLaunchConfiguration();
+            config.Session = session;
+            config.AccountType = selectAccountNow;
+
             _modpackService.PlayModPack(
                 pack.MinecraftVersion,
                 pack.LoaderVersion,
@@ -627,7 +631,8 @@ namespace CL_CLegendary_Launcher_
                 pack.Path,
                 pack.PathJson,
                 pack.TypeSite,
-                pack.JavaPath
+                pack.JavaPath,
+                config
             );
         }
 

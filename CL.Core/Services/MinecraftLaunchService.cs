@@ -6,7 +6,7 @@ using CmlLib.Core;
 using CmlLib.Core.Auth;
 using CmlLib.Core.ProcessBuilder;
 
-namespace CL_CLegendary_Launcher_.Class
+namespace CL.Core.Services
 {
     public sealed class LaunchRequest
     {

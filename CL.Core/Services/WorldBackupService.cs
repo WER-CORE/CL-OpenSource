@@ -5,7 +5,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace CL_CLegendary_Launcher_.Class
+namespace CL.Core.Services
 {
     public class WorldBackupInfo
     {

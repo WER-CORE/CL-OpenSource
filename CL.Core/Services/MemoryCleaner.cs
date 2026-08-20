@@ -4,7 +4,7 @@ using System.Runtime;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
-namespace CL_CLegendary_Launcher_.Class
+namespace CL.Core.Services
 {
     public class MemoryCleaner
     {

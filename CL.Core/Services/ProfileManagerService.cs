@@ -1,5 +1,7 @@
-using CL_CLegendary_Launcher_.Models;
-using CL_CLegendary_Launcher_.Windows;
+using CL.Core.Interfaces;
+using CL.Core.Platform;
+using CL.Core.Models;
+using CL.Core.Models;
 using CmlLib.Core.Auth;
 using CmlLib.Core.Auth.Microsoft;
 using Newtonsoft.Json;
@@ -12,9 +14,8 @@ using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows;
 
-namespace CL_CLegendary_Launcher_.Class
+namespace CL.Core.Services
 {
     public class ProfileManagerService
     {
@@ -50,7 +51,7 @@ namespace CL_CLegendary_Launcher_.Class
             }
             catch (Exception ex)
             {
-                MascotMessageBox.Show(
+                ServiceLocator.Current.GetService<IDialogService>().ShowMessage(
                     string.Format(LocalizationManager.GetString("Accounts.ProfileSaveErrorDesc", "Не вдалося зберегти профіль: {0}"), ex.Message),
                     LocalizationManager.GetString("Accounts.ProfileSaveErrorTitle", "Помилка запису"),
                     MascotEmotion.Sad);
@@ -63,7 +64,7 @@ namespace CL_CLegendary_Launcher_.Class
 
             if (profiles.Any(p => p.NameAccount == profileItem.NameAccount && p.TypeAccount == profileItem.TypeAccount))
             {
-                MascotMessageBox.Show(
+                ServiceLocator.Current.GetService<IDialogService>().ShowMessage(
                     string.Format(LocalizationManager.GetString("Accounts.ProfileExistsDesc", "Цей акаунт ({0}) вже є в списку.\nНемає сенсу додавати його двічі."), profileItem.NameAccount),
                     LocalizationManager.GetString("Accounts.ProfileExistsTitle", "Вже існує"),
                     MascotEmotion.Alert);
@@ -112,7 +113,7 @@ namespace CL_CLegendary_Launcher_.Class
                 }
                 catch (Exception ex)
                 {
-                    MascotMessageBox.Show(
+                    ServiceLocator.Current.GetService<IDialogService>().ShowMessage(
                         string.Format(LocalizationManager.GetString("Accounts.ProfileLoadCrashDesc", "Не вдалося завантажити профілі.\nФайл пошкоджено або він з іншого ПК.\n\nДеталі: {0}"), ex.Message),
                         LocalizationManager.GetString("Accounts.ProfileLoadCrashTitle", "Збій профілів"),
                         MascotEmotion.Sad);
@@ -176,7 +177,7 @@ namespace CL_CLegendary_Launcher_.Class
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    MascotMessageBox.Show(
+                    ServiceLocator.Current.GetService<IDialogService>().ShowMessage(
                         string.Format(LocalizationManager.GetString("Accounts.LoginLittleSkinErrorDesc", "Сервер LittleSkin відмовив у доступі.\nПеревір логін та пароль.\n\nВідповідь сервера: {0}"), body),
                         LocalizationManager.GetString("Accounts.LoginLittleSkinErrorTitle", "Помилка входу"),
                         MascotEmotion.Sad);

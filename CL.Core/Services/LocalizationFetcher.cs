@@ -1,4 +1,4 @@
-﻿using CL_CLegendary_Launcher_.Models;
+﻿using CL.Core.Models;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -6,7 +6,7 @@ using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace CL_CLegendary_Launcher_.Class
+namespace CL.Core.Services
 {
     public static class LocalizationFetcher
     {

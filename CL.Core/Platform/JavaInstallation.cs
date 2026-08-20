@@ -1,6 +1,6 @@
 using System;
 
-namespace CL_CLegendary_Launcher_.Class
+namespace CL.Core.Services
 {
     public sealed class JavaInstallation
     {

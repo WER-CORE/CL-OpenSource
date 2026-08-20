@@ -1,5 +1,8 @@
-using CL_CLegendary_Launcher_.Windows;
+using CL.Core.Models;
+using CL.Core.Platform;
+using CL.Core.Interfaces;
 using CmlLib.Core;
+using CmlLib.Core.Auth;
 using CmlLib.Core.Installer.Forge;
 using CmlLib.Core.Installer.NeoForge;
 using CmlLib.Core.Installer.NeoForge.Installers;
@@ -19,10 +22,9 @@ using System.Net.NetworkInformation;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows;
 using Path = System.IO.Path;
 
-namespace CL_CLegendary_Launcher_.Class
+namespace CL.Core.Services
 {
     public enum LoaderType
     {
@@ -37,14 +39,14 @@ namespace CL_CLegendary_Launcher_.Class
 
     public class GameLaunchService
     {
-        private readonly CL_Main_ _main;
+        
         private readonly GameSessionManager _gameSessionManager;
         private readonly LastActionService _lastActionService;
         private CancellationTokenSource _cts;
 
-        public GameLaunchService(CL_Main_ main, GameSessionManager sessionManager, LastActionService lastActionService)
+        public GameLaunchService(GameSessionManager sessionManager, LastActionService lastActionService)
         {
-            _main = main;
+            
             _gameSessionManager = sessionManager;
             _lastActionService = lastActionService;
         }
@@ -82,20 +84,21 @@ namespace CL_CLegendary_Launcher_.Class
                     return mcVersion;
             }
         }
-        public async Task LaunchGameAsync(LoaderType loaderType, string minecraftVersion, string loaderVersion, string serverIp = null, int? serverPort = null)
+        public async Task LaunchGameAsync(LoaderType loaderType, string minecraftVersion, string loaderVersion, LaunchConfiguration config)
         {
             _cts = new CancellationTokenSource();
             var token = _cts.Token;
-            bool isOffline = IsOfflineMode();
+            config.IsOffline = IsOfflineMode();
 
-            _main.Dispatcher.Invoke(() =>
+            ServiceLocator.Current.GetService<IDispatcherService>().Invoke(() =>
             {
-                _main.InstallVersionOnPlay = true;
-                _main.PlayTXT.Text = isOffline ? LocalizationManager.GetString("GameLaunch.LaunchOffline", "ОФЛАЙН ЗАПУСК...") : LocalizationManager.GetString("GameLaunch.LaunchDownloading", "ЗАВАНТАЖЕННЯ...");
+                ServiceLocator.Current.GetService<IMainWindowController>().SetInstallVersionOnPlay(true);
+                ServiceLocator.Current.GetService<IMainWindowController>().SetPlayButtonText(config.IsOffline ? LocalizationManager.GetString("GameLaunch.LaunchOffline", "ОФЛАЙН ЗАПУСК...") : LocalizationManager.GetString("GameLaunch.LaunchDownloading", "ЗАВАНТАЖЕННЯ..."));
             });
 
-            DowloadProgress dowloadProgress = new DowloadProgress { CTS = _cts };
-            if (!isOffline) _main.Dispatcher.Invoke(() => dowloadProgress.Show());
+            var dowloadProgress = ServiceLocator.Current.GetService<ITaskProgressService>();
+            dowloadProgress.CTS = _cts;
+            if (!config.IsOffline) dowloadProgress.ShowProgressWindow();
 
             try
             {
@@ -113,7 +116,7 @@ namespace CL_CLegendary_Launcher_.Class
 
                 var parameters = MinecraftLauncherParameters.CreateDefault(path);
                 parameters.GameInstaller = parallelInstaller;
-                if (isOffline)
+                if (config.IsOffline)
                 {
                     parameters.VersionLoader = new CmlLib.Core.VersionLoader.LocalJsonVersionLoader(path);
                 }
@@ -121,34 +124,34 @@ namespace CL_CLegendary_Launcher_.Class
                 var launcher = new MinecraftLauncher(parameters);
                 launcher.FileProgressChanged += (sender, args) =>
                 {
-                    _main.Dispatcher.Invoke(() =>
+                    ServiceLocator.Current.GetService<IDispatcherService>().Invoke(() =>
                     {
                         int fileProgress = args.TotalTasks > 0 ? (int)((double)args.ProgressedTasks / args.TotalTasks * 100) : 0;
-                        dowloadProgress.DowloadProgressBarFileTask(args.TotalTasks, args.ProgressedTasks, args.Name);
+                        dowloadProgress.UpdateFileTaskProgress(args.TotalTasks, args.ProgressedTasks, args.Name);
                         string versionLabel = string.IsNullOrEmpty(loaderVersion) ? minecraftVersion : $"{minecraftVersion} ({loaderVersion})";
-                        dowloadProgress.DowloadProgressBarVersion(fileProgress, versionLabel);
+                        dowloadProgress.UpdateVersionProgress(fileProgress, versionLabel);
                     });
                 };
 
                 launcher.ByteProgressChanged += (sender, args) =>
                 {
-                    _main.Dispatcher.Invoke(() =>
+                    ServiceLocator.Current.GetService<IDispatcherService>().Invoke(() =>
                     {
                         int byteProgress = args.TotalBytes > 0 ? (int)((double)args.ProgressedBytes / args.TotalBytes * 100) : 0;
-                        dowloadProgress.DowloadProgressBarFile(byteProgress);
+                        dowloadProgress.UpdateFileProgress(byteProgress);
                     });
                 };
 
                 string versionName = "";
 
-                if (isOffline)
+                if (config.IsOffline)
                 {
                     versionName = GetOfflineVersionName(loaderType, minecraftVersion, loaderVersion);
 
                     string versionDir = Path.Combine(path.Versions, versionName);
                     if (!Directory.Exists(versionDir))
                     {
-                        MascotMessageBox.Show(
+                        ServiceLocator.Current.GetService<IDialogService>().ShowMessage(
                             LocalizationManager.GetString("GameLaunch.LaunchNeedInternetDesc", "Ой! Схоже, у вас немає інтернету, а ця версія ще жодного разу не запускалася.\n\nЩоб грати без мережі, спочатку завантажте цю версію онлайн!"),
                             LocalizationManager.GetString("GameLaunch.LaunchNeedInternetTitle", "Потрібен інтернет"),
                             MascotEmotion.Sad);
@@ -160,7 +163,7 @@ namespace CL_CLegendary_Launcher_.Class
                     versionName = await InstallVersionAsync(loaderType, minecraftVersion, loaderVersion, launcher, token);
                     if (string.IsNullOrEmpty(versionName))
                     {
-                        MascotMessageBox.Show(
+                        ServiceLocator.Current.GetService<IDialogService>().ShowMessage(
                             LocalizationManager.GetString("GameLaunch.LaunchInstallFailedDesc", "Ой леле! Я намагалася встановити цю версію, але нічого не вийшло.\nСпробуй ще раз пізніше."),
                             LocalizationManager.GetString("GameLaunch.LaunchInstallFailedTitle", "Помилка встановлення"),
                             MascotEmotion.Sad);
@@ -168,11 +171,11 @@ namespace CL_CLegendary_Launcher_.Class
                     }
                 }
 
-                var launchOption = CreateLaunchOptions(serverIp, serverPort, versionName);
+                var launchOption = CreateLaunchOptions(config, versionName);
 
                 if (SettingsManager.Default.EnableAutoBackup && SettingsManager.Default.EnableSubFiles_Backups)
                 {
-                    _main.Dispatcher.Invoke(() => _main.PlayTXT.Text = LocalizationManager.GetString("GameLaunch.LaunchBackupWorlds", "БЕКАП СВІТІВ..."));
+                    ServiceLocator.Current.GetService<IMainWindowController>().SetPlayButtonText(LocalizationManager.GetString("GameLaunch.LaunchBackupWorlds", "БЕКАП СВІТІВ..."));
                     string gameDir = path.BasePath;
                     string savesPath = Path.Combine(gameDir, "saves");
 
@@ -190,19 +193,19 @@ namespace CL_CLegendary_Launcher_.Class
                             }
                             catch (Exception ex)
                             {
-                                _main.Dispatcher.Invoke(() => NotificationService.ShowNotification(
-                                    LocalizationManager.GetString("GameLaunch.LaunchBackupErrorTitle", "Йой! Помилка при створенні бекапів!"),
-                                    string.Format(LocalizationManager.GetString("GameLaunch.LaunchBackupErrorDesc", "Помилка авто-бекапу: {0}"), ex.Message),
-                                    _main.SnackbarPresenter, 10));
+                                ServiceLocator.Current.GetService<IMainWindowController>().ShowSnackbar(
+                                    LocalizationManager.GetString("GameLaunch.LaunchBackupErrorTitle", "Упс! Сталася помилка бекапу!"),
+                                    string.Format(LocalizationManager.GetString("GameLaunch.LaunchBackupErrorDesc", "Помилка бекапу: {0}"), ex.Message),
+                                    10);
                             }
                         });
                     }
                 }
 
-                _main.Dispatcher.Invoke(() => _main.PlayTXT.Text = LocalizationManager.GetString("GameLaunch.LaunchStarting", "ЗАПУСК..."));
+                ServiceLocator.Current.GetService<IMainWindowController>().SetPlayButtonText(LocalizationManager.GetString("GameLaunch.LaunchStarting", "ЗАПУСК..."));
 
                 Process process;
-                if (isOffline)
+                if (config.IsOffline)
                 {
                     process = await launcher.BuildProcessAsync(versionName, launchOption);
                 }
@@ -211,17 +214,17 @@ namespace CL_CLegendary_Launcher_.Class
                     process = await launcher.InstallAndBuildProcessAsync(versionName, launchOption, token);
                 }
 
-                _main.Dispatcher.Invoke(() =>
+                ServiceLocator.Current.GetService<IDispatcherService>().Invoke(() =>
                 {
-                    if (dowloadProgress.IsLoaded) dowloadProgress.Close();
-                    _main.WindowState = WindowState.Minimized;
+                    if (dowloadProgress.IsLoaded) dowloadProgress.CloseProgressWindow();
+                    ServiceLocator.Current.GetService<IMainWindowController>().Minimize();
                 });
 
                 await DiscordController.UpdatePresence(string.Format(LocalizationManager.GetString("DiscordRPC.PlayingVersion", "Грає версію {0}"), versionName));
 
                 if (SettingsManager.Default.EnableLog)
                 {
-                    _main.ShowGameLog(process);
+                    ServiceLocator.Current.GetService<IMainWindowController>().ShowGameLog(process);
                 }
                 else
                 {
@@ -241,29 +244,28 @@ namespace CL_CLegendary_Launcher_.Class
 
                 if (SettingsManager.Default.CloseLaucnher)
                 {
-                    _main.Dispatcher.Invoke(() => _main.Close());
+                    ServiceLocator.Current.GetService<IMainWindowController>().Close();
                 }
 
-                if (SettingsManager.Default.EnableMod_Statistics) { _gameSessionManager.StartGameSession(loaderType == LoaderType.Vanilla && serverIp == null ? "vanilla" : "mod"); }
+                if (SettingsManager.Default.EnableMod_Statistics) { _gameSessionManager.StartGameSession(!string.IsNullOrEmpty(config.ServerIp) ? "server" : (loaderType == LoaderType.Vanilla ? "vanilla" : "mod")); }
                 await MemoryCleaner.FlushMemoryAsync(trimWorkingSet: true);
                 await process.WaitForExitAsync();
                 int exitCode = process.ExitCode;
 
                 if (exitCode != 0)
                 {
-                    _main.Dispatcher.Invoke(() =>
+                    ServiceLocator.Current.GetService<IDispatcherService>().Invoke(() =>
                     {
-                        _main.Show();
-                        _main.WindowState = WindowState.Normal;
+                        ServiceLocator.Current.GetService<IMainWindowController>().Restore();
 
                         if (!SettingsManager.Default.EnableLog)
                         {
                             string logFilePath = Path.Combine(path.BasePath, "logs", "latest.log");
 
-                            _main.ShowGameLogFromFile(logFilePath);
+                            ServiceLocator.Current.GetService<IMainWindowController>().ShowGameLogFromFile(logFilePath);
                         }
 
-                        MascotMessageBox.Show(
+                        ServiceLocator.Current.GetService<IDialogService>().ShowMessage(
                             string.Format(LocalizationManager.GetString("GameLaunch.CrashDesc", "Йой! Майнкрафт впав (Код помилки: {0}).\nЯ відкрила логи, щоб ми могли знайти конфліктний мод або помилку."), exitCode),
                             LocalizationManager.GetString("GameLaunch.CrashTitle", "Краш гри!"),
                             MascotEmotion.Sad);
@@ -273,20 +275,20 @@ namespace CL_CLegendary_Launcher_.Class
                 {
                     if (SettingsManager.Default.CloseLaucnher)
                     {
-                        _main.Dispatcher.Invoke(() => Application.Current.Shutdown());
+                        ServiceLocator.Current.GetService<IDispatcherService>().Invoke(() => Environment.Exit(0));
                     }
                 }
             }
             catch (OperationCanceledException)
             {
-                MascotMessageBox.Show(
+                ServiceLocator.Current.GetService<IDialogService>().ShowMessage(
                     LocalizationManager.GetString("GameLaunch.LaunchCancelledDesc", "Гаразд, я зупинила завантаження.\nМи можемо спробувати знову, коли ти будеш готовий!"),
                     LocalizationManager.GetString("GameLaunch.LaunchCancelledTitle", "Скасовано"),
                     MascotEmotion.Normal);
             }
             catch (Exception ex)
             {
-                MascotMessageBox.Show(
+                ServiceLocator.Current.GetService<IDialogService>().ShowMessage(
                     string.Format(LocalizationManager.GetString("GameLaunch.LaunchCrashDesc", "Ой! Сталася помилка під час запуску гри.\n\nДеталі: {0}"), ex.Message),
                     LocalizationManager.GetString("GameLaunch.LaunchCrashTitle", "Помилка запуску"),
                     MascotEmotion.Sad);
@@ -294,21 +296,21 @@ namespace CL_CLegendary_Launcher_.Class
             finally
             {
                 _gameSessionManager.StopGameSession();
-                _main.Dispatcher.Invoke(() =>
+                ServiceLocator.Current.GetService<IDispatcherService>().Invoke(() =>
                 {
-                    _main.InstallVersionOnPlay = false;
+                    ServiceLocator.Current.GetService<IMainWindowController>().SetInstallVersionOnPlay(false);
 
                     string savedTypeStr = SettingsManager.Default.LastSelectedType.ToString();
                     if (SettingsManager.Default.LastSelectedType == 5 && !string.IsNullOrEmpty(SettingsManager.Default.LastSelectedModVersion))
                     {
-                        _main.PlayTXT.Text = string.Format(LocalizationManager.GetString("GameLaunch.PlayBtnPlayIn", "ГРАТИ В ({0})"), SettingsManager.Default.LastSelectedModVersion);
+                        ServiceLocator.Current.GetService<IMainWindowController>().SetPlayButtonText(string.Format(LocalizationManager.GetString("GameLaunch.PlayBtnPlayIn", "ГРАТИ В ({0})"), SettingsManager.Default.LastSelectedModVersion));
                     }
                     else
                     {
-                        _main.PlayTXT.Text = string.Format(LocalizationManager.GetString("GameLaunch.PlayBtnPlayIn", "ГРАТИ В ({0})"), SettingsManager.Default.LastSelectedVersion);
+                        ServiceLocator.Current.GetService<IMainWindowController>().SetPlayButtonText(string.Format(LocalizationManager.GetString("GameLaunch.PlayBtnPlayIn", "ГРАТИ В ({0})"), SettingsManager.Default.LastSelectedVersion));
                     }
 
-                    if (dowloadProgress.IsLoaded) dowloadProgress.Close();
+                    if (dowloadProgress.IsLoaded) dowloadProgress.CloseProgressWindow();
                 });
             }
         }
@@ -378,27 +380,27 @@ namespace CL_CLegendary_Launcher_.Class
                     return mcVersion;
             }
         }
-        public MLaunchOption CreateLaunchOptions(string serverIp, int? serverPort, string versionName = "")
+        public MLaunchOption CreateLaunchOptions(LaunchConfiguration config, string versionName = "")
         {
             var baseOptions = new MLaunchOption
             {
-                MinimumRamMb = (int)_main.OPSlider.Value,
-                MaximumRamMb = (int)_main.OPSlider.Value,
-                Session = _main.session,
-                ScreenWidth = int.Parse(_main.Width.Text),
-                ScreenHeight = int.Parse(_main.Height.Text),
+                MinimumRamMb = config.MinimumRamMb,
+                MaximumRamMb = config.MinimumRamMb,
+                Session = config.Session,
+                ScreenWidth = config.ScreenWidth,
+                ScreenHeight = config.ScreenHeight,
                 FullScreen = SettingsManager.Default.FullScreen,
-                ServerIp = serverIp,
-                ServerPort = serverPort ?? 0,
+                ServerIp = config.ServerIp,
+                ServerPort = config.ServerPort,
             };
 
-            if (_main.selectAccountNow == AccountType.LittleSkin)
+            if (config.AccountType == AccountType.LittleSkin)
             {
                 var jvmArgs = new List<MArgument>
                 {
                     new MArgument
                     {
-                        Values = new[] { $@"-javaagent:{AppContext.BaseDirectory}authlib-injector-1.2.7.jar=https://littleskin.cn/api/yggdrasil" }
+                        Values = new[] { $@"-javaagent:{AppContext.BaseDirectory}authlib-injector-1.2.8.jar=https://littleskin.cn/api/yggdrasil" }
                     }
                 };
                 baseOptions.ExtraJvmArguments = jvmArgs;

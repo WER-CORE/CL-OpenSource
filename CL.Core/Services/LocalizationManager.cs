@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 
-namespace CL_CLegendary_Launcher_.Class
+namespace CL.Core.Services
 {
     public static class LocalizationManager
     {

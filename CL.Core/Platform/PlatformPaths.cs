@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 
-namespace CL_CLegendary_Launcher_.Class
+namespace CL.Core.Services
 {
     public static class PlatformPaths
     {

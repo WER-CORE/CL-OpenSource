@@ -1,5 +1,5 @@
-using CL_CLegendary_Launcher_.Class;
-using CL_CLegendary_Launcher_.Models;
+using CL.Core.Services;
+using CL.Core.Models;
 using CmlLib.Core;
 using CmlLib.Core.Installer.Forge.Versions;
 using CmlLib.Core.Installer.NeoForge;

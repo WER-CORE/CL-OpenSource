@@ -1,4 +1,4 @@
-namespace CL_CLegendary_Launcher_.Models
+namespace CL.Core.Models
 {
     public class ProfileItem
     {

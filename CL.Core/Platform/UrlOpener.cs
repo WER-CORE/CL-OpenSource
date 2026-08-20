@@ -1,7 +1,7 @@
 using System;
 using System.Diagnostics;
 
-namespace CL_CLegendary_Launcher_.Class
+namespace CL.Core.Services
 {
     // Ядро не показує діалогів - помилку віддаємо UI-шару через ErrorHandler
     public static class UrlOpener

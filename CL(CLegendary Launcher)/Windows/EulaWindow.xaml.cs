@@ -1,5 +1,5 @@
-﻿using CL_CLegendary_Launcher_.Class;
-using CL_CLegendary_Launcher_.Models;
+﻿using CL.Core.Services;
+using CL.Core.Models;
 using System;
 using System.Threading.Tasks;
 using System.Windows;
