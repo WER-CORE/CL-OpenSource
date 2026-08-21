@@ -76,32 +76,7 @@ namespace CL.Core.Services
             };
             return Path.Combine(pack.Path, folderName);
         }
-        private async Task<ApiClient> GetCfClientAsync()
-        {
-            if (_cfApiClientInstance != null) return _cfApiClientInstance;
-
-            try
-            {
-                WebHelper.Client.DefaultRequestHeaders.Add("x-launcher-secret", "CL-Super-Secret-2026");
-
-                var response = await WebHelper.Client.GetAsync($"{Secrets.CurseForgeKey}");
-                if (response.IsSuccessStatusCode)
-                {
-                    string json = await response.Content.ReadAsStringAsync();
-                    var data = JObject.Parse(json);
-                    string key = data["key"]?.ToString();
-
-                    _cfApiClientInstance = new ApiClient(key);
-                    return _cfApiClientInstance;
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Не вдалося отримати ключ CurseForge: {ex.Message}");
-            }
-
-            return null;
-        }
+        private async Task<ApiClient> GetCfClientAsync() => await CurseForgeClientProvider.GetClientAsync();
         public async Task<List<ModSearchResult>> SearchModsAsync(string query, string site, string loader, int modType, int offset = 0)
         {
             if (site == "Modrinth") return await SearchModrinthAsync(query, loader, modType, offset);

@@ -65,28 +65,7 @@ namespace CL.Core.Services
             _gameLaunchService = gameLaunchService;
             _modDownloadService = modDownloadService;
         }
-        private async Task<ApiClient> GetCfClientAsync()
-        {
-            if (_cfApiClientInstance != null) return _cfApiClientInstance;
-            try
-            {
-                if (!WebHelper.Client.DefaultRequestHeaders.Contains("x-launcher-secret"))
-                {
-                    WebHelper.Client.DefaultRequestHeaders.Add("x-launcher-secret", "CL-Super-Secret-2026");
-                }
-                var response = await WebHelper.Client.GetAsync($"{Secrets.CurseForgeKey}");
-                if (response.IsSuccessStatusCode)
-                {
-                    string json = await response.Content.ReadAsStringAsync();
-                    var data = JObject.Parse(json);
-                    string key = data["key"]?.ToString();
-                    _cfApiClientInstance = new ApiClient(key);
-                    return _cfApiClientInstance;
-                }
-            }
-            catch { }
-            return null;
-        }
+        private async Task<ApiClient> GetCfClientAsync() => await CurseForgeClientProvider.GetClientAsync();
         public List<InstalledModpack> LoadInstalledModpacks()
         {
             string jsonPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "installed_modpacks.json");

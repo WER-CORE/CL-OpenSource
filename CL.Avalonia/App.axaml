@@ -1,8 +1,9 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:suki="clr-namespace:SukiUI;assembly=SukiUI"
              x:Class="CL_CLegendary_Launcher_.Avalonia.App"
              RequestedThemeVariant="Dark">
-  <Application.Styles>
-    <FluentTheme />
-  </Application.Styles>
+	<Application.Styles>
+		<suki:SukiTheme ThemeColor="Blue" />
+	</Application.Styles>
 </Application>

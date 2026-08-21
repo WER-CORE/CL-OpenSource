@@ -1,15 +1,17 @@
-using System;
-using System.Diagnostics;
-using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
+using Avalonia.Styling;
 using Avalonia.Threading;
-using CL.Core.Services;
-using CL.Core.Models;
 using CL.Core.Interfaces;
+using CL.Core.Models;
 using CL.Core.Platform;
+using CL.Core.Services;
 using CmlLib.Core.Auth;
+using SukiUI;
+using System;
+using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -26,7 +28,6 @@ namespace CL_CLegendary_Launcher_.Avalonia.Views
         {
             AvaloniaXamlLoader.Load(this);
 
-            
             _launcherPath = PlatformPaths.DefaultLauncherPath();
 
             InitializePlatformServices();
