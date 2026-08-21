@@ -1,5 +1,5 @@
 using System;
-using CL_CLegendary_Launcher_.Class;
+using CL.Core.Services;
 using Xunit;
 
 namespace CL.Core.Tests
