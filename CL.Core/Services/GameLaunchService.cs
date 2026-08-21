@@ -385,7 +385,7 @@ namespace CL.Core.Services
             var baseOptions = new MLaunchOption
             {
                 MinimumRamMb = config.MinimumRamMb,
-                MaximumRamMb = config.MinimumRamMb,
+                MaximumRamMb = config.MaximumRamMb,
                 Session = config.Session,
                 ScreenWidth = config.ScreenWidth,
                 ScreenHeight = config.ScreenHeight,
