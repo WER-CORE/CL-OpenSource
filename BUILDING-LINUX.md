@@ -72,9 +72,25 @@ DOTNET_ROLL_FORWARD=Major dotnet run --project CL.Avalonia
 
 ## Що ще залишилось для повної підтримки Linux
 
-Перенести на `CL.Core` або на абстракцію те, що зараз прив'язане до Windows:
+Бізнес-логіка вже живе в `CL.Core` за інтерфейсами (`IDialogService`,
+`ITaskProgressService`, `IMainWindowController`, `ISoundService`), тож
+Avalonia-клієнт підставляє власні реалізації через `ServiceLocator`.
 
-* **Файлові діалоги** - `Microsoft.Win32.OpenFileDialog` та `System.Windows.Forms.FolderBrowserDialog` (потрібен спільний інтерфейс, реалізації WPF і Avalonia `IStorageProvider`).
-* **Запуск гри:** базовий (ваніль, офлайн-акаунт) уже працює через `MinecraftLaunchService` у ядрі. Модлоадери, акаунти Microsoft/LittleSkin, прогрес завантаження та модпаки лишились у `GameLaunchService` і `ModpackService`, які тягнуть WPF.
-* **Звук** - `SoundManager` на `System.Media.SoundPlayer` (лише Windows).
-* **Екрани** - 37 `.xaml` та 56 code-behind ще на WPF (у процесі рефакторингу за MVVM-патерном на SukiUI).
+Стан перевірки на Linux:
+
+- **Файлові діалоги** - реалізовані в Avalonia через `IStorageProvider`
+  (`OpenFilePickerAsync` / `OpenFolderPickerAsync`), WinForms-фільтр
+  конвертується у `FilePickerFileType`
+- **Акаунти** - offline та LittleSkin працюють; для Microsoft на Linux
+  використовується **device code flow** (`msal.DeviceCode(...)`), бо
+  інтерактивне вікно MSAL розраховане на Windows. Код і посилання
+  виводяться в журнал, браузер відкривається через `xdg-open`
+- **Запуск гри** - ваніль з offline-акаунтом працює через
+  `MinecraftLaunchService`
+- **Модлоадери** (Forge / Fabric / Quilt / NeoForge) - ще не перевірені
+- **Модпаки та CurseForge** - ще не перевірені
+- **Звук** - `ISoundService` в Avalonia поки заглушка (`DummySoundService`)
+- **Екрани** - 37 `.xaml` та 56 code-behind ще на WPF (у процесі
+  рефакторингу за MVVM-патерном на SukiUI)
+
+Останнім кроком WPF-проєкт стає лише Windows-обгорткою над спільним ядром.
