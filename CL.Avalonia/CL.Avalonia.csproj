@@ -27,4 +27,8 @@
 		<PackageReference Include="SukiUI" Version="7.0.1" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<AvaloniaResource Include="Assets/**" />
+	</ItemGroup>
+
 </Project>
