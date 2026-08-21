@@ -22,7 +22,10 @@
     <ServerGarbageCollection>false</ServerGarbageCollection>
     <DelaySign>False</DelaySign>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <PlatformTarget>AnyCPU</PlatformTarget>
+        <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>false</DebugSymbols>
+    <DebugType>none</DebugType>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
