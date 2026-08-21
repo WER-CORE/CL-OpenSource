@@ -45,7 +45,9 @@ namespace CL.Core.Services
                 var jsonToWrite = JsonConvert.SerializeObject(profiles, Formatting.Indented);
 
                 byte[] plainBytes = Encoding.UTF8.GetBytes(jsonToWrite);
-                byte[] encryptedData = ProtectedData.Protect(plainBytes, null, DataProtectionScope.CurrentUser);
+                byte[] encryptedData = IsDpapiSupported
+                    ? ProtectedData.Protect(plainBytes, null, DataProtectionScope.CurrentUser)
+                    : EncryptAes(plainBytes);
 
                 File.WriteAllBytes(_profilesManegerPath, encryptedData);
             }
@@ -93,6 +95,9 @@ namespace CL.Core.Services
 
             try
             {
+                if (!IsDpapiSupported)
+                    throw new PlatformNotSupportedException();
+
                 byte[] decryptedBytes = ProtectedData.Unprotect(fileContent, null, DataProtectionScope.CurrentUser);
                 string json = Encoding.UTF8.GetString(decryptedBytes);
                 return JsonConvert.DeserializeObject<List<ProfileItem>>(json) ?? new List<ProfileItem>();
@@ -223,6 +228,53 @@ namespace CL.Core.Services
                     return sr.ReadToEnd();
                 }
             }
+        }
+
+        // DPAPI існує лише на Windows; на Linux/macOS профілі шифруються AES
+        // тим самим ключем, що вже використовує legacy-формат.
+        private static bool IsDpapiSupported =>
+            System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(
+                System.Runtime.InteropServices.OSPlatform.Windows);
+
+        private byte[] EncryptAes(byte[] plainBytes)
+        {
+            using (Aes aes = Aes.Create())
+            {
+                aes.Key = GetOrCreateEncryptionKey();
+                aes.Mode = CipherMode.CBC;
+                aes.Padding = PaddingMode.PKCS7;
+                aes.GenerateIV();
+
+                using (var encryptor = aes.CreateEncryptor(aes.Key, aes.IV))
+                using (var ms = new MemoryStream())
+                {
+                    // IV зберігається на початку файлу — так само, як у legacy-форматі.
+                    ms.Write(aes.IV, 0, aes.IV.Length);
+
+                    using (var cs = new CryptoStream(ms, encryptor, CryptoStreamMode.Write))
+                        cs.Write(plainBytes, 0, plainBytes.Length);
+
+                    return ms.ToArray();
+                }
+            }
+        }
+
+        private byte[] GetOrCreateEncryptionKey()
+        {
+            string base64Key = SettingsManager.Default.EncryptKey;
+
+            if (string.IsNullOrEmpty(base64Key))
+            {
+                byte[] key = new byte[32];
+                using (var rng = RandomNumberGenerator.Create())
+                    rng.GetBytes(key);
+
+                SettingsManager.Default.EncryptKey = Convert.ToBase64String(key);
+                SettingsManager.Save();
+                return key;
+            }
+
+            return Convert.FromBase64String(base64Key);
         }
 
         private byte[] GetLegacyEncryptionKey()
