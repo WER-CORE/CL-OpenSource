@@ -14,6 +14,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Identity.Client;
 using XboxAuthNet.Game.Msal;
 using XboxAuthNet.XboxLive;
 
@@ -126,15 +127,28 @@ namespace CL.Core.Services
                 }
             }
         }
-        public async Task<ProfileItem> AddMicrosoftAccountAsync()
+        public async Task<ProfileItem> AddMicrosoftAccountAsync(Func<DeviceCodeResult, Task> deviceCodeCallback = null)
         {
+            if (string.IsNullOrWhiteSpace(Secrets.CLIENT_ID_AZURE))
+            {
+                ServiceLocator.Current.GetService<IDispatcherService>().Invoke(() => {
+                    ServiceLocator.Current.GetService<IDialogService>().ShowMessage(
+                        LocalizationManager.GetString("Accounts.NoAzureClientId", "У цій збірці не налаштовано CLIENT_ID_AZURE, тому вхід через Microsoft недоступний."),
+                        LocalizationManager.GetString("Accounts.NeedAuth", "Потрібна авторизація"),
+                        MascotEmotion.Alert);
+                });
+                return null;
+            }
+
             try
             {
                 var app = await MsalClientHelper.BuildApplicationWithCache($"{Secrets.CLIENT_ID_AZURE}");
                 var loginHandler = new JELoginHandlerBuilder().Build();
 
                 var authenticator = loginHandler.CreateAuthenticatorWithNewAccount();
-                authenticator.AddMsalOAuth(app, msal => msal.Interactive());
+                authenticator.AddMsalOAuth(app, msal => deviceCodeCallback == null
+                    ? msal.Interactive()
+                    : msal.DeviceCode(deviceCodeCallback));
                 authenticator.AddXboxAuthForJE(xbox => xbox.Basic());
                 authenticator.AddForceJEAuthenticator();
 
