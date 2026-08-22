@@ -516,7 +516,7 @@ namespace CL.Core.Services
                                 Directory.CreateDirectory(targetDir);
                                 string fullPath = Path.Combine(targetDir, fileName);
 
-                                bool needsDownload = !File.Exists(fullPath) && !File.Exists(fullPath + ".disabled");
+                                bool needsDownload = !File.Exists(fullPath) && !File.Exists(fullPath + ".disabled") && !File.Exists(fullPath + ".installed");
                                 if (!needsDownload)
                                 {
                                     long actualLength = new FileInfo(fullPath).Length;
@@ -593,7 +593,7 @@ namespace CL.Core.Services
                                 string targetDir = Path.Combine(packFolder, subFolder);
                                 Directory.CreateDirectory(targetDir);
                                 string fullPath = Path.Combine(targetDir, fileName);
-                                bool needsDownload = !File.Exists(fullPath) && !File.Exists(fullPath + ".disabled");
+                                bool needsDownload = !File.Exists(fullPath) && !File.Exists(fullPath + ".disabled") && !File.Exists(fullPath + ".installed");
                                 if (!needsDownload && !string.IsNullOrEmpty(expectedSha1))
                                 {
                                     string actualSha1 = await ComputeSha1Async(fullPath);
@@ -736,7 +736,7 @@ namespace CL.Core.Services
 
                             string filePath = Path.Combine(targetDir, fileName);
 
-                            if (!File.Exists(filePath) && !File.Exists(filePath + ".disabled"))
+                            if (!File.Exists(filePath) && !File.Exists(filePath + ".disabled") && !File.Exists(filePath + ".installed"))
                             {
                                 progress.UpdateFileTaskProgress(totalTasks, completed, "");
 
@@ -785,6 +785,7 @@ namespace CL.Core.Services
 
                                     ZipFile.ExtractToDirectory(filePath, extractTarget);
 
+                                    File.WriteAllText(filePath + ".installed", "installed");
                                     File.Delete(filePath);
 
                                     var rootDir = new DirectoryInfo(extractTarget);

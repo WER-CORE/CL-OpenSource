@@ -6,7 +6,7 @@ namespace CL.Core.Helpers
 {
     public static class ZipHelper
     {
-        public static void ExtractMap(string zipPath, string extractToFolder)
+        public static void ExtractMap(string zipPath, string extractToFolder, bool deleteZip = true)
         {
             try
             {
@@ -34,7 +34,11 @@ namespace CL.Core.Helpers
                     }
                 }
 
-                File.Delete(zipPath);
+                if (deleteZip)
+                {
+                    File.WriteAllText(zipPath + ".installed", "installed");
+                    File.Delete(zipPath);
+                }
             }
             catch 
             {

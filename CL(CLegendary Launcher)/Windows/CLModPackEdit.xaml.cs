@@ -55,6 +55,7 @@ namespace CL_CLegendary_Launcher_.Windows
             TxtMods.Text = LocalizationManager.GetString("Modpacks.ModpackEditMods", "Моди");
             TxtResourcePacks.Text = LocalizationManager.GetString("Modpacks.ModpackEditResourcePacks", "Ресурспаки");
             TxtShaders.Text = LocalizationManager.GetString("Modpacks.ModpackEditShaders", "Шейдери");
+            TxtMaps.Text = LocalizationManager.GetString("Modpacks.ModpackEditMaps", "Світи");
             TxtOptions.Text = LocalizationManager.GetString("Modpacks.ModpackEditOptions", "Опції");
 
             SearchSystem.PlaceholderText = LocalizationManager.GetString("Modpacks.ModpackSearchPlaceholder", "Пошук файлів...");
@@ -112,6 +113,7 @@ namespace CL_CLegendary_Launcher_.Windows
         }
         private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            await Task.Delay(20);
             OPSlider.Maximum = GetTotalMemoryInMB();
             OPSlider.Value = CurrentModpack.OPack;
             SliderOPTXT.Text = OPSlider.Value.ToString("0") + "MB";
@@ -148,7 +150,7 @@ namespace CL_CLegendary_Launcher_.Windows
                 await UpdateModsList();
             }
 
-            List<string> detectedJavas = FindInstalledJavas();
+            List<string> detectedJavas = await Task.Run(() => FindInstalledJavas());
             foreach (string java in detectedJavas)
             {
                 JavaPathComboBox.Items.Add(java);
@@ -340,12 +342,14 @@ namespace CL_CLegendary_Launcher_.Windows
         private async Task UpdateModsList()
         {
             ModsManegerList.Items.Clear();
+            await Task.Delay(20);
 
             string currentModFolder = selectmodPack switch
             {
                 0 => "mods",
                 1 => "resourcepacks",
                 2 => "shaderpacks",
+                3 => "saves",
                 _ => "mods"
             };
 
@@ -357,10 +361,21 @@ namespace CL_CLegendary_Launcher_.Windows
                 0 => new[] { "*.jar", "*.jar.disabled", "*.litemod", "*.litemod.disabled" },
                 1 => new[] { "*.zip", "*.zip.disabled" },
                 2 => new[] { "*.zip", "*.rar", "*.zip.disabled", "*.rar.disabled" },
+                3 => new[] { "*.zip" },
                 _ => new[] { "*.*" }
             };
 
-            var files = patterns.SelectMany(p => Directory.GetFiles(modsDirectory, p)).ToArray();
+                        string[] files;
+            if (selectmodPack == 3)
+            {
+                var dirs = Directory.GetDirectories(modsDirectory);
+                var zips = Directory.GetFiles(modsDirectory, "*.zip");
+                files = dirs.Concat(zips).ToArray();
+            }
+            else
+            {
+                files = patterns.SelectMany(p => Directory.GetFiles(modsDirectory, p)).ToArray();
+            }
             string search = SearchSystem.Text.ToLower();
 
             var modsToLoad = new System.Collections.Generic.List<(string file, ItemManegerPack item)>();
@@ -616,10 +631,16 @@ namespace CL_CLegendary_Launcher_.Windows
             await SwitchTab(2, 80);
         }
 
+                private async void MapsPack_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            SoundManager.Click();
+            await SwitchTab(3, 120);
+        }
+
         private void SettingPack_MouseDown(object sender, MouseButtonEventArgs e)
         {
             SoundManager.Click();
-            _ = SwitchTab(3, 120);
+            _ = SwitchTab(4, 160);
         }
 
         private async Task SwitchTab(byte index, double positionY)
@@ -629,7 +650,7 @@ namespace CL_CLegendary_Launcher_.Windows
 
             AnimationService.AnimateBorderObject(0, positionY, PanelSelectNowSiteMods, true);
 
-            if (index == 3)
+            if (index == 4)
             {
                 ManegerPack.Visibility = Visibility.Hidden;
                 SettingPack_Mod.Visibility = Visibility.Visible;
@@ -679,6 +700,7 @@ namespace CL_CLegendary_Launcher_.Windows
                     0 => "mods",
                     1 => "resourcepacks",
                     2 => "shaderpacks",
+                3 => "saves",
                     4 => "datapacks",
                     _ => "mods"
                 };
@@ -690,9 +712,18 @@ namespace CL_CLegendary_Launcher_.Windows
                 {
                     foreach (var file in openFileDialog.FileNames)
                     {
-                        string targetPath = Path.Combine(modsDirectory, Path.GetFileName(file));
-                        if (File.Exists(targetPath)) File.Delete(targetPath);
-                        File.Copy(file, targetPath);
+                        if (selectmodPack == 3 && file.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
+                        {
+                            string tempPath = Path.Combine(modsDirectory, Path.GetFileName(file));
+                            File.Copy(file, tempPath, true);
+                            CL.Core.Helpers.ZipHelper.ExtractMap(tempPath, modsDirectory);
+                        }
+                        else
+                        {
+                            string targetPath = Path.Combine(modsDirectory, Path.GetFileName(file));
+                            if (File.Exists(targetPath)) File.Delete(targetPath);
+                            File.Copy(file, targetPath);
+                        }
                     }
 
                     _ = UpdateModsList();

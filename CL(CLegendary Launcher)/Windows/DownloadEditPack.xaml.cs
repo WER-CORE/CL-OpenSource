@@ -51,6 +51,13 @@ namespace CL_CLegendary_Launcher_.Windows
             CurrentModpack = currentModpack;
             this.SelectMod = SelectMod;
 
+            if (SelectMod == 3)
+            {
+                ModrinthSite.Visibility = Visibility.Collapsed;
+                SiteDowload = "CurseForge";
+                CurseForgeSite.Opacity = 1.0;
+            }
+
             ApplyLocalization();
             LoadVaribaleCurrectPack();
             UpdateModsList();
@@ -162,6 +169,7 @@ namespace CL_CLegendary_Launcher_.Windows
                         $"https://api.modrinth.com/v2/search?query={SearchSystem.Text}&facets=[[%22categories:{LoderNow.ToLower()}%22],[%22project_type:mod%22]]&limit={PageSize}&offset={offset}",
                         $"https://api.modrinth.com/v2/search?query={SearchSystem.Text}&facets=[[%22project_type:resourcepack%22]]&limit={PageSize}&offset={offset}",
                         $"https://api.modrinth.com/v2/search?query={SearchSystem.Text}&facets=[[%22project_type:shader%22]]&limit={PageSize}&offset={offset}",
+                        $"https://api.modrinth.com/v2/search?query={SearchSystem.Text}&facets=[[%22project_type:modpack%22]]&limit={PageSize}&offset={offset}",
                     };
 
                     var response = await WebHelper.Client.GetStringAsync(urls[SelectMod]);
@@ -176,6 +184,7 @@ namespace CL_CLegendary_Launcher_.Windows
                             0 => "mod",
                             1 => "resourcepack",
                             2 => "shader",
+                            3 => "map",
                             _ => "mod"
                         };
                         var item = CreateItemFromModrinth(mod, loaderType);
@@ -184,10 +193,10 @@ namespace CL_CLegendary_Launcher_.Windows
                 }
                 else if (SiteDowload == "CurseForge")
                 {
-                    int classId = SelectMod switch { 0 => 6, 2 => 6552, 1 => 12, _ => 6 };
+                    int classId = SelectMod switch { 0 => 6, 1 => 12, 2 => 6552, 3 => 17, _ => 6 };
                     dynamic modLoaderType = null;
 
-                    if (CurrentModpack.LoaderType != "Vanila")
+                    if (CurrentModpack.LoaderType != "Vanila" && SelectMod == 0)
                     {
                         modLoaderType = LoderNow switch
                         {
@@ -273,7 +282,7 @@ namespace CL_CLegendary_Launcher_.Windows
                 {
                     Name = item.Name,
                     ProjectId = item.ProjectId,
-                    Type = type == 0 ? "mod" : type == 1 ? "resourcepack" : "shader",
+                    Type = type == 0 ? "mod" : type == 1 ? "resourcepack" : type == 2 ? "shader" : type == 3 ? "map" : "mod",
                     ImageURL = icon,
                     Slug = item.Slug,
                 };
@@ -398,13 +407,17 @@ namespace CL_CLegendary_Launcher_.Windows
                 {
                     if (!int.TryParse(mod.ProjectId, out int modId)) continue;
 
-                    var modLoaderType = LoderNow switch
+                    ModLoaderType? modLoaderType = null;
+                    if (SelectMod == 0)
                     {
-                        "Fabric" => ModLoaderType.Fabric,
-                        "Quilt" => ModLoaderType.Quilt,
-                        "NeoForge" => ModLoaderType.NeoForge,
-                        _ => ModLoaderType.Forge
-                    };
+                        modLoaderType = LoderNow switch
+                        {
+                            "Fabric" => ModLoaderType.Fabric,
+                            "Quilt" => ModLoaderType.Quilt,
+                            "NeoForge" => ModLoaderType.NeoForge,
+                            _ => ModLoaderType.Forge
+                        };
+                    }
 
                     var response = await cfApi.GetModFilesAsync(modId, null, modLoaderType);
                     if (response?.Data == null) continue;
@@ -421,7 +434,7 @@ namespace CL_CLegendary_Launcher_.Windows
                         string url = file.DownloadUrl;
                         if (string.IsNullOrEmpty(url))
                         {
-                            string typePath = mod.Type switch { "shader" => "shaders", "resourcepack" => "texture-packs", _ => "mc-mods" };
+                            string typePath = mod.Type switch { "shader" => "shaders", "resourcepack" => "texture-packs", "map" => "worlds", _ => "mc-mods" };
                             url = $"https://www.curseforge.com/minecraft/{typePath}/{mod.Slug}/download/{file.Id}";
                         }
                         fileUrlDowload.Add(url);
@@ -501,7 +514,7 @@ namespace CL_CLegendary_Launcher_.Windows
                 Version = VersionVanil.SelectedItem?.ToString(),
                 Url = fileUrlDowload[selectedIndex],
                 LoaderType = LoderNow,
-                Type = SelectMod switch { 0 => "mod", 2 => "shader", 1 => "resourcepack", _ => "mod" },
+                Type = SelectMod switch { 0 => "mod", 1 => "resourcepack", 2 => "shader", 3 => "map", _ => "mod" },
                 ImageURL = selectedModItem?.IconModPack?.Source?.ToString(),
                 Slug = selectedModItem?.Slug
             };
@@ -657,6 +670,7 @@ namespace CL_CLegendary_Launcher_.Windows
                         "mod" => "mods",
                         "shader" => "shaderpacks",
                         "resourcepack" => "resourcepacks",
+                        "map" => "saves",
                         _ => "mods"
                     };
 
@@ -679,6 +693,10 @@ namespace CL_CLegendary_Launcher_.Windows
                     if (!File.Exists(filePath))
                     {
                         bool success = await DownloadFileWithProgress(mod.Url, filePath, progress);
+                        if (success && mod.Type == "map" && filePath.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
+                        {
+                            CL.Core.Helpers.ZipHelper.ExtractMap(filePath, targetDir);
+                        }
                         if (!success) await HandleManualDownloadPrompt(mod.Url, filePath, fileName);
                     }
                     completed++;

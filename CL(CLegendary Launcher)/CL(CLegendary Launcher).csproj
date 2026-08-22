@@ -30,14 +30,14 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <Optimize>True</Optimize>
-    <FileAlignment>2048</FileAlignment>
+    <FileAlignment>1024</FileAlignment>
     <PublishSingleFile>true</PublishSingleFile>
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract> 
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <FileAlignment>2048</FileAlignment>
+    <FileAlignment>1024</FileAlignment>
   </PropertyGroup>
 
   <ItemGroup>

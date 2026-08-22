@@ -112,6 +112,15 @@
                                            Margin="10,0,0,0" Foreground="{DynamicResource MainForegroundBrush}" />
                             </StackPanel>
                         </Border>
+                        <Border x:Name="MapsPack" Height="35" Cursor="Hand" MouseDown="MapsPack_MouseDown"
+                                Background="Transparent" Margin="0,5,0,0">
+                            <StackPanel Orientation="Horizontal" Margin="15,0">
+                                <ui:SymbolIcon Symbol="Map24" FontSize="18"
+                                               Foreground="{DynamicResource MainForegroundBrush}" />
+                                <TextBlock x:Name="TxtMaps" Text="Світи" VerticalAlignment="Center"
+                                           Margin="10,0,0,0" Foreground="{DynamicResource MainForegroundBrush}" />
+                            </StackPanel>
+                        </Border>
 
                         <Border x:Name="SettingPack" Height="35" Cursor="Hand" MouseDown="SettingPack_MouseDown"
                                 Background="Transparent" Margin="0,5,0,0">

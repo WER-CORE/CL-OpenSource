@@ -59,10 +59,10 @@ namespace CL_CLegendary_Launcher_.Windows
 
         public void Off_OnMods_Click(object sender, RoutedEventArgs e)
         {
-            if (string.IsNullOrEmpty(pathmods) || !File.Exists(pathmods))
+            if (string.IsNullOrEmpty(pathmods) || (!File.Exists(pathmods) && !Directory.Exists(pathmods)))
             {
                 string altPath = Off_OnMod ? pathmods + ".disabled" : pathmods.Replace(".disabled", "");
-                if (File.Exists(altPath))
+                if (File.Exists(altPath) || Directory.Exists(altPath))
                 {
                     pathmods = altPath;
                 }
@@ -95,7 +95,35 @@ namespace CL_CLegendary_Launcher_.Windows
                     Description.Text = LocalizationManager.GetString("Modpacks.ModStateDisabled", "Вимкнено");
                 }
 
-                File.Move(pathmods, newPath);
+                if (Directory.Exists(pathmods))
+                {
+                    Directory.Move(pathmods, newPath);
+                    
+                    try
+                    {
+                        string levelDatPath = System.IO.Path.Combine(newPath, "level.dat");
+                        string levelDatDisabledPath = System.IO.Path.Combine(newPath, "level.dat.disabled");
+                        
+                        string levelDatOldPath = System.IO.Path.Combine(newPath, "level.dat_old");
+                        string levelDatOldDisabledPath = System.IO.Path.Combine(newPath, "level.dat_old.disabled");
+                        
+                        if (Off_OnMod)
+                        {
+                            if (File.Exists(levelDatDisabledPath)) File.Move(levelDatDisabledPath, levelDatPath);
+                            if (File.Exists(levelDatOldDisabledPath)) File.Move(levelDatOldDisabledPath, levelDatOldPath);
+                        }
+                        else
+                        {
+                            if (File.Exists(levelDatPath)) File.Move(levelDatPath, levelDatDisabledPath);
+                            if (File.Exists(levelDatOldPath)) File.Move(levelDatOldPath, levelDatOldDisabledPath);
+                        }
+                    }
+                    catch { }
+                }
+                else
+                {
+                    File.Move(pathmods, newPath);
+                }
                 pathmods = newPath;
             }
             catch (Exception ex)
@@ -110,10 +138,10 @@ namespace CL_CLegendary_Launcher_.Windows
 
         private void DowloadTXT_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            if (string.IsNullOrEmpty(pathmods) || !File.Exists(pathmods))
+            if (string.IsNullOrEmpty(pathmods) || (!File.Exists(pathmods) && !Directory.Exists(pathmods)))
             {
                 if (File.Exists(pathmods + ".disabled")) pathmods += ".disabled";
-                else if (File.Exists(pathmods.Replace(".disabled", ""))) pathmods = pathmods.Replace(".disabled", "");
+                else if (File.Exists(pathmods.Replace(".disabled", "")) || Directory.Exists(pathmods.Replace(".disabled", ""))) pathmods = pathmods.Replace(".disabled", "");
                 else
                 {
                     MascotMessageBox.Show(
@@ -126,9 +154,24 @@ namespace CL_CLegendary_Launcher_.Windows
 
             try
             {
-                string fileNameToDelete = System.IO.Path.GetFileName(pathmods).Replace(".disabled", "");
+                string fileNameToDelete = new System.IO.DirectoryInfo(pathmods).Name.Replace(".disabled", "");
 
-                File.Delete(pathmods);
+                if (Directory.Exists(pathmods))
+                {
+                    Directory.Delete(pathmods, true);
+                }
+                else
+                {
+                    File.Delete(pathmods);
+                }
+                var directory = System.IO.Path.GetDirectoryName(pathmods);
+                if (Directory.Exists(directory))
+                {
+                    foreach (var marker in Directory.GetFiles(directory, "*.installed"))
+                    {
+                        try { File.Delete(marker); } catch { }
+                    }
+                }
 
                 if (IsModPack && CurrentModpack != null && !string.IsNullOrEmpty(CurrentModpack.PathJson))
                 {
@@ -150,7 +193,7 @@ namespace CL_CLegendary_Launcher_.Windows
                                     int removedCount = manifest.Files.RemoveAll(m =>
                                         (m.FileName != null && m.FileName.Equals(fileNameToDelete, StringComparison.OrdinalIgnoreCase)) ||
                                         (m.Name != null && m.Name.Equals(Title.Text, StringComparison.OrdinalIgnoreCase)) ||
-                                        (m.Url != null && m.Url.Contains(fileNameToDelete))
+                                        (m.Url != null && m.Url.Contains(fileNameToDelete)) || (m.Name != null && fileNameToDelete.StartsWith(m.Name.Split(':')[0], StringComparison.OrdinalIgnoreCase))
                                     );
 
                                     if (removedCount > 0)
@@ -174,7 +217,7 @@ namespace CL_CLegendary_Launcher_.Windows
                                         int removedCount = modsList.RemoveAll(m =>
                                             (m.FileName != null && m.FileName.Equals(fileNameToDelete, StringComparison.OrdinalIgnoreCase)) ||
                                             (m.Name != null && m.Name.Equals(Title.Text, StringComparison.OrdinalIgnoreCase)) ||
-                                            (m.Url != null && m.Url.Contains(fileNameToDelete))
+                                            (m.Url != null && m.Url.Contains(fileNameToDelete)) || (m.Name != null && fileNameToDelete.StartsWith(m.Name.Split(':')[0], StringComparison.OrdinalIgnoreCase))
                                         );
 
                                         if (removedCount > 0)
