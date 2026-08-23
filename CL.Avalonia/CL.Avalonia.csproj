@@ -9,6 +9,8 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <NeutralLanguage>uk-UA</NeutralLanguage>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+	<DebugSymbols>false</DebugSymbols>
+	<DebugType>none</DebugType>
   </PropertyGroup>
 
   <ItemGroup>

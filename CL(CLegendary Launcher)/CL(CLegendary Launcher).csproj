@@ -1,8 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup Label="Globals">
-    <WebView2DispatchAdapterUseJavaScriptCase>False</WebView2DispatchAdapterUseJavaScriptCase>
-    <WebView2EnableCsWinRTProjection>False</WebView2EnableCsWinRTProjection>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -22,7 +20,7 @@
     <ServerGarbageCollection>false</ServerGarbageCollection>
     <DelaySign>False</DelaySign>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-        <PlatformTarget>AnyCPU</PlatformTarget>
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>false</DebugSymbols>
     <DebugType>none</DebugType>
     <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
@@ -215,60 +213,6 @@
     <PackageReference Include="System.Management" Version="10.0.10" />
     <PackageReference Include="WPF-UI" Version="4.3.0" />
     <PackageReference Include="XamlAnimatedGif" Version="2.3.2" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="CmlLib.Core.Auth.Microsoft">
-      <HintPath>bin\Release\3.3.9\net7.0-windows\Lib\CmlLib.Core.Auth.Microsoft.dll</HintPath>
-    </Reference>
-    <Reference Include="CmlLib.Core.Installer.Forge">
-      <HintPath>bin\Release\3.3.9\net7.0-windows\Lib\CmlLib.Core.Installer.Forge.dll</HintPath>
-    </Reference>
-    <Reference Include="HtmlAgilityPack">
-      <HintPath>bin\Release\3.3.9\net7.0-windows\HtmlAgilityPack.dll</HintPath>
-    </Reference>
-    <Reference Include="ICSharpCode.SharpZipLib">
-      <HintPath>bin\Release\3.3.9\net7.0-windows\ICSharpCode.SharpZipLib.dll</HintPath>
-    </Reference>
-    <Reference Include="MCQuery">
-      <HintPath>bin\Release\3.3.9\net7.0-windows\MCQuery.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Extensions.Logging.Abstractions">
-      <HintPath>bin\Release\3.3.9\net7.0-windows\Microsoft.Extensions.Logging.Abstractions.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Web.WebView2.Core">
-      <HintPath>bin\Release\3.3.9\net7.0-windows\Microsoft.Web.WebView2.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="MojangAPI">
-      <HintPath>bin\Release\3.3.9\net7.0-windows\MojangAPI.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>bin\Release\3.3.9\net7.0-windows\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="SevenZip">
-      <HintPath>bin\Release\3.3.9\net7.0-windows\SevenZip.dll</HintPath>
-    </Reference>
-    <Reference Include="SharpCompress">
-      <HintPath>bin\Release\3.3.9\net7.0-windows\SharpCompress.dll</HintPath>
-    </Reference>
-    <Reference Include="System.CodeDom">
-      <HintPath>bin\Release\3.3.9\net7.0-windows\System.CodeDom.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Management">
-      <HintPath>bin\Release\3.3.9\net7.0-windows\System.Management.dll</HintPath>
-    </Reference>
-    <Reference Include="WpfAnimatedGif">
-      <HintPath>bin\Release\3.3.9\net7.0-windows\WpfAnimatedGif.dll</HintPath>
-    </Reference>
-    <Reference Include="XboxAuthNet">
-      <HintPath>bin\Release\3.3.9\net7.0-windows\XboxAuthNet.dll</HintPath>
-    </Reference>
-    <Reference Include="XboxAuthNet.Game">
-      <HintPath>bin\Release\3.3.9\net7.0-windows\XboxAuthNet.Game.dll</HintPath>
-    </Reference>
-    <Reference Include="ZstdSharp">
-      <HintPath>bin\Release\3.3.9\net7.0-windows\ZstdSharp.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
   <ItemGroup>

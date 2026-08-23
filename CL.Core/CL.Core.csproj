@@ -8,6 +8,8 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <NeutralLanguage>uk-UA</NeutralLanguage>
     <GenerateDocumentationFile>False</GenerateDocumentationFile>
+	<DebugSymbols>false</DebugSymbols>
+	<DebugType>none</DebugType>
   </PropertyGroup>
 
   <ItemGroup>
