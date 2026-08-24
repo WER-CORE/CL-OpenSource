@@ -194,9 +194,10 @@ namespace CL.Core.Services
                     System.Diagnostics.Debug.WriteLine("[DEBUG] Авто-бекап вимкнено в налаштуваннях.");
                 }
 
-                bool downloadSuccess = false;
+                bool downloadSuccess = true;
+                string markerPath = Path.Combine(pathModPack, ".mods_installed");
 
-                if (!isOffline)
+                if (!isOffline && !File.Exists(markerPath))
                 {
                     if (typeSite == "Modrinth")
                         downloadSuccess = await DownloadModsFromIndexJsonAsync(pathJson, finalModPath, versionDownloadWindow, token);
@@ -205,7 +206,7 @@ namespace CL.Core.Services
                         downloadSuccess = await DownloadModsFromManifestJsonAsync(pathJson, finalModPath, versionDownloadWindow, token);
 
                         string cfOverridesPath = Path.Combine(pathModPack, "overrides");
-                        if (Directory.Exists(cfOverridesPath))
+                        if (Directory.Exists(cfOverridesPath) && downloadSuccess)
                         {
                             try
                             {
@@ -228,6 +229,11 @@ namespace CL.Core.Services
                         {
                             downloadSuccess = await DownloadModsFromCustomJsonAsync(customJsonPath, finalModPath, versionDownloadWindow, token);
                         }
+                    }
+
+                    if (downloadSuccess)
+                    {
+                        try { File.WriteAllText(markerPath, "Installed successfully"); } catch { }
                     }
                 }
 

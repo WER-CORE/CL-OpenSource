@@ -110,6 +110,13 @@ namespace CL_CLegendary_Launcher_.Windows
                 TxtJavaPathDesc.Text = LocalizationManager.GetString("Modpacks.ModpackJavaPathDesc", "Залиште пустим для авто-пошуку");
             if (BtnBrowseJava != null)
                 BtnBrowseJava.Content = LocalizationManager.GetString("Modpacks.ModpackBrowseJavaBtn", "Огляд");
+            if (TxtRepairModpackTitle != null)
+                TxtRepairModpackTitle.Text = LocalizationManager.GetString("Modpacks.RepairModpackTitle", "Відновити збірку");
+            if (TxtRepairModpackDesc != null)
+                TxtRepairModpackDesc.Text = LocalizationManager.GetString("Modpacks.RepairModpackDesc", "Перевіряє та завантажує відсутні моди (якщо ви їх випадково видалили)");
+            if (BtnRepairModpack != null)
+                BtnRepairModpack.Content = LocalizationManager.GetString("Modpacks.RepairModpackBtn", "Відновити");
+
         }
         private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
@@ -1009,6 +1016,38 @@ namespace CL_CLegendary_Launcher_.Windows
 
             menu.PlacementTarget = BtnChangeLoaderType;
             menu.IsOpen = true;
+
+                }
+
+private void BtnRepairModpack_Click(object sender, RoutedEventArgs e)
+        {
+            SoundManager.Click();
+            if (CurrentModpack == null || string.IsNullOrEmpty(CurrentModpack.Path)) return;
+
+            string[] pathsToCheck = new string[] 
+            {
+                Path.Combine(CurrentModpack.Path, ".mods_installed"),
+                Path.Combine(CurrentModpack.Path, "override", ".mods_installed"),
+                Path.Combine(CurrentModpack.Path, "overrides", ".mods_installed")
+            };
+
+            bool deleted = false;
+            foreach (string markerPath in pathsToCheck)
+            {
+                if (File.Exists(markerPath))
+                {
+                    try 
+                    { 
+                        File.Delete(markerPath); 
+                        deleted = true;
+                    } 
+                    catch { }
+                }
+            }
+            
+            string title = LocalizationManager.GetString("Modpacks.RepairModpackDialogTitle", "Відновлення збірки");
+            string message = LocalizationManager.GetString("Modpacks.RepairModpackDialogMessage", "Збірку буде перевірено та відновлено при наступному запуску гри!");
+            MascotMessageBox.Show(message, title, MascotEmotion.Happy);
         }
     }
 }

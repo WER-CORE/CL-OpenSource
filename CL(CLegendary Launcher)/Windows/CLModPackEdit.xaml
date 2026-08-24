@@ -466,6 +466,25 @@
                                                Height="30" Padding="15,0" Appearance="Danger"
                                                Click="BtnResetOptions_Click" Cursor="Hand" />
                                 </Grid>
+                            
+                                <Separator Background="#20FFFFFF" Margin="0,5" />
+
+                                <Grid Height="40">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <ui:SymbolIcon Symbol="Wrench24" FontSize="18" Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,10,0" />
+                                        <StackPanel>
+                                            <TextBlock x:Name="TxtRepairModpackTitle" Text="Відновити збірку" Foreground="{DynamicResource MainForegroundBrush}" FontSize="14" />
+                                            <TextBlock x:Name="TxtRepairModpackDesc" Text="Перевіряє та завантажує відсутні моди з маніфесту" Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.5" FontSize="11" />
+                                        </StackPanel>
+                                    </StackPanel>
+
+                                    <ui:Button Grid.Column="1" x:Name="BtnRepairModpack" Foreground="{DynamicResource MainForegroundBrush}" Background="{DynamicResource MainBackgroundButton}" Content="Відновити" Height="30" Padding="15,0" Appearance="Primary" Click="BtnRepairModpack_Click" Cursor="Hand" />
+                                </Grid>
                             </StackPanel>
                         </Border>
                         <TextBlock x:Name="TxtCustomizationTitle" Text="Кастомізація" FontSize="14" FontWeight="Bold"
