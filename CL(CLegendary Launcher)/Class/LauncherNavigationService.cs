@@ -65,7 +65,7 @@ namespace CL_CLegendary_Launcher_.Class
                 if (_main.PartnerServer.Items.Count == 0 && !SettingsManager.Default.OfflineModLauncher)
                 {
                     if (_currentPage == _main.GirdPanelFooter)
-                        await _main._serverListService.InitializeServersAsync(false);
+                        await _main.InitializeServersAsync(false);
                 }
             });
         }
@@ -103,7 +103,7 @@ namespace CL_CLegendary_Launcher_.Class
                 if (_main.ServerList.Items.Count == 0)
                 {
                     if (_currentPage == _main.ServerName)
-                        await _main._serverListService.InitializeServersAsync(true, null);
+                        await _main.InitializeServersAsync(true, null);
                 }
             });
         }

@@ -1,4 +1,4 @@
-using CL_CLegendary_Launcher_.Class;
+using CL.Core.Services;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -196,7 +196,7 @@ namespace CL_CLegendary_Launcher_.Windows
 
             try
             {
-                updateAvailable = await CheckForUpdatesAsync();
+                updateAvailable = false; // CheckForUpdatesAsync();
             }
             catch (Exception)
             {

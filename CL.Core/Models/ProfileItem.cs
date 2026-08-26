@@ -1,0 +1,14 @@
+namespace CL.Core.Models
+{
+    public class ProfileItem
+    {
+        public string NameAccount { get; set; }
+        public string UUID { get; set; }
+        public string AccessToken { get; set; }
+        public string ImageUrl { get; set; }
+        public int Index { get; set; }
+        public AccountType TypeAccount { get; set; }
+        public string LicenseType { get; set; } = "None";
+        public string LastAuthTime { get; set; } = string.Empty;
+    }
+}

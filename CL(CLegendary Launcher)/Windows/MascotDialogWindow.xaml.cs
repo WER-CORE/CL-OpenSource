@@ -1,19 +1,10 @@
-﻿using CL_CLegendary_Launcher_.Class;
+using CL.Core.Services;
+using CL.Core.Models;
 using System.Windows;
 using System.Windows.Input;
 
 namespace CL_CLegendary_Launcher_.Windows
 {
-    public enum MascotEmotion
-    {
-        Normal,
-        Happy,
-        Sad,
-        Confused,
-        Alert,
-        Dead
-    }
-
     public partial class MascotDialogWindow : Window
     {
         public MascotDialogWindow(string message, string title, MascotEmotion emotion, bool isQuestion)

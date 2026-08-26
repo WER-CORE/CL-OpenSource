@@ -1,4 +1,4 @@
-﻿using CL_CLegendary_Launcher_.Models;
+﻿using CL.Core.Models;
 using Newtonsoft.Json;
 using SharpCompress.Common;
 using System;

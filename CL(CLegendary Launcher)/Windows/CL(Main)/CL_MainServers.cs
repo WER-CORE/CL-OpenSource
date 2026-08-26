@@ -1,5 +1,5 @@
-using CL_CLegendary_Launcher_.Class;
-using CL_CLegendary_Launcher_.Models;
+using CL.Core.Services;
+using CL.Core.Models;
 using CL_CLegendary_Launcher_.Windows;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -27,49 +27,49 @@ namespace CL_CLegendary_Launcher_
         private string _currentSiteUrl;
         private string _currentDonateUrl;
 
-        public async Task<PartherItem> CreateServerPartherItemAsync(Dictionary<string, object> serverData)
+        public async Task<PartherItem> CreateServerPartherItemAsync(CL.Core.Models.ServerInfo serverData)
         {
             return LauncherUIFactory.CreatePartnerServerCard(
                 serverData,
                 async (version, ip, port) =>
                 {
                     await DowloadVanila(version, ip, port, NameNik.Text);
-                    string name = serverData.ContainsKey("name") ? serverData["name"].ToString() : "Unknown";
+                    string name = serverData.Name;
                     await AddLastActionAsync(name, version, ip, port);
                 },
                 (uiItem, data) =>
                 {
                     OpenServerInfoPanel(uiItem.IPServerTXT.Text,
-                                        data["version"].ToString(),
-                                        Convert.ToInt32(data["port"]),
+                                        data.Version,
+                                        data.Port,
                                         uiItem.OnlinePlayerTXT.Text,
                                         uiItem.TitleMain1.Text,
-                                        data.ContainsKey("description") ? data["description"].ToString() : "",
+                                        data.Description,
                                         uiItem.MainIcon3,
                                         data);
                 }
             );
         }
 
-        public async Task<MyItemsServer> CreateServerItemAsync(Dictionary<string, object> serverData)
+        public async Task<MyItemsServer> CreateServerItemAsync(CL.Core.Models.ServerInfo serverData)
         {
             return LauncherUIFactory.CreateRegularServerCard(
                 serverData,
                 async (version, ip, port) =>
                 {
                     await DowloadVanila(version, ip, port, NameNik.Text);
-                    string name = serverData.ContainsKey("name") ? serverData["name"].ToString() : "Unknown";
+                    string name = serverData.Name;
                     await AddLastActionAsync(name, version, ip, port);
                 },
                 (uiItem, data) =>
                 {
                     string title = uiItem.TitleMain1.Text;
                     OpenServerInfoPanel(uiItem.IPServerTXT.Text,
-                                        data["version"].ToString(),
-                                        Convert.ToInt32(data["port"]),
+                                        data.Version,
+                                        data.Port,
                                         uiItem.OnlinePlayerTXT.Text,
                                         title,
-                                        data.ContainsKey("description") ? data["description"].ToString() : "",
+                                        data.Description,
                                         uiItem.MainIcon3,
                                         data);
                 }
@@ -78,13 +78,13 @@ namespace CL_CLegendary_Launcher_
 
         private void OpenServerInfoPanel(string ip, string version, int port, string online, string title,
                                          string description, System.Windows.Controls.Image iconSource,
-                                         Dictionary<string, object> data)
+                                         CL.Core.Models.ServerInfo data)
         {
             SoundManager.Click();
 
-            _currentDiscordUrl = data.ContainsKey("discord") ? data["discord"]?.ToString() : null;
-            _currentSiteUrl = data.ContainsKey("sitelink") ? data["sitelink"]?.ToString() : null;
-            _currentDonateUrl = data.ContainsKey("donatelink") ? data["donatelink"]?.ToString() : null;
+            _currentDiscordUrl = data.DiscordLink;
+            _currentSiteUrl = data.SiteLink;
+            _currentDonateUrl = data.DonateLink;
 
             AnimationService.AnimatePageTransition(PanelInfoServer);
 
@@ -111,20 +111,11 @@ namespace CL_CLegendary_Launcher_
             this.BG.Source = null;
             this.BG.Visibility = Visibility.Hidden;
 
-            int priority = 0;
-            if (data.TryGetValue("priority", out object priorityVal))
-            {
-                int.TryParse(priorityVal?.ToString(), out priority);
-            }
-
-            if (data.TryGetValue("partner", out object partnerVal) && bool.TryParse(partnerVal?.ToString(), out bool isPartner) && isPartner)
-            {
-                if (priority == 0) priority = 10;
-            }
+            int priority = data.Priority;
 
             if (priority > 0 &&
-                data.TryGetValue("bgUrl", out object bgUrlValue) &&
-                Uri.TryCreate(bgUrlValue?.ToString(), UriKind.Absolute, out Uri bgUri))
+                !string.IsNullOrEmpty(data.BgUrl) &&
+                Uri.TryCreate(data.BgUrl, UriKind.Absolute, out Uri bgUri))
             {
                 try
                 {
@@ -136,9 +127,9 @@ namespace CL_CLegendary_Launcher_
                     System.Diagnostics.Debug.WriteLine($"Failed to load server bg: {ex.Message}");
                 }
             }
-            if (data.ContainsKey("versions") && data["versions"] is JArray versionsArray)
+            if (data.VersionsSupported != null)
             {
-                var versionsList = versionsArray.ToObject<List<string>>();
+                var versionsList = data.VersionsSupported;
                 if (versionsList != null && versionsList.Count > 1)
                 {
                     VersionSelector.ItemsSource = versionsList;
@@ -569,5 +560,114 @@ namespace CL_CLegendary_Launcher_
 
         private void TabRegularServer_MouseDown(object sender, MouseButtonEventArgs e) { }
         private void TabModdedServer_MouseDown(object sender, MouseButtonEventArgs e) { }
-    }
+    
+        private object _listLock = new object();
+        private List<(MyItemsServer Item, int Priority)> _tempSortedList = new List<(MyItemsServer, int)>();
+
+        public async Task InitializeServersAsync(bool IsServerTab, string searchQuery = null)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                if (IsServerTab)
+                    ServerList.Items.Clear();
+                else
+                    PartnerServer.Items.Clear();
+
+                ServerSearchLoader.Visibility = Visibility.Visible;
+                ServerCardSkeletonTemplate.Visibility = Visibility.Visible;
+
+                discordLink.Clear();
+                donateLink.Clear();
+                siteLink.Clear();
+            });
+
+            try
+            {
+                var serversData = await _serverListService.GetServersAsync(Secrets._serversUrl, searchQuery);
+                
+                serverCount = serversData.Count;
+                loadedCount = 0;
+
+                if (serverCount > 0)
+                {
+                    foreach (var serverInfo in serversData)
+                    {
+                        await LoadAndDisplayServerAsync(IsServerTab, serverInfo);
+                    }
+                }
+                else
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        ServerCardSkeletonTemplate.Visibility = Visibility.Collapsed;
+                        ServerSearchLoader.Visibility = Visibility.Collapsed;
+                        NotificationService.ShowNotification(
+                            LocalizationManager.GetString("Servers.EmptyTitle", "Пусто"),
+                            LocalizationManager.GetString("Servers.EmptyDesc", "На жаль, за вашим запитом сервери не знайдено."),
+                            SnackbarPresenter, 3);
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    ServerCardSkeletonTemplate.Visibility = Visibility.Collapsed;
+                    ServerSearchLoader.Visibility = Visibility.Collapsed;
+                    MascotMessageBox.Show(
+                        string.Format(LocalizationManager.GetString("Servers.FetchErrorDesc", "Помилка при завантаженні серверів: {0}"), ex.Message),
+                        LocalizationManager.GetString("Servers.FetchErrorTitle", "Помилка"),
+                        MascotEmotion.Sad);
+                });
+            }
+
+            Dispatcher.Invoke(() =>
+            {
+                ServerCardSkeletonTemplate.Visibility = Visibility.Collapsed;
+                ServerSearchLoader.Visibility = Visibility.Collapsed;
+            });
+        }
+
+        private async Task LoadAndDisplayServerAsync(bool IsServerTab, CL.Core.Models.ServerInfo serverInfo)
+        {
+            discordLink.Add(string.IsNullOrEmpty(serverInfo.DiscordLink) ? "-" : serverInfo.DiscordLink);
+            donateLink.Add(string.IsNullOrEmpty(serverInfo.DonateLink) ? "-" : serverInfo.DonateLink);
+            siteLink.Add(string.IsNullOrEmpty(serverInfo.SiteLink) ? "-" : serverInfo.SiteLink);
+
+            if (serverInfo.IsPartner && !IsServerTab)
+            {
+                var partnerItem = await CreateServerPartherItemAsync(serverInfo);
+                Dispatcher.Invoke(() => PartnerServer.Items.Add(partnerItem));
+            }
+
+            if (IsServerTab)
+            {
+                var item = await CreateServerItemAsync(serverInfo);
+
+                lock (_listLock)
+                {
+                    _tempSortedList.Add((item, serverInfo.Priority));
+                }
+            }
+
+            loadedCount++;
+
+            Dispatcher.Invoke(() =>
+            {
+                if (loadedCount >= serverCount)
+                {
+                    if (IsServerTab)
+                    {
+                        var sortedItems = _tempSortedList
+                                            .OrderByDescending(x => x.Priority)
+                                            .Select(x => (UIElement)x.Item)
+                                            .ToList();
+
+                        SetupPagination(sortedItems);
+                        _tempSortedList.Clear();
+                    }
+                }
+            });
+        }
+}
 }

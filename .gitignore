@@ -1,8 +1,7 @@
-﻿################################################################################
+################################################################################
 # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
 ################################################################################
 
-/.vs/CL(CLegendary Launcher)
-/CL(CLegendary Launcher)/obj
-/CL(CLegendary Launcher)/bin
-/.vs/ProjectEvaluation
+/.vs/
+[Bb]in/
+[Oo]bj/
