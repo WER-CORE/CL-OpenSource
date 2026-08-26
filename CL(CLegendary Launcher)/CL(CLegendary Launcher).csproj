@@ -11,8 +11,8 @@
     <UseWPF>true</UseWPF>
     <ApplicationIcon>Icon\IconCL(Common).ico</ApplicationIcon>
     <UseWindowsForms>true</UseWindowsForms>
-    <FileVersion>1.0.0.5</FileVersion>
-    <AssemblyVersion>1.0.0.5</AssemblyVersion>
+	<FileVersion>1.0.0.6</FileVersion>
+	<AssemblyVersion>1.0.0.6</AssemblyVersion>
     <NeutralLanguage>uk-UA</NeutralLanguage>
     <SupportedOSPlatformVersion>7.0</SupportedOSPlatformVersion>
     <GenerateDocumentationFile>False</GenerateDocumentationFile>
