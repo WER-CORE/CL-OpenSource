@@ -1,46 +1,43 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup Label="Globals">
-  </PropertyGroup>
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net8.0-windows10.0.26100.0</TargetFramework>
+		<RootNamespace>CL_CLegendary_Launcher_</RootNamespace>
+		<Nullable>enable</Nullable>
+		<UseWPF>true</UseWPF>
+		<UseWindowsForms>true</UseWindowsForms>
+		<ApplicationIcon>Icon\IconCL(Common).ico</ApplicationIcon>
+		<FileVersion>1.0.0.6</FileVersion>
+		<AssemblyVersion>1.0.0.6</AssemblyVersion>
+		<NeutralLanguage>uk-UA</NeutralLanguage>
+		<SupportedOSPlatformVersion>7.0</SupportedOSPlatformVersion>
+		<GenerateDocumentationFile>False</GenerateDocumentationFile>
+		<SignAssembly>False</SignAssembly>
+		<ServerGarbageCollection>false</ServerGarbageCollection>
+		<DelaySign>False</DelaySign>
+		<ApplicationManifest>app.manifest</ApplicationManifest>
+		<PlatformTarget>AnyCPU</PlatformTarget>
+		<DebugSymbols>false</DebugSymbols>
+		<DebugType>none</DebugType>
+		<EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+	</PropertyGroup>
 
-  <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows10.0.26100.0</TargetFramework>
-    <RootNamespace>CL_CLegendary_Launcher_</RootNamespace>
-    <Nullable>enable</Nullable>
-    <UseWPF>true</UseWPF>
-    <ApplicationIcon>Icon\IconCL(Common).ico</ApplicationIcon>
-    <UseWindowsForms>true</UseWindowsForms>
-	<FileVersion>1.0.0.6</FileVersion>
-	<AssemblyVersion>1.0.0.6</AssemblyVersion>
-    <NeutralLanguage>uk-UA</NeutralLanguage>
-    <SupportedOSPlatformVersion>7.0</SupportedOSPlatformVersion>
-    <GenerateDocumentationFile>False</GenerateDocumentationFile>
-    <SignAssembly>False</SignAssembly>
-    <ServerGarbageCollection>false</ServerGarbageCollection>
-    <DelaySign>False</DelaySign>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugSymbols>false</DebugSymbols>
-    <DebugType>none</DebugType>
-    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<Optimize>True</Optimize>
+		<FileAlignment>1024</FileAlignment>
+		<PublishSingleFile>true</PublishSingleFile>
+		<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <Optimize>True</Optimize>
-    <FileAlignment>1024</FileAlignment>
-    <PublishSingleFile>true</PublishSingleFile>
-    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract> 
-    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<FileAlignment>1024</FileAlignment>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <FileAlignment>1024</FileAlignment>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <AdditionalFiles Remove="app.manifest" />
-  </ItemGroup>
+	<ItemGroup>
+		<AdditionalFiles Remove="app.manifest" />
+	</ItemGroup>
 
   <ItemGroup>
     <None Remove="Assets\1200-818013157 1.png" />
@@ -196,25 +193,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CmlLib.Core" Version="4.0.6" />
-    <PackageReference Include="CmlLib.Core.Installer.Forge" Version="1.1.1" />
-    <PackageReference Include="CmlLib.Core.Installer.NeoForge" Version="4.0.1" />
-    <PackageReference Include="CurseForge.APIClient" Version="5.0.0" />
-    <PackageReference Include="DiscordRichPresence" Version="1.6.1.70" />
-    <PackageReference Include="HtmlAgilityPack" Version="1.12.4" />
-    <PackageReference Include="Markdig.Wpf" Version="0.5.0.1" />
-    <PackageReference Include="MCQuery" Version="2022.7.13.192844" />
-    <PackageReference Include="Microsoft.Net.Sdk.Compilers.Toolset" Version="10.0.302" />
-    <PackageReference Include="Optifine.Installer" Version="1.0.1" />
-    <PackageReference Include="PixiEditor.ColorPicker" Version="3.4.2.3" />
-    <PackageReference Include="RestSharp" Version="114.0.0" />
-    <PackageReference Include="Sentry" Version="6.8.0" />
-    <PackageReference Include="SharpCompress" Version="0.50.1" />
-    <PackageReference Include="System.Management" Version="10.0.10" />
-    <PackageReference Include="WPF-UI" Version="4.3.0" />
-    <PackageReference Include="XamlAnimatedGif" Version="2.3.2" />
+		<PackageReference Include="Markdig.Wpf" Version="0.5.0.1" />
+		<PackageReference Include="MCQuery" Version="2022.7.13.192844" />
+		<PackageReference Include="PixiEditor.ColorPicker" Version="3.4.2.3" />
+		<PackageReference Include="RestSharp" Version="114.0.0" />
+		<PackageReference Include="System.Management" Version="10.0.10" />
+		<PackageReference Include="WPF-UI" Version="4.3.0" />
+		<PackageReference Include="XamlAnimatedGif" Version="2.3.2" />
   </ItemGroup>
-
+	
   <ItemGroup>
     <Resource Include="Icon\IconCL(Common).ico" />
     <Resource Include="Icon\IconCL(Common).png" />
