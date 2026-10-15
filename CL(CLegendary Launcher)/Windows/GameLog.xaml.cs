@@ -87,22 +87,6 @@ namespace CL_CLegendary_Launcher_.Windows
         {
             AppendTextToLog(await GameLogReader.ReadCrashLogAsync(logFilePath));
         }
-        public void MinecraftProcess_OutputDataReceived(object sender, DataReceivedEventArgs e)
-        {
-            if (!string.IsNullOrEmpty(e.Data))
-            {
-                AppendTextToLog(e.Data);
-            }
-        }
-
-        public void MinecraftProcess_ErrorDataReceived(object sender, DataReceivedEventArgs e)
-        {
-            if (!string.IsNullOrEmpty(e.Data))
-            {
-                AppendTextToLog(e.Data);
-            }
-        }
-
         public void AppendTextToLog(string text)
         {
             if (GameLogTXTMincraft.Dispatcher.CheckAccess())

@@ -299,17 +299,7 @@ namespace CL_CLegendary_Launcher_
             GameLog gameLog = new GameLog();
             gameLog.Show();
 
-            process.StartInfo.UseShellExecute = false;
-            process.StartInfo.RedirectStandardOutput = true;
-            process.StartInfo.RedirectStandardError = true;
-            process.StartInfo.CreateNoWindow = true;
-
-            process.OutputDataReceived += gameLog.MinecraftProcess_OutputDataReceived;
-            process.ErrorDataReceived += gameLog.MinecraftProcess_ErrorDataReceived;
-
-            process.Start();
-            process.BeginOutputReadLine();
-            process.BeginErrorReadLine();
+            GameLogReader.StartWithOutput(process, gameLog.AppendTextToLog);
         }
 
         private async Task LoadChangeLogMinecraft()
