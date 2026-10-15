@@ -1,6 +1,7 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:suki="clr-namespace:SukiUI;assembly=SukiUI"
+             xmlns:sukic="clr-namespace:SukiUI.Controls;assembly=SukiUI"
              x:Class="CL_CLegendary_Launcher_.Avalonia.App"
              RequestedThemeVariant="Dark">
 	<Application.Resources>
@@ -16,6 +17,7 @@
 						<GradientStop Offset="1" Color="#CC000000" />
 					</LinearGradientBrush>
 					<SolidColorBrush x:Key="BadgeBrush" Color="#33FFFFFF" />
+					<SolidColorBrush x:Key="SukiGlassCardOpaqueBackground" Color="#E6181B21" />
 				</ResourceDictionary>
 				<ResourceDictionary x:Key="Light">
 					<LinearGradientBrush x:Key="BackdropOverlayBrush" StartPoint="0%,0%" EndPoint="0%,100%">
@@ -23,6 +25,7 @@
 						<GradientStop Offset="1" Color="#CCFFFFFF" />
 					</LinearGradientBrush>
 					<SolidColorBrush x:Key="BadgeBrush" Color="#22000000" />
+					<SolidColorBrush x:Key="SukiGlassCardOpaqueBackground" Color="#EBFFFFFF" />
 				</ResourceDictionary>
 			</ResourceDictionary.ThemeDictionaries>
 
@@ -36,5 +39,10 @@
 
 	<Application.Styles>
 		<suki:SukiTheme ThemeColor="Blue" />
+		<!-- Скляні картки SukiUI майже прозорі, і на фоні теми текст у них губився.
+		     "Непрозорий" фон тут перевизначено як щільний, але з ледь помітним фоном. -->
+		<Style Selector="sukic|GlassCard">
+			<Setter Property="IsOpaque" Value="True" />
+		</Style>
 	</Application.Styles>
 </Application>
