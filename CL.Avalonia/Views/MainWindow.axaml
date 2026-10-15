@@ -19,7 +19,19 @@
 
   <Grid RowDefinitions="*,Auto">
 
+    <Image Grid.RowSpan="2" Source="{Binding Theme.Background}" Stretch="UniformToFill" IsHitTestVisible="False" />
+    <Border Grid.RowSpan="2" Background="{DynamicResource BackdropOverlayBrush}" IsHitTestVisible="False" />
+
     <suki:SukiSideMenu Grid.Row="0" IsSearchEnabled="False">
+      <suki:SukiSideMenu.HeaderContent>
+        <StackPanel Orientation="Horizontal" Spacing="10" Margin="16,8,16,16">
+          <Image Source="avares://CL.Avalonia/Assets/icon.png" Width="36" Height="36" />
+          <StackPanel VerticalAlignment="Center">
+            <TextBlock Text="CLegendary" FontSize="16" FontWeight="Bold" />
+            <TextBlock Text="Launcher" FontSize="12" Opacity="0.7" />
+          </StackPanel>
+        </StackPanel>
+      </suki:SukiSideMenu.HeaderContent>
       <suki:SukiSideMenu.Items>
 
         <suki:SukiSideMenuItem Header="{loc:Loc Sidebar.Main, Головна}">

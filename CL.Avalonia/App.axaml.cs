@@ -33,7 +33,7 @@ namespace CL_CLegendary_Launcher_.Avalonia
                     LocalizationManager.GetString("Dialogs.Error", "Помилка"));
 
                 var viewModel = services.GetRequiredService<MainWindowViewModel>();
-                viewModel.Settings.ApplyTheme();
+                services.GetRequiredService<ThemeService>().Apply();
 
                 desktop.MainWindow = new MainWindow { DataContext = viewModel };
                 _ = viewModel.InitializeAsync();
@@ -68,6 +68,7 @@ namespace CL_CLegendary_Launcher_.Avalonia
             services.AddSingleton<IDialogService, AvaloniaDialogService>();
             services.AddSingleton<IMainWindowController, AvaloniaWindowController>();
             services.AddSingleton<ISoundService, NullSoundService>();
+            services.AddSingleton<ThemeService>();
             services.AddSingleton<DownloadProgressViewModel>();
             services.AddSingleton<ITaskProgressService>(sp => sp.GetRequiredService<DownloadProgressViewModel>());
 

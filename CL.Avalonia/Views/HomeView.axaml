@@ -1,88 +1,150 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:suki="clr-namespace:SukiUI.Controls;assembly=SukiUI"
+             xmlns:ic="using:FluentIcons.Avalonia"
              xmlns:loc="using:CL_CLegendary_Launcher_.Avalonia.Localization"
              xmlns:vm="using:CL_CLegendary_Launcher_.Avalonia.ViewModels"
+             xmlns:controls="using:CL_CLegendary_Launcher_.Avalonia.Views.Controls"
              x:Class="CL_CLegendary_Launcher_.Avalonia.Views.HomeView"
              x:DataType="vm:HomeViewModel">
 
-  <Grid ColumnDefinitions="*,16,340" Margin="20">
+  <UserControl.Styles>
+    <Style Selector="Button.play">
+      <Setter Property="Background" Value="{StaticResource PlayButtonBrush}" />
+      <Setter Property="Foreground" Value="White" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="CornerRadius" Value="12" />
+    </Style>
+    <Style Selector="Button.play:pointerover /template/ ContentPresenter">
+      <Setter Property="Opacity" Value="0.9" />
+    </Style>
+    <Style Selector="Button.play:disabled">
+      <Setter Property="Opacity" Value="0.5" />
+    </Style>
+    <Style Selector="Border.badge">
+      <Setter Property="CornerRadius" Value="6" />
+      <Setter Property="Padding" Value="8,3" />
+      <Setter Property="Background" Value="{DynamicResource BadgeBrush}" />
+    </Style>
+  </UserControl.Styles>
 
-    <suki:GlassCard Grid.Column="0" Padding="16">
-      <Grid RowDefinitions="Auto,Auto,*">
+  <Grid RowDefinitions="*,Auto" Margin="28,20,28,24">
 
-        <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto,Auto">
-          <TextBlock Text="{loc:Loc MainScreen.Versions, Версії Minecraft}" FontSize="18" FontWeight="SemiBold"
-                     VerticalAlignment="Center" />
-          <CheckBox Grid.Column="1" Margin="0,0,16,0"
-                    Content="{loc:Loc GameLaunch.Snapshots, Снапшоти}"
-                    IsChecked="{Binding ShowSnapshots}"
-                    IsVisible="{Binding !IsOptifine}" />
-          <TextBlock Grid.Column="2" Margin="0,0,8,0" Text="OptiFine" VerticalAlignment="Center" />
-          <ToggleSwitch Grid.Column="3" OnContent="{x:Null}" OffContent="{x:Null}"
-                        IsChecked="{Binding IsOptifine}" />
-        </Grid>
+    <StackPanel Grid.Row="0" VerticalAlignment="Bottom" Margin="4,0,0,24" Spacing="6"
+                IsVisible="{Binding SelectedVersion, Converter={x:Static ObjectConverters.IsNotNull}}">
+      <TextBlock Text="Minecraft: Java Edition" FontSize="16" Opacity="0.8" />
+      <StackPanel Orientation="Horizontal" Spacing="14">
+        <Image Width="52" Height="52" VerticalAlignment="Center"
+               RenderOptions.BitmapInterpolationMode="None"
+               Source="{Binding SelectedVersion.Kind, Converter={x:Static controls:VersionIconConverter.Instance}}" />
+        <TextBlock Text="{Binding SelectedVersion.Name}" FontSize="52" FontWeight="Bold" VerticalAlignment="Center" />
+      </StackPanel>
+      <StackPanel Orientation="Horizontal" Spacing="8" MinHeight="22">
+        <Border Classes="badge" IsVisible="{Binding IsOptifine}">
+          <TextBlock Text="OptiFine" FontSize="12" />
+        </Border>
+        <Border Classes="badge" IsVisible="{Binding SelectedVersion.IsInstalled}">
+          <TextBlock Text="{loc:Loc GameLaunch.Installed, встановлено}" FontSize="12" />
+        </Border>
+      </StackPanel>
+    </StackPanel>
 
-        <TextBox Grid.Row="1" Margin="0,12"
-                 PlaceholderText="{loc:Loc Generic.Search, Пошук...}"
-                 Text="{Binding SearchText}" />
+    <suki:GlassCard Grid.Row="1" Padding="12">
+      <Grid ColumnDefinitions="Auto,*,Auto,12,Auto">
 
-        <Panel Grid.Row="2">
-          <ListBox ItemsSource="{Binding Versions}" SelectedItem="{Binding SelectedVersion}">
-            <ListBox.ItemTemplate>
-              <DataTemplate x:DataType="vm:VersionEntry">
-                <Grid ColumnDefinitions="*,Auto">
-                  <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
-                  <TextBlock Grid.Column="1" FontSize="12" Opacity="0.7" VerticalAlignment="Center"
-                             Text="{loc:Loc GameLaunch.Installed, встановлено}"
-                             IsVisible="{Binding IsInstalled}" />
+        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12" Margin="4,0,24,0">
+          <Border Width="44" Height="44" CornerRadius="8" ClipToBounds="True">
+            <controls:AccountAvatar Profile="{Binding Accounts.ActiveProfile}"
+                                    RenderOptions.BitmapInterpolationMode="None" />
+          </Border>
+          <StackPanel VerticalAlignment="Center">
+            <TextBlock FontSize="15" FontWeight="SemiBold"
+                       Text="{Binding Accounts.ActiveProfile.NameAccount}"
+                       IsVisible="{Binding Accounts.ActiveProfile, Converter={x:Static ObjectConverters.IsNotNull}}" />
+            <TextBlock FontSize="12" Opacity="0.7"
+                       Text="{Binding Accounts.ActiveProfile.TypeAccount}"
+                       IsVisible="{Binding Accounts.ActiveProfile, Converter={x:Static ObjectConverters.IsNotNull}}" />
+            <TextBlock FontSize="14" Opacity="0.7"
+                       Text="{loc:Loc Accounts.NoAccount, Відсутній акаунт}"
+                       IsVisible="{Binding Accounts.ActiveProfile, Converter={x:Static ObjectConverters.IsNull}}" />
+          </StackPanel>
+        </StackPanel>
+
+        <Button Grid.Column="2" x:Name="VersionButton" Height="56" MinWidth="240" Padding="12,0"
+                HorizontalContentAlignment="Stretch">
+          <Grid Width="216" ColumnDefinitions="Auto,*,Auto">
+            <Image Width="28" Height="28" Margin="0,0,10,0"
+                   RenderOptions.BitmapInterpolationMode="None"
+                   Source="{Binding SelectedVersion.Kind, Converter={x:Static controls:VersionIconConverter.Instance}}" />
+            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+              <TextBlock FontSize="11" Opacity="0.7" Text="{loc:Loc MainScreen.HistoryVersion, Версія}" />
+              <TextBlock FontWeight="SemiBold" TextTrimming="CharacterEllipsis" MaxWidth="180"
+                         Text="{Binding VersionCaption}" />
+            </StackPanel>
+            <ic:SymbolIcon Grid.Column="2" Symbol="ChevronUp" Margin="10,0,0,0" />
+          </Grid>
+          <Button.Flyout>
+            <Flyout Placement="TopEdgeAlignedRight">
+              <Grid Width="420" Height="500" Margin="6" RowDefinitions="Auto,Auto,*,Auto">
+
+                <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto,Auto">
+                  <TextBlock Text="{loc:Loc MainScreen.Versions, Версії Minecraft}" FontSize="16" FontWeight="SemiBold"
+                             VerticalAlignment="Center" />
+                  <CheckBox Grid.Column="1" Margin="0,0,12,0"
+                            Content="{loc:Loc GameLaunch.Snapshots, Снапшоти}"
+                            IsChecked="{Binding ShowSnapshots}"
+                            IsVisible="{Binding !IsOptifine}" />
+                  <TextBlock Grid.Column="2" Margin="0,0,8,0" Text="OptiFine" VerticalAlignment="Center" />
+                  <ToggleSwitch Grid.Column="3" OnContent="{x:Null}" OffContent="{x:Null}"
+                                IsChecked="{Binding IsOptifine}" />
                 </Grid>
-              </DataTemplate>
-            </ListBox.ItemTemplate>
-          </ListBox>
-          <ProgressBar IsIndeterminate="True" VerticalAlignment="Top"
-                       IsVisible="{Binding IsLoadingVersions}" />
-        </Panel>
+
+                <TextBox Grid.Row="1" Margin="0,10"
+                         PlaceholderText="{loc:Loc Generic.Search, Пошук...}"
+                         Text="{Binding SearchText}" />
+
+                <Panel Grid.Row="2">
+                  <ListBox ItemsSource="{Binding Versions}" SelectedItem="{Binding SelectedVersion}"
+                           Tapped="OnVersionTapped">
+                    <ListBox.ItemTemplate>
+                      <DataTemplate x:DataType="vm:VersionEntry">
+                        <Grid ColumnDefinitions="Auto,*,Auto">
+                          <Image Width="22" Height="22" Margin="0,0,10,0"
+                                 RenderOptions.BitmapInterpolationMode="None"
+                                 Source="{Binding Kind, Converter={x:Static controls:VersionIconConverter.Instance}}" />
+                          <TextBlock Grid.Column="1" Text="{Binding Name}" VerticalAlignment="Center" />
+                          <TextBlock Grid.Column="2" FontSize="12" Opacity="0.7" VerticalAlignment="Center"
+                                     Text="{loc:Loc GameLaunch.Installed, встановлено}"
+                                     IsVisible="{Binding IsInstalled}" />
+                        </Grid>
+                      </DataTemplate>
+                    </ListBox.ItemTemplate>
+                  </ListBox>
+                  <ProgressBar IsIndeterminate="True" VerticalAlignment="Top"
+                               IsVisible="{Binding IsLoadingVersions}" />
+                </Panel>
+
+                <StackPanel Grid.Row="3" Spacing="6" Margin="0,10,0,0" IsVisible="{Binding IsOptifine}">
+                  <TextBlock Text="{loc:Loc GameLaunch.OptifineVersion, Версія OptiFine}" FontSize="12" Opacity="0.7" />
+                  <ComboBox HorizontalAlignment="Stretch"
+                            ItemsSource="{Binding OptifineVersions}"
+                            SelectedItem="{Binding SelectedOptifineVersion}" />
+                </StackPanel>
+
+              </Grid>
+            </Flyout>
+          </Button.Flyout>
+        </Button>
+
+        <!-- TextBlock, а не Content: інакше "_" у назві версії OptiFine стає клавішею доступу і зникає. -->
+        <Button Grid.Column="4" Classes="play" Height="56" Width="240"
+                HorizontalContentAlignment="Center" FontSize="16" FontWeight="Bold"
+                Command="{Binding PlayCommand}">
+          <TextBlock MaxWidth="210" Text="{Binding PlayButtonText}" TextTrimming="CharacterEllipsis" />
+        </Button>
 
       </Grid>
     </suki:GlassCard>
-
-    <StackPanel Grid.Column="2" Spacing="16">
-
-      <suki:GlassCard Padding="16">
-        <StackPanel Spacing="4">
-          <TextBlock Text="{loc:Loc Accounts.Current, Акаунт}" FontSize="12" Opacity="0.7" />
-          <TextBlock FontSize="18" FontWeight="SemiBold"
-                     Text="{Binding Accounts.ActiveProfile.NameAccount}"
-                     IsVisible="{Binding Accounts.ActiveProfile, Converter={x:Static ObjectConverters.IsNotNull}}" />
-          <TextBlock FontSize="12" Opacity="0.7"
-                     Text="{Binding Accounts.ActiveProfile.TypeAccount}"
-                     IsVisible="{Binding Accounts.ActiveProfile, Converter={x:Static ObjectConverters.IsNotNull}}" />
-          <TextBlock FontSize="18" Opacity="0.7"
-                     Text="{loc:Loc Accounts.NoAccount, Відсутній акаунт}"
-                     IsVisible="{Binding Accounts.ActiveProfile, Converter={x:Static ObjectConverters.IsNull}}" />
-        </StackPanel>
-      </suki:GlassCard>
-
-      <suki:GlassCard Padding="16">
-        <StackPanel Spacing="12">
-          <StackPanel Spacing="6" IsVisible="{Binding IsOptifine}">
-            <TextBlock Text="{loc:Loc GameLaunch.OptifineVersion, Версія OptiFine}" FontSize="12" Opacity="0.7" />
-            <ComboBox HorizontalAlignment="Stretch"
-                      ItemsSource="{Binding OptifineVersions}"
-                      SelectedItem="{Binding SelectedOptifineVersion}" />
-          </StackPanel>
-          <!-- TextBlock, а не Content: інакше "_" у назві версії OptiFine стає клавішею доступу і зникає.
-               Шаблон кнопки SukiUI не обмежує ширину вмісту, тому MaxWidth заданий під колонку в 340. -->
-          <Button Classes="Flat" Height="56" HorizontalAlignment="Stretch"
-                  HorizontalContentAlignment="Center" FontSize="16" FontWeight="Bold"
-                  Command="{Binding PlayCommand}">
-            <TextBlock MaxWidth="260" Text="{Binding PlayButtonText}" TextTrimming="CharacterEllipsis" />
-          </Button>
-        </StackPanel>
-      </suki:GlassCard>
-
-    </StackPanel>
 
   </Grid>
 </UserControl>

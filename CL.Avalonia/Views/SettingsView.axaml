@@ -23,7 +23,7 @@
   </UserControl.Styles>
 
   <ScrollViewer>
-    <StackPanel Spacing="16" Margin="20" MaxWidth="820" HorizontalAlignment="Left">
+    <StackPanel Spacing="16" Margin="20" MaxWidth="820" HorizontalAlignment="Stretch">
 
       <TextBlock Text="{loc:Loc Settings.Minecraft, Майнкрафт}" FontSize="18" FontWeight="SemiBold" />
 
@@ -79,6 +79,15 @@
         <StackPanel Spacing="12">
           <Grid ColumnDefinitions="*,Auto">
             <StackPanel Spacing="2" VerticalAlignment="Center">
+              <TextBlock Classes="title" Text="{loc:Loc Settings.ThemeTitle, Тема інтерфейсу}" />
+              <TextBlock Classes="hint" Text="{loc:Loc Settings.ThemeDesc, Оберіть готовий стиль}" />
+            </StackPanel>
+            <ComboBox Grid.Column="1" MinWidth="180" VerticalAlignment="Center"
+                      ItemsSource="{Binding Theme.Themes}"
+                      SelectedItem="{Binding Theme.Current}" />
+          </Grid>
+          <Grid ColumnDefinitions="*,Auto">
+            <StackPanel Spacing="2" VerticalAlignment="Center">
               <TextBlock Classes="title" Text="{loc:Loc Settings.CloseLaunchTitle, Закриття лаунчера під час гри}" />
               <TextBlock Classes="hint" Text="{loc:Loc Settings.CloseLaunchDesc, Економить ресурси ПК}" />
             </StackPanel>
@@ -97,12 +106,6 @@
               <TextBlock Classes="hint" Text="{loc:Loc Settings.OfflineModeDesc, Запускати лише вже завантажені версії без звернення до мережі}" />
             </StackPanel>
             <ToggleSwitch Grid.Column="1" IsChecked="{Binding OfflineMode}" />
-          </Grid>
-          <Grid ColumnDefinitions="*,Auto">
-            <StackPanel Spacing="2" VerticalAlignment="Center">
-              <TextBlock Classes="title" Text="{loc:Loc Settings.LightThemeTitle, Світла тема}" />
-            </StackPanel>
-            <ToggleSwitch Grid.Column="1" IsChecked="{Binding IsLightTheme}" />
           </Grid>
         </StackPanel>
       </suki:GlassCard>

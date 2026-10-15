@@ -1,6 +1,5 @@
-using Avalonia;
-using Avalonia.Styling;
 using CL.Core.Services;
+using CL_CLegendary_Launcher_.Avalonia.Platform;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System;
@@ -12,8 +11,10 @@ namespace CL_CLegendary_Launcher_.Avalonia.ViewModels
     {
         private const int MinRamMb = 1024;
 
-        public SettingsViewModel()
+        public SettingsViewModel(ThemeService theme)
         {
+            Theme = theme;
+
             var settings = SettingsManager.Default;
 
             MaxRamMb = Math.Max(MinRamMb, (int)(GC.GetGCMemoryInfo().TotalAvailableMemoryBytes / (1024 * 1024)));
@@ -24,8 +25,9 @@ namespace CL_CLegendary_Launcher_.Avalonia.ViewModels
             _closeLauncher = settings.CloseLaucnher;
             _showGameLog = settings.EnableLog;
             _offlineMode = settings.OfflineModLauncher;
-            _isLightTheme = settings.Them == "Light";
         }
+
+        public ThemeService Theme { get; }
 
         public int MaxRamMb { get; }
 
@@ -52,9 +54,6 @@ namespace CL_CLegendary_Launcher_.Avalonia.ViewModels
         [ObservableProperty]
         private bool _offlineMode;
 
-        [ObservableProperty]
-        private bool _isLightTheme;
-
         partial void OnRamMbChanged(int value) => Save(s => s.OP = value);
 
         partial void OnScreenWidthChanged(int value) => Save(s => s.width = value);
@@ -68,18 +67,6 @@ namespace CL_CLegendary_Launcher_.Avalonia.ViewModels
         partial void OnShowGameLogChanged(bool value) => Save(s => s.EnableLog = value);
 
         partial void OnOfflineModeChanged(bool value) => Save(s => s.OfflineModLauncher = value);
-
-        partial void OnIsLightThemeChanged(bool value)
-        {
-            Save(s => s.Them = value ? "Light" : "Dark");
-            ApplyTheme();
-        }
-
-        public void ApplyTheme()
-        {
-            if (Application.Current != null)
-                Application.Current.RequestedThemeVariant = IsLightTheme ? ThemeVariant.Light : ThemeVariant.Dark;
-        }
 
         [RelayCommand]
         private void OpenGameFolder()

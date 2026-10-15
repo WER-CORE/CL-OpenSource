@@ -27,6 +27,10 @@ namespace CL_CLegendary_Launcher_.Avalonia.ViewModels
         [ObservableProperty]
         private ProfileItem? _activeProfile;
 
+        // Виділення у списку: клік по акаунту робить його активним, а невдала спроба повертає виділення назад.
+        [ObservableProperty]
+        private ProfileItem? _selectedProfile;
+
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(AddOfflineCommand))]
         private string _offlineNickname = string.Empty;
@@ -54,8 +58,15 @@ namespace CL_CLegendary_Launcher_.Avalonia.ViewModels
                 await SelectAsync(Profiles[savedIndex]);
         }
 
-        [RelayCommand]
         private Task SelectAsync(ProfileItem profile) => RunBusyAsync(() => ActivateAsync(profile));
+
+        partial void OnActiveProfileChanged(ProfileItem? value) => SelectedProfile = value;
+
+        partial void OnSelectedProfileChanged(ProfileItem? value)
+        {
+            if (value != null && value != ActiveProfile)
+                _ = SelectAsync(value);
+        }
 
         [RelayCommand]
         private async Task DeleteAsync(ProfileItem profile)
@@ -126,7 +137,10 @@ namespace CL_CLegendary_Launcher_.Avalonia.ViewModels
         private async Task ActivateAsync(ProfileItem profile)
         {
             if (!await _accountService.SelectProfileAsync(profile))
+            {
+                SelectedProfile = ActiveProfile;
                 return;
+            }
 
             ActiveProfile = profile;
             SaveActiveIndex();

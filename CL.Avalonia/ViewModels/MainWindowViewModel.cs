@@ -1,3 +1,4 @@
+using CL_CLegendary_Launcher_.Avalonia.Platform;
 using SukiUI.Dialogs;
 using SukiUI.Toasts;
 using System.Threading.Tasks;
@@ -11,6 +12,7 @@ namespace CL_CLegendary_Launcher_.Avalonia.ViewModels
             AccountsViewModel accounts,
             SettingsViewModel settings,
             DownloadProgressViewModel progress,
+            ThemeService theme,
             ISukiDialogManager dialogManager,
             ISukiToastManager toastManager)
         {
@@ -18,6 +20,7 @@ namespace CL_CLegendary_Launcher_.Avalonia.ViewModels
             Accounts = accounts;
             Settings = settings;
             Progress = progress;
+            Theme = theme;
             DialogManager = dialogManager;
             ToastManager = toastManager;
         }
@@ -26,6 +29,7 @@ namespace CL_CLegendary_Launcher_.Avalonia.ViewModels
         public AccountsViewModel Accounts { get; }
         public SettingsViewModel Settings { get; }
         public DownloadProgressViewModel Progress { get; }
+        public ThemeService Theme { get; }
         public ISukiDialogManager DialogManager { get; }
         public ISukiToastManager ToastManager { get; }
 

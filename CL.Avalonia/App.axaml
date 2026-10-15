@@ -4,8 +4,34 @@
              x:Class="CL_CLegendary_Launcher_.Avalonia.App"
              RequestedThemeVariant="Dark">
 	<Application.Resources>
-		<!-- Quicksand зі SukiUI не має кирилиці, тож український текст змішувався б із шрифтом-заміною. -->
-		<FontFamily x:Key="DefaultFontFamily">fonts:Inter#Inter</FontFamily>
+		<ResourceDictionary>
+			<!-- Quicksand зі SukiUI не має кирилиці, тож український текст змішувався б із шрифтом-заміною. -->
+			<FontFamily x:Key="DefaultFontFamily">fonts:Inter#Inter</FontFamily>
+
+			<ResourceDictionary.ThemeDictionaries>
+				<!-- Притемнює фон теми, щоб текст на ньому лишався читабельним. -->
+				<ResourceDictionary x:Key="Dark">
+					<LinearGradientBrush x:Key="BackdropOverlayBrush" StartPoint="0%,0%" EndPoint="0%,100%">
+						<GradientStop Offset="0" Color="#33000000" />
+						<GradientStop Offset="1" Color="#CC000000" />
+					</LinearGradientBrush>
+					<SolidColorBrush x:Key="BadgeBrush" Color="#33FFFFFF" />
+				</ResourceDictionary>
+				<ResourceDictionary x:Key="Light">
+					<LinearGradientBrush x:Key="BackdropOverlayBrush" StartPoint="0%,0%" EndPoint="0%,100%">
+						<GradientStop Offset="0" Color="#33FFFFFF" />
+						<GradientStop Offset="1" Color="#CCFFFFFF" />
+					</LinearGradientBrush>
+					<SolidColorBrush x:Key="BadgeBrush" Color="#22000000" />
+				</ResourceDictionary>
+			</ResourceDictionary.ThemeDictionaries>
+
+			<!-- Зелена кнопка запуску, як у WPF-клієнті. -->
+			<LinearGradientBrush x:Key="PlayButtonBrush" StartPoint="0%,0%" EndPoint="0%,100%">
+				<GradientStop Offset="0" Color="#FF17DA1F" />
+				<GradientStop Offset="1" Color="#FF18A61E" />
+			</LinearGradientBrush>
+		</ResourceDictionary>
 	</Application.Resources>
 
 	<Application.Styles>

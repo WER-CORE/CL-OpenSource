@@ -5,6 +5,7 @@
              xmlns:loc="using:CL_CLegendary_Launcher_.Avalonia.Localization"
              xmlns:vm="using:CL_CLegendary_Launcher_.Avalonia.ViewModels"
              xmlns:models="using:CL.Core.Models"
+             xmlns:controls="using:CL_CLegendary_Launcher_.Avalonia.Views.Controls"
              x:Class="CL_CLegendary_Launcher_.Avalonia.Views.AccountsView"
              x:DataType="vm:AccountsViewModel">
 
@@ -15,18 +16,18 @@
         <TextBlock Text="{loc:Loc Sidebar.Accounts, Акаунти}" FontSize="18" FontWeight="SemiBold" />
         <ProgressBar Grid.Row="1" Margin="0,8" IsIndeterminate="True" IsVisible="{Binding IsBusy}" />
 
-        <ListBox Grid.Row="2" x:Name="ProfilesList" ItemsSource="{Binding Profiles}">
+        <ListBox Grid.Row="2" x:Name="ProfilesList" ItemsSource="{Binding Profiles}"
+                 SelectedItem="{Binding SelectedProfile}">
           <ListBox.ItemTemplate>
             <DataTemplate x:DataType="models:ProfileItem">
-              <Grid ColumnDefinitions="*,Auto,Auto">
-                <StackPanel VerticalAlignment="Center">
+              <Grid ColumnDefinitions="Auto,*,Auto">
+                <Border Width="36" Height="36" CornerRadius="6" ClipToBounds="True" Margin="0,0,12,0">
+                  <controls:AccountAvatar Profile="{Binding}" RenderOptions.BitmapInterpolationMode="None" />
+                </Border>
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
                   <TextBlock Text="{Binding NameAccount}" FontWeight="SemiBold" />
                   <TextBlock Text="{Binding TypeAccount}" FontSize="12" Opacity="0.7" />
                 </StackPanel>
-                <Button Grid.Column="1" Margin="8,0" Padding="10,4"
-                        Content="{loc:Loc Accounts.SelectBtn, Обрати}"
-                        Command="{Binding #ProfilesList.((vm:AccountsViewModel)DataContext).SelectCommand}"
-                        CommandParameter="{Binding}" />
                 <Button Grid.Column="2" Padding="8,4"
                         Command="{Binding #ProfilesList.((vm:AccountsViewModel)DataContext).DeleteCommand}"
                         CommandParameter="{Binding}">

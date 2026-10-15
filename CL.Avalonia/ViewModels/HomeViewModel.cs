@@ -11,7 +11,14 @@ using System.Threading.Tasks;
 
 namespace CL_CLegendary_Launcher_.Avalonia.ViewModels
 {
-    public record VersionEntry(string Name, bool IsInstalled);
+    public enum VersionKind
+    {
+        Release,
+        Snapshot,
+        OptiFine
+    }
+
+    public record VersionEntry(string Name, bool IsInstalled, VersionKind Kind);
 
     public partial class HomeViewModel : ObservableObject
     {
@@ -34,7 +41,7 @@ namespace CL_CLegendary_Launcher_.Avalonia.ViewModels
             Accounts = accounts;
 
             _isOptifine = SettingsManager.Default.LastSelectedType == OptifineType;
-            _playButtonText = LocalizationManager.GetString("GameLaunch.PlayBtnSelect", "ОБЕРІТЬ ВЕРСІЮ");
+            _playButtonText = _versionCaption = LocalizationManager.GetString("GameLaunch.PlayBtnSelect", "ОБЕРІТЬ ВЕРСІЮ");
         }
 
         public AccountsViewModel Accounts { get; }
@@ -70,6 +77,9 @@ namespace CL_CLegendary_Launcher_.Avalonia.ViewModels
         [ObservableProperty]
         private string _playButtonText;
 
+        [ObservableProperty]
+        private string _versionCaption;
+
         partial void OnIsOptifineChanged(bool value) => _ = LoadVersionsAsync();
 
         partial void OnShowSnapshotsChanged(bool value) => _ = LoadVersionsAsync();
@@ -95,31 +105,38 @@ namespace CL_CLegendary_Launcher_.Avalonia.ViewModels
             {
                 var service = new VersionService(SettingsManager.Default.PathLacunher);
                 var installed = new HashSet<string>(service.GetLocalVersions(), StringComparer.OrdinalIgnoreCase);
-                List<string> names;
+                var kind = optifine ? VersionKind.OptiFine : VersionKind.Release;
+                List<VersionEntry> entries;
 
                 if (WebHelper.IsOffline())
                 {
-                    names = installed
+                    entries = installed
                         .Where(v => optifine
                             ? v.Contains("optifine", StringComparison.OrdinalIgnoreCase)
                             : !VersionService.IsModdedVersionName(v))
+                        .Select(v => new VersionEntry(v, true, kind))
                         .ToList();
                 }
                 else
                 {
-                    names = await service.GetFilteredVersionsAsync(string.Empty, true, ShowSnapshots && !optifine, false, false);
+                    var versions = await service.GetFilteredVersionsWithTypeAsync(string.Empty, true, ShowSnapshots && !optifine, false, false);
 
                     if (optifine)
                     {
                         var supported = await service.GetOptifineSupportedVersionsAsync();
-                        names = names.Where(supported.Contains).ToList();
+                        versions = versions.Where(v => supported.Contains(v.Name)).ToList();
                     }
+
+                    entries = versions
+                        .Select(v => new VersionEntry(v.Name, installed.Contains(v.Name),
+                            v.Type == "snapshot" ? VersionKind.Snapshot : kind))
+                        .ToList();
                 }
 
                 if (generation != _loadGeneration)
                     return;
 
-                _allVersions = names.Select(n => new VersionEntry(n, installed.Contains(n))).ToList();
+                _allVersions = entries;
                 ApplyFilter();
 
                 string last = SettingsManager.Default.LastSelectedVersion;
@@ -235,9 +252,9 @@ namespace CL_CLegendary_Launcher_.Avalonia.ViewModels
                 ? SelectedOptifineVersion
                 : SelectedVersion?.Name;
 
-            PlayButtonText = label == null
-                ? LocalizationManager.GetString("GameLaunch.PlayBtnSelect", "ОБЕРІТЬ ВЕРСІЮ")
-                : string.Format(LocalizationManager.GetString("GameLaunch.PlayBtnPlayIn", "ГРАТИ В ({0})"), label);
+            string select = LocalizationManager.GetString("GameLaunch.PlayBtnSelect", "ОБЕРІТЬ ВЕРСІЮ");
+            VersionCaption = label ?? select;
+            PlayButtonText = label == null ? select : LocalizationManager.GetString("GameLaunch.PlayBtnPlay", "ГРАТИ");
         }
     }
 }

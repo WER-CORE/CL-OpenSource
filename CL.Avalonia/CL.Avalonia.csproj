@@ -32,4 +32,19 @@
 		<AvaloniaResource Include="Assets/**" />
 	</ItemGroup>
 
+	<!-- Зображення спільні з WPF-клієнтом, тож беремо їх звідти, а не копіюємо. -->
+	<ItemGroup>
+		<AvaloniaResource Include="..\CL(CLegendary Launcher)\Assets\DarkThemBG.png" Link="Assets\Themes\Dark.png" />
+		<AvaloniaResource Include="..\CL(CLegendary Launcher)\Assets\LightThemBG.png" Link="Assets\Themes\Light.png" />
+		<AvaloniaResource Include="..\CL(CLegendary Launcher)\Assets\OceanBG.png" Link="Assets\Themes\Ocean.png" />
+		<AvaloniaResource Include="..\CL(CLegendary Launcher)\Assets\ForestBG.png" Link="Assets\Themes\Forest.png" />
+		<AvaloniaResource Include="..\CL(CLegendary Launcher)\Assets\SunSetBG.png" Link="Assets\Themes\Sunset.png" />
+		<AvaloniaResource Include="..\CL(CLegendary Launcher)\Assets\VanilaVersion.png" Link="Assets\Versions\Release.png" />
+		<AvaloniaResource Include="..\CL(CLegendary Launcher)\Assets\IconOptiFine.png" Link="Assets\Versions\OptiFine.png" />
+		<AvaloniaResource Include="..\CL(CLegendary Launcher)\Assets\DirtIconSnapshot.png" Link="Assets\Versions\Snapshot.png" />
+		<AvaloniaResource Include="..\CL(CLegendary Launcher)\Assets\big-steve-face-2002298922 2.png" Link="Assets\Accounts\Offline.png" />
+		<AvaloniaResource Include="..\CL(CLegendary Launcher)\Assets\LittleSkinAccount.png" Link="Assets\Accounts\LittleSkin.png" />
+		<AvaloniaResource Include="..\CL(CLegendary Launcher)\Assets\microsoft logo.png" Link="Assets\Accounts\Microsoft.png" />
+	</ItemGroup>
+
 </Project>
