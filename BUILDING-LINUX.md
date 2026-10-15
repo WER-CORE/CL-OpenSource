@@ -11,7 +11,9 @@
 
 `CL.Core` - спільне ядро (моделі, сервіси, робота з мережею та файлами),[CL.Core.Tests.csproj](CL.Core.Tests/CL.Core.Tests.csproj) адаптоване під мультитаргетинг. Обидва UI підключають його як `ProjectReference`, тому логіка не дублюється, а ядро автоматично підлаштовується під потрібну версію фреймворку кінцевого клієнта.
 
-`CL.Avalonia` - кросплатформенний інтерфейс на .NET 10. Наразі це каркас, але він уже **запускає гру**: обери версію зі списку, нікнейм і Java, далі "Грати". Перевірено на Linux з Minecraft 1.20.4 (Java 25). Перенесення решти екранів з WPF - робота, що триває.
+`CL.Avalonia` - кросплатформенний інтерфейс на .NET 10 (Avalonia 12 + SukiUI, MVVM на CommunityToolkit.Mvvm, DI через `Microsoft.Extensions.DependencyInjection`). Вже є сторінки **Головна** (ваніль та OptiFine, пошук, позначка встановлених версій, "Грати"), **Акаунти** (offline, Microsoft, LittleSkin) і **Налаштування** (RAM, роздільна здатність, повний екран, офлайн-режим, консоль, тема), а також прогрес завантаження, діалоги, сповіщення та вікно журналу гри. Перевірено на Linux з Minecraft 26.2. Перенесення решти екранів з WPF - робота, що триває.
+
+Рядки інтерфейсу беруться з `LocalizationManager` за тими самими ключами, що й у WPF (`{loc:Loc Ключ, Запасний текст}` у XAML), тож переклади спільні.
 
 WPF-проєкт **не збирається** ніде, крім Windows: `dotnet build` на Linux падає з внутрішньою помилкою CLR, тому для крос-платформенної роботи є окремий solution без нього.
 
@@ -50,6 +52,8 @@ DOTNET_ROLL_FORWARD=Major dotnet run --project CL.Avalonia
 
 ## Де лежать дані
 
+Файли гри (версії, світи, моди):
+
 | ОС | Каталог |
 | --- | --- |
 | Windows | `%APPDATA%\.ClMinecraft` |
@@ -57,6 +61,16 @@ DOTNET_ROLL_FORWARD=Major dotnet run --project CL.Avalonia
 | macOS | `~/Library/Application Support/CLMinecraft` |
 
 Шлях повертає `PlatformPaths.DefaultLauncherPath()`.
+
+Дані самого лаунчера (`Data/` з налаштуваннями та акаунтами, `Locales/`):
+
+| ОС | Каталог |
+| --- | --- |
+| Windows | поруч із `.exe`, як і раніше |
+| Linux | `$XDG_DATA_HOME/cl-launcher` (типово `~/.local/share/cl-launcher`) |
+| macOS | `~/Library/Application Support/CLLauncher` |
+
+Шлях повертає `PlatformPaths.AppDataDirectory()`. Під час першого запуску дані, які старіші збірки клали поруч із виконуваним файлом, копіюються сюди (`PlatformPaths.MigrateLegacyAppData()`).
 
 ## Пошук Java
 
@@ -81,16 +95,25 @@ Avalonia-клієнт підставляє власні реалізації ч�
 - **Файлові діалоги** - реалізовані в Avalonia через `IStorageProvider`
   (`OpenFilePickerAsync` / `OpenFolderPickerAsync`), WinForms-фільтр
   конвертується у `FilePickerFileType`
-- **Акаунти** - offline та LittleSkin працюють; для Microsoft на Linux
+- **Діалоги та сповіщення** - `IDialogService` і `ShowSnackbar` показують
+  діалоги та тости SukiUI; повідомлення ставляться в чергу, а не губляться
+- **Акаунти** - offline працює повністю. Для Microsoft на Linux
   використовується **device code flow** (`msal.DeviceCode(...)`), бо
-  інтерактивне вікно MSAL розраховане на Windows. Код і посилання
-  виводяться в журнал, браузер відкривається через `xdg-open`
-- **Запуск гри** - ваніль з offline-акаунтом працює через
-  `MinecraftLaunchService`
-- **Модлоадери** (Forge / Fabric / Quilt / NeoForge) - ще не перевірені
-- **Модпаки та CurseForge** - ще не перевірені
-- **Звук** - `ISoundService` в Avalonia поки заглушка (`DummySoundService`)
-- **Екрани** - 37 `.xaml` та 56 code-behind ще на WPF (у процесі
-  рефакторингу за MVVM-патерном на SukiUI)
+  інтерактивне вікно MSAL розраховане на Windows; у відкритій збірці
+  порожній `Secrets.CLIENT_ID_AZURE`, тому вхід там недоступний.
+  LittleSkin-акаунт додається, але запуск гри з ним потребує
+  `authlib-injector-1.2.8.jar` поруч із лаунчером, а його в репозиторії немає
+- **Запуск гри** - ваніль та OptiFine через `GameLaunchService`: прогрес
+  завантаження зі скасуванням, згортання вікна під час гри, повідомлення
+  про краш і `latest.log` у вікні журналу
+- **Модлоадери** (Forge / Fabric / Quilt / NeoForge) - як і у WPF, ставляться
+  через збірки; екрану збірок в Avalonia ще немає
+- **Модпаки, CurseForge / Modrinth, сервери, новини** - екранів ще немає
+- **Тека гри** - у налаштуваннях лише показується й відкривається; перенесення
+  з копіюванням файлів поки живе у WPF (`LauncherSettingsService`) і має
+  переїхати в ядро
+- **Журнал гри** - Minecraft пише в stdout сирий log4j-XML; його варто
+  розбирати в ядрі, щоб обидва клієнти показували звичайні рядки
+- **Звук** - `ISoundService` в Avalonia поки заглушка (`NullSoundService`)
 
 Останнім кроком WPF-проєкт стає лише Windows-обгорткою над спільним ядром.
