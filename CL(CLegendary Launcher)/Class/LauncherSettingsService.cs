@@ -1,4 +1,5 @@
-﻿using CL.Core.Models;
+﻿using CL.Core.Helpers;
+using CL.Core.Models;
 using CL_CLegendary_Launcher_.Windows;
 using System;
 using System.Collections.Generic;
@@ -92,7 +93,7 @@ namespace CL_CLegendary_Launcher_.Class
                         {
                             if (Directory.Exists(oldPath))
                             {
-                                CopyDirectoryParallel(oldPath, newPath);
+                                DirectoryHelper.CopyDirectoryParallel(oldPath, newPath);
                             }
                             else
                             {
@@ -135,25 +136,6 @@ namespace CL_CLegendary_Launcher_.Class
                         _main.Cursor = System.Windows.Input.Cursors.Arrow;
                     }
                 }
-            }
-        }
-        private void CopyDirectoryParallel(string sourceDir, string destinationDir)
-        {
-            var dir = new DirectoryInfo(sourceDir);
-            if (!dir.Exists) throw new DirectoryNotFoundException($"Source directory not found: {dir.FullName}");
-
-            Directory.CreateDirectory(destinationDir);
-
-            Parallel.ForEach(dir.GetFiles(), (file) =>
-            {
-                string targetFilePath = Path.Combine(destinationDir, file.Name);
-                file.CopyTo(targetFilePath, true);
-            });
-
-            foreach (DirectoryInfo subDir in dir.GetDirectories())
-            {
-                string newDestinationDir = Path.Combine(destinationDir, subDir.Name);
-                CopyDirectoryParallel(subDir.FullName, newDestinationDir);
             }
         }
         private void UpdateModpacksJsonV2(string oldBasePath, string newBasePath)
@@ -246,7 +228,7 @@ namespace CL_CLegendary_Launcher_.Class
                 {
                     if (Directory.Exists(currentPath))
                     {
-                        CopyDirectoryParallel(currentPath, defaultPath);
+                        DirectoryHelper.CopyDirectoryParallel(currentPath, defaultPath);
                     }
                     else
                     {

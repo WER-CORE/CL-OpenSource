@@ -88,5 +88,52 @@ namespace CL.Core.Tests
                 Environment.SetEnvironmentVariable("XDG_DATA_HOME", previous);
             }
         }
+
+        [Fact]
+        public void LegacyDataIsCopiedOnlyWhereNothingExistsYet()
+        {
+            string root = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "cl-migrate-" + Guid.NewGuid().ToString("N"));
+            string legacy = System.IO.Path.Combine(root, "legacy");
+            string appData = System.IO.Path.Combine(root, "appdata");
+
+            try
+            {
+                System.IO.Directory.CreateDirectory(System.IO.Path.Combine(legacy, "Data", "nested"));
+                System.IO.File.WriteAllText(System.IO.Path.Combine(legacy, "Data", "UserSaves.json"), "old");
+                System.IO.File.WriteAllText(System.IO.Path.Combine(legacy, "Data", "nested", "file.txt"), "nested");
+                System.IO.Directory.CreateDirectory(System.IO.Path.Combine(legacy, "Locales"));
+                System.IO.File.WriteAllText(System.IO.Path.Combine(legacy, "Locales", "uk_UA.json"), "old");
+
+                System.IO.Directory.CreateDirectory(System.IO.Path.Combine(appData, "Locales"));
+                System.IO.File.WriteAllText(System.IO.Path.Combine(appData, "Locales", "uk_UA.json"), "new");
+
+                PlatformPaths.MigrateLegacyAppData(legacy, appData);
+
+                Assert.Equal("old", System.IO.File.ReadAllText(System.IO.Path.Combine(appData, "Data", "UserSaves.json")));
+                Assert.Equal("nested", System.IO.File.ReadAllText(System.IO.Path.Combine(appData, "Data", "nested", "file.txt")));
+                Assert.Equal("new", System.IO.File.ReadAllText(System.IO.Path.Combine(appData, "Locales", "uk_UA.json")));
+            }
+            finally
+            {
+                if (System.IO.Directory.Exists(root))
+                    System.IO.Directory.Delete(root, true);
+            }
+        }
+
+        [Fact]
+        public void MigrationIsSkippedWhenBothRootsAreTheSame()
+        {
+            string root = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "cl-same-" + Guid.NewGuid().ToString("N"));
+            try
+            {
+                System.IO.Directory.CreateDirectory(System.IO.Path.Combine(root, "Data"));
+                PlatformPaths.MigrateLegacyAppData(root, root + System.IO.Path.DirectorySeparatorChar);
+                Assert.True(System.IO.Directory.Exists(System.IO.Path.Combine(root, "Data")));
+            }
+            finally
+            {
+                System.IO.Directory.Delete(root, true);
+            }
+        }
     }
 }

@@ -1,3 +1,4 @@
+using CL.Core.Helpers;
 using System;
 using System.IO;
 
@@ -37,6 +38,25 @@ namespace CL.Core.Services
         public static string DataFolder() => Path.Combine(AppDataDirectory(), "Data");
 
         public static string LocalesFolder() => Path.Combine(AppDataDirectory(), "Locales");
+
+        // Збірки до появи AppDataDirectory писали дані поруч із лаунчером.
+        // Копіюємо їх один раз і лише туди, де ще нічого немає, тож нові дані не затираються.
+        public static void MigrateLegacyAppData() => MigrateLegacyAppData(AppDomain.CurrentDomain.BaseDirectory, AppDataDirectory());
+
+        public static void MigrateLegacyAppData(string legacyRoot, string appDataRoot)
+        {
+            if (PathsEqual(legacyRoot, appDataRoot))
+                return;
+
+            foreach (var folder in new[] { "Data", "Locales" })
+            {
+                string source = Path.Combine(legacyRoot, folder);
+                string target = Path.Combine(appDataRoot, folder);
+
+                if (Directory.Exists(source) && !Directory.Exists(target))
+                    DirectoryHelper.CopyDirectoryParallel(source, target);
+            }
+        }
 
         // Регістр важливий лише на Linux: .clminecraft і .ClMinecraft - різні каталоги
         public static bool PathsEqual(string? left, string? right)
