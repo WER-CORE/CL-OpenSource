@@ -1,0 +1,112 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:suki="clr-namespace:SukiUI.Controls;assembly=SukiUI"
+             xmlns:loc="using:CL_CLegendary_Launcher_.Avalonia.Localization"
+             xmlns:vm="using:CL_CLegendary_Launcher_.Avalonia.ViewModels"
+             x:Class="CL_CLegendary_Launcher_.Avalonia.Views.SettingsView"
+             x:DataType="vm:SettingsViewModel">
+
+  <UserControl.Styles>
+    <Style Selector="TextBlock.title">
+      <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+    <Style Selector="ToggleSwitch">
+      <Setter Property="OnContent" Value="{x:Null}" />
+      <Setter Property="OffContent" Value="{x:Null}" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="TextBlock.hint">
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="Opacity" Value="0.7" />
+      <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+  </UserControl.Styles>
+
+  <ScrollViewer>
+    <StackPanel Spacing="16" Margin="20" MaxWidth="820" HorizontalAlignment="Left">
+
+      <TextBlock Text="{loc:Loc Settings.Minecraft, Майнкрафт}" FontSize="18" FontWeight="SemiBold" />
+
+      <suki:GlassCard Padding="16">
+        <StackPanel Spacing="6">
+          <Grid ColumnDefinitions="*,Auto">
+            <TextBlock Classes="title" Text="{loc:Loc Settings.RamTitle, Оперативна пам’ять (RAM)}" />
+            <TextBlock Grid.Column="1" Text="{Binding RamMb, StringFormat='{}{0} MB'}" />
+          </Grid>
+          <TextBlock Classes="hint" Text="{loc:Loc Settings.RamDesc, Пам’ять для Java. Рекомендовано 4096 MB.}" />
+          <Slider Minimum="1024" Maximum="{Binding MaxRamMb}" TickFrequency="512"
+                  IsSnapToTickEnabled="True" Value="{Binding RamMb}" />
+        </StackPanel>
+      </suki:GlassCard>
+
+      <suki:GlassCard Padding="16">
+        <StackPanel Spacing="6">
+          <TextBlock Classes="title" Text="{loc:Loc Settings.ResolutionTitle, Роздільна здатність екрану}" />
+          <TextBlock Classes="hint" Text="{loc:Loc Settings.ResolutionDesc, Розмір вікна гри.}" />
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <NumericUpDown Width="140" Minimum="320" Maximum="7680" Increment="10" FormatString="0"
+                           Value="{Binding ScreenWidth}" />
+            <TextBlock Text="×" VerticalAlignment="Center" />
+            <NumericUpDown Width="140" Minimum="240" Maximum="4320" Increment="10" FormatString="0"
+                           Value="{Binding ScreenHeight}" />
+          </StackPanel>
+          <Grid ColumnDefinitions="*,Auto">
+            <StackPanel Spacing="2" VerticalAlignment="Center">
+              <TextBlock Classes="title" Text="{loc:Loc Settings.FullScreenTitle, Повноекранний режим}" />
+              <TextBlock Classes="hint" Text="{loc:Loc Settings.FullScreenDesc, Запускає гру на весь монітор без рамок вікна}" />
+            </StackPanel>
+            <ToggleSwitch Grid.Column="1" IsChecked="{Binding FullScreen}" />
+          </Grid>
+        </StackPanel>
+      </suki:GlassCard>
+
+      <suki:GlassCard Padding="16">
+        <StackPanel Spacing="6">
+          <TextBlock Classes="title" Text="{loc:Loc Settings.PathTitle, Шлях папки для лаунчера}" />
+          <TextBlock Classes="hint" Text="{loc:Loc Settings.PathDesc, 'Місце зберігання світів, модів та налаштувань'}" />
+          <Grid ColumnDefinitions="*,Auto">
+            <SelectableTextBlock Text="{Binding GamePath}" VerticalAlignment="Center" TextWrapping="Wrap" />
+            <Button Grid.Column="1" Margin="12,0,0,0"
+                    Content="{loc:Loc Context.OpenFolder, Відкрити теку}"
+                    Command="{Binding OpenGameFolderCommand}" />
+          </Grid>
+        </StackPanel>
+      </suki:GlassCard>
+
+      <TextBlock Text="{loc:Loc Settings.Launcher, Запускач}" FontSize="18" FontWeight="SemiBold" Margin="0,8,0,0" />
+
+      <suki:GlassCard Padding="16">
+        <StackPanel Spacing="12">
+          <Grid ColumnDefinitions="*,Auto">
+            <StackPanel Spacing="2" VerticalAlignment="Center">
+              <TextBlock Classes="title" Text="{loc:Loc Settings.CloseLaunchTitle, Закриття лаунчера під час гри}" />
+              <TextBlock Classes="hint" Text="{loc:Loc Settings.CloseLaunchDesc, Економить ресурси ПК}" />
+            </StackPanel>
+            <ToggleSwitch Grid.Column="1" IsChecked="{Binding CloseLauncher}" />
+          </Grid>
+          <Grid ColumnDefinitions="*,Auto">
+            <StackPanel Spacing="2" VerticalAlignment="Center">
+              <TextBlock Classes="title" Text="{loc:Loc Settings.DevConsoleTitle, Логи (Консоль розробника)}" />
+              <TextBlock Classes="hint" Text="{loc:Loc Settings.DevConsoleDesc, Відкриває вікно з технічною інформацією під час гри}" />
+            </StackPanel>
+            <ToggleSwitch Grid.Column="1" IsChecked="{Binding ShowGameLog}" />
+          </Grid>
+          <Grid ColumnDefinitions="*,Auto">
+            <StackPanel Spacing="2" VerticalAlignment="Center">
+              <TextBlock Classes="title" Text="{loc:Loc Settings.OfflineModeTitle, Офлайн-режим}" />
+              <TextBlock Classes="hint" Text="{loc:Loc Settings.OfflineModeDesc, Запускати лише вже завантажені версії без звернення до мережі}" />
+            </StackPanel>
+            <ToggleSwitch Grid.Column="1" IsChecked="{Binding OfflineMode}" />
+          </Grid>
+          <Grid ColumnDefinitions="*,Auto">
+            <StackPanel Spacing="2" VerticalAlignment="Center">
+              <TextBlock Classes="title" Text="{loc:Loc Settings.LightThemeTitle, Світла тема}" />
+            </StackPanel>
+            <ToggleSwitch Grid.Column="1" IsChecked="{Binding IsLightTheme}" />
+          </Grid>
+        </StackPanel>
+      </suki:GlassCard>
+
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

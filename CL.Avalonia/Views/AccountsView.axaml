@@ -1,0 +1,79 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:suki="clr-namespace:SukiUI.Controls;assembly=SukiUI"
+             xmlns:ic="using:FluentIcons.Avalonia"
+             xmlns:loc="using:CL_CLegendary_Launcher_.Avalonia.Localization"
+             xmlns:vm="using:CL_CLegendary_Launcher_.Avalonia.ViewModels"
+             xmlns:models="using:CL.Core.Models"
+             x:Class="CL_CLegendary_Launcher_.Avalonia.Views.AccountsView"
+             x:DataType="vm:AccountsViewModel">
+
+  <Grid ColumnDefinitions="*,16,360" Margin="20">
+
+    <suki:GlassCard Grid.Column="0" Padding="16">
+      <Grid RowDefinitions="Auto,Auto,*">
+        <TextBlock Text="{loc:Loc Sidebar.Accounts, Акаунти}" FontSize="18" FontWeight="SemiBold" />
+        <ProgressBar Grid.Row="1" Margin="0,8" IsIndeterminate="True" IsVisible="{Binding IsBusy}" />
+
+        <ListBox Grid.Row="2" x:Name="ProfilesList" ItemsSource="{Binding Profiles}">
+          <ListBox.ItemTemplate>
+            <DataTemplate x:DataType="models:ProfileItem">
+              <Grid ColumnDefinitions="*,Auto,Auto">
+                <StackPanel VerticalAlignment="Center">
+                  <TextBlock Text="{Binding NameAccount}" FontWeight="SemiBold" />
+                  <TextBlock Text="{Binding TypeAccount}" FontSize="12" Opacity="0.7" />
+                </StackPanel>
+                <Button Grid.Column="1" Margin="8,0" Padding="10,4"
+                        Content="{loc:Loc Accounts.SelectBtn, Обрати}"
+                        Command="{Binding #ProfilesList.((vm:AccountsViewModel)DataContext).SelectCommand}"
+                        CommandParameter="{Binding}" />
+                <Button Grid.Column="2" Padding="8,4"
+                        Command="{Binding #ProfilesList.((vm:AccountsViewModel)DataContext).DeleteCommand}"
+                        CommandParameter="{Binding}">
+                  <ic:SymbolIcon Symbol="Delete" />
+                </Button>
+              </Grid>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+      </Grid>
+    </suki:GlassCard>
+
+    <ScrollViewer Grid.Column="2">
+      <StackPanel Spacing="16">
+
+        <suki:GlassCard Padding="16">
+          <StackPanel Spacing="8">
+            <TextBlock Text="{loc:Loc Accounts.OfflineTitle, Офлайн акаунт}" FontWeight="SemiBold" />
+            <TextBox PlaceholderText="{loc:Loc Accounts.PlaceholderNickname, Нік...}" Text="{Binding OfflineNickname}" />
+            <Button Content="{loc:Loc Accounts.CreateBtn, Створити}" Command="{Binding AddOfflineCommand}"
+                    HorizontalAlignment="Stretch" />
+          </StackPanel>
+        </suki:GlassCard>
+
+        <suki:GlassCard Padding="16">
+          <StackPanel Spacing="8">
+            <TextBlock Text="{loc:Loc Accounts.MicrosoftTitle, Microsoft-онлайн акаунт}" FontWeight="SemiBold" />
+            <Button Content="{loc:Loc Accounts.LoginMicrosoftBtn, Увійти через Microsoft}"
+                    Command="{Binding AddMicrosoftCommand}" HorizontalAlignment="Stretch" />
+            <SelectableTextBlock Text="{Binding DeviceCodeText}" TextWrapping="Wrap" FontSize="13"
+                                 IsVisible="{Binding DeviceCodeText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+          </StackPanel>
+        </suki:GlassCard>
+
+        <suki:GlassCard Padding="16">
+          <StackPanel Spacing="8">
+            <TextBlock Text="{loc:Loc Accounts.LittleSkinTitle, LittleSkin акаунт}" FontWeight="SemiBold" />
+            <TextBox PlaceholderText="{loc:Loc Accounts.PlaceholderEmail, Пошта...}" Text="{Binding LittleSkinLogin}" />
+            <TextBox PlaceholderText="{loc:Loc Accounts.PlaceholderPassword, Пароль...}" PasswordChar="•"
+                     Text="{Binding LittleSkinPassword}" />
+            <Button Content="{loc:Loc Accounts.LoginBtn, Увійти}" Command="{Binding AddLittleSkinCommand}"
+                    HorizontalAlignment="Stretch" />
+          </StackPanel>
+        </suki:GlassCard>
+
+      </StackPanel>
+    </ScrollViewer>
+
+  </Grid>
+</UserControl>

@@ -1,110 +1,68 @@
 <suki:SukiWindow xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:suki="clr-namespace:SukiUI.Controls;assembly=SukiUI"
+        xmlns:ic="using:FluentIcons.Avalonia"
+        xmlns:loc="using:CL_CLegendary_Launcher_.Avalonia.Localization"
+        xmlns:vm="using:CL_CLegendary_Launcher_.Avalonia.ViewModels"
+        xmlns:views="using:CL_CLegendary_Launcher_.Avalonia.Views"
         x:Class="CL_CLegendary_Launcher_.Avalonia.Views.MainWindow"
-        Title="CL Launcher - Linux Edition"
+        x:DataType="vm:MainWindowViewModel"
+        Title="CL Launcher"
         Icon="avares://CL.Avalonia/Assets/icon.ico"
-        Width="1080" Height="720"
-        MinWidth="820" MinHeight="560">
+        Width="1180" Height="740"
+        MinWidth="900" MinHeight="600">
 
-  <Grid RowDefinitions="Auto,*,Auto" Margin="20">
+  <suki:SukiWindow.Hosts>
+    <suki:SukiDialogHost Manager="{Binding DialogManager}" />
+    <suki:SukiToastHost Manager="{Binding ToastManager}" />
+  </suki:SukiWindow.Hosts>
 
-    <StackPanel Grid.Row="0" Spacing="4" Margin="0,0,0,16">
-      <TextBlock Text="CL Launcher" FontSize="26" FontWeight="SemiBold" />
-      <TextBlock Name="PlatformText" Opacity="0.7" FontSize="13" />
-    </StackPanel>
+  <Grid RowDefinitions="*,Auto">
 
-    <Grid Grid.Row="1" ColumnDefinitions="*,20,*,20,1.1*">
+    <suki:SukiSideMenu Grid.Row="0" IsSearchEnabled="False">
+      <suki:SukiSideMenu.Items>
 
-      <suki:GlassCard Grid.Column="0" Padding="16" VerticalAlignment="Stretch">
-        <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel Spacing="10">
-          <TextBlock Text="Стан ядра" FontWeight="SemiBold" FontSize="15" />
-          <TextBlock Name="PathText" TextWrapping="Wrap" FontSize="12" Opacity="0.85" />
-          <Separator Margin="0,4" />
-          <TextBlock Name="CoreStatusText" TextWrapping="Wrap" FontSize="12" Opacity="0.85" />
+        <suki:SukiSideMenuItem Header="{loc:Loc Sidebar.Main, Головна}">
+          <suki:SukiSideMenuItem.Icon>
+            <ic:SymbolIcon Symbol="Home" />
+          </suki:SukiSideMenuItem.Icon>
+          <suki:SukiSideMenuItem.PageContent>
+            <views:HomeView DataContext="{Binding Home}" />
+          </suki:SukiSideMenuItem.PageContent>
+        </suki:SukiSideMenuItem>
 
-          <Separator Margin="0,4" />
+        <suki:SukiSideMenuItem Header="{loc:Loc Sidebar.Accounts, Акаунти}">
+          <suki:SukiSideMenuItem.Icon>
+            <ic:SymbolIcon Symbol="Person" />
+          </suki:SukiSideMenuItem.Icon>
+          <suki:SukiSideMenuItem.PageContent>
+            <views:AccountsView DataContext="{Binding Accounts}" />
+          </suki:SukiSideMenuItem.PageContent>
+        </suki:SukiSideMenuItem>
 
-          <TextBlock Text="Запуск гри" FontWeight="SemiBold" FontSize="13" />
-          <ComboBox Name="JavaBox" HorizontalAlignment="Stretch" />
-          <Button Name="PlayButton" Content="Грати" IsEnabled="False"
-                  HorizontalAlignment="Stretch" />
+        <suki:SukiSideMenuItem Header="{loc:Loc Sidebar.Settings, Налаштування}">
+          <suki:SukiSideMenuItem.Icon>
+            <ic:SymbolIcon Symbol="Settings" />
+          </suki:SukiSideMenuItem.Icon>
+          <suki:SukiSideMenuItem.PageContent>
+            <views:SettingsView DataContext="{Binding Settings}" />
+          </suki:SukiSideMenuItem.PageContent>
+        </suki:SukiSideMenuItem>
 
-          <Separator Margin="0,4" />
+      </suki:SukiSideMenu.Items>
+    </suki:SukiSideMenu>
 
-          <TextBlock Text="Перевірка діалогів" FontWeight="SemiBold" FontSize="13" />
-          <Button Name="PickFileButton" Content="Вибрати файл..."
-                  HorizontalAlignment="Stretch" />
-          <Button Name="PickFolderButton" Content="Вибрати теку..."
-                  HorizontalAlignment="Stretch" />
-          <Button Name="OpenSiteButton" Content="Discord (xdg-open)"
-                  HorizontalAlignment="Stretch" />
-        </StackPanel>
-        </ScrollViewer>
-      </suki:GlassCard>
-
-      <suki:GlassCard Grid.Column="2" Padding="16" VerticalAlignment="Stretch">
-        <ScrollViewer VerticalScrollBarVisibility="Auto">
-          <StackPanel Spacing="6">
-            <TextBlock Text="Акаунти" FontWeight="SemiBold" FontSize="15" />
-
-            <TextBlock Name="CurrentAccountText" Margin="0,8"
-                       FontSize="12" Opacity="0.85" TextWrapping="Wrap"
-                       Text="Активний профіль: —" />
-
-            <ListBox Name="ProfilesList" Height="140" Margin="0,0,0,8" />
-
-            <Button Name="SelectProfileButton" Content="Активувати профіль"
-                    IsEnabled="False" HorizontalAlignment="Stretch" />
-            <Button Name="DeleteProfileButton" Content="Видалити профіль"
-                    IsEnabled="False" HorizontalAlignment="Stretch" />
-
-            <Separator Margin="0,6" />
-            <TextBlock Text="Додати акаунт" FontWeight="SemiBold" FontSize="13" />
-            <TextBox Name="NicknameBox" Text="Player" Watermark="Нікнейм (offline)" />
-            <Button Name="AddOfflineButton" Content="+ Offline"
-                    HorizontalAlignment="Stretch" />
-            <Button Name="AddMicrosoftButton" Content="+ Microsoft (браузер)"
-                    HorizontalAlignment="Stretch" />
-            <TextBox Name="LittleSkinLoginBox" Watermark="LittleSkin e-mail" />
-            <TextBox Name="LittleSkinPasswordBox" Watermark="LittleSkin пароль"
-                     PasswordChar="•" />
-            <Button Name="AddLittleSkinButton" Content="+ LittleSkin"
-                    HorizontalAlignment="Stretch" />
-          </StackPanel>
-        </ScrollViewer>
-      </suki:GlassCard>
-
-      <suki:GlassCard Grid.Column="4" Padding="16">
-        <Grid RowDefinitions="Auto,Auto,*,Auto">
-          <TextBlock Grid.Row="0" Text="Версії Minecraft" FontWeight="SemiBold" FontSize="15" />
-          <Button Grid.Row="1" Name="LoadVersionsButton" Content="Завантажити список"
-                  HorizontalAlignment="Left" Margin="0,10" />
-          <ListBox Grid.Row="2" Name="VersionsList" />
-          <TextBlock Grid.Row="3" Name="SelectedVersionText" Margin="0,10,0,0"
-                     FontSize="12" Opacity="0.7" TextWrapping="Wrap" />
-        </Grid>
-      </suki:GlassCard>
-
-    </Grid>
-
-    <suki:GlassCard Grid.Row="2" Padding="10" Margin="0,14,0,0" Height="180">
-      <Grid RowDefinitions="Auto,*">
-        <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,6">
-          <TextBlock Grid.Column="0" Text="Журнал" FontWeight="SemiBold" FontSize="13" />
-          <TextBlock Grid.Column="1" Name="ProgressText" Margin="12,0"
-                     FontSize="11" Opacity="0.75" TextTrimming="CharacterEllipsis"
-                     VerticalAlignment="Center" />
-          <Button Grid.Column="2" Name="ClearLogButton" Content="Очистити"
-                  FontSize="11" Padding="8,2" />
-        </Grid>
-        <ScrollViewer Grid.Row="1" Name="LogScroller"
-                      HorizontalScrollBarVisibility="Auto"
-                      VerticalScrollBarVisibility="Auto">
-          <SelectableTextBlock Name="LogText" FontFamily="monospace"
-                               FontSize="11" TextWrapping="NoWrap" />
-        </ScrollViewer>
+    <suki:GlassCard Grid.Row="1" Margin="16,0,16,16" Padding="16,12"
+                    IsVisible="{Binding Progress.IsVisible}">
+      <Grid ColumnDefinitions="*,16,Auto" RowDefinitions="Auto,Auto,Auto,Auto">
+        <TextBlock Grid.Row="0" Text="{Binding Progress.VersionText}" FontWeight="SemiBold" />
+        <ProgressBar Grid.Row="1" Margin="0,6" Value="{Binding Progress.VersionProgress}" Maximum="100" />
+        <TextBlock Grid.Row="2" Text="{Binding Progress.FileText}" FontSize="12" Opacity="0.75"
+                   TextTrimming="CharacterEllipsis" />
+        <ProgressBar Grid.Row="3" Margin="0,6,0,0" Height="4" Value="{Binding Progress.FileProgress}" Maximum="100" />
+        <Button Grid.Column="2" Grid.RowSpan="4" VerticalAlignment="Center"
+                Content="{loc:Loc Dialogs.BtnCancel, Скасувати}"
+                Command="{Binding Progress.CancelCommand}" />
       </Grid>
     </suki:GlassCard>
 

@@ -1,0 +1,88 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:suki="clr-namespace:SukiUI.Controls;assembly=SukiUI"
+             xmlns:loc="using:CL_CLegendary_Launcher_.Avalonia.Localization"
+             xmlns:vm="using:CL_CLegendary_Launcher_.Avalonia.ViewModels"
+             x:Class="CL_CLegendary_Launcher_.Avalonia.Views.HomeView"
+             x:DataType="vm:HomeViewModel">
+
+  <Grid ColumnDefinitions="*,16,340" Margin="20">
+
+    <suki:GlassCard Grid.Column="0" Padding="16">
+      <Grid RowDefinitions="Auto,Auto,*">
+
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto,Auto">
+          <TextBlock Text="{loc:Loc MainScreen.Versions, Версії Minecraft}" FontSize="18" FontWeight="SemiBold"
+                     VerticalAlignment="Center" />
+          <CheckBox Grid.Column="1" Margin="0,0,16,0"
+                    Content="{loc:Loc GameLaunch.Snapshots, Снапшоти}"
+                    IsChecked="{Binding ShowSnapshots}"
+                    IsVisible="{Binding !IsOptifine}" />
+          <TextBlock Grid.Column="2" Margin="0,0,8,0" Text="OptiFine" VerticalAlignment="Center" />
+          <ToggleSwitch Grid.Column="3" OnContent="{x:Null}" OffContent="{x:Null}"
+                        IsChecked="{Binding IsOptifine}" />
+        </Grid>
+
+        <TextBox Grid.Row="1" Margin="0,12"
+                 PlaceholderText="{loc:Loc Generic.Search, Пошук...}"
+                 Text="{Binding SearchText}" />
+
+        <Panel Grid.Row="2">
+          <ListBox ItemsSource="{Binding Versions}" SelectedItem="{Binding SelectedVersion}">
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:VersionEntry">
+                <Grid ColumnDefinitions="*,Auto">
+                  <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
+                  <TextBlock Grid.Column="1" FontSize="12" Opacity="0.7" VerticalAlignment="Center"
+                             Text="{loc:Loc GameLaunch.Installed, встановлено}"
+                             IsVisible="{Binding IsInstalled}" />
+                </Grid>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+          <ProgressBar IsIndeterminate="True" VerticalAlignment="Top"
+                       IsVisible="{Binding IsLoadingVersions}" />
+        </Panel>
+
+      </Grid>
+    </suki:GlassCard>
+
+    <StackPanel Grid.Column="2" Spacing="16">
+
+      <suki:GlassCard Padding="16">
+        <StackPanel Spacing="4">
+          <TextBlock Text="{loc:Loc Accounts.Current, Акаунт}" FontSize="12" Opacity="0.7" />
+          <TextBlock FontSize="18" FontWeight="SemiBold"
+                     Text="{Binding Accounts.ActiveProfile.NameAccount}"
+                     IsVisible="{Binding Accounts.ActiveProfile, Converter={x:Static ObjectConverters.IsNotNull}}" />
+          <TextBlock FontSize="12" Opacity="0.7"
+                     Text="{Binding Accounts.ActiveProfile.TypeAccount}"
+                     IsVisible="{Binding Accounts.ActiveProfile, Converter={x:Static ObjectConverters.IsNotNull}}" />
+          <TextBlock FontSize="18" Opacity="0.7"
+                     Text="{loc:Loc Accounts.NoAccount, Відсутній акаунт}"
+                     IsVisible="{Binding Accounts.ActiveProfile, Converter={x:Static ObjectConverters.IsNull}}" />
+        </StackPanel>
+      </suki:GlassCard>
+
+      <suki:GlassCard Padding="16">
+        <StackPanel Spacing="12">
+          <StackPanel Spacing="6" IsVisible="{Binding IsOptifine}">
+            <TextBlock Text="{loc:Loc GameLaunch.OptifineVersion, Версія OptiFine}" FontSize="12" Opacity="0.7" />
+            <ComboBox HorizontalAlignment="Stretch"
+                      ItemsSource="{Binding OptifineVersions}"
+                      SelectedItem="{Binding SelectedOptifineVersion}" />
+          </StackPanel>
+          <!-- TextBlock, а не Content: інакше "_" у назві версії OptiFine стає клавішею доступу і зникає.
+               Шаблон кнопки SukiUI не обмежує ширину вмісту, тому MaxWidth заданий під колонку в 340. -->
+          <Button Classes="Flat" Height="56" HorizontalAlignment="Stretch"
+                  HorizontalContentAlignment="Center" FontSize="16" FontWeight="Bold"
+                  Command="{Binding PlayCommand}">
+            <TextBlock MaxWidth="260" Text="{Binding PlayButtonText}" TextTrimming="CharacterEllipsis" />
+          </Button>
+        </StackPanel>
+      </suki:GlassCard>
+
+    </StackPanel>
+
+  </Grid>
+</UserControl>

@@ -1,0 +1,35 @@
+<suki:SukiWindow xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:suki="clr-namespace:SukiUI.Controls;assembly=SukiUI"
+        xmlns:loc="using:CL_CLegendary_Launcher_.Avalonia.Localization"
+        xmlns:vm="using:CL_CLegendary_Launcher_.Avalonia.ViewModels"
+        x:Class="CL_CLegendary_Launcher_.Avalonia.Views.GameLogWindow"
+        x:DataType="vm:GameLogViewModel"
+        Title="{loc:Loc AI.GameLogTitle, Консоль розробника}"
+        Icon="avares://CL.Avalonia/Assets/icon.ico"
+        Width="960" Height="600" MinWidth="560" MinHeight="320">
+
+  <Grid RowDefinitions="Auto,*" Margin="12">
+    <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,0,0,8">
+      <Button Content="{loc:Loc Settings.CopyBtn, Копіювати}" Click="OnCopyClick" />
+      <Button Content="{loc:Loc Context.LogsFolder, Тека логів}" Command="{Binding OpenLogsFolderCommand}" />
+      <Button Content="{loc:Loc GameLog.Clear, Очистити}" Command="{Binding ClearCommand}" />
+      <CheckBox x:Name="AutoScrollBox" IsChecked="True"
+                Content="{loc:Loc GameLog.AutoScroll, Автопрокрутка}" />
+    </StackPanel>
+
+    <ListBox Grid.Row="1" x:Name="LinesList" ItemsSource="{Binding Lines}">
+      <ListBox.Styles>
+        <Style Selector="ListBoxItem">
+          <Setter Property="Padding" Value="6,0" />
+          <Setter Property="MinHeight" Value="0" />
+        </Style>
+      </ListBox.Styles>
+      <ListBox.ItemTemplate>
+        <DataTemplate x:DataType="x:String">
+          <TextBlock Text="{Binding}" FontFamily="monospace" FontSize="12" TextWrapping="NoWrap" />
+        </DataTemplate>
+      </ListBox.ItemTemplate>
+    </ListBox>
+  </Grid>
+</suki:SukiWindow>

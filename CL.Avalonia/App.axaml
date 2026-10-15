@@ -3,6 +3,11 @@
              xmlns:suki="clr-namespace:SukiUI;assembly=SukiUI"
              x:Class="CL_CLegendary_Launcher_.Avalonia.App"
              RequestedThemeVariant="Dark">
+	<Application.Resources>
+		<!-- Quicksand зі SukiUI не має кирилиці, тож український текст змішувався б із шрифтом-заміною. -->
+		<FontFamily x:Key="DefaultFontFamily">fonts:Inter#Inter</FontFamily>
+	</Application.Resources>
+
 	<Application.Styles>
 		<suki:SukiTheme ThemeColor="Blue" />
 	</Application.Styles>
