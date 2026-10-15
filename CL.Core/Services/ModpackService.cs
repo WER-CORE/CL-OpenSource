@@ -45,7 +45,7 @@ namespace CL.Core.Services
 
     public static class ModpackPaths
     {
-        public static string DataDirectory => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data");
+        public static string DataDirectory => PlatformPaths.DataFolder();
         public static string InstalledModpacksJson => Path.Combine(DataDirectory, "installed_modpacks.json");
     }
     public class ModpackService
@@ -68,7 +68,7 @@ namespace CL.Core.Services
         private async Task<ApiClient> GetCfClientAsync() => await CurseForgeClientProvider.GetClientAsync();
         public List<InstalledModpack> LoadInstalledModpacks()
         {
-            string jsonPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "installed_modpacks.json");
+            string jsonPath = System.IO.Path.Combine(PlatformPaths.DataFolder(), "installed_modpacks.json");
             if (!File.Exists(jsonPath)) return new List<InstalledModpack>();
 
             string json = File.ReadAllText(jsonPath);
@@ -77,7 +77,7 @@ namespace CL.Core.Services
 
         public void DeleteModpack(string modpackName)
         {
-            string pathToJson = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "installed_modpacks.json");
+            string pathToJson = Path.Combine(PlatformPaths.DataFolder(), "installed_modpacks.json");
             if (!File.Exists(pathToJson)) return;
 
             var jsonText = File.ReadAllText(pathToJson);

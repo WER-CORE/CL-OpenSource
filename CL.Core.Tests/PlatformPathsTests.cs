@@ -53,5 +53,40 @@ namespace CL.Core.Tests
         [InlineData("   ", "/tmp")]
         public void BlankInputIsNeverEqual(string? left, string? right)
             => Assert.False(PlatformPaths.PathsEqual(left, right));
+
+        [Fact]
+        public void AppDataDirectoryIsAbsolute()
+            => Assert.True(System.IO.Path.IsPathRooted(PlatformPaths.AppDataDirectory()));
+
+        [Fact]
+        public void DataAndLocalesLiveInsideAppDataDirectory()
+        {
+            string root = PlatformPaths.AppDataDirectory();
+
+            Assert.True(PlatformPaths.PathsEqual(root, System.IO.Path.GetDirectoryName(PlatformPaths.DataFolder())));
+            Assert.True(PlatformPaths.PathsEqual(root, System.IO.Path.GetDirectoryName(PlatformPaths.LocalesFolder())));
+        }
+
+        [Fact]
+        public void AppDataDirectoryFollowsXdgDataHomeOnLinux()
+        {
+            if (!OperatingSystem.IsLinux())
+                return;
+
+            string? previous = Environment.GetEnvironmentVariable("XDG_DATA_HOME");
+            try
+            {
+                Environment.SetEnvironmentVariable("XDG_DATA_HOME", "/tmp/xdg-test");
+                Assert.Equal("/tmp/xdg-test/cl-launcher", PlatformPaths.AppDataDirectory());
+
+                // Відносний шлях специфікація XDG вимагає ігнорувати.
+                Environment.SetEnvironmentVariable("XDG_DATA_HOME", "relative/path");
+                Assert.EndsWith("/.local/share/cl-launcher", PlatformPaths.AppDataDirectory());
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable("XDG_DATA_HOME", previous);
+            }
+        }
     }
 }

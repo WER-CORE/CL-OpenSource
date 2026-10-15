@@ -10,7 +10,7 @@ namespace CL.Core.Services
 {
     public static class LocalizationFetcher
     {
-        public static string LocalesFolder => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Locales");
+        public static string LocalesFolder => PlatformPaths.LocalesFolder();
 
         public static async Task<List<LanguageItem>> GetAvailableLanguagesAsync()
         {

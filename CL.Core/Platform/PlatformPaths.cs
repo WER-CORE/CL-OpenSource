@@ -16,6 +16,28 @@ namespace CL.Core.Services
             return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".clminecraft");
         }
 
+        // На Windows дані лишаються поруч із лаунчером, як і раніше. На Linux
+        // і macOS каталог програми зазвичай доступний лише для читання
+        // (/opt, AppImage), тож дані живуть у профілі користувача.
+        public static string AppDataDirectory()
+        {
+            if (OperatingSystem.IsWindows())
+                return AppDomain.CurrentDomain.BaseDirectory;
+
+            if (OperatingSystem.IsMacOS())
+                return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Library", "Application Support", "CLLauncher");
+
+            string? dataHome = Environment.GetEnvironmentVariable("XDG_DATA_HOME");
+            if (string.IsNullOrWhiteSpace(dataHome) || !Path.IsPathRooted(dataHome))
+                dataHome = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "share");
+
+            return Path.Combine(dataHome, "cl-launcher");
+        }
+
+        public static string DataFolder() => Path.Combine(AppDataDirectory(), "Data");
+
+        public static string LocalesFolder() => Path.Combine(AppDataDirectory(), "Locales");
+
         // Регістр важливий лише на Linux: .clminecraft і .ClMinecraft - різні каталоги
         public static bool PathsEqual(string? left, string? right)
         {

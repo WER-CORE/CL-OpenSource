@@ -23,7 +23,7 @@ namespace CL.Core.Services
 
         public ProfileManagerService()
         {
-            string directoryPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data");
+            string directoryPath = PlatformPaths.DataFolder();
             _profilesManegerPath = Path.Combine(directoryPath, "ProfilesManeger.json");
 
             if (!Directory.Exists(directoryPath))

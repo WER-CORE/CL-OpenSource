@@ -23,7 +23,7 @@ namespace CL.Core.Services
         private List<KnownIssue> _knowledgeBase;
         private static readonly HttpClient _client = new HttpClient();
 
-        private readonly string _localKbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "knowledge_base.json");
+        private readonly string _localKbPath = Path.Combine(PlatformPaths.AppDataDirectory(), "knowledge_base.json");
         private const string OLLAMA_URL = "http://localhost:11434/api/generate";
 
         public async Task InitializeAsync()
