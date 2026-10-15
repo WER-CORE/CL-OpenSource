@@ -2,7 +2,6 @@ using CL.Core.Services;
 using CL.Core.Models;
 using CL_CLegendary_Launcher_.Windows;
 using CmlLib.Core;
-using Optifine.Installer;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -21,7 +20,6 @@ namespace CL_CLegendary_Launcher_
     public partial class CL_Main_
     {
         public bool isMouseClickSelection = false;
-        private static HashSet<string> _cachedOptifineVersions = null;
 
         async Task AddVersion()
         {
@@ -30,11 +28,11 @@ namespace CL_CLegendary_Launcher_
                 string search = SearchSystemTXT1.Text.ToLower().Trim();
                 VersionList.Items.Clear();
 
-                bool isOffline = SettingsManager.Default.OfflineModLauncher || !System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable();
+                bool isOffline = WebHelper.IsOffline();
 
                 if (isOffline)
                 {
-                    var localVersions = await Task.Run(() => GetLocalVersions(search));
+                    var localVersions = await Task.Run(() => _versionService.GetLocalVersions(search));
 
                     var vanillaLocals = localVersions.Where(v =>
                         !v.ToLower().Contains("forge") &&
@@ -68,61 +66,6 @@ namespace CL_CLegendary_Launcher_
             }
         }
 
-        private async Task<HashSet<string>> GetOptifineSupportedVersionsAsync()
-        {
-            if (_cachedOptifineVersions != null)
-                return _cachedOptifineVersions;
-
-            var fallbackVersions = new HashSet<string>
-            {
-                "1.21.1", "1.21",
-                "1.20.6", "1.20.4", "1.20.2", "1.20.1", "1.20",
-                "1.19.4", "1.19.3", "1.19.2", "1.19",
-                "1.18.2", "1.18.1", "1.18",
-                "1.17.1", "1.17",
-                "1.16.5", "1.16.4", "1.16.3", "1.16.2", "1.16.1",
-                "1.15.2", "1.15.1", "1.15",
-                "1.14.4", "1.14.3", "1.14.2", "1.14.1", "1.14",
-                "1.13.2", "1.13.1", "1.13",
-                "1.12.2", "1.12.1", "1.12",
-                "1.11.2", "1.11",
-                "1.10.2", "1.10",
-                "1.9.4", "1.9.2", "1.9",
-                "1.8.9", "1.8.8", "1.8.7", "1.8.1", "1.8",
-                "1.7.10", "1.7.2"
-            };
-
-            try
-            {
-                var optifineInstaller = new OptifineInstaller(WebHelper.Client);
-                var optifineList = await optifineInstaller.GetOptifineVersionsAsync();
-
-                var gameVersions = optifineList
-                    .Select(x => x.MinecraftVersion)
-                    .Distinct()
-                    .OrderByDescending(v =>
-                    {
-                        if (System.Version.TryParse(v, out var ver))
-                            return ver;
-                        return new System.Version(0, 0, 0);
-                    });
-
-                var versionsHashSet = new HashSet<string>(gameVersions);
-
-                if (versionsHashSet.Count > 0)
-                {
-                    _cachedOptifineVersions = versionsHashSet;
-                    return _cachedOptifineVersions;
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Error fetching OptiFine versions: {ex.Message}");
-            }
-
-            return fallbackVersions;
-        }
-
         public async Task AddVersionOptifine()
         {
             try
@@ -130,11 +73,11 @@ namespace CL_CLegendary_Launcher_
                 VersionListVanila.Items.Clear();
                 string searchText = SearchSystemTXT2.Text.ToLower().Trim();
 
-                bool isOffline = SettingsManager.Default.OfflineModLauncher || !System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable();
+                bool isOffline = WebHelper.IsOffline();
 
                 if (isOffline)
                 {
-                    var localVersions = GetLocalVersions(searchText);
+                    var localVersions = _versionService.GetLocalVersions(searchText);
 
                     var optifineLocals = localVersions.Where(v => v.ToLower().Contains("optifine")).ToList();
 
@@ -151,7 +94,7 @@ namespace CL_CLegendary_Launcher_
                 else
                 {
                     var versions = await _versionService.GetFilteredVersionsAsync(searchText, true, false, false, false);
-                    var supportedOptifineVersions = await GetOptifineSupportedVersionsAsync();
+                    var supportedOptifineVersions = await _versionService.GetOptifineSupportedVersionsAsync();
 
                     var filteredVersions = versions
                         .Where(v => supportedOptifineVersions.Contains(v))
@@ -170,27 +113,6 @@ namespace CL_CLegendary_Launcher_
             }
         }
 
-        private List<string> GetLocalVersions(string keyword = null)
-        {
-            var localVersions = new List<string>();
-            var path = new CmlLib.Core.MinecraftPath(SettingsManager.Default.PathLacunher);
-
-            if (System.IO.Directory.Exists(path.Versions))
-            {
-                var dirs = System.IO.Directory.GetDirectories(path.Versions);
-                foreach (var dir in dirs)
-                {
-                    string verName = System.IO.Path.GetFileName(dir);
-
-                    if (string.IsNullOrEmpty(keyword) || verName.ToLower().Contains(keyword.ToLower()))
-                    {
-                        localVersions.Add(verName);
-                    }
-                }
-            }
-            return localVersions;
-        }
-
         private async Task AddVersionModeVersion()
         {
             cancellationTokenSource?.Dispose();
@@ -204,7 +126,7 @@ namespace CL_CLegendary_Launcher_
             {
                 VersionListMod.Items.Clear();
 
-                bool isOffline = SettingsManager.Default.OfflineModLauncher || !System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable();
+                bool isOffline = WebHelper.IsOffline();
 
                 if (isOffline || selectedVersion.ToLower().Contains("optifine"))
                 {

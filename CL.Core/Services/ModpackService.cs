@@ -128,7 +128,7 @@ namespace CL.Core.Services
             var cts = new CancellationTokenSource();
             var token = cts.Token;
 
-            bool isOffline = SettingsManager.Default.OfflineModLauncher || !System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable();
+            bool isOffline = WebHelper.IsOffline();
 
             var versionDownloadWindow = ServiceLocator.Current.GetService<ITaskProgressService>();
             versionDownloadWindow.CTS = cts;

@@ -15,10 +15,13 @@ namespace CL.Core.Services
 {
     public class VersionService
     {
+        private static HashSet<string>? _cachedOptifineVersions;
+        private readonly string _launcherPath;
         private readonly MinecraftLauncher _launcher;
 
         public VersionService(string launcherPath)
         {
+            _launcherPath = launcherPath;
             _launcher = new MinecraftLauncher(new MinecraftPath(launcherPath));
         }
         public async Task<List<string>> GetLoaderVersionsAsync(int loaderType, string mcVersion)
@@ -48,6 +51,80 @@ namespace CL.Core.Services
             var installer = new OptifineInstaller(WebHelper.Client);
             var all = await installer.GetOptifineVersionsAsync();
             return all.Where(v => v.MinecraftVersion == mcVersion).Select(v => v.Version).ToList();
+        }
+        public List<string> GetLocalVersions(string? keyword = null)
+        {
+            var localVersions = new List<string>();
+            var path = new MinecraftPath(_launcherPath);
+
+            if (System.IO.Directory.Exists(path.Versions))
+            {
+                var dirs = System.IO.Directory.GetDirectories(path.Versions);
+                foreach (var dir in dirs)
+                {
+                    string verName = System.IO.Path.GetFileName(dir);
+
+                    if (string.IsNullOrEmpty(keyword) || verName.ToLower().Contains(keyword.ToLower()))
+                    {
+                        localVersions.Add(verName);
+                    }
+                }
+            }
+            return localVersions;
+        }
+        public async Task<HashSet<string>> GetOptifineSupportedVersionsAsync()
+        {
+            if (_cachedOptifineVersions != null)
+                return _cachedOptifineVersions;
+
+            var fallbackVersions = new HashSet<string>
+            {
+                "1.21.1", "1.21",
+                "1.20.6", "1.20.4", "1.20.2", "1.20.1", "1.20",
+                "1.19.4", "1.19.3", "1.19.2", "1.19",
+                "1.18.2", "1.18.1", "1.18",
+                "1.17.1", "1.17",
+                "1.16.5", "1.16.4", "1.16.3", "1.16.2", "1.16.1",
+                "1.15.2", "1.15.1", "1.15",
+                "1.14.4", "1.14.3", "1.14.2", "1.14.1", "1.14",
+                "1.13.2", "1.13.1", "1.13",
+                "1.12.2", "1.12.1", "1.12",
+                "1.11.2", "1.11",
+                "1.10.2", "1.10",
+                "1.9.4", "1.9.2", "1.9",
+                "1.8.9", "1.8.8", "1.8.7", "1.8.1", "1.8",
+                "1.7.10", "1.7.2"
+            };
+
+            try
+            {
+                var optifineInstaller = new OptifineInstaller(WebHelper.Client);
+                var optifineList = await optifineInstaller.GetOptifineVersionsAsync();
+
+                var gameVersions = optifineList
+                    .Select(x => x.MinecraftVersion)
+                    .Distinct()
+                    .OrderByDescending(v =>
+                    {
+                        if (System.Version.TryParse(v, out var ver))
+                            return ver;
+                        return new System.Version(0, 0, 0);
+                    });
+
+                var versionsHashSet = new HashSet<string>(gameVersions);
+
+                if (versionsHashSet.Count > 0)
+                {
+                    _cachedOptifineVersions = versionsHashSet;
+                    return _cachedOptifineVersions;
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error fetching OptiFine versions: {ex.Message}");
+            }
+
+            return fallbackVersions;
         }
         public async Task<List<VersionLogItem>> GetChangeLogAsync()
         {

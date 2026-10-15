@@ -11,6 +11,9 @@ namespace CL.Core.Services
             Client.DefaultRequestHeaders.UserAgent.ParseAdd("CL-Legendary-Launcher/1.0");
         }
 
+        public static bool IsOffline()
+            => SettingsManager.Default.OfflineModLauncher || !System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable();
+
         public static void OpenUrl(string url)
         {
             if (string.IsNullOrWhiteSpace(url) || url == "-")

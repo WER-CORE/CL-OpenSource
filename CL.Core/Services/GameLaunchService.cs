@@ -18,7 +18,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Net.NetworkInformation;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -49,10 +48,6 @@ namespace CL.Core.Services
             
             _gameSessionManager = sessionManager;
             _lastActionService = lastActionService;
-        }
-        private bool IsOfflineMode()
-        {
-            return SettingsManager.Default.OfflineModLauncher || !NetworkInterface.GetIsNetworkAvailable();
         }
         private string GetOfflineVersionName(LoaderType loaderType, string mcVersion, string loaderVersion)
         {
@@ -88,7 +83,7 @@ namespace CL.Core.Services
         {
             _cts = new CancellationTokenSource();
             var token = _cts.Token;
-            config.IsOffline = IsOfflineMode();
+            config.IsOffline = WebHelper.IsOffline();
 
             ServiceLocator.Current.GetService<IDispatcherService>().Invoke(() =>
             {

@@ -83,7 +83,7 @@ namespace CL_CLegendary_Launcher_
         {
             return new LaunchConfiguration
             {
-                IsOffline = SettingsManager.Default.OfflineModLauncher || !System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable(),
+                IsOffline = WebHelper.IsOffline(),
                 MinimumRamMb = 512,
                 MaximumRamMb = SettingsManager.Default.OP,
                 ScreenWidth = SettingsManager.Default.width,
