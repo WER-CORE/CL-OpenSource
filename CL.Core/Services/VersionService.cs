@@ -1,4 +1,4 @@
-using CL.Core.Models;
+﻿using CL.Core.Models;
 using CmlLib.Core;
 using Newtonsoft.Json.Linq;
 using Optifine.Installer;
@@ -34,6 +34,8 @@ namespace CL.Core.Services
             return new List<string>();
         }
         public async Task<List<string>> GetFilteredVersionsAsync(string searchText, bool rel, bool snap, bool beta, bool alpha)
+            => (await GetFilteredVersionsWithTypeAsync(searchText, rel, snap, beta, alpha)).Select(v => v.Name).ToList();
+        public async Task<List<(string Name, string Type)>> GetFilteredVersionsWithTypeAsync(string searchText, bool rel, bool snap, bool beta, bool alpha)
         {
             var versions = await _launcher.GetAllVersionsAsync();
             var regex = new Regex(string.IsNullOrEmpty(searchText) ? ".*" : Regex.Escape(searchText).Replace(@"\*", ".*"), RegexOptions.IgnoreCase);
@@ -43,7 +45,7 @@ namespace CL.Core.Services
                              (v.Type == "snapshot" && snap) ||
                              (v.Type == "old_beta" && beta) ||
                              (v.Type == "old_alpha" && alpha)) && regex.IsMatch(v.Name))
-                .Select(v => v.Name)
+                .Select(v => (v.Name, v.Type))
                 .ToList();
         }
         public async Task<List<string>> GetOptifineVersionsAsync(string mcVersion)
