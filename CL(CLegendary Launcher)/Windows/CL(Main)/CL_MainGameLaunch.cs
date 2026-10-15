@@ -34,11 +34,7 @@ namespace CL_CLegendary_Launcher_
                 {
                     var localVersions = await Task.Run(() => _versionService.GetLocalVersions(search));
 
-                    var vanillaLocals = localVersions.Where(v =>
-                        !v.ToLower().Contains("forge") &&
-                        !v.ToLower().Contains("fabric") &&
-                        !v.ToLower().Contains("quilt") &&
-                        !v.ToLower().Contains("optifine")).ToList();
+                    var vanillaLocals = localVersions.Where(v => !VersionService.IsModdedVersionName(v)).ToList();
 
                     if (vanillaLocals.Count > 0)
                     {

@@ -1,3 +1,4 @@
+using CL.Core.Services;
 using CmlLib.Core.Auth;
 
 namespace CL.Core.Models
@@ -15,5 +16,20 @@ namespace CL.Core.Models
         public string ServerIp { get; set; }
         public int ServerPort { get; set; }
         public bool JoinServer { get; set; }
+
+        public static LaunchConfiguration FromSettings()
+        {
+            return new LaunchConfiguration
+            {
+                IsOffline = WebHelper.IsOffline(),
+                MinimumRamMb = 512,
+                MaximumRamMb = SettingsManager.Default.OP,
+                ScreenWidth = SettingsManager.Default.width,
+                ScreenHeight = SettingsManager.Default.height,
+                IsFullscreen = SettingsManager.Default.FullScreen,
+                ServerIp = null,
+                ServerPort = 0
+            };
+        }
     }
 }

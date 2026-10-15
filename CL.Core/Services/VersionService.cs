@@ -52,6 +52,11 @@ namespace CL.Core.Services
             var all = await installer.GetOptifineVersionsAsync();
             return all.Where(v => v.MinecraftVersion == mcVersion).Select(v => v.Version).ToList();
         }
+        public static bool IsModdedVersionName(string name)
+        {
+            string lower = name.ToLower();
+            return lower.Contains("forge") || lower.Contains("fabric") || lower.Contains("quilt") || lower.Contains("optifine");
+        }
         public List<string> GetLocalVersions(string? keyword = null)
         {
             var localVersions = new List<string>();

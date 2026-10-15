@@ -85,38 +85,7 @@ namespace CL_CLegendary_Launcher_.Windows
         }
         public async Task LoadLogFromFileAsync(string logFilePath)
         {
-            try
-            {
-                if (!System.IO.File.Exists(logFilePath))
-                {
-                    string notFoundMsg = string.Format(
-                        LocalizationManager.GetString("GameLog.FileNotFound", "[Система]: Не вдалося знайти файл логів за шляхом:\n{0}"),
-                        logFilePath);
-
-                    AppendTextToLog(notFoundMsg);
-                    return;
-                }
-
-                AppendTextToLog(LocalizationManager.GetString("GameLog.ReadingCrashLog", "[Система]: Читання посмертного логу (latest.log)...\n"));
-
-                using (var fileStream = new System.IO.FileStream(logFilePath, System.IO.FileMode.Open, System.IO.FileAccess.Read, System.IO.FileShare.ReadWrite))
-                using (var reader = new System.IO.StreamReader(fileStream, System.Text.Encoding.UTF8))
-                {
-                    string allLogs = await reader.ReadToEndAsync();
-
-                    AppendTextToLog(allLogs);
-
-                    AppendTextToLog(LocalizationManager.GetString("GameLog.EndOfLog", "\n[Система]: --- КІНЕЦЬ ЛОГУ ---"));
-                }
-            }
-            catch (Exception ex)
-            {
-                string errorMsg = string.Format(
-                    LocalizationManager.GetString("GameLog.ReadError", "\n[Система]: Сталася помилка при спробі прочитати лог-файл:\n{0}"),
-                    ex.Message);
-
-                AppendTextToLog(errorMsg);
-            }
+            AppendTextToLog(await GameLogReader.ReadCrashLogAsync(logFilePath));
         }
         public void MinecraftProcess_OutputDataReceived(object sender, DataReceivedEventArgs e)
         {

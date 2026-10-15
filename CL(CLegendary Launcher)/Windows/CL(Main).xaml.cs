@@ -79,20 +79,7 @@ namespace CL_CLegendary_Launcher_
         private int _lastIndex = 0;
         private DispatcherTimer _slideTimer;
         
-        public LaunchConfiguration GetLaunchConfiguration()
-        {
-            return new LaunchConfiguration
-            {
-                IsOffline = WebHelper.IsOffline(),
-                MinimumRamMb = 512,
-                MaximumRamMb = SettingsManager.Default.OP,
-                ScreenWidth = SettingsManager.Default.width,
-                ScreenHeight = SettingsManager.Default.height,
-                IsFullscreen = SettingsManager.Default.FullScreen,
-                ServerIp = null,
-                ServerPort = 0
-            };
-        }
+        public LaunchConfiguration GetLaunchConfiguration() => LaunchConfiguration.FromSettings();
 
         public CL_Main_()
         {
