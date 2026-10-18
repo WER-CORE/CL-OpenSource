@@ -41,7 +41,7 @@ public partial class HomePage : UserControl
 
     public event EventHandler? SettingsRequested;
     public event EventHandler? NewsRequested;
-    public event EventHandler? ModPacksRequested;
+    public event EventHandler<bool>? ModPacksRequested;
 
     private DispatcherTimer? _slideTimer;
     private int _lastIndex = -1;
@@ -578,7 +578,7 @@ public partial class HomePage : UserControl
     {
         AvaloniaSoundService.Click();
         SelectVersionTypeGird.IsVisible = false;
-        ModPacksRequested?.Invoke(this, EventArgs.Empty);
+        ModPacksRequested?.Invoke(this, true);
     }
 
     public async void VersionList_Tapped(object? sender, TappedEventArgs e)

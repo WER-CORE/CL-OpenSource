@@ -773,7 +773,8 @@
         </Grid>
 
         <Grid x:Name="TutorialOverlay" ZIndex="1000" IsVisible="False">
-            <Path x:Name="TutorialOverlayPath" Fill="#CC000000" Stretch="None" HorizontalAlignment="Left" VerticalAlignment="Top">
+            <Path x:Name="TutorialOverlayPath" Fill="#CC000000" Stretch="None" HorizontalAlignment="Left" VerticalAlignment="Top"
+                  PointerPressed="TutorialOverlay_PointerPressed">
                 <Path.Data>
                     <CombinedGeometry GeometryCombineMode="Exclude">
                         <CombinedGeometry.Geometry1>

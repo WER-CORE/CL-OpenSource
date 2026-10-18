@@ -1,4 +1,4 @@
-﻿<Window xmlns="https://github.com/avaloniaui"
+<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:models="clr-namespace:CL.Core.Models;assembly=CL.Core"
         xmlns:fluentIcons="using:FluentIcons.Avalonia"
@@ -73,7 +73,7 @@
                     </Border>
 
                     <Border Grid.Row="2" Background="#2B2B2B" CornerRadius="8" Margin="0,15,0,0" Padding="10,8">
-                        <CheckBox x:Name="ChkAllowCrashReports" IsChecked="True" Cursor="Hand" Background="{DynamicResource MainBackgroundButton}" Foreground="{DynamicResource MainForegroundBrush}">
+                        <CheckBox x:Name="ChkAllowCrashReports" IsChecked="True" Cursor="Hand" Background="Transparent" Foreground="{DynamicResource MainForegroundBrush}">
                             <TextBlock Foreground="{DynamicResource MainForegroundBrush}" TextWrapping="Wrap">
                                 <Run x:Name="RunCrashTitle" FontWeight="SemiBold" Text="Дозволити анонімну відправку звітів про помилки."/>
                                 <LineBreak/>

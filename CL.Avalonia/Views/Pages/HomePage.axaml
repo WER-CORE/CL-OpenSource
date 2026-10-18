@@ -663,16 +663,16 @@
 								</TextBox>
 								<CheckBox x:Name="Relesed" Content="Реліз" FontSize="10" IsChecked="{Binding ShowReleases}"
                                           Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,0,5"
-                                          Background="{DynamicResource MainBackgroundBrushServer}" />
+                                          Background="Transparent" />
 								<CheckBox x:Name="Snapshots" Content="Снапшоти" FontSize="10" IsChecked="{Binding ShowSnapshots}"
                                           Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,0,5"
-                                          Background="{DynamicResource MainBackgroundBrushServer}" />
+                                          Background="Transparent" />
 								<CheckBox x:Name="Beta" Content="Бета" FontSize="10" IsChecked="{Binding ShowBeta}"
                                           Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,0,5"
-                                          Background="{DynamicResource MainBackgroundBrushServer}" />
+                                          Background="Transparent" />
 								<CheckBox x:Name="Alpha" Content="Альфа" FontSize="10" IsChecked="{Binding ShowAlpha}"
                                           Foreground="{DynamicResource MainForegroundBrush}"
-                                          Background="{DynamicResource MainBackgroundBrushServer}" />
+                                          Background="Transparent" />
 							</StackPanel>
 						</Grid>
 					</Grid>

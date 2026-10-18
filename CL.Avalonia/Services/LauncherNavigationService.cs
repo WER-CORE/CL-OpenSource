@@ -48,7 +48,7 @@ public class LauncherNavigationService
         };
         _homePage.SettingsRequested += (_, _) => NavigateToSettings();
         _homePage.NewsRequested += (_, _) => NavigateToNews();
-        _homePage.ModPacksRequested += (_, _) => NavigateToModPacks();
+        _homePage.ModPacksRequested += (_, showForgeTutorial) => NavigateToModPacks(showForgeTutorial);
 
         return _homePage;
     }
@@ -109,6 +109,8 @@ public class LauncherNavigationService
     private async Task NavigateToPage(Control targetPage, string discordStatus, Func<Task>? loadDataAction = null)
     {
         if (_currentPage == targetPage) return;
+
+        _main.CloseTutorial();
 
         int currentToken = unchecked(++_navigationToken);
 
@@ -181,10 +183,16 @@ public class LauncherNavigationService
         });
     }
 
-    public async void NavigateToModPacks()
+    public void NavigateToModPacks() => NavigateToModPacks(false);
+
+    public async void NavigateToModPacks(bool showForgeTutorial)
     {
         _main.SetActiveTab(_main.ModpacksBtnBorder);
         await NavigateToPage(GetOrCreateModPacksPage(), LocalizationManager.GetString("DiscordRPC.ViewingModpacks", "Дивиться збірки"));
+        if (showForgeTutorial)
+        {
+            _main.ShowForgeTutorial();
+        }
     }
 
     public async void NavigateToServers()

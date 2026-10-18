@@ -13,6 +13,7 @@ using CL.Core.Services;
 using CL_CLegendary_Launcher_.Avalonia.Services;
 using CL_CLegendary_Launcher_.Avalonia.ViewModels;
 using CL_CLegendary_Launcher_.Avalonia.ViewModels.Pages;
+using CL_CLegendary_Launcher_.Avalonia.Views.Pages;
 
 namespace CL_CLegendary_Launcher_.Avalonia.Views;
 
@@ -21,6 +22,7 @@ public partial class CL_Main : Window
     public LauncherNavigationService NavigationService { get; }
     private CL_MainViewModel? _boundVm;
     private readonly AvaloniaThemeService? _themeService;
+    private readonly TutorialOverlayService _tutorialService;
     private Control? _activeTabBorder;
     private bool _isProfilesLoaded;
 
@@ -37,6 +39,13 @@ public partial class CL_Main : Window
         }
 
         NavigationService = new LauncherNavigationService(this);
+        _tutorialService = new TutorialOverlayService(
+            TutorialOverlay,
+            TutorialOverlayPath,
+            TutorialMessageParams,
+            TutorialTitleText,
+            TutorialBodyText
+        );
 
         if (_themeService != null)
         {
@@ -71,6 +80,11 @@ public partial class CL_Main : Window
             if (!_isProfilesLoaded)
             {
                 _ = RefreshProfilesUIAsync(selectSavedProfile: true);
+            }
+
+            if (!SettingsManager.Default.TutorialComplete)
+            {
+                TutorialGrid.IsVisible = true;
             }
         };
 
@@ -199,9 +213,9 @@ public partial class CL_Main : Window
         if (QuestionTXT != null) QuestionTXT.Text = LocalizationManager.GetString("Tutorial.Question", "Я підготувала для тебе детальну документацію лаунчера. Хочеш поглянути?");
         if (NoQuestionTutorialButton != null) NoQuestionTutorialButton.Content = LocalizationManager.GetString("Tutorial.NoThanks", "Ні, дякую");
         if (YesQuestionTutorialButton != null) YesQuestionTutorialButton.Content = LocalizationManager.GetString("Tutorial.YesPlease", "Так, давай!");
-        if (TutorialTitleText != null) TutorialTitleText.Text = LocalizationManager.GetString("Tutorial.OverlayTitle", "Ось документація!");
-        if (TutorialBodyText != null) TutorialBodyText.Text = LocalizationManager.GetString("Tutorial.OverlayBody", "Щоб ти знав, я (документація) завжди поруч! Не соромся звертатися до мене, тицьнувши на цю кнопку: \"Інформація\" > \"Документація\"");
-        if (Loc_BtnUnderstood != null) Loc_BtnUnderstood.Content = LocalizationManager.GetString("Tutorial.UnderstoodBtn", "Зрозуміло, продовжити");
+        if (TutorialTitleText != null) TutorialTitleText.Text = LocalizationManager.GetString("Tutorial.OverlayTitle", "Довідка тут!");
+        if (TutorialBodyText != null) TutorialBodyText.Text = LocalizationManager.GetString("Tutorial.OverlayBody", "Якщо що, я (документація) завжди поряд з вами! Звертайтесь, якщо потрібно, натиснувши на цю кнопку. \"Інформація\" > \"Документація\"");
+        if (Loc_BtnUnderstood != null) Loc_BtnUnderstood.Content = LocalizationManager.GetString("Tutorial.UnderstoodBtn", "Зрозуміло, далі");
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -568,14 +582,82 @@ public partial class CL_Main : Window
         }
     }
 
-    public void NoQuestionTutorialButton_MouseDown(object? sender, RoutedEventArgs e) =>
+    public void NoQuestionTutorialButton_MouseDown(object? sender, RoutedEventArgs e)
+    {
+        SettingsManager.Default.TutorialComplete = true;
+        SettingsManager.Save();
         TutorialGrid.IsVisible = false;
+        ShowDocsTutorial();
+    }
 
-    public void YesQuestionTutorialButton_MouseDown(object? sender, RoutedEventArgs e) =>
+    public void YesQuestionTutorialButton_MouseDown(object? sender, RoutedEventArgs e)
+    {
+        SettingsManager.Default.TutorialComplete = true;
+        SettingsManager.Default.IsDocsTutorialShown = true;
+        SettingsManager.Save();
         TutorialGrid.IsVisible = false;
+        WebHelper.OpenUrl("https://cl-launcher.app/tutorial.html");
+    }
 
-    public void CloseTutorial_Click(object? sender, RoutedEventArgs e) =>
-        TutorialOverlay.IsVisible = false;
+    public void CloseTutorial_Click(object? sender, RoutedEventArgs e)
+    {
+        _tutorialService.CloseTutorial(() =>
+        {
+            SettingsManager.Default.IsDocsTutorialShown = true;
+            SettingsManager.Save();
+        });
+    }
+
+    public void TutorialOverlay_PointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        CloseTutorial_Click(sender, e);
+    }
+
+    public void ShowDocsTutorial()
+    {
+        Dispatcher.UIThread.Post(() =>
+        {
+            if (PageHost.Content is HomePage homePage)
+            {
+                var target = homePage.FindControl<Control>("InfoLauncherPanel") ?? homePage.FindControl<Control>("Loc_InfoMenu");
+                if (target != null)
+                {
+                    _tutorialService.ShowTutorial(
+                        target,
+                        LocalizationManager.GetString("Tutorial.OverlayTitle", "Довідка тут!"),
+                        LocalizationManager.GetString("Tutorial.OverlayBody", "Якщо що, я (документація) завжди поряд з вами! Звертайтесь, якщо потрібно, натиснувши на цю кнопку. \"Інформація\" > \"Документація\""),
+                        -120
+                    );
+                }
+            }
+        }, DispatcherPriority.Loaded);
+    }
+
+    public void ShowForgeTutorial()
+    {
+        Dispatcher.UIThread.Post(async () =>
+        {
+            await Task.Delay(400);
+            if (PageHost.Content is ModPacksPage modPacksPage)
+            {
+                var target = modPacksPage.FindControl<Control>("DowloadModPacks") ?? modPacksPage.FindControl<Control>("CreateModPacksTXT");
+                if (target != null)
+                {
+                    _tutorialService.ShowTutorial(
+                        target,
+                        LocalizationManager.GetString("Mods.WhereIsForgeTitle", "Де Forge? Та інші лоудери."),
+                        LocalizationManager.GetString("Mods.WhereIsForgeDesc", "Ми використовуємо професійну систему!\n\nМодифіковані версії (Forge, Fabric, ...) створюються як окремі 'Збірки'. Це захищає ваші моди від конфліктів і крашів.\n\nНатисніть кнопку 'Створити', щоб встановити Forge або Fabric та інші."),
+                        -120
+                    );
+                }
+            }
+        }, DispatcherPriority.Loaded);
+    }
+
+    public void CloseTutorial()
+    {
+        _tutorialService.CloseTutorial();
+    }
 
     #endregion
 }

@@ -1,4 +1,4 @@
-﻿<Application xmlns="https://github.com/avaloniaui"
+<Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:sty="using:FluentAvalonia.Styling"
              xmlns:converters="using:CL_CLegendary_Launcher_.Avalonia.Converters"
@@ -14,6 +14,31 @@
             <Setter Property="OnContent" Value="{x:Null}" />
             <Setter Property="OffContent" Value="{x:Null}" />
         </Style>
+        <Style Selector="CheckBox:checked /template/ Border#NormalRectangle">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="{DynamicResource CheckBoxCheckStrokeBorderBrushUnchecked}" />
+        </Style>
+        <Style Selector="CheckBox:checked:pointerover /template/ Border#NormalRectangle">
+            <Setter Property="Background" Value="#15FFFFFF" />
+            <Setter Property="BorderBrush" Value="{DynamicResource CheckBoxCheckStrokeBorderBrushUncheckedPointerOver}" />
+        </Style>
+        <Style Selector="CheckBox:checked:pressed /template/ Border#NormalRectangle">
+            <Setter Property="Background" Value="#25FFFFFF" />
+            <Setter Property="BorderBrush" Value="{DynamicResource CheckBoxCheckStrokeBorderBrushUncheckedPressed}" />
+        </Style>
+        <Style Selector="CheckBox:indeterminate /template/ Border#NormalRectangle">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="{DynamicResource CheckBoxCheckStrokeBorderBrushUnchecked}" />
+        </Style>
+        <Style Selector="CheckBox:checked /template/ Path#CheckGlyph">
+            <Setter Property="Fill" Value="{DynamicResource MainForegroundBrush}" />
+        </Style>
+        <Style Selector="CheckBox:checked:pointerover /template/ Path#CheckGlyph">
+            <Setter Property="Fill" Value="{DynamicResource MainForegroundBrush}" />
+        </Style>
+        <Style Selector="CheckBox:checked:pressed /template/ Path#CheckGlyph">
+            <Setter Property="Fill" Value="{DynamicResource MainForegroundBrush}" />
+        </Style>
     </Application.Styles>
 
     <Application.Resources>
@@ -21,6 +46,12 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceInclude Source="avares://CL.Avalonia/Themes/Colors.axaml" />
             </ResourceDictionary.MergedDictionaries>
+            <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillChecked" Color="Transparent" />
+            <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillCheckedPointerOver" Color="#15FFFFFF" />
+            <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillCheckedPressed" Color="#25FFFFFF" />
+            <SolidColorBrush x:Key="CheckBoxCheckGlyphForegroundChecked" Color="#EFEFEF" />
+            <SolidColorBrush x:Key="CheckBoxCheckGlyphForegroundCheckedPointerOver" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="CheckBoxCheckGlyphForegroundCheckedPressed" Color="#EFEFEF" />
             <converters:BitmapAssetValueConverter x:Key="BitmapConverter" />
             <converters:IntEqualityConverter x:Key="EqualityConverter" />
             <converters:IntInequalityConverter x:Key="InequalityConverter" />
