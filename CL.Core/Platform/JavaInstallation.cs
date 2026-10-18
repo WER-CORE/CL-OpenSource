@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 namespace CL.Core.Services
 {
@@ -10,7 +10,6 @@ namespace CL.Core.Services
         public string? Architecture { get; init; }
         public string Source { get; init; } = "system";
 
-        // Стабільний між запусками - щоб зберігати вибір користувача
         public string Id => $"java-{MajorVersion}-{ShortHash(Executable)}";
 
         public override string ToString() => Executable;

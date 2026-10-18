@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -10,10 +10,8 @@ namespace CL.Core.Services
     {
         public static string ExecutableName => OperatingSystem.IsWindows() ? "java.exe" : "java";
 
-        // javaw не відкриває консольне вікно - саме ним запускають гру
         public static string GameExecutableName => OperatingSystem.IsWindows() ? "javaw.exe" : "java";
 
-        // Кожен кандидат перевіряється запуском, тому повертає лише робочі рантайми
         public static List<JavaInstallation> Detect(string? launcherPath = null)
         {
             var candidates = new SortedSet<string>(StringComparer.Ordinal);
@@ -52,7 +50,6 @@ namespace CL.Core.Services
         public static List<string> FindInstalled(string? launcherPath)
             => Detect(launcherPath).Select(j => j.Executable).ToList();
 
-        // null, якщо файла немає або це не робоча Java
         public static JavaInstallation? Inspect(string executable, string source = "manual")
         {
             if (!File.Exists(executable))
@@ -104,7 +101,6 @@ namespace CL.Core.Services
                     return null;
                 }
 
-                // `java -version` історично пише у stderr
                 return string.IsNullOrWhiteSpace(stderr) ? stdout : stderr;
             }
             catch
@@ -137,7 +133,6 @@ namespace CL.Core.Services
             _ => raw
         };
 
-        // "21.0.2" → 21, legacy "1.8.0_312" → 8
         internal static int? ParseMajorVersion(string text)
         {
             string? line = text.Split('\n').FirstOrDefault(l => l.Contains("version", StringComparison.Ordinal));
@@ -179,8 +174,6 @@ namespace CL.Core.Services
             return null;
         }
 
-        // Симлінк може бути на будь-якому рівні: і /usr/bin/java,
-        // і java-25-openjdk → java-1.25.0-openjdk ведуть до одного рантайму
         private static string Canonicalize(string path)
         {
             try
@@ -302,10 +295,8 @@ namespace CL.Core.Services
             {
                 Add(Path.Combine(dir, "bin", ExecutableName));
 
-                // macOS: .../temurin-21.jdk/Contents/Home/bin/java
                 Add(Path.Combine(dir, "Contents", "Home", "bin", ExecutableName));
 
-                // Adoptium та рантайми Mojang тримають JDK на рівень глибше
                 try
                 {
                     foreach (var nested in Directory.GetDirectories(dir))

@@ -1,0 +1,92 @@
+﻿<UserControl x:Class="CL_CLegendary_Launcher_.Avalonia.Views.Controls.ServerCard"
+              xmlns="https://github.com/avaloniaui"
+              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+              xmlns:vm="using:CL_CLegendary_Launcher_.Avalonia.ViewModels.Controls"
+              x:DataType="vm:ServerCardViewModel"
+              mc:Ignorable="d" Height="108" Width="885" Foreground="White" FontFamily="Inter">
+
+    <Grid x:Name="MainGirdItem4">
+        <Border x:Name="BG"
+                CornerRadius="15"
+                Background="{DynamicResource MainBackgroundBrushServer}"/>
+
+        <Border x:Name="BGParther"
+                BorderThickness="{Binding BorderThickness}"
+                BorderBrush="{Binding BorderBrush}"
+                BoxShadow="{Binding BoxShadow}"
+                CornerRadius="15" ClipToBounds="True">
+            <Border.Background>
+                <ImageBrush Source="{Binding BackgroundBitmap}" Stretch="UniformToFill"/>
+            </Border.Background>
+        </Border>
+
+        <Border CornerRadius="15" Background="Black" Opacity="0.4" IsHitTestVisible="False"/>
+
+        <Border x:Name="FonIcon" BorderThickness="1" HorizontalAlignment="Left"
+                Height="90" Width="90" Margin="10,10,0,0" VerticalAlignment="Top"
+                Background="#FF303030" CornerRadius="6"
+                BoxShadow="0 2 5 0 #4D000000">
+            <Image x:Name="MainIcon3" Source="{Binding Icon}" RenderOptions.BitmapInterpolationMode="LowQuality" Stretch="UniformToFill"/>
+        </Border>
+
+        <TextBlock x:Name="TitleMain1" Text="{Binding Title}"
+                   HorizontalAlignment="Left" Margin="110,10,0,0" VerticalAlignment="Top"
+                   Width="470" Height="28"
+                   Foreground="{Binding TitleForeground}"
+                   FontSize="20" FontWeight="Bold"
+                   TextTrimming="CharacterEllipsis" />
+
+        <TextBlock x:Name="DescriptionMain2" Text="{Binding Description}"
+                   HorizontalAlignment="Left" Margin="110,42,0,0" VerticalAlignment="Top"
+                   Width="460" Height="56"
+                   Foreground="{DynamicResource MainForegroundBrush}"
+                   FontSize="14" TextWrapping="Wrap"
+                   TextTrimming="CharacterEllipsis" Opacity="0.9" />
+
+        <Button x:Name="OpenInfoServerPanel" HorizontalAlignment="Left"
+                Height="24" Margin="581,50,0,0" VerticalAlignment="Top" Width="294"
+                Background="{DynamicResource MainBackgroundButton}" CornerRadius="6"
+                Cursor="Hand" Padding="0" Command="{Binding OpenInfoCommand}"
+                ToolTip.Tip="{Binding InfoTooltip}">
+            <TextBlock Text="{Binding VisitPageText}"
+                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                       Foreground="{DynamicResource MainForegroundBrush}"
+                       FontSize="12"/>
+        </Button>
+
+        <Border x:Name="OnlinePlayerPanel" BorderThickness="1" HorizontalAlignment="Left"
+                Height="24" Margin="581,79,0,0" VerticalAlignment="Top" Width="75"
+                Background="{DynamicResource MainBackgroundButton}" CornerRadius="6"
+                ToolTip.Tip="{Binding OnlineTooltip}">
+            <TextBlock Text="{Binding OnlinePlayers}"
+                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                       Foreground="{DynamicResource MainForegroundBrush}"
+                       FontSize="12"/>
+        </Border>
+
+        <Button x:Name="IPServerPanel" HorizontalAlignment="Left"
+                Height="24" Margin="661,79,0,0" VerticalAlignment="Top" Width="132"
+                Background="{DynamicResource MainBackgroundButton}" CornerRadius="6"
+                Cursor="Hand" Padding="0" Command="{Binding CopyIpCommand}"
+                ToolTip.Tip="{Binding CopyIpTooltip}">
+            <TextBlock Text="{Binding IpAddress}"
+                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                       Foreground="{DynamicResource MainForegroundBrush}"
+                       FontSize="12" TextTrimming="CharacterEllipsis"/>
+        </Button>
+
+        <Button x:Name="PlayServerPanel1" HorizontalAlignment="Left"
+                Height="24" Margin="800,79,0,0" VerticalAlignment="Top" Width="75"
+                Background="{DynamicResource MainBackgroundButton}" CornerRadius="6"
+                Cursor="Hand" Padding="0" Command="{Binding PlayCommand}"
+                ToolTip.Tip="{Binding PlayTooltip}">
+            <TextBlock Text="{Binding PlayBtnText}"
+                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                       Foreground="{DynamicResource MainForegroundBrush}"
+                       FontSize="12"/>
+        </Button>
+
+    </Grid>
+</UserControl>

@@ -1,0 +1,715 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:pages="clr-namespace:CL_CLegendary_Launcher_.Avalonia.Views.Pages"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:ic="using:FluentIcons.Avalonia"
+             xmlns:vm="using:CL_CLegendary_Launcher_.Avalonia.ViewModels.Pages"
+             xmlns:controls="using:CL_CLegendary_Launcher_.Avalonia.Views.Controls"
+             xmlns:controlsVm="using:CL_CLegendary_Launcher_.Avalonia.ViewModels.Controls"
+             xmlns:models="using:CL.Core.Models"
+			xmlns:ctrlVm="using:CL_CLegendary_Launcher_.Avalonia.ViewModels.Controls"             mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="700"
+             x:Class="CL_CLegendary_Launcher_.Avalonia.Views.Pages.HomePage"
+             x:DataType="vm:HomePageViewModel"
+             x:CompileBindings="True"
+             x:Name="RootPage">
+
+	<Grid>
+
+		<Grid x:Name="GirdPanelFooter" VerticalAlignment="Bottom">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="*" />
+				<ColumnDefinition Width="Auto" />
+				<ColumnDefinition Width="*" />
+			</Grid.ColumnDefinitions>
+
+			<Border x:Name="PanelFooter"
+                    Grid.ColumnSpan="3"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Margin="-11,0,-11,-10"
+                    Height="180"
+                    VerticalAlignment="Bottom"
+                    Background="Transparent"
+                    BorderBrush="#33FFFFFF"
+                    ClipToBounds="True">
+				<Grid>
+					<Border CornerRadius="12" IsVisible="{DynamicResource GlassVisibility}">
+						<Border.Background>
+							<VisualBrush Visual="{Binding #RootPage.BackgroundVisual}"
+                                         Stretch="None"
+                                         AlignmentX="Center"
+                                         AlignmentY="Bottom" />
+						</Border.Background>
+						<Border.Effect>
+							<BlurEffect Radius="{DynamicResource GlassBlurRadius}" />
+						</Border.Effect>
+					</Border>					<Border CornerRadius="12" Background="{DynamicResource GlassTintBrush}" />
+				</Grid>
+			</Border>
+
+			<StackPanel x:Name="ChangelogHeaderPanel" Grid.Column="0" Orientation="Horizontal"
+                        HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="10,0,0,135">
+				<ic:SymbolIcon Symbol="News" FontSize="18" Foreground="{DynamicResource MainForegroundBrush}"
+                               Margin="0,0,8,0" />
+				<TextBlock x:Name="DevLogMinecraft"
+                           Text="Що нового? (Changelog)"
+                           FontFamily="Inter" FontSize="14" FontWeight="SemiBold"
+                           Foreground="{DynamicResource MainForegroundBrush}" />
+			</StackPanel>
+
+			<ListBox x:Name="VersionMinecraftChangeLog"
+                     ItemsSource="{Binding ChangelogItems}"
+                     SelectedItem="{Binding SelectedChangelogItem}"
+                     Grid.Column="0"
+                     HorizontalAlignment="Left" VerticalAlignment="Bottom"
+                     Margin="10,0,0,0" Height="135" Width="310"
+                     Background="{DynamicResource MainBackgroundBrushServer}"
+                     Foreground="{DynamicResource MainForegroundBrush}"
+                     BorderBrush="{x:Null}"
+                     Cursor="Hand"
+                     ScrollViewer.HorizontalScrollBarVisibility="Hidden"
+                     Tapped="VersionMinecraftChangeLog_Tapped"
+                     ToolTip.Tip="Натисніть, щоб прочитати список змін цієї версії">
+
+				<ListBox.ItemsPanel>
+					<ItemsPanelTemplate>
+						<VirtualizingStackPanel />
+					</ItemsPanelTemplate>
+				</ListBox.ItemsPanel>
+
+				<ListBox.Styles>
+					<Style Selector="ListBox">
+						<Setter Property="Template">
+							<Setter.Value>
+								<ControlTemplate TargetType="ListBox">
+									<Border CornerRadius="12" Background="{TemplateBinding Background}"
+                                            BorderBrush="{TemplateBinding BorderBrush}"
+                                            BorderThickness="{TemplateBinding BorderThickness}">
+										<ScrollViewer Margin="{TemplateBinding Padding}">
+											<ItemsPresenter />
+										</ScrollViewer>
+									</Border>
+								</ControlTemplate>
+							</Setter.Value>
+						</Setter>
+					</Style>
+				</ListBox.Styles>
+
+				<ListBox.ItemTemplate>
+					<DataTemplate x:DataType="models:VersionLogItem">
+						<Grid Margin="2,4">
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="Auto" />
+								<ColumnDefinition Width="*" />
+								<ColumnDefinition Width="Auto" />
+							</Grid.ColumnDefinitions>
+
+							<Border Grid.Column="0" CornerRadius="4" Width="24" Height="24" Margin="0,0,10,0"
+                                    ClipToBounds="True">
+								<Image Source="{Binding IconPath, Converter={StaticResource BitmapConverter}}" />
+							</Border>
+
+							<TextBlock Grid.Column="1" VerticalAlignment="Center"
+                                       FontFamily="Inter" FontSize="14"
+                                       Foreground="{DynamicResource MainForegroundBrush}"
+                                       Text="{Binding VersionId}" FontWeight="Medium" />
+
+							<ic:SymbolIcon Grid.Column="2" Symbol="Open" FontSize="14" Opacity="0.5"
+                                           Foreground="{DynamicResource MainForegroundBrush}" />
+						</Grid>
+					</DataTemplate>
+				</ListBox.ItemTemplate>
+			</ListBox>
+
+			<Grid Grid.Column="1" VerticalAlignment="Top" Margin="0,7,0,0" Height="207">
+				<Grid VerticalAlignment="Top" Margin="10,7,10,0" Width="250" Height="207">
+					<Border HorizontalAlignment="Center" VerticalAlignment="Top"
+                            Width="250" Height="140" Margin="0,57,0,0"
+                            Background="{DynamicResource MainBackgroundBrushServer}"
+                            CornerRadius="16" Padding="0,5">
+
+						<StackPanel VerticalAlignment="Top">
+
+							<Grid x:Name="SettingPanelGird" Height="40" Margin="5,2" Cursor="Hand"
+                                  PointerPressed="SettingPanel_PointerPressed" Background="Transparent"
+                                  PointerEntered="PanelFooterScalePlus_PointerEntered"
+                                  PointerExited="PanelFooterScaleMinus_PointerExited">
+								<Border x:Name="SettingPanel" CornerRadius="12"
+                                        Background="{DynamicResource MainBackgroundButton}" Opacity="0.5" />
+								<StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0">
+									<Path Width="20" Height="20" Stretch="Uniform"
+                                          Fill="{DynamicResource MainForegroundBrush}"
+                                          Data="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z" />
+									<TextBlock x:Name="Loc_SettingsMenu" Text="Налаштування" FontFamily="Inter"
+                                               FontSize="16" Foreground="{DynamicResource MainForegroundBrush}"
+                                               VerticalAlignment="Center" Margin="12,0,0,0" />
+								</StackPanel>
+							</Grid>
+
+							<Grid x:Name="FilesMenuGrid" Height="40" Margin="5,2" Cursor="Hand"
+                                  PointerPressed="FolderPanel_PointerPressed" Background="Transparent"
+                                  PointerEntered="PanelFooterScalePlus_PointerEntered"
+                                  PointerExited="PanelFooterScaleMinus_PointerExited">
+								<FlyoutBase.AttachedFlyout>
+									<MenuFlyout Placement="Top">
+										<MenuItem x:Name="Loc_MenuOpenFolder" Header="Відкрити папку...">
+											<MenuItem.Icon>
+												<ic:SymbolIcon Symbol="Folder" />
+											</MenuItem.Icon>
+											<MenuItem x:Name="Loc_MenuRootFolder" Header="Коренева папка (Лаунчер)" Click="OpenRootFolder_Click">
+												<MenuItem.Icon>
+													<ic:SymbolIcon Symbol="FolderZip" />
+												</MenuItem.Icon>
+											</MenuItem>
+											<MenuItem x:Name="Loc_MenuGameFolder" Header="Папка гри (Minecraft)" Click="OpenMinecraftFolder_Click">
+												<MenuItem.Icon>
+													<ic:SymbolIcon Symbol="FolderOpen" />
+												</MenuItem.Icon>
+											</MenuItem>
+											<Separator />
+											<MenuItem x:Name="Loc_MenuModsFolder" Header="Моди (mods)" Click="OpenModsFolder_Click">
+												<MenuItem.Icon>
+													<ic:SymbolIcon Symbol="PuzzlePiece" />
+												</MenuItem.Icon>
+											</MenuItem>
+											<MenuItem x:Name="Loc_MenuResourcePacksFolder" Header="Ресурспаки (resourcepacks)" Click="OpenResourcePacksFolder_Click">
+												<MenuItem.Icon>
+													<ic:SymbolIcon Symbol="PaintBrush" />
+												</MenuItem.Icon>
+											</MenuItem>
+											<MenuItem x:Name="Loc_MenuShadersFolder" Header="Шейдери (shaderpacks)" Click="OpenShaderPacksFolder_Click">
+												<MenuItem.Icon>
+													<ic:SymbolIcon Symbol="WeatherSunny" />
+												</MenuItem.Icon>
+											</MenuItem>
+											<Separator />
+											<MenuItem x:Name="Loc_MenuModpacksFolder" Header="Збірки (CLModpack)" Click="OpenCLModpackFolder_Click">
+												<MenuItem.Icon>
+													<ic:SymbolIcon Symbol="Box" />
+												</MenuItem.Icon>
+											</MenuItem>
+										</MenuItem>
+										<Separator />
+										<MenuItem x:Name="Loc_MenuBackupsFolder" Header="Менеджер світів (Backups)" Click="OpenGlobalBackups_Click">
+											<MenuItem.Icon>
+												<ic:SymbolIcon Symbol="Save" />
+											</MenuItem.Icon>
+										</MenuItem>
+									</MenuFlyout>
+								</FlyoutBase.AttachedFlyout>
+
+								<Border x:Name="FolderPanel" CornerRadius="12"
+                                        Background="{DynamicResource MainBackgroundButton}" Opacity="0.5" />
+								<StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0">
+									<Path Width="20" Height="20" Stretch="Uniform"
+                                          Fill="{DynamicResource MainForegroundBrush}"
+                                          Data="M10,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V8C22,6.89 21.1,6 20,6H12L10,4Z" />
+									<TextBlock x:Name="Loc_FilesMenu" Text="Файли та Бекапи" FontFamily="Inter"
+                                               FontSize="16" Foreground="{DynamicResource MainForegroundBrush}"
+                                               VerticalAlignment="Center" Margin="12,0,0,0" Width="164" />
+									<TextBlock Text="▲" Margin="8,2,0,0" FontSize="10" VerticalAlignment="Center"
+                                               Opacity="0.6" Foreground="{DynamicResource MainForegroundBrush}" Width="12" />
+								</StackPanel>
+							</Grid>
+
+							<Grid x:Name="InfoPanel" Height="40" Margin="5,2" Cursor="Hand"
+                                  PointerPressed="InfoPanel_PointerPressed" Background="Transparent"
+                                  PointerEntered="PanelFooterScalePlus_PointerEntered"
+                                  PointerExited="PanelFooterScaleMinus_PointerExited" ZIndex="10">
+								<FlyoutBase.AttachedFlyout>
+									<MenuFlyout Placement="Top">
+										<MenuItem x:Name="Loc_MenuReportBug" Header="Повідомити про баг" Click="BugReport_Click">
+											<MenuItem.Icon>
+												<ic:SymbolIcon Symbol="Bug" />
+											</MenuItem.Icon>
+										</MenuItem>
+										<MenuItem x:Name="Loc_MenuLauncherNews" Header="Новини запускача" Click="NewsUpdateLauncher_Click">
+											<MenuItem.Icon>
+												<ic:SymbolIcon Symbol="News" />
+											</MenuItem.Icon>
+										</MenuItem>
+										<MenuItem x:Name="Loc_MenuWiki" Header="Документація (Wiki)" Click="TutorialYoutube_Click">
+											<MenuItem.Icon>
+												<ic:SymbolIcon Symbol="Book" />
+											</MenuItem.Icon>
+										</MenuItem>
+										<Separator x:Name="InfoSep1" />
+										<MenuItem x:Name="Loc_MenuGithub" Header="GitHub (Код)" Click="GitHub_Click">
+											<MenuItem.Icon>
+												<ic:SymbolIcon Symbol="Code" />
+											</MenuItem.Icon>
+										</MenuItem>
+										<Separator x:Name="InfoSep2" />
+										<MenuItem x:Name="Loc_MenuCredits" Header="Подяки (Автори та Перекладачі)" Click="OpenCredits_Click"
+                                                  Foreground="{DynamicResource MainForegroundBrush}">
+											<MenuItem.Icon>
+												<ic:SymbolIcon Symbol="Star" />
+											</MenuItem.Icon>
+										</MenuItem>
+										<Separator x:Name="InfoSep3" />
+										<MenuItem x:Name="Loc_MenuSupportProject" Header="Підтримати проект" Click="SupportProject_Click"
+                                                  Foreground="{DynamicResource MainForegroundBrush}">
+											<MenuItem.Icon>
+												<ic:SymbolIcon Symbol="Heart" />
+											</MenuItem.Icon>
+										</MenuItem>
+										<MenuItem x:Name="Loc_MenuSupport3OSHBr" Click="Support3OSHBr_Click">
+											<MenuItem.Header>
+												<TextBlock x:Name="Loc_MenuSupportBrigade" Text="Підтримати 3 ОШБр"
+                                                           Foreground="#FFB74D" FontWeight="SemiBold" />
+											</MenuItem.Header>
+											<MenuItem.Icon>
+												<ic:SymbolIcon Symbol="Shield" Foreground="#FFB74D" />
+											</MenuItem.Icon>
+										</MenuItem>
+									</MenuFlyout>
+								</FlyoutBase.AttachedFlyout>
+
+								<Border x:Name="InfoLauncherPanel" CornerRadius="12"
+                                        Background="{DynamicResource MainBackgroundButton}" Opacity="0.5" />
+								<StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0">
+									<Path Width="20" Height="20" Stretch="Uniform"
+                                          Fill="{DynamicResource MainForegroundBrush}"
+                                          Data="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,17H13V11H11V17Z" />
+									<TextBlock x:Name="Loc_InfoMenu" Text="Інформація" FontFamily="Inter" FontSize="16"
+                                               Foreground="{DynamicResource MainForegroundBrush}"
+                                               VerticalAlignment="Center" Margin="12,0,0,0" Width="163" />
+									<TextBlock Text="▲" Margin="8,2,0,0" FontSize="10" VerticalAlignment="Center"
+                                               Opacity="0.6" Foreground="{DynamicResource MainForegroundBrush}" Width="17" />
+								</StackPanel>
+							</Grid>
+						</StackPanel>
+					</Border>
+				</Grid>
+
+				<Border x:Name="BorderButton" CornerRadius="12"
+                        VerticalAlignment="Top" Margin="0,20,0,0"
+                        Height="36" Width="250" HorizontalAlignment="Center">
+					<Border.Background>
+						<LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+							<GradientStop Color="#FF17DA1F" />
+							<GradientStop Color="#FF18A61E" Offset="1" />
+						</LinearGradientBrush>
+					</Border.Background>
+				</Border>
+
+				<TextBlock x:Name="PlayTXT"
+                           VerticalAlignment="Top" HorizontalAlignment="Left"
+                           Margin="9,23,0,0" Width="176" Height="29"
+                           FontFamily="Inter" FontSize="10" Foreground="White"
+                           Text="{Binding PlayButtonText}" Padding="53,10,0,0" />
+
+				<Image x:Name="IconSelectVersion" Source="/Assets/VanilaVersion.png"
+                       HorizontalAlignment="Right" VerticalAlignment="Top"
+                       Margin="0,22,32,0" Height="31" Width="30"
+                       Cursor="Arrow" Stretch="Fill" />
+
+				<Border x:Name="Line" BorderThickness="1" Background="#FF16951B"
+                        HorizontalAlignment="Right" VerticalAlignment="Top"
+                        Margin="0,20,62,0" Width="3" Height="38" />
+
+				<Border x:Name="CheckMarkVersionSelect"
+                        Background="Transparent"
+                        HorizontalAlignment="Right" VerticalAlignment="Top"
+                        Margin="0,35,15,0" Width="22" Height="36">
+					<Path Data="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z"
+                          Fill="{DynamicResource MainForegroundBrush}"
+                          Stretch="Uniform"
+                          Height="28" Width="18"
+                          HorizontalAlignment="Center" VerticalAlignment="Center"
+                          RenderTransformOrigin="60%,0%">
+						<Path.RenderTransform>
+							<RotateTransform Angle="180" />
+						</Path.RenderTransform>
+					</Path>
+				</Border>
+
+				<Border x:Name="HitboxPlay" Background="Transparent"
+                        HorizontalAlignment="Left" VerticalAlignment="Top"
+                        Margin="0,20,0,0" Width="188" Height="36"
+                        Cursor="Hand"
+                        PointerPressed="PlayTXT_PointerPressed"
+                        PointerEntered="PanelFooterScalePlus_PointerEntered"
+                        PointerExited="PanelFooterScaleMinus_PointerExited" />
+
+				<Border x:Name="HitboxSelect" Background="Transparent"
+                        HorizontalAlignment="Right" VerticalAlignment="Top"
+                        Margin="0,20,0,0" Width="62" Height="36"
+                        Cursor="Hand" ToolTip.Tip="Обрати версію зі списку"
+                        PointerPressed="CheckMarkVersionSelect_PointerPressed" />
+			</Grid>
+
+			<StackPanel Grid.Column="2" Orientation="Horizontal"
+                        HorizontalAlignment="Right" VerticalAlignment="Top"
+                        Margin="0,50,17,0" Height="17">
+				<ic:SymbolIcon Symbol="PeopleCommunity" FontSize="12"
+                               Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,5,0" />
+				<TextBlock x:Name="Loc_PartnersTitle" Text="Партнери"
+                           FontFamily="Inter" FontSize="10"
+                           Foreground="{DynamicResource MainForegroundBrush}" />
+			</StackPanel>
+
+			<Button x:Name="PartherHelper" Grid.Column="2"
+                    Content="Як потрапити?"
+                    HorizontalAlignment="Right" VerticalAlignment="Top"
+                    Margin="0,48,255,0"
+                    Background="{x:Null}" Foreground="{DynamicResource MainForegroundBrush}"
+                    FontFamily="Inter" FontSize="10" Cursor="Hand" BorderBrush="{x:Null}" />
+
+			<Border Grid.Column="2"
+                    BorderThickness="1"
+                    Background="{DynamicResource MainBackgroundBrushServer}"
+                    VerticalAlignment="Top"
+                    HorizontalAlignment="Right"
+                    Width="315"
+                    Margin="0,65,10,0"
+                    Height="67"
+                    CornerRadius="14"
+                    ClipToBounds="True">
+
+				<ListBox x:Name="PartnerServer"
+                         HorizontalAlignment="Center" VerticalAlignment="Center"
+                         Background="{x:Null}" Foreground="{x:Null}"
+                         BorderBrush="{x:Null}" BorderThickness="0"
+                         Cursor="Hand"
+                         ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                         SelectedIndex="0"
+                         ItemsSource="{Binding PartnerCards}"
+                         PointerEntered="PartnerServer_PointerEntered"
+                         PointerExited="PartnerServer_PointerExited">
+
+					<ListBox.ItemsPanel>
+						<ItemsPanelTemplate>
+							<Grid />
+						</ItemsPanelTemplate>
+					</ListBox.ItemsPanel>
+
+					<ListBox.Styles>
+						<Style Selector="ListBoxItem">
+							<Setter Property="HorizontalContentAlignment" Value="Stretch" />
+							<Setter Property="VerticalContentAlignment" Value="Stretch" />
+							<Setter Property="Padding" Value="0" />
+							<Setter Property="Margin" Value="0" />
+							<Setter Property="BorderThickness" Value="0" />
+							<Setter Property="IsVisible" Value="False" />
+						</Style>
+						<Style Selector="ListBoxItem:selected">
+							<Setter Property="IsVisible" Value="True" />
+						</Style>
+					</ListBox.Styles>
+					<ListBox.ItemTemplate>
+						<DataTemplate x:DataType="controlsVm:PartnerServerCardViewModel">
+							<controls:PartnerServerCard />
+						</DataTemplate>
+					</ListBox.ItemTemplate>
+				</ListBox>
+			</Border>
+
+			<StackPanel x:Name="LatestActionsHeaderPanel" Grid.Column="2" Orientation="Horizontal"
+                        HorizontalAlignment="Right" VerticalAlignment="Top"
+                        Margin="0,132,10,0" Height="14">
+				<ic:SymbolIcon Symbol="History" FontSize="10" Foreground="{DynamicResource MainForegroundBrush}"
+                               Margin="0,0,5,0" />
+				<TextBlock x:Name="LatestActionsTXT"
+                           Text="Останні дії"
+                           FontFamily="Inter" FontSize="10"
+                           Foreground="{DynamicResource MainForegroundBrush}" />
+			</StackPanel>
+
+			<ListBox x:Name="ServerMonitoring" Grid.Column="2"
+					 ItemsSource="{Binding RecentActions}"
+					 VerticalAlignment="Top"
+					 HorizontalAlignment="Right"
+					 Width="315"
+					 Margin="0,150,10,0"
+					 Height="64"
+					 Background="{DynamicResource MainBackgroundBrushServer}"
+					 Foreground="{DynamicResource MainForegroundBrush}"
+					 BorderBrush="{x:Null}" Cursor="Hand" FontSize="11">
+
+				<ListBox.ItemsPanel>
+					<ItemsPanelTemplate>
+						<VirtualizingStackPanel />
+					</ItemsPanelTemplate>
+				</ListBox.ItemsPanel>
+
+				<ListBox.ItemTemplate>
+					<DataTemplate x:DataType="ctrlVm:HistoryActionItemViewModel">
+						<Button Command="{Binding ExecuteActionCommand}"
+								Background="Transparent"
+								BorderThickness="0"
+								Padding="4,2"
+								HorizontalAlignment="Stretch"
+								HorizontalContentAlignment="Left"
+								Cursor="Hand">
+							<TextBlock Text="{Binding DisplayText}"
+									   TextWrapping="Wrap"
+									   FontSize="11"
+									   Foreground="{DynamicResource MainForegroundBrush}" />
+						</Button>
+					</DataTemplate>
+				</ListBox.ItemTemplate>
+
+				<ListBox.Styles>
+					<Style Selector="ListBoxItem">
+						<Setter Property="Padding" Value="2,1" />
+						<Setter Property="Margin" Value="0" />
+					</Style>
+					<Style Selector="ListBox">
+						<Setter Property="Template">
+							<Setter.Value>
+								<ControlTemplate TargetType="ListBox">
+									<Border CornerRadius="12" Background="{TemplateBinding Background}"
+											BorderBrush="{TemplateBinding BorderBrush}"
+											BorderThickness="{TemplateBinding BorderThickness}"
+											ClipToBounds="True">
+										<ScrollViewer Margin="{TemplateBinding Padding}">
+											<ItemsPresenter />
+										</ScrollViewer>
+									</Border>
+								</ControlTemplate>
+							</Setter.Value>
+						</Setter>
+					</Style>
+				</ListBox.Styles>
+			</ListBox>
+		</Grid>
+
+		<Grid x:Name="VersionControlContainer"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Bottom"
+              Margin="10,0,0,190" Height="331" Width="945">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="76*" />
+				<ColumnDefinition Width="113*" />
+			</Grid.ColumnDefinitions>
+
+			<Border x:Name="YourOpenMenuButton" Height="40" Width="200" Background="{x:Null}"
+                    Margin="0,331,365,-40" Grid.Column="1" />
+
+			<Grid x:Name="VersionSelectorPopupArea"
+                  HorizontalAlignment="Left"
+                  VerticalAlignment="Top"
+                  Margin="10,111,0,0"
+                  Width="485"
+                  Height="220" Grid.Column="1" RenderTransformOrigin="100%,50%">
+
+				<Grid x:Name="SelectVersionTypeGird"
+                      HorizontalAlignment="Left"
+                      VerticalAlignment="Bottom" Margin="50,0,0,15" Height="160" IsVisible="False">
+
+					<Border x:Name="SelectVersionType"
+                            BorderThickness="1"
+                            CornerRadius="12"
+                            Width="155"
+                            Height="190"
+                            Background="{DynamicResource MainBackgroundBrush}"
+                            BorderBrush="#33FFFFFF"
+                            ClipToBounds="True">
+						<Border CornerRadius="12" Background="{DynamicResource GlassTintBrush}" Margin="0,0,0,29" />
+					</Border>
+
+					<StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="2,0,0,0">
+
+						<Border x:Name="SelectVersionVanila"
+                                BorderThickness="1" CornerRadius="3"
+                                Background="{DynamicResource MainBackgroundBrushServer}"
+                                Width="145" Height="40" Margin="0,0,0,6"
+                                RenderTransformOrigin="50%,50%" Cursor="Hand"
+                                PointerEntered="PanelFooterScalePlus_PointerEntered"
+                                PointerExited="PanelFooterScaleMinus_PointerExited"
+                                PointerPressed="SelectVersionVanila_PointerPressed">
+							<Grid Margin="0,0,0,1">
+								<Image x:Name="IconSelectVersion_Copy"
+                                       RenderOptions.BitmapInterpolationMode="HighQuality" HorizontalAlignment="Left"
+                                       Height="31" VerticalAlignment="Center" Width="30"
+                                       Source="/Assets/VanilaVersion.png" Stretch="Fill" ToolTip.Tip="ГРАТИ" Margin="4,0,0,0" />
+								<TextBlock x:Name="SettingTXT1_Copy" Text="Vanilla"
+                                           HorizontalAlignment="Left" VerticalAlignment="Top" Width="97" Height="22"
+                                           FontSize="14" Foreground="{DynamicResource MainForegroundBrush}" Margin="33,-1,0,0" />
+								<Border x:Name="SelectVersion_Copy1" CornerRadius="3"
+                                        Background="{DynamicResource MainBackgroundBrush}" Margin="36,15,46,1">
+									<TextBlock x:Name="VersionRelesedVanilLast" FontFamily="Inter"
+                                               Text="{Binding SelectedVanillaVersion, TargetNullValue='ОБЕРІТЬ ВЕРСІЮ'}"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                                               Width="47" Height="22" FontSize="10"
+                                               Foreground="{DynamicResource MainForegroundBrush}" Padding="10,5,0,0" />
+								</Border>
+							</Grid>
+						</Border>
+
+						<Border x:Name="SelectVersionOptifine"
+                                BorderThickness="1" CornerRadius="3"
+                                Background="{DynamicResource MainBackgroundBrushServer}"
+                                Width="145" Height="40" Margin="0,0,0,6"
+                                RenderTransformOrigin="50%,50%" Cursor="Hand"
+                                PointerEntered="PanelFooterScalePlus_PointerEntered"
+                                PointerExited="PanelFooterScaleMinus_PointerExited"
+                                PointerPressed="SelectVersionOptifine_PointerPressed">
+							<Grid>
+								<Image x:Name="IconSelectVersion_Copy2"
+                                       RenderOptions.BitmapInterpolationMode="HighQuality" HorizontalAlignment="Left"
+                                       Height="27" VerticalAlignment="Center" Width="30" Cursor="Hand" ToolTip.Tip="ГРАТИ"
+                                       Margin="4,0,0,0" Stretch="Fill" Source="/Assets/IconOptiFine.png" />
+								<TextBlock x:Name="SettingTXT1_Copy2" Text="Optifine"
+                                           HorizontalAlignment="Left" VerticalAlignment="Top" Width="98" Height="19"
+                                           FontSize="14" Foreground="{DynamicResource MainForegroundBrush}" Margin="34,1,0,0" />
+								<Border x:Name="VersionRelesedOptifineLast" BorderThickness="1" CornerRadius="3"
+                                        Background="{DynamicResource MainBackgroundBrush}" Margin="37,17,45,0">
+									<TextBlock x:Name="VersionRelesedVanilLast5" FontFamily="Inter"
+                                               Text="{Binding SelectedOptifineMinecraftVersion, TargetNullValue='ОБЕРІТЬ ВЕРСІЮ'}"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                                               Width="53" Height="20" FontSize="10"
+                                               Foreground="{DynamicResource MainForegroundBrush}" Padding="13,4,0,0" />
+								</Border>
+							</Grid>
+						</Border>
+
+						<Border x:Name="SelectVersionRedirect"
+                                BorderThickness="1" CornerRadius="3"
+                                Background="{DynamicResource MainBackgroundBrushServer}"
+                                Width="145" Height="40"
+                                RenderTransformOrigin="50%,50%" Cursor="Hand"
+                                PointerPressed="SelectVersionRedirect_PointerPressed"
+                                PointerEntered="PanelFooterScalePlus_PointerEntered"
+                                PointerExited="PanelFooterScaleMinus_PointerExited">
+							<Grid>
+								<Path Data="M19.43,12.98C19.47,12.66 19.5,12.34 19.5,12C19.5,11.66 19.47,11.34 19.43,11.02L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11.02C4.53,11.34 4.5,11.66 4.5,12C4.5,12.34 4.53,12.66 4.57,12.98L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.04 4.95,18.95L7.44,17.95C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.68 16.04,18.34 16.56,17.95L19.05,18.95C19.27,19.04 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.98M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5Z"
+                                      Fill="{DynamicResource MainBackgroundBrush}"
+                                      Stretch="Uniform" Width="20" Height="20"
+                                      HorizontalAlignment="Left" VerticalAlignment="Center" Margin="8,0,0,0" />
+								<TextBlock x:Name="Loc_InstallModsTxt" Text="Встановити..."
+                                           FontFamily="Inter" FontWeight="Bold"
+                                           HorizontalAlignment="Left" VerticalAlignment="Top"
+                                           FontSize="12" Foreground="{DynamicResource MainForegroundBrush}" Margin="38,4,0,0" />
+								<TextBlock x:Name="Loc_ForgeFabricTxt" Text="Forge / Fabric"
+                                           FontFamily="Inter" HorizontalAlignment="Left" VerticalAlignment="Bottom"
+                                           FontSize="10" Opacity="0.8"
+                                           Foreground="{DynamicResource MainForegroundBrush}" Margin="38,0,0,6" />
+							</Grid>
+						</Border>
+					</StackPanel>
+				</Grid>
+
+				<Border x:Name="SelectVersion"
+                        HorizontalAlignment="Left" VerticalAlignment="Bottom"
+                        Width="270" Height="200"
+                        BorderThickness="1" CornerRadius="12" BorderBrush="#33FFFFFF"
+                        ClipToBounds="True"
+                        Margin="215,0,0,2" Background="{DynamicResource MainBackgroundBrush}" IsVisible="False">
+					<Grid>
+						<Border CornerRadius="12" Background="{DynamicResource GlassTintBrush}" />
+						<Grid Margin="5">
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition />
+								<ColumnDefinition Width="114" />
+							</Grid.ColumnDefinitions>
+
+							<ListBox x:Name="VersionList" Tapped="VersionList_Tapped"
+                                     Grid.Column="0" Margin="0,0,5,0"
+                                     FontSize="16" FontFamily="Arial"
+                                     Background="{x:Null}" BorderBrush="Transparent"
+                                     Foreground="{DynamicResource MainForegroundBrush}"
+                                     ItemsSource="{Binding VanillaVersions}"
+                                     SelectedItem="{Binding SelectedVanillaVersion}">
+								<ListBox.ItemsPanel>
+									<ItemsPanelTemplate>
+										<VirtualizingStackPanel />
+									</ItemsPanelTemplate>
+								</ListBox.ItemsPanel>
+							</ListBox>
+
+							<StackPanel Grid.Column="1">
+								<TextBox x:Name="SearchSystemTXT1"
+                                         Height="30" CornerRadius="8"
+                                         Background="Transparent" BorderThickness="0"
+                                         Foreground="{DynamicResource MainForegroundBrush}"
+                                         Text="{Binding VanillaSearchText}"
+                                         FontSize="11" Padding="6,0"
+                                         VerticalContentAlignment="Center"
+                                         PlaceholderText="Шукайте версію..." Margin="0,0,0,6">
+									<TextBox.InnerLeftContent>
+										<ic:SymbolIcon Symbol="Search" FontSize="14" Margin="4,0,2,0" />
+									</TextBox.InnerLeftContent>
+								</TextBox>
+								<CheckBox x:Name="Relesed" Content="Реліз" FontSize="10" IsChecked="{Binding ShowReleases}"
+                                          Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,0,5"
+                                          Background="{DynamicResource MainBackgroundBrushServer}" />
+								<CheckBox x:Name="Snapshots" Content="Снапшоти" FontSize="10" IsChecked="{Binding ShowSnapshots}"
+                                          Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,0,5"
+                                          Background="{DynamicResource MainBackgroundBrushServer}" />
+								<CheckBox x:Name="Beta" Content="Бета" FontSize="10" IsChecked="{Binding ShowBeta}"
+                                          Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,0,5"
+                                          Background="{DynamicResource MainBackgroundBrushServer}" />
+								<CheckBox x:Name="Alpha" Content="Альфа" FontSize="10" IsChecked="{Binding ShowAlpha}"
+                                          Foreground="{DynamicResource MainForegroundBrush}"
+                                          Background="{DynamicResource MainBackgroundBrushServer}" />
+							</StackPanel>
+						</Grid>
+					</Grid>
+				</Border>
+
+				<Border x:Name="SelectVersionMod"
+                        HorizontalAlignment="Left" VerticalAlignment="Bottom"
+                        Width="270" Height="200"
+                        BorderThickness="1" CornerRadius="12" BorderBrush="#33FFFFFF"
+                        ClipToBounds="True"
+                        Margin="210,0,0,2" IsVisible="False" Background="{DynamicResource MainBackgroundBrush}">
+					<Grid>
+						<Border CornerRadius="12" Background="{DynamicResource GlassTintBrush}" />
+						<Grid Margin="5">
+							<Grid.RowDefinitions>
+								<RowDefinition Height="30" />
+								<RowDefinition Height="*" />
+							</Grid.RowDefinitions>
+
+							<TextBox x:Name="SearchSystemTXT2"
+                                     Grid.Row="0" Height="30" CornerRadius="8"
+                                     Background="Transparent" BorderThickness="0"
+                                     Text="{Binding OptifineSearchText}"
+                                     Foreground="{DynamicResource MainForegroundBrush}"
+                                     FontSize="11" Padding="6,0"
+                                     VerticalContentAlignment="Center"
+                                     PlaceholderText="Шукайте ванільну версію..." FontFamily="Inter">
+								<TextBox.InnerLeftContent>
+									<ic:SymbolIcon Symbol="Search" FontSize="14" Margin="4,0,2,0" />
+								</TextBox.InnerLeftContent>
+							</TextBox>
+
+							<Grid Grid.Row="1">
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="*" />
+									<ColumnDefinition Width="*" />
+								</Grid.ColumnDefinitions>
+
+								<ListBox x:Name="VersionListVanila" Grid.Column="0" Margin="0,10,2,0"
+                                         Background="{x:Null}" Foreground="{DynamicResource MainForegroundBrush}"
+                                         FontSize="16" ItemsSource="{Binding OptifineMinecraftVersions}"
+                                         SelectedItem="{Binding SelectedOptifineMinecraftVersion}">
+									<ListBox.ItemsPanel>
+										<ItemsPanelTemplate>
+											<VirtualizingStackPanel />
+										</ItemsPanelTemplate>
+									</ListBox.ItemsPanel>
+								</ListBox>
+
+								<ListBox x:Name="VersionListMod" Tapped="VersionListMod_Tapped" Grid.Column="1" Margin="2,10,0,0"
+                                         Background="{x:Null}" Foreground="{DynamicResource MainForegroundBrush}"
+                                         FontSize="10" ItemsSource="{Binding OptifineModVersions}"
+                                         SelectedItem="{Binding SelectedOptifineModVersion}">
+									<ListBox.ItemsPanel>
+										<ItemsPanelTemplate>
+											<VirtualizingStackPanel />
+										</ItemsPanelTemplate>
+									</ListBox.ItemsPanel>
+								</ListBox>
+							</Grid>
+						</Grid>
+					</Grid>
+				</Border>
+			</Grid>
+		</Grid>
+	</Grid>
+</UserControl>

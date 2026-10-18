@@ -1,0 +1,220 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:fluentIcons="using:FluentIcons.Avalonia"
+        xmlns:vm="using:CL_CLegendary_Launcher_.Avalonia.ViewModels.Dialogs"
+        x:DataType="vm:WorldBackupViewModel"
+        mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="600"
+        x:Class="CL_CLegendary_Launcher_.Avalonia.Views.Dialogs.WorldBackupDialog"
+        x:Name="RootWindow"
+        Title="{Binding WindowTitle}" Height="600" Width="900"
+        WindowStartupLocation="CenterScreen" CanResize="False" WindowDecorations="None"
+        Background="Transparent" FontFamily="Inter"
+        TransparencyLevelHint="Mica, Transparent" Foreground="{DynamicResource MainForegroundBrush}" Icon="/Icon/IconCL(Common).png"
+        IsEnabled="{Binding !IsWorking}">
+
+    <Window.Styles>
+        <Style Selector="Button.close-btn:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#C42B1C"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+        <Style Selector="ListBox#WorldsListBox ListBoxItem">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Margin" Value="0,0,0,5"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="ListBox#WorldsListBox ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#0067C0"/>
+        </Style>
+        <Style Selector="ListBox#WorldsListBox ListBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#11FFFFFF"/>
+        </Style>
+    </Window.Styles>
+
+    <Border Background="{DynamicResource MainBackgroundBrush}" CornerRadius="12" BorderThickness="1" BorderBrush="#333" BoxShadow="0 5 20 0 #99000000" ClipToBounds="True">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="35"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0" Background="Transparent" PointerPressed="Header_PointerPressed">
+                <Grid Margin="10,0" ColumnDefinitions="*,Auto">
+                    <TextBlock Text="{Binding WindowTitle}"
+                               VerticalAlignment="Center"
+                               Foreground="{DynamicResource MainForegroundBrush}"
+                               FontSize="12" FontWeight="SemiBold" />
+
+                    <Button Grid.Column="1" Classes="close-btn" Command="{Binding CloseCommand}"
+                            Background="Transparent" BorderThickness="0"
+                            Foreground="{DynamicResource MainForegroundBrush}"
+                            Width="35" Height="30" Padding="0" Cursor="Hand"
+                            CornerRadius="6" ToolTip.Tip="Закрити вікно">
+                        <fluentIcons:SymbolIcon Symbol="Dismiss" FontSize="16" />
+                    </Button>
+                </Grid>
+            </Border>
+
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="280"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0" Background="{DynamicResource MainBackgroundBrushServer}" BorderThickness="0,1,1,0" BorderBrush="#333" CornerRadius="0,0,0,10">
+                    <Grid Margin="10">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <StackPanel Grid.Row="0" Margin="0,0,0,15">
+                            <TextBlock Text="{Binding SourceLabel}" Foreground="{DynamicResource MainForegroundBrush}" FontSize="11" Margin="0,0,0,5"/>
+                            <ComboBox ItemsSource="{Binding Sources}" SelectedItem="{Binding SelectedSource}"
+                                      Height="35" Background="{DynamicResource MainBackgroundBrush}" Foreground="{DynamicResource MainForegroundBrush}"
+                                      BorderThickness="0" Padding="10,0" VerticalContentAlignment="Center" Cursor="Hand" BorderBrush="Transparent"
+                                      HorizontalAlignment="Stretch">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Name}" FontWeight="Medium"/>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <TextBlock Grid.Row="1" Text="{Binding WorldsListTitle}" Foreground="{DynamicResource MainForegroundBrush}" Margin="5,0,0,10" FontWeight="SemiBold"/>
+
+                        <Grid Grid.Row="2">
+                            <ListBox x:Name="WorldsListBox" Background="Transparent" BorderThickness="0"
+                                     ItemsSource="{Binding Worlds}" SelectedItem="{Binding SelectedWorld}"
+                                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                     Padding="0" Foreground="{DynamicResource MainForegroundBrush}">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border CornerRadius="6" Padding="10" Background="Transparent">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <Border Width="36" Height="36" CornerRadius="4" ClipToBounds="True" Background="#333" Margin="0,0,10,0">
+                                                    <Image Source="{Binding IconBitmap}" Stretch="UniformToFill"/>
+                                                </Border>
+                                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding Name}" Foreground="{DynamicResource MainForegroundBrush}" FontWeight="Medium" TextTrimming="CharacterEllipsis"/>
+                                                    <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
+                                                        <Border Background="#223344" CornerRadius="3" Padding="4,1" Margin="0,0,6,0" VerticalAlignment="Center" IsVisible="{Binding IsVersionVisible}">
+                                                            <TextBlock Text="{Binding Version}" Foreground="#4CC2FF" FontSize="10" FontWeight="Bold"/>
+                                                        </Border>
+                                                        <TextBlock Text="{Binding FolderName}" Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.7" FontSize="10" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+                                                    </StackPanel>
+                                                </StackPanel>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                            <TextBlock Text="{Binding NoWorldsFoundText}" Foreground="{DynamicResource MainForegroundBrush}"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center" IsVisible="{Binding IsNoWorldsVisible}"/>
+                        </Grid>
+                    </Grid>
+                </Border>
+
+                <Grid Grid.Column="1" Margin="20" Background="Transparent">
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" IsVisible="{Binding IsPlaceholderVisible}">
+                        <TextBlock Text="{Binding PlaceholderText}" Foreground="{DynamicResource MainForegroundBrush}" FontSize="16"/>
+                    </StackPanel>
+
+                    <Grid IsVisible="{Binding IsContentVisible}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
+                            <Border Width="54" Height="54" CornerRadius="6" ClipToBounds="True" Background="{DynamicResource MainBackgroundBrushServer}" Margin="0,0,15,0">
+                                <Image Source="{Binding SelectedWorld.IconBitmap}" Stretch="UniformToFill"/>
+                            </Border>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="{Binding SelectedWorld.Name}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,0,4"/>
+                                <StackPanel Orientation="Horizontal">
+                                    <Border Background="#223344" CornerRadius="4" Padding="6,2" Margin="0,0,8,0" VerticalAlignment="Center" IsVisible="{Binding SelectedWorld.IsVersionVisible}">
+                                        <TextBlock Text="{Binding SelectedWorld.Version}" Foreground="#4CC2FF" FontSize="11" FontWeight="Bold"/>
+                                    </Border>
+                                    <TextBlock Text="{Binding SelectedWorldFolderText}" Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.8" FontSize="12" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </StackPanel>
+
+                        <Button Grid.Row="1" Command="{Binding CreateBackupCommand}" Height="45" Margin="0,0,0,20" Cursor="Hand" Background="Transparent" BorderThickness="0" Foreground="{DynamicResource MainForegroundBrush}" HorizontalAlignment="Stretch">
+                            <Button.Styles>
+                                <Style Selector="Button">
+                                    <Setter Property="Template">
+                                        <ControlTemplate>
+                                            <Border x:Name="bdr" Background="{DynamicResource MainBackgroundButton}" CornerRadius="8" BorderBrush="#444" BorderThickness="1">
+                                                <Grid>
+                                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                        <TextBlock Text="+" Foreground="{DynamicResource MainBackgroundProgressBar}" FontWeight="Bold" FontSize="18" Margin="0,0,10,0"/>
+                                                        <TextBlock Text="{Binding CreateBackupBtnText}" Foreground="{DynamicResource MainForegroundBrush}" FontWeight="Bold"/>
+                                                    </StackPanel>
+                                                    <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsCreatingBackup}" Height="2" VerticalAlignment="Bottom" Background="Transparent" Foreground="{DynamicResource MainBackgroundProgressBar}"/>
+                                                </Grid>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter>
+                                </Style>
+                                <Style Selector="Button:disabled /template/ Border#bdr">
+                                    <Setter Property="Opacity" Value="0.6"/>
+                                </Style>
+                                <Style Selector="Button:pointerover /template/ Border#bdr">
+                                    <Setter Property="Background" Value="#33FFFFFF"/>
+                                </Style>
+                            </Button.Styles>
+                        </Button>
+
+                        <Grid Grid.Row="2">
+                            <TextBlock Text="{Binding HistoryTitle}" Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,0,10" VerticalAlignment="Top"/>
+                            <ScrollViewer Margin="0,25,0,0" VerticalScrollBarVisibility="Auto" Foreground="{DynamicResource MainForegroundBrush}">
+                                <ItemsControl ItemsSource="{Binding Backups}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="6" Margin="0,0,5,8" Padding="15,10">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <StackPanel>
+                                                        <TextBlock Text="{Binding CreationTime, StringFormat='dd.MM.yyyy  HH:mm'}" Foreground="White" FontWeight="Bold"/>
+                                                        <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
+                                                            <TextBlock Text="{Binding SizeString}" Foreground="{DynamicResource MainBackgroundProgressBar}" FontSize="12"/>
+                                                            <TextBlock Text="{Binding #RootWindow.((vm:WorldBackupViewModel)DataContext).ZipArchiveText}" Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.7" FontSize="12"/>
+                                                        </StackPanel>
+                                                    </StackPanel>
+                                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                                        <Button Command="{Binding #RootWindow.((vm:WorldBackupViewModel)DataContext).RestoreBackupCommand}" CommandParameter="{Binding}" Background="{DynamicResource MainBackgroundButton}" Foreground="{DynamicResource MainForegroundBrush}" BorderThickness="0" Padding="10,5" Margin="0,0,10,0" Cursor="Hand" CornerRadius="4">
+                                                            <TextBlock Text="{Binding #RootWindow.((vm:WorldBackupViewModel)DataContext).RestoreBtnText}"/>
+                                                        </Button>
+
+                                                        <Button Content="{Binding #RootWindow.((vm:WorldBackupViewModel)DataContext).DeleteBtnText}" Command="{Binding #RootWindow.((vm:WorldBackupViewModel)DataContext).DeleteBackupCommand}" CommandParameter="{Binding}" Background="Transparent" Foreground="#CC4444" BorderThickness="0" FontSize="14" Padding="5,0" Cursor="Hand"/>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+
+                            <TextBlock Text="{Binding NoBackupsForWorldText}"
+                                       Foreground="{DynamicResource MainForegroundBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" IsVisible="{Binding IsNoBackupsVisible}"/>
+                        </Grid>
+                    </Grid>
+                </Grid>
+            </Grid>
+        </Grid>
+    </Border>
+</Window>

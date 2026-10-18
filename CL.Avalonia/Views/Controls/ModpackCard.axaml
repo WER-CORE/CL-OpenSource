@@ -1,0 +1,129 @@
+﻿<UserControl x:Class="CL_CLegendary_Launcher_.Avalonia.Views.Controls.ModpackCard"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:vm="using:CL_CLegendary_Launcher_.Avalonia.ViewModels.Controls"
+             x:DataType="vm:ModpackCardViewModel"
+             mc:Ignorable="d" Height="155" Width="630" FontFamily="Inter">
+
+    <Grid>
+        <Border x:Name="MainBordr" BorderThickness="1"
+                Background="{DynamicResource MainBackgroundBrushServer}"
+                CornerRadius="15">
+
+            <Grid Margin="10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0" x:Name="BGIconModPack"
+                        BorderBrush="Black" BorderThickness="1"
+                        Width="90" Height="90"
+                        Background="{DynamicResource MainBackgroundBrush}"
+                        CornerRadius="6" ClipToBounds="True">
+                    <Image x:Name="IconModPack" Stretch="UniformToFill" RenderOptions.BitmapInterpolationMode="LowQuality" Source="{Binding Icon}"/>
+                </Border>
+
+                <Grid Grid.Column="1" Margin="15,0,10,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock x:Name="NameModPack" Text="{Binding Name}"
+                               Foreground="{DynamicResource MainForegroundBrush}"
+                               FontSize="20" FontWeight="Bold"
+                               TextTrimming="CharacterEllipsis"/>
+
+                    <TextBlock Grid.Row="1" x:Name="DescriptionModPack"
+                               Text="{Binding Description}"
+                               Foreground="{DynamicResource MainForegroundBrush}"
+                               FontSize="12" Opacity="0.8"
+                               TextWrapping="Wrap" TextTrimming="CharacterEllipsis"
+                               Margin="0,5,229,0"/>
+                </Grid>
+
+                <StackPanel Grid.Column="1" Grid.ColumnSpan="2"
+                            Orientation="Horizontal"
+                            HorizontalAlignment="Right" VerticalAlignment="Bottom">
+
+                    <Button x:Name="BorderSetting" BorderThickness="1"
+                            Height="26" Width="113" Margin="0,0,10,0"
+                            CornerRadius="6" Background="{DynamicResource MainBackgroundButton}"
+                            Cursor="Hand" Command="{Binding ToggleSettingsCommand}" Padding="0">
+                        <TextBlock x:Name="TxtSetting" Text="Налаштування"
+                                   Foreground="{DynamicResource MainForegroundBrush}"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   FontSize="12"/>
+                    </Button>
+
+                    <Button x:Name="BorderPlay" BorderThickness="1"
+                            Height="26" Width="108"
+                            CornerRadius="6" Background="{DynamicResource MainBackgroundButton}"
+                            Cursor="Hand" Command="{Binding PlayCommand}" Padding="0">
+                        <TextBlock x:Name="TxtPlay" Text="Грати"
+                                   Foreground="{DynamicResource MainForegroundBrush}"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   FontSize="12" FontWeight="Bold"/>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Grid x:Name="GirdFon" HorizontalAlignment="Right" VerticalAlignment="Top"
+              Margin="0,5,130,0" Width="115" Height="115" IsVisible="{Binding IsSettingsVisible}">
+
+            <Border x:Name="BordrFon" BorderThickness="1"
+                    Background="{DynamicResource MainBackgroundButton}"
+                    CornerRadius="12"/>
+
+            <StackPanel Margin="5">
+
+                <Button x:Name="DeleteBorder" BorderThickness="1" Padding="0"
+                        Height="21" CornerRadius="6" Margin="0,0,0,5"
+                        Background="{DynamicResource MainBackgroundBrushServer}"
+                        Cursor="Hand" Command="{Binding DeleteCommand}" HorizontalAlignment="Stretch">
+                    <TextBlock x:Name="TxtDelete" Text="Видалити"
+                               Foreground="{DynamicResource MainForegroundBrush}"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                               FontSize="10"/>
+                </Button>
+
+                <Button x:Name="FloderPack" BorderThickness="1" Padding="0"
+                        Height="21" CornerRadius="6" Margin="0,0,0,5"
+                        Background="{DynamicResource MainBackgroundBrushServer}"
+                        Cursor="Hand" Command="{Binding OpenFolderCommand}" HorizontalAlignment="Stretch">
+                    <TextBlock x:Name="TxtFolder" Text="Тека Збірки"
+                               Foreground="{DynamicResource MainForegroundBrush}"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                               FontSize="10"/>
+                </Button>
+
+                <Button x:Name="ShareBorder" BorderThickness="1" Padding="0"
+                        Height="21" CornerRadius="6" Margin="0,0,0,5"
+                        Background="{DynamicResource MainBackgroundBrushServer}"
+                        Cursor="Hand" Command="{Binding ExportZipCommand}" HorizontalAlignment="Stretch">
+                    <TextBlock x:Name="TxtExport" Text="Експортувати ZIP"
+                               Foreground="{DynamicResource MainForegroundBrush}"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                               FontSize="10"/>
+                </Button>
+
+                <Button x:Name="SettingBorder" BorderThickness="1" Padding="0"
+                        Height="21" CornerRadius="6"
+                        Background="{DynamicResource MainBackgroundBrushServer}"
+                        Cursor="Hand" Command="{Binding EditCommand}" HorizontalAlignment="Stretch">
+                    <TextBlock x:Name="TxtEdit" Text="Редагувати"
+                               Foreground="{DynamicResource MainForegroundBrush}"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                               FontSize="10"/>
+                </Button>
+
+            </StackPanel>
+        </Grid>
+
+    </Grid>
+</UserControl>

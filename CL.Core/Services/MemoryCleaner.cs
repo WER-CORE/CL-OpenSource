@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Runtime; 
+using System.Runtime;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
@@ -26,7 +26,7 @@ namespace CL.Core.Services
 
                 GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, true);
 
-                if (trimWorkingSet && Environment.OSVersion.Platform == PlatformID.Win32NT)
+                if (trimWorkingSet && OperatingSystem.IsWindows())
                 {
                     SetProcessWorkingSetSize(Process.GetCurrentProcess().Handle, -1, -1);
                 }

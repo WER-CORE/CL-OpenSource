@@ -1,0 +1,100 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:CL_CLegendary_Launcher_.Avalonia.ViewModels"
+        x:Class="CL_CLegendary_Launcher_.Avalonia.Views.Controls.LoadScreenWindow"
+        x:DataType="vm:LoadScreenViewModel"
+        Title="CL - Load Screen"
+        Icon="avares://CL.Avalonia/Icon/IconCL(Halloween).png"
+        Height="350" Width="600"
+        WindowDecorations="None"
+        WindowStartupLocation="CenterScreen"
+        Background="Transparent"
+        TransparencyLevelHint="Transparent">
+
+    <Border CornerRadius="15" Background="#151515" ClipToBounds="True" BorderBrush="#33FFFFFF" BorderThickness="1">
+        <Grid>
+
+            <Image Source="avares://CL.Avalonia/Assets/Backgrounds/DarkThemBG.png"
+                   Stretch="UniformToFill"
+                   Opacity="0.7"/>
+
+            <Border>
+                <Border.Background>
+                    <RadialGradientBrush Center="50%,50%" GradientOrigin="50%,50%">
+                        <GradientStop Color="#00000000" Offset="0"/>
+                        <GradientStop Color="#CC000000" Offset="1"/>
+                    </RadialGradientBrush>
+                </Border.Background>
+            </Border>
+
+            <Border VerticalAlignment="Bottom" Height="120">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                        <GradientStop Color="Transparent" Offset="0.25"/>
+                        <GradientStop Color="#E6000000" Offset="1"/>
+                    </LinearGradientBrush>
+                </Border.Background>
+            </Border>
+
+            <Grid Margin="20" RowDefinitions="*, Auto, Auto, Auto">
+
+                <StackPanel Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <TextBlock Text="CL(Clegendary Launcher)"
+                               Foreground="White"
+                               FontSize="32"
+                               FontWeight="Black"
+                               HorizontalAlignment="Center"
+                               FontFamily="Inter"/>
+                    <TextBlock Text="Avalonia Edition"
+                               Foreground="#FFE9FF00"
+                               FontSize="14"
+                               FontWeight="SemiBold"
+                               HorizontalAlignment="Center"
+                               Opacity="0.9"
+                               FontFamily="Inter"/>
+                </StackPanel>
+
+                <TextBlock Grid.Row="1"
+                           Text="{Binding RandomPhraseText}"
+                           Foreground="#DDFFFFFF"
+                           FontSize="14"
+                           FontStyle="Italic"
+                           TextAlignment="Center"
+                           HorizontalAlignment="Center"
+                           TextWrapping="Wrap"
+                           Margin="0,0,0,15"
+                           FontFamily="Inter"/>
+
+                <Grid Grid.Row="2" Margin="0,0,0,5" ColumnDefinitions="*, Auto">
+                    <TextBlock Grid.Column="0"
+                               Text="{Binding StatusText}"
+                               Foreground="White"
+                               FontSize="14"
+                               FontWeight="SemiBold"
+                               VerticalAlignment="Bottom"
+                               FontFamily="Inter"/>
+
+                    <TextBlock Grid.Column="1"
+                               Text="v.1.0.0 Avalonia"
+                               Foreground="#66FFFFFF"
+                               FontSize="12"
+                               FontWeight="Regular"
+                               VerticalAlignment="Bottom"
+                               FontFamily="Inter"/>
+                </Grid>
+
+                <Border Grid.Row="3"
+                        CornerRadius="2"
+                        Background="#33000000"
+                        Height="4"
+                        ClipToBounds="True">
+                    <ProgressBar Minimum="0" Maximum="100"
+                                 Value="{Binding ProgressValue}"
+                                 Height="4"
+                                 Background="Transparent"
+                                 Foreground="#FF00BEFF"/>
+                </Border>
+            </Grid>
+        </Grid>
+    </Border>
+</Window>

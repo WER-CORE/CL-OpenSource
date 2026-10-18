@@ -1,4 +1,4 @@
-using CL.Core.Interfaces;
+﻿using CL.Core.Interfaces;
 using CL.Core.Platform;
 using CL.Core.Models;
 using CL.Core.Models;
@@ -23,7 +23,7 @@ namespace CL.Core.Services
 
         public ProfileManagerService()
         {
-            string directoryPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data");
+            string directoryPath = PlatformPaths.DataFolder();
             _profilesManegerPath = Path.Combine(directoryPath, "ProfilesManeger.json");
 
             if (!Directory.Exists(directoryPath))
@@ -37,15 +37,15 @@ namespace CL.Core.Services
             }
         }
 
+        private static readonly byte[] MagicHeader = new byte[] { (byte)'C', (byte)'L', (byte)'E', (byte)'N', (byte)'C', 1 };
 
         public void SaveProfiles(List<ProfileItem> profiles)
         {
             try
             {
                 var jsonToWrite = JsonConvert.SerializeObject(profiles, Formatting.Indented);
-
                 byte[] plainBytes = Encoding.UTF8.GetBytes(jsonToWrite);
-                byte[] encryptedData = ProtectedData.Protect(plainBytes, null, DataProtectionScope.CurrentUser);
+                byte[] encryptedData = EncryptData(plainBytes);
 
                 File.WriteAllBytes(_profilesManegerPath, encryptedData);
             }
@@ -91,37 +91,77 @@ namespace CL.Core.Services
                 return new List<ProfileItem>();
             }
 
-            try
-            {
-                byte[] decryptedBytes = ProtectedData.Unprotect(fileContent, null, DataProtectionScope.CurrentUser);
-                string json = Encoding.UTF8.GetString(decryptedBytes);
-                return JsonConvert.DeserializeObject<List<ProfileItem>>(json) ?? new List<ProfileItem>();
-            }
-            catch
+            if (IsMagicHeader(fileContent))
             {
                 try
                 {
-                    string json = DecryptLegacyAES(fileContent);
-                    var profiles = JsonConvert.DeserializeObject<List<ProfileItem>>(json);
-
-                    if (profiles != null && profiles.Count > 0)
-                    {
-                        SaveProfiles(profiles);
-                    }
-
-                    return profiles ?? new List<ProfileItem>();
+                    byte[] decryptedBytes = DecryptData(fileContent);
+                    string json = Encoding.UTF8.GetString(decryptedBytes);
+                    return JsonConvert.DeserializeObject<List<ProfileItem>>(json) ?? new List<ProfileItem>();
                 }
                 catch (Exception ex)
                 {
-                    ServiceLocator.Current.GetService<IDialogService>().ShowMessage(
-                        string.Format(LocalizationManager.GetString("Accounts.ProfileLoadCrashDesc", "Не вдалося завантажити профілі.\nФайл пошкоджено або він з іншого ПК.\n\nДеталі: {0}"), ex.Message),
-                        LocalizationManager.GetString("Accounts.ProfileLoadCrashTitle", "Збій профілів"),
-                        MascotEmotion.Sad);
-
-                    File.Move(_profilesManegerPath, _profilesManegerPath + ".corrupted");
-                    return new List<ProfileItem>();
+                    System.Diagnostics.Debug.WriteLine($"CLENC decrypt failed: {ex.Message}");
                 }
             }
+
+            if (OperatingSystem.IsWindows())
+            {
+                try
+                {
+                    byte[] decryptedBytes = ProtectedData.Unprotect(fileContent, null, DataProtectionScope.CurrentUser);
+                    string json = Encoding.UTF8.GetString(decryptedBytes);
+                    var profiles = JsonConvert.DeserializeObject<List<ProfileItem>>(json);
+                    if (profiles != null && profiles.Count > 0)
+                    {
+
+                        SaveProfiles(profiles);
+                        return profiles;
+                    }
+                }
+                catch { }
+            }
+
+            try
+            {
+                string json = DecryptLegacyAES(fileContent);
+                var profiles = JsonConvert.DeserializeObject<List<ProfileItem>>(json);
+
+                if (profiles != null && profiles.Count > 0)
+                {
+                    SaveProfiles(profiles);
+                    return profiles;
+                }
+            }
+            catch { }
+
+            try
+            {
+                string text = Encoding.UTF8.GetString(fileContent);
+                if (text.TrimStart().StartsWith("["))
+                {
+                    var profiles = JsonConvert.DeserializeObject<List<ProfileItem>>(text);
+                    if (profiles != null && profiles.Count > 0)
+                    {
+                        SaveProfiles(profiles);
+                        return profiles;
+                    }
+                }
+            }
+            catch { }
+
+            try
+            {
+                ServiceLocator.Current.GetService<IDialogService>().ShowMessage(
+                    LocalizationManager.GetString("Accounts.ProfileLoadCrashDesc", "Не вдалося завантажити профілі.\nФайл пошкоджено або він з іншого ПК."),
+                    LocalizationManager.GetString("Accounts.ProfileLoadCrashTitle", "Збій профілів"),
+                    MascotEmotion.Sad);
+
+                File.Move(_profilesManegerPath, _profilesManegerPath + ".corrupted");
+            }
+            catch { }
+
+            return new List<ProfileItem>();
         }
 
         public void UpdateProfile(ProfileItem updatedProfile)
@@ -163,44 +203,117 @@ namespace CL.Core.Services
         public async Task<MSession> LoginLittleSkinAsync(string email, string password)
         {
             var http = WebHelper.Client;
-                var payload = new JObject
-                {
-                    ["agent"] = new JObject { ["name"] = "Minecraft", ["version"] = 1 },
-                    ["username"] = email,
-                    ["password"] = password,
-                    ["requestUser"] = true
-                };
+            var payload = new JObject
+            {
+                ["agent"] = new JObject { ["name"] = "Minecraft", ["version"] = 1 },
+                ["username"] = email,
+                ["password"] = password,
+                ["requestUser"] = true
+            };
 
-                var content = new StringContent(payload.ToString(), Encoding.UTF8, "application/json");
-                var response = await http.PostAsync(Secrets.AuthUrlLittleSkin, content);
-                var body = await response.Content.ReadAsStringAsync();
+            var content = new StringContent(payload.ToString(), Encoding.UTF8, "application/json");
+            var response = await http.PostAsync(Secrets.AuthUrlLittleSkin, content);
+            var body = await response.Content.ReadAsStringAsync();
 
-                if (!response.IsSuccessStatusCode)
-                {
-                    ServiceLocator.Current.GetService<IDialogService>().ShowMessage(
-                        string.Format(LocalizationManager.GetString("Accounts.LoginLittleSkinErrorDesc", "Сервер LittleSkin відмовив у доступі.\nПеревір логін та пароль.\n\nВідповідь сервера: {0}"), body),
-                        LocalizationManager.GetString("Accounts.LoginLittleSkinErrorTitle", "Помилка входу"),
-                        MascotEmotion.Sad);
-                    throw new Exception(LocalizationManager.GetString("Accounts.LittleSkinAuthFailed", "Помилка авторизації"));
-                }
+            if (!response.IsSuccessStatusCode)
+            {
+                ServiceLocator.Current.GetService<IDialogService>().ShowMessage(
+                    string.Format(LocalizationManager.GetString("Accounts.LoginLittleSkinErrorDesc", "Сервер LittleSkin відмовив у доступі.\nПеревір логін та пароль.\n\nВідповідь сервера: {0}"), body),
+                    LocalizationManager.GetString("Accounts.LoginLittleSkinErrorTitle", "Помилка входу"),
+                    MascotEmotion.Sad);
+                throw new Exception(LocalizationManager.GetString("Accounts.LittleSkinAuthFailed", "Помилка авторизації"));
+            }
 
-                var json = JObject.Parse(body);
-                string username = json["selectedProfile"]?["name"]?.ToString() ?? email.Split('@')[0];
-                string uuid = json["selectedProfile"]?["id"]?.ToString();
-                string token = json["accessToken"]?.ToString();
+            var json = JObject.Parse(body);
+            string username = json["selectedProfile"]?["name"]?.ToString() ?? email.Split('@')[0];
+            string uuid = json["selectedProfile"]?["id"]?.ToString();
+            string token = json["accessToken"]?.ToString();
 
-                if (username == null || uuid == null || token == null)
-                    throw new Exception(LocalizationManager.GetString("Accounts.LittleSkinIncomplete", "Відповідь від LittleSkin неповна"));
+            if (username == null || uuid == null || token == null)
+                throw new Exception(LocalizationManager.GetString("Accounts.LittleSkinIncomplete", "Відповідь від LittleSkin неповна"));
 
-                return new MSession
-                {
-                    Username = username,
-                    UUID = uuid,
-                    AccessToken = token,
-                    UserType = "custom"
-                };
+            return new MSession
+            {
+                Username = username,
+                UUID = uuid,
+                AccessToken = token,
+                UserType = "custom"
+            };
         }
 
+        private static bool IsMagicHeader(byte[] data)
+        {
+            if (data == null || data.Length < MagicHeader.Length) return false;
+            for (int i = 0; i < MagicHeader.Length; i++)
+            {
+                if (data[i] != MagicHeader[i]) return false;
+            }
+            return true;
+        }
+
+        private byte[] GetOrCreateEncryptionKey()
+        {
+            string base64Key = SettingsManager.Default.EncryptKey;
+            if (string.IsNullOrWhiteSpace(base64Key))
+            {
+                byte[] randomBytes = new byte[32];
+                RandomNumberGenerator.Fill(randomBytes);
+                base64Key = Convert.ToBase64String(randomBytes);
+                SettingsManager.Default.EncryptKey = base64Key;
+                SettingsManager.Save();
+            }
+
+            string salt = Environment.UserName + "@" + PlatformPaths.OsName();
+            using var sha = SHA256.Create();
+            return sha.ComputeHash(Encoding.UTF8.GetBytes(base64Key + salt));
+        }
+
+        private byte[] EncryptData(byte[] plainBytes)
+        {
+            byte[] key = GetOrCreateEncryptionKey();
+            using var aes = Aes.Create();
+            aes.Key = key;
+            aes.GenerateIV();
+            aes.Mode = CipherMode.CBC;
+            aes.Padding = PaddingMode.PKCS7;
+
+            using var ms = new MemoryStream();
+            ms.Write(MagicHeader, 0, MagicHeader.Length);
+            ms.Write(aes.IV, 0, aes.IV.Length);
+
+            using (var encryptor = aes.CreateEncryptor())
+            using (var cs = new CryptoStream(ms, encryptor, CryptoStreamMode.Write))
+            {
+                cs.Write(plainBytes, 0, plainBytes.Length);
+                cs.FlushFinalBlock();
+            }
+
+            return ms.ToArray();
+        }
+
+        private byte[] DecryptData(byte[] cipherData)
+        {
+            if (cipherData.Length < MagicHeader.Length + 16)
+                throw new InvalidOperationException("Encrypted data is too short.");
+
+            byte[] key = GetOrCreateEncryptionKey();
+            byte[] iv = new byte[16];
+            Array.Copy(cipherData, MagicHeader.Length, iv, 0, 16);
+
+            using var aes = Aes.Create();
+            aes.Key = key;
+            aes.IV = iv;
+            aes.Mode = CipherMode.CBC;
+            aes.Padding = PaddingMode.PKCS7;
+
+            int payloadOffset = MagicHeader.Length + 16;
+            using var ms = new MemoryStream(cipherData, payloadOffset, cipherData.Length - payloadOffset);
+            using var decryptor = aes.CreateDecryptor();
+            using var cs = new CryptoStream(ms, decryptor, CryptoStreamMode.Read);
+            using var outMs = new MemoryStream();
+            cs.CopyTo(outMs);
+            return outMs.ToArray();
+        }
 
         private string DecryptLegacyAES(byte[] cipherData)
         {

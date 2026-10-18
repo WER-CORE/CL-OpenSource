@@ -1,0 +1,33 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="CL_CLegendary_Launcher_.Avalonia.Views.Controls.ModCardSkeleton"
+             Height="108"
+             HorizontalAlignment="Stretch">
+    <Grid Height="108" Margin="0,2">
+        <Border Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="8"
+                Padding="10" Margin="5" BorderThickness="1" BorderBrush="{x:Null}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Border Grid.Column="0"
+                        Width="64" Height="64"
+                        CornerRadius="5"
+                        Background="{DynamicResource MainBackgroundBrush}"
+                        VerticalAlignment="Top"
+                        Margin="0,0,10,0" />
+
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <Border Height="20" Width="150" CornerRadius="4"
+                            Background="{DynamicResource MainBackgroundBrush}" HorizontalAlignment="Left"
+                            Margin="0,0,0,8" />
+                    <Border Height="14" CornerRadius="3" Background="{DynamicResource MainBackgroundBrush}"
+                            Margin="0,0,0,4" HorizontalAlignment="Stretch" />
+                    <Border Height="14" Width="200" CornerRadius="3"
+                            Background="{DynamicResource MainBackgroundBrush}" HorizontalAlignment="Left" />
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

@@ -1,0 +1,83 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:ui="using:FluentAvalonia.UI.Controls"
+        xmlns:progRing="clr-namespace:AvaloniaProgressRing;assembly=AvaloniaProgressRing"
+        xmlns:md="clr-namespace:Markdown.Avalonia;assembly=Markdown.Avalonia"
+        xmlns:fluentIcons="using:FluentIcons.Avalonia"
+        xmlns:vm="using:CL_CLegendary_Launcher_.Avalonia.ViewModels.Dialogs"
+        x:DataType="vm:ChangelogDialogViewModel"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+        x:Class="CL_CLegendary_Launcher_.Avalonia.Views.Dialogs.ChangelogDialog"
+        Title="{Binding WindowTitle}" Height="600" Width="800"
+        WindowStartupLocation="CenterOwner"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaTitleBarHeightHint="-1"
+        WindowDecorations="None"
+        TransparencyLevelHint="Mica"
+        Background="Transparent"
+        Foreground="{DynamicResource MainForegroundBrush}">
+
+    <Window.Styles>
+        <Style Selector="Button.close-btn:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#C42B1C"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+    </Window.Styles>
+
+    <Border Background="{DynamicResource MainBackgroundBrush}" CornerRadius="12" ClipToBounds="True">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="35"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0" Background="Transparent" PointerPressed="Header_PointerPressed">
+            <Grid Margin="10,0" ColumnDefinitions="*,Auto">
+                <TextBlock Text="{Binding WindowTitle}"
+                           Foreground="{DynamicResource MainForegroundBrush}"
+                           FontWeight="SemiBold" FontSize="12"
+                           VerticalAlignment="Center"/>
+
+                <Button Grid.Column="1" Classes="close-btn" Command="{Binding CloseWindowCommand}"
+                        Background="Transparent" BorderThickness="0"
+                        Foreground="{DynamicResource MainForegroundBrush}"
+                        Width="35" Height="30" Padding="0" Cursor="Hand"
+                        CornerRadius="6" ToolTip.Tip="Закрити вікно">
+                    <fluentIcons:SymbolIcon Symbol="Dismiss" FontSize="16" />
+                </Button>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="1" Margin="20">
+            <StackPanel x:Name="LoadingPanel" HorizontalAlignment="Center" VerticalAlignment="Center"
+                        IsVisible="{Binding IsLoading}">
+                <progRing:ProgressRing IsActive="{Binding IsLoading}" Margin="0,0,0,15" Width="40" Height="40" Foreground="{DynamicResource MainForegroundBrush}"/>
+                <TextBlock x:Name="LoadingText" Text="{Binding LoadingText}" FontSize="16" HorizontalAlignment="Center" TextAlignment="Center" FontFamily="Inter"/>
+            </StackPanel>
+
+            <md:MarkdownScrollViewer x:Name="ChangelogMarkdownViewer" Margin="10,0,20,20"
+                                     Markdown="{Binding MarkdownContent}"
+                                     IsVisible="{Binding IsMarkdownVisible}">
+                <md:MarkdownScrollViewer.Styles>
+                    <Style Selector="TextBlock">
+                        <Setter Property="Foreground" Value="{DynamicResource MainForegroundBrush}" />
+                        <Setter Property="FontFamily" Value="Inter" />
+                    </Style>
+                </md:MarkdownScrollViewer.Styles>
+            </md:MarkdownScrollViewer>
+
+            <StackPanel x:Name="WikiFallbackPanel" HorizontalAlignment="Center" VerticalAlignment="Center"
+                        IsVisible="{Binding IsWikiFallbackVisible}">
+                <TextBlock x:Name="WikiFallbackText"
+                           Text="{Binding WikiFallbackText}"
+                           FontSize="16" TextAlignment="Center" Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,0,20"/>
+                <Button x:Name="OpenWikiButton" Content="{Binding OpenWikiButtonText}"
+                        Classes="accent" HorizontalAlignment="Center"
+                        Command="{Binding OpenWikiCommand}"/>
+            </StackPanel>
+        </Grid>
+    </Grid>
+    </Border>
+</Window>

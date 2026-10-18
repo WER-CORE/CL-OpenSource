@@ -1,0 +1,851 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:ic="using:FluentIcons.Avalonia"
+        xmlns:models="using:CL_CLegendary_Launcher_.Avalonia.Models"
+        xmlns:progRing="clr-namespace:AvaloniaProgressRing;assembly=AvaloniaProgressRing"
+        xmlns:vm="using:CL_CLegendary_Launcher_.Avalonia.ViewModels"
+        xmlns:controls="using:CL_CLegendary_Launcher_.Avalonia.Views.Controls"
+        xmlns:controlsVm="using:CL_CLegendary_Launcher_.Avalonia.ViewModels.Controls"
+        mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="700"
+        x:Class="CL_CLegendary_Launcher_.Avalonia.Views.CL_Main"
+        x:DataType="vm:CL_MainViewModel"
+        Title="CLegendary Launcher"
+        Icon="avares://CL.Avalonia/Icon/IconCL(Halloween).png"
+        Width="960" Height="542"
+        MinWidth="960" MinHeight="542"
+        WindowStartupLocation="CenterScreen"
+        WindowState="{Binding WindowState, Mode=TwoWay}"
+        Background="{DynamicResource MainBackgroundBrush}"
+        ExtendClientAreaTitleBarHeightHint="-1">
+
+	<Window.Styles>
+		<Style Selector="Button">
+			<Setter Property="Background" Value="{DynamicResource MainBackgroundButton}" />
+			<Setter Property="Foreground" Value="{DynamicResource MainForegroundBrush}" />
+			<Setter Property="FontFamily" Value="Inter, Arial" />
+		</Style>
+		<Style Selector="Label">
+			<Setter Property="Foreground" Value="{DynamicResource MainForegroundBrush}" />
+			<Setter Property="FontFamily" Value="Inter, Arial" />
+		</Style>
+		<Style Selector="MenuFlyoutPresenter">
+			<Setter Property="Background" Value="{DynamicResource MainBackgroundBrushServer}" />
+			<Setter Property="BorderBrush" Value="#33FFFFFF" />
+			<Setter Property="BorderThickness" Value="1" />
+			<Setter Property="CornerRadius" Value="10" />
+		</Style>
+		<Style Selector="MenuItem">
+			<Setter Property="Foreground" Value="{DynamicResource MainForegroundBrush}" />
+		</Style>
+	</Window.Styles>
+	<LayoutTransformControl HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+		<LayoutTransformControl.LayoutTransform>
+			<ScaleTransform ScaleX="{Binding UiScale}" ScaleY="{Binding UiScale}" />
+		</LayoutTransformControl.LayoutTransform>
+    <Grid>
+
+        <Grid Name="MainBackgroundContainer"
+              Background="{DynamicResource MainBackgroundBrush}"
+              HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <Image Name="Bg"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   Stretch="UniformToFill"
+                   IsHitTestVisible="False" />
+        </Grid>
+
+        <Grid Name="MainContentGrid" Background="Transparent">
+            <Grid.RowDefinitions>
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+
+            <ContentControl x:Name="PageHost" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+
+            <Grid Name="PanelSelectionAndAccount">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="12*" />
+                    <ColumnDefinition Width="Auto" MinWidth="460" />
+                    <ColumnDefinition Width="13*" />
+                </Grid.ColumnDefinitions>
+
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="80" />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+
+                <Grid Name="SelectGirdPage" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" VerticalAlignment="Top" Margin="0,30,0,0">
+
+                    <Border Name="SelectPanel"
+                            Height="52"
+                            HorizontalAlignment="Center"
+                            BorderThickness="1"
+                            CornerRadius="26"
+                            BorderBrush="#15FFFFFF"
+                            Padding="4,4"
+                            Background="Transparent"
+                            ClipToBounds="True">
+                        <Grid Name="SelectPanelGrid">
+
+                            <Border IsVisible="{DynamicResource GlassVisibility}">
+                                <Border.Background>
+                                    <VisualBrush Visual="{Binding #MainBackgroundContainer}" Stretch="None"
+                                         AlignmentX="Center" AlignmentY="Top" />
+                                </Border.Background>
+                                <Border.Effect>
+                                    <BlurEffect Radius="{DynamicResource GlassBlurRadius}" />
+                                </Border.Effect>
+                            </Border>
+
+                            <Border Background="{DynamicResource GlassTintBrush}" />
+
+                            <Border Name="PanelSelectNow"
+                                    BorderThickness="1"
+                                    CornerRadius="22"
+                                    Background="{DynamicResource MainBackgroundBrushServer}"
+                                    Height="44" Width="90"
+                                    HorizontalAlignment="Left" VerticalAlignment="Center">
+                                <Border.Transitions>
+                                    <Transitions>
+                                        <DoubleTransition Property="Width" Duration="0:0:0.25" Easing="CubicEaseOut" />
+                                        <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.25" Easing="CubicEaseOut" />
+                                    </Transitions>
+                                </Border.Transitions>
+                            </Border>
+
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+
+                                <Border Name="PlayBtnBorder" CornerRadius="22" Height="44" Margin="0,0,2,0" Padding="12,0"
+                                        Background="Transparent" Cursor="Hand" PointerPressed="PlayTXTPanelSelect_MouseDown"
+                                        ToolTip.Tip="Головна сторінка"
+                                        PointerEntered="MenuButton_MouseEnter" PointerExited="MenuButton_MouseLeave">
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"
+                                                VerticalAlignment="Center">
+                                        <Path Data="M10,20V14H14V20H19V12H22L12,3L2,12H5V20H10Z"
+                                              Fill="{DynamicResource MainForegroundBrush}" Stretch="Uniform" Height="16"
+                                              Width="16" Margin="0,0,8,0" />
+                                        <TextBlock Name="Loc_MenuBtnMain" Text="Головна" FontFamily="Inter" FontSize="14"
+                                                   FontWeight="Medium" Foreground="{DynamicResource MainForegroundBrush}"
+                                                   VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Name="ModpacksBtnBorder" CornerRadius="22" Height="44" Margin="0,0,2,0" Padding="12,0"
+                                        Background="Transparent" Cursor="Hand" PointerPressed="modbuilds_MouseDown"
+                                        ToolTip.Tip="Створити або імпортувати збірку"
+                                        PointerEntered="MenuButton_MouseEnter" PointerExited="MenuButton_MouseLeave">
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"
+                                                VerticalAlignment="Center">
+                                        <Path Data="M21,16.5C21,16.88 20.79,17.21 20.47,17.38L12.57,21.82C12.41,21.94 12.21,22 12,22C11.79,22 11.59,21.94 11.43,21.82L3.53,17.38C3.21,17.21 3,16.88 3,16.5V7.5C3,7.12 3.21,6.79 3.53,6.62L11.43,2.18C11.59,2.06 11.79,2 12,2C12.21,2 12.41,2.06 12.57,2.18L20.47,6.62C20.79,6.79 21,7.12 21,7.5V16.5M12,4.15L6.04,7.5L12,10.85L17.96,7.5L12,4.15M5,15.91L11,19.29V12.58L5,9.21V15.91M19,15.91V9.21L13,12.58V19.29L19,15.91Z"
+                                              Fill="{DynamicResource MainForegroundBrush}" Stretch="Uniform" Height="15"
+                                              Width="15" Margin="0,0,8,0" />
+                                        <TextBlock Name="Loc_MenuBtnModpacks" Text="Збірки" FontFamily="Inter"
+                                                   FontSize="14" FontWeight="Medium"
+                                                   Foreground="{DynamicResource MainForegroundBrush}"
+                                                   VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Name="ModsBtnBorder" CornerRadius="22" Height="44" Margin="0,0,2,0" Padding="12,0"
+                                        Background="Transparent" Cursor="Hand" PointerPressed="ModsTXTPanelSelect_MouseDown"
+                                        ToolTip.Tip="Завантаження модів"
+                                        PointerEntered="MenuButton_MouseEnter" PointerExited="MenuButton_MouseLeave">
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"
+                                                VerticalAlignment="Center">
+                                        <Path Data="M20.5,11H19V7C19,5.89 18.1,5 17,5H13V3.5A2.5,2.5 0 0,0 10.5,1A2.5,2.5 0 0,0 8,3.5V5H4A2,2 0 0,0 2,7V11H3.5A2.5,2.5 0 0,1 6,13.5A2.5,2.5 0 0,1 3.5,16H2V20A2,2 0 0,0 4,22H8V20.5A2.5,2.5 0 0,1 10.5,18A2.5,2.5 0 0,1 13,20.5V22H17A2,2 0 0,0 19,20V16H20.5A2.5,2.5 0 0,0 23,13.5A2.5,2.5 0 0,0 20.5,11M10.5,3A1,1 0 0,1 11.5,4A1,1 0 0,1 10.5,5A1,1 0 0,1 9.5,4A1,1 0 0,1 10.5,3M13,19.5A1,1 0 0,0 12,20.5A1,1 0 0,0 13,21.5A1,1 0 0,0 14,20.5A1,1 0 0,0 13,19.5M5,13.5A1,1 0 0,0 4,14.5A1,1 0 0,0 5,15.5A1,1 0 0,0 6,14.5A1,1 0 0,0 5,13.5M20.5,15A1,1 0 0,1 19.5,14A1,1 0 0,1 20.5,13A1,1 0 0,1 21.5,14A1,1 0 0,1 20.5,15Z"
+                                              Fill="{DynamicResource MainForegroundBrush}" Stretch="Uniform" Height="16"
+                                              Width="16" Margin="0,0,8,0" />
+                                        <TextBlock Name="Loc_MenuBtnMods" Text="Моди" FontFamily="Inter" FontSize="14"
+                                                   FontWeight="Medium" Foreground="{DynamicResource MainForegroundBrush}"
+                                                   VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Name="ServersBtnBorder" CornerRadius="22" Height="44" Margin="0,0,2,0" Padding="12,0"
+                                        Background="Transparent" Cursor="Hand" PointerPressed="ServerTXTPanelSelect_MouseDown"
+                                        ToolTip.Tip="Список серверів"
+                                        PointerEntered="MenuButton_MouseEnter" PointerExited="MenuButton_MouseLeave">
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"
+                                                VerticalAlignment="Center">
+                                        <Path Data="M17.9,17.39C17.64,16.59 16.89,16 16,16H15V13A1,1 0 0,0 14,12H8V10H10A1,1 0 0,0 11,9V7H13A2,2 0 0,0 15,5V4.59C17.93,5.77 20,8.64 20,12C20,14.08 19.2,15.97 17.9,17.39M11,19.93C7.05,19.44 4,16.08 4,12C4,11.38 4.08,10.78 4.21,10.21L9,15V16A2,2 0 0,0 11,18M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z"
+                                              Fill="{DynamicResource MainForegroundBrush}" Stretch="Uniform" Height="16"
+                                              Width="16" Margin="0,0,8,0" />
+                                        <TextBlock Name="Loc_MenuBtnServers" Text="Сервери" FontFamily="Inter"
+                                                   FontSize="14" FontWeight="Medium"
+                                                   Foreground="{DynamicResource MainForegroundBrush}"
+                                                   VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Name="GalleryBtnBorder" CornerRadius="22" Height="44" Margin="0" Padding="12,0"
+                                        Background="Transparent" Cursor="Hand" PointerPressed="PhotoMinecraftTXT_MouseDown"
+                                        ToolTip.Tip="Скріншоти"
+                                        PointerEntered="MenuButton_MouseEnter" PointerExited="MenuButton_MouseLeave">
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"
+                                                VerticalAlignment="Center">
+                                        <Path Data="M8.5,13.5L11,16.5L14.5,12L19,18H5M21,19V5C21,3.89 20.1,3 19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19Z"
+                                              Fill="{DynamicResource MainForegroundBrush}" Stretch="Uniform" Height="16"
+                                              Width="16" Margin="0,0,8,0" />
+                                        <TextBlock Name="Loc_MenuBtnGallery" Text="Галерея" FontFamily="Inter"
+                                                   FontSize="14" FontWeight="Medium"
+                                                   Foreground="{DynamicResource MainForegroundBrush}"
+                                                   VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <Border Name="FonBackIconServerList" BorderThickness="1" CornerRadius="16"
+                            Background="{DynamicResource MainBackgroundBrushServer}" Width="40" Height="40"
+                            HorizontalAlignment="Left" Margin="-50,0,0,0" IsVisible="False">
+                        <Path Name="BackIconServerList"
+                              Data="M12.5,8C9.85,8 7.45,9 5.6,10.6L2,7V16H11L7.38,12.38C8.77,11.22 10.54,10.5 12.5,10.5C16.04,10.5 19.05,12.81 20.1,16L22,15.3C20.64,11.38 16.91,8.5 12.5,8Z"
+                              Fill="{DynamicResource MainForegroundBrush}" Stretch="Uniform" Width="24" Height="24"
+                              HorizontalAlignment="Center" VerticalAlignment="Center" Cursor="Hand" ToolTip.Tip="Повернутись"
+                              PointerPressed="BackIconServerList_MouseDown" />
+                    </Border>
+
+                </Grid>
+
+                <Grid Name="SelectGirdAccount" Grid.Row="0" Grid.Column="2" HorizontalAlignment="Right"
+                      VerticalAlignment="Top" Margin="0,30,25,0">
+
+                    <Border Name="SelectPanelAccount"
+                            BorderThickness="1"
+                            CornerRadius="26"
+                            BorderBrush="#15FFFFFF"
+                            Background="Transparent"
+                            Height="52"
+                            Width="180"
+                            ClipToBounds="True">
+                        <Grid>
+
+                            <Border IsVisible="{DynamicResource GlassVisibility}" Margin="-25,30,25,-30">
+                                <Border.Effect>
+                                    <BlurEffect Radius="{DynamicResource GlassBlurRadius}" />
+                                </Border.Effect>
+                                <Border.Background>
+                                    <VisualBrush Visual="{Binding #MainBackgroundContainer}"
+                                                 Stretch="None"
+                                                 AlignmentX="Right"
+                                                 AlignmentY="Top" />
+                                </Border.Background>
+                                <Border.RenderTransform>
+                                    <TranslateTransform X="25" Y="-30" />
+                                </Border.RenderTransform>
+                            </Border>
+
+                            <Border Background="{DynamicResource GlassTintBrush}" />
+
+                            <Grid Cursor="Hand" PointerPressed="IconAccount_MouseDown" Background="Transparent">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <Image Name="IconAccount" Grid.Column="0"
+                                       Source="{Binding CurrentAccountAvatar}"
+                                       Width="30" Height="30"
+                                       Margin="8,0,0,0" VerticalAlignment="Center" />
+
+                                <TextBlock Name="NameNik" Grid.Column="1"
+                                           Text="{Binding CurrentAccountName}"
+                                           FontFamily="Inter" FontSize="12"
+                                           Foreground="{DynamicResource MainForegroundBrush}"
+                                           VerticalAlignment="Center" HorizontalAlignment="Left"
+                                           Margin="10,0,5,0"
+                                           TextTrimming="CharacterEllipsis" />
+
+                                <Path Name="CheckMarkAccount" Grid.Column="2"
+                                      Data="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z"
+                                      Fill="{DynamicResource MainForegroundBrush}"
+                                      Stretch="Uniform"
+                                      Height="16" Width="16"
+                                      Margin="0,0,8,0" VerticalAlignment="Center"
+                                      RenderTransformOrigin="50%,50%">
+                                    <Path.RenderTransform>
+                                        <RotateTransform  Angle="0" />
+                                    </Path.RenderTransform>
+                                </Path>
+                            </Grid>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Grid>
+
+            <Grid Name="PanelListStats"
+                  HorizontalAlignment="Right"
+                  VerticalAlignment="Top"
+                  Width="206"
+                  Height="134"
+                  Margin="0,80,20,0"
+                  IsVisible="False">
+
+                <Border Name="OnllinePanel1"
+                        BorderThickness="1"
+                        CornerRadius="16"
+                        Background="Transparent"
+                        BorderBrush="#33FFFFFF"
+                        ClipToBounds="True">
+                    <Grid>
+
+                        <Border CornerRadius="12" IsVisible="{DynamicResource GlassVisibility}">
+                            <Border.Background>
+
+                                <VisualBrush Visual="{Binding #MainBackgroundContainer}" Stretch="None" />
+                            </Border.Background>
+                            <Border.Effect>
+                                <BlurEffect Radius="{DynamicResource GlassBlurRadius}" />
+                            </Border.Effect>
+                        </Border>
+                        <Border CornerRadius="12" Background="{DynamicResource GlassTintBrush}" />
+
+                        <Border CornerRadius="16"
+                                Background="{DynamicResource GlassTintBrush}"
+                                Opacity="0.6" />
+                    </Grid>
+                </Border>
+
+                <Grid>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="5">
+                        <TextBlock Name="TextStatsGameMinecraft"
+                                   Text="Завантаження..."
+                                   HorizontalAlignment="Stretch"
+                                   VerticalAlignment="Top"
+                                   FontFamily="Inter"
+                                   FontSize="12"
+                                   Foreground="{DynamicResource MainForegroundBrush}"
+                                   Background="Transparent" />
+                    </ScrollViewer>
+                </Grid>
+            </Grid>
+
+            <Grid Name="PanelManegerAccount"
+                  HorizontalAlignment="Right"
+                  VerticalAlignment="Top"
+                  Width="206"
+                  Margin="0,80,20,0"
+                  IsVisible="False" ZIndex="25">
+
+                <Border Name="OnllinePanel"
+                        BorderThickness="1"
+                        CornerRadius="16"
+                        Background="Transparent"
+                        BorderBrush="#33FFFFFF"
+                        ClipToBounds="True">
+                    <Grid>
+
+                        <Border CornerRadius="12" IsVisible="{DynamicResource GlassVisibility}">
+                            <Border.Background>
+                                <VisualBrush Visual="{Binding #MainBackgroundContainer}" Stretch="None" />
+                            </Border.Background>
+                            <Border.Effect>
+                                <BlurEffect Radius="{DynamicResource GlassBlurRadius}" />
+                            </Border.Effect>
+                        </Border>
+                        <Border CornerRadius="12" Background="{DynamicResource GlassTintBrush}" />
+
+                        <Border CornerRadius="16"
+                                Background="{DynamicResource GlassTintBrush}"
+                                Opacity="0.6" />
+                    </Grid>
+                </Border>
+
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <ListBox Name="ListAccount"
+                             ItemsSource="{Binding AccountCards}"
+                             SelectedItem="{Binding SelectedAccountCard, Mode=TwoWay}"
+                             Grid.Row="0"
+                             MaxHeight="200"
+                             HorizontalAlignment="Stretch"
+                             VerticalAlignment="Top"
+                             Margin="0,5,0,0"
+                             Background="Transparent"
+                             BorderThickness="0"
+                             Foreground="{DynamicResource MainForegroundBrush}"
+                             ScrollViewer.VerticalScrollBarVisibility="Auto"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+
+                        <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="controlsVm:AccountCardViewModel">
+                                <controls:AccountCard />
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+
+                        <ListBox.Styles>
+                            <Style Selector="ListBoxItem">
+                                <Setter Property="HorizontalContentAlignment" Value="Center" />
+                                <Setter Property="HorizontalAlignment" Value="Stretch" />
+                                <Setter Property="Padding" Value="5" />
+                                <Setter Property="Cursor" Value="Hand" />
+                                <Setter Property="Background" Value="Transparent" />
+                            </Style>
+
+                            <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
+                                <Setter Property="Background" Value="#20FFFFFF" />
+                            </Style>
+                            <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+                                <Setter Property="Background" Value="#40FFFFFF" />
+                            </Style>
+                        </ListBox.Styles>
+                    </ListBox>
+
+                    <TextBlock Name="AddProfile"
+                               PointerPressed="AddProfile_MouseDown"
+                               Grid.Row="1"
+                               Text="Додати профіль +"
+                               HorizontalAlignment="Center"
+                               FontFamily="Inter" FontSize="12"
+                               Cursor="Hand"
+                               Foreground="{DynamicResource MainForegroundBrush}"
+                               Background="Transparent"
+                               Margin="0,5,0,0" />
+
+                    <TextBlock Name="StatsTextOpen"
+                               Grid.Row="2"
+                               Text="Статистика"
+                               HorizontalAlignment="Center"
+                               FontFamily="Inter" FontSize="12"
+                               Cursor="Hand"
+                               PointerPressed="StatsTextOpen_MouseDown"
+                               Foreground="{DynamicResource MainForegroundBrush}"
+                               Background="Transparent"
+                               Margin="0,0,0,5" />
+                </Grid>
+            </Grid>
+
+        </Grid>
+    <Grid x:Name="GridFormAccountAdd"
+              Background="{DynamicResource MainBackgroundBrush}"
+              Cursor="Hand"
+              ToolTip.Tip="Натисніть щоб повернутись"
+              PointerPressed="GirdFormAccountAdd_MouseDown" IsVisible="False" ZIndex="9">
+
+                    <Border IsVisible="{DynamicResource GlassVisibility}">
+                        <Border.Background>
+                            <VisualBrush Visual="{Binding #MainBackgroundContainer}" Stretch="None" />
+                        </Border.Background>
+                        <Border.Effect>
+                            <BlurEffect Radius="{DynamicResource GlassBlurRadius}" />
+                        </Border.Effect>
+                    </Border>
+
+                    <Border CornerRadius="12" Background="{DynamicResource GlassTintBrush}" />
+                    <Border Background="{DynamicResource GlassTintBrush}" Opacity="0.6" CornerRadius="12" />
+                </Grid>
+
+                <Border x:Name="GridOfflineMode"
+                Width="256"
+                VerticalAlignment="Center" HorizontalAlignment="Center"
+                Background="{DynamicResource MainBackgroundBrushServer}"
+                BorderThickness="1"
+                CornerRadius="14"
+                Padding="15" IsVisible="False" ZIndex="10">
+                    <StackPanel>
+                        <TextBlock x:Name="Loc_TxtOfflineAccountTitle" Text="Офлайн акаунт"
+                           HorizontalAlignment="Center" Margin="0,0,0,15"
+                           Foreground="{DynamicResource MainForegroundBrush}"
+                           FontSize="14" FontWeight="SemiBold" />
+
+                        <TextBox x:Name="NameNikManeger"
+                            PlaceholderText="Нік..."
+                            Height="35" Margin="0,0,0,15"
+                            FontSize="12" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" VerticalContentAlignment="Center">
+                            <TextBox.InnerLeftContent>
+                                <ic:SymbolIcon Symbol="ContactCard" FontSize="20" Margin="10,0,0,0" />
+                            </TextBox.InnerLeftContent>
+                        </TextBox>
+
+                        <Button x:Name="CreateAccount_Offline"
+                           Content="Створити"
+                           Height="35"
+                           HorizontalAlignment="Stretch"
+                           HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                           Click="CreateAccount_Offline_Click"
+                           Background="{DynamicResource MainBackgroundButton}"
+                           Foreground="{DynamicResource MainForegroundBrush}" Cursor="Hand" />
+                    </StackPanel>
+                </Border>
+
+                <Border x:Name="GridLittleSkinMode"
+                Width="256"
+                VerticalAlignment="Center" HorizontalAlignment="Center"
+                Background="{DynamicResource MainBackgroundBrushServer}"
+                BorderThickness="1"
+                CornerRadius="14"
+                Padding="15"
+                IsVisible="False" ZIndex="10">
+
+                    <StackPanel>
+                        <TextBlock x:Name="Loc_TxtLittleSkinTitle" Text="LittleSkin акаунт"
+                           HorizontalAlignment="Center" Margin="0,0,0,15"
+                           Foreground="{DynamicResource MainForegroundBrush}"
+                           FontSize="14" FontWeight="SemiBold" />
+
+                        <TextBox x:Name="Login_LittleSkin"
+                            PlaceholderText="Пошта..."
+                            Height="35" Margin="0,0,0,10"
+                            FontSize="12" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" VerticalContentAlignment="Center">
+                            <TextBox.InnerLeftContent>
+                                <ic:SymbolIcon Symbol="ContactCard" FontSize="20" Margin="10,0,0,0" />
+                            </TextBox.InnerLeftContent>
+                        </TextBox>
+
+                        <TextBox x:Name="PasswordLittleSkin"
+                                PlaceholderText="Пароль..."
+                                PasswordChar="•"
+                                Height="35" Margin="0,0,0,5"
+                                FontSize="12" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" VerticalContentAlignment="Center">
+                            <TextBox.InnerLeftContent>
+                                <ic:SymbolIcon Symbol="Password" FontSize="20" Margin="10,0,0,0" />
+                            </TextBox.InnerLeftContent>
+                        </TextBox>
+
+                        <Button x:Name="NoAccount_"
+                                    Content="Немає акаунту?"
+                                    Classes="Hyperlink"
+                                    HorizontalAlignment="Center" Margin="0,0,0,10"
+                                    Foreground="#FF3100FF" FontWeight="Bold" />
+
+                        <Button x:Name="LoginAccountLittleSkin"
+                           Content="Увійти"
+                           Height="35"
+                           HorizontalAlignment="Stretch"
+                           HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                           Click="LoginAccountLittleSkin_Click"
+                           Background="{DynamicResource MainBackgroundButton}"
+                           Foreground="{DynamicResource MainForegroundBrush}" Cursor="Hand" />
+                    </StackPanel>
+                </Border>
+
+                <Border x:Name="GridOnlineMode"
+                Width="256"
+                VerticalAlignment="Center" HorizontalAlignment="Center"
+                Background="{DynamicResource MainBackgroundBrushServer}"
+                BorderThickness="1"
+                CornerRadius="14"
+                Padding="15"
+                IsVisible="False" ZIndex="10">
+
+                    <StackPanel>
+                        <TextBlock x:Name="Loc_TxtMicrosoftTitle" Text="Microsoft-онлайн акаунт"
+                           HorizontalAlignment="Center" Margin="0,0,0,15"
+                           Foreground="{DynamicResource MainForegroundBrush}"
+                           FontSize="14" FontWeight="SemiBold" />
+
+                        <Button x:Name="CreateAccount_Online"
+                           Height="35"
+                           HorizontalAlignment="Stretch"
+                           HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                           Click="MicrosoftLoginButton_Click"
+                           Background="{DynamicResource MainBackgroundButton}"
+                           Foreground="{DynamicResource MainForegroundBrush}" Cursor="Hand">
+                           <StackPanel Orientation="Horizontal" Spacing="5">
+                               <ic:SymbolIcon Symbol="Person" />
+                               <TextBlock Text="Увійти через Microsoft" />
+                           </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Border>
+
+                <Grid x:Name="GridSelectAccountType" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,81,0,0"
+              Width="260" IsVisible="False" ZIndex="30">
+                    <Border BorderThickness="1" Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="8">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center"
+                            Margin="10">
+
+                            <Border CornerRadius="5" Padding="5" Cursor="Hand" PointerPressed="MicrosoftAccount_MouseDown"
+                            ToolTip.Tip="Microsoft Account" Background="Transparent">
+                                <Border.Styles>
+                                    <Style Selector="Border:pointerover">
+                                        <Setter Property="Background" Value="#33FFFFFF" />
+                                    </Style>
+                                </Border.Styles>
+                                <Image x:Name="MicrosoftAccount" Source="/Assets/microsoft logo.png" Width="32" Height="32"
+                               RenderOptions.BitmapInterpolationMode="HighQuality" />
+                            </Border>
+
+                            <Border CornerRadius="5" Padding="5" Cursor="Hand" PointerPressed="OfflineAccount_MouseDown"
+                            Margin="20,0" ToolTip.Tip="Offline Account" Background="Transparent">
+                                <Border.Styles>
+                                    <Style Selector="Border:pointerover">
+                                        <Setter Property="Background" Value="#33FFFFFF" />
+                                    </Style>
+                                </Border.Styles>
+                                <Image x:Name="OfflineAccount" Source="/Assets/default_steve.png" Width="32"
+                               Height="32" RenderOptions.BitmapInterpolationMode="HighQuality" />
+                            </Border>
+
+                            <Border CornerRadius="5" Padding="5" Cursor="Hand" PointerPressed="LittleSkinAccount_MouseDown"
+                            ToolTip.Tip="LittleSkin Account" Background="Transparent">
+                                <Border.Styles>
+                                    <Style Selector="Border:pointerover">
+                                        <Setter Property="Background" Value="#33FFFFFF" />
+                                    </Style>
+                                </Border.Styles>
+                                <Image x:Name="LittleSkinAccount" Source="/Assets/LittleSkinAccount.png" Width="32" Height="32"
+                               RenderOptions.BitmapInterpolationMode="HighQuality" />
+                            </Border>
+
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+        <Grid x:Name="FundraiserOverlay" ZIndex="998" PointerPressed="FundraiserOverlay_MouseDown" IsVisible="False">
+            <Grid>
+                <Border CornerRadius="12" IsVisible="{DynamicResource GlassVisibility}">
+                    <Border.Background>
+                        <VisualBrush Visual="{Binding #MainBackgroundContainer}"
+                                     Stretch="None"
+                                     AlignmentX="Center"
+                                     AlignmentY="Bottom" />
+                    </Border.Background>
+                    <Border.Effect>
+                        <BlurEffect Radius="{DynamicResource GlassBlurRadius}" />
+                    </Border.Effect>
+                </Border>
+                <Border CornerRadius="12" Background="{DynamicResource GlassTintBrush}" />
+            </Grid>
+
+            <Border Width="380" MaxHeight="550" Background="{DynamicResource MainBackgroundBrushServer}"
+                    CornerRadius="16" BorderBrush="#FFB74D" BorderThickness="1" Padding="20"
+                    HorizontalAlignment="Center" VerticalAlignment="Center" PointerPressed="FundraiserCard_MouseDown"
+                    BoxShadow="0 5 30 0 #80000000">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <Grid Grid.Row="0" Margin="0,0,0,15">
+                        <TextBlock x:Name="Loc_TxtFundTitle" Text="АКТУАЛЬНІ ЗБОРИ" Foreground="#FFB74D"
+                                   FontWeight="Bold" FontSize="18" VerticalAlignment="Center" />
+                        <Button Background="Transparent" BorderThickness="0"
+                                Foreground="{DynamicResource MainForegroundBrush}"
+                                HorizontalAlignment="Right" VerticalAlignment="Center" Click="CloseFundraiser_Click"
+                                Cursor="Hand" Padding="0">
+                             <ic:SymbolIcon Symbol="Dismiss" FontSize="24" />
+                        </Button>
+                    </Grid>
+
+                    <progRing:ProgressRing Grid.Row="1" IsActive="True" Width="40" Height="40" Foreground="#FFB74D"
+                                           x:Name="FundLoader" VerticalAlignment="Center" />
+                    <TextBlock Grid.Row="1" x:Name="NoActiveFundsTXT" Text="Наразі немає активних зборів."
+                               Foreground="White" Opacity="0.7" HorizontalAlignment="Center" VerticalAlignment="Center"
+                               IsVisible="False" />
+
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled" Margin="0,0,-10,0" Padding="0,0,10,0">
+                        <ItemsControl x:Name="FundraisersList">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="models:FundraiserData3rd">
+                                    <Border Background="#111111" CornerRadius="12" Margin="0,0,0,15" Padding="15"
+                                            BorderBrush="#33FFFFFF" BorderThickness="1">
+                                        <StackPanel>
+                                            <Border CornerRadius="8" ClipToBounds="True" Height="140" Margin="0,0,0,10"
+                                                    Background="#222222">
+                                                <Image Source="{Binding ImageBitmap}" Stretch="Uniform" />
+                                            </Border>
+
+                                            <TextBlock Text="{Binding title}" Foreground="White" FontWeight="Bold"
+                                                       FontSize="16" Margin="0,0,0,15" HorizontalAlignment="Center"
+                                                       TextWrapping="Wrap" TextAlignment="Center" />
+
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="10" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+
+                                                <Button x:Name="Loc_BtnFundSupport" Grid.Column="0"
+                                                        Content="{Binding SupportText}" Background="#FF9800"
+                                                        Foreground="Black" FontWeight="Bold"
+                                                        HorizontalAlignment="Stretch" Height="36"
+                                                        HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                                                        Click="BtnFund_Click" Tag="{Binding fundUrl}" Cursor="Hand"
+                                                        BorderThickness="0" />
+
+                                                <Button x:Name="Loc_BtnFundDetails" Grid.Column="2"
+                                                        Content="{Binding DetailsText}" Background="Transparent"
+                                                        BorderBrush="#FF9800" Foreground="#FFB74D"
+                                                        BorderThickness="1" HorizontalAlignment="Stretch"
+                                                        HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                                                        Height="36" Click="BtnDetails_Click"
+                                                        Tag="{Binding detailsUrl}" Cursor="Hand" />
+                                            </Grid>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <Grid x:Name="TutorialGrid" ZIndex="999" IsVisible="False">
+            <Border IsVisible="{DynamicResource GlassVisibility}">
+                <Border.Background>
+                    <VisualBrush Visual="{Binding #MainBackgroundContainer}" Stretch="None" />
+                </Border.Background>
+                <Border.Effect>
+                    <BlurEffect Radius="{DynamicResource GlassBlurRadius}" />
+                </Border.Effect>
+            </Border>
+            <Border CornerRadius="12" Background="{DynamicResource GlassTintBrush}" />
+
+            <Grid HorizontalAlignment="Center" VerticalAlignment="Center" Width="800" Height="450">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Image Grid.Column="0"
+                       Height="400"
+                       VerticalAlignment="Bottom"
+                       RenderOptions.BitmapInterpolationMode="HighQuality"
+                       Margin="0,0,-50,-40"
+                       ZIndex="1" />
+
+                <Border Grid.Column="1"
+                        x:Name="TutorialBorder"
+                        Background="{DynamicResource MainBackgroundBrushServer}"
+                        BorderThickness="1"
+                        CornerRadius="20"
+                        Margin="20,0,0,100"
+                        VerticalAlignment="Center"
+                        Padding="20"
+                        BoxShadow="0 5 20 0 #66000000">
+
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <StackPanel>
+                            <TextBlock x:Name="TutorialHelloText" Text="Привіт, я Сіель!"
+                                       FontSize="24" FontWeight="Bold"
+                                       Foreground="{DynamicResource MainForegroundBrush}"
+                                       FontFamily="Inter 18pt 18pt"
+                                       HorizontalAlignment="Left" />
+
+                            <TextBlock x:Name="QuestionTXT"
+                                       Text="Я підготувала для тебе детальну документацію по лаунчеру. Хочеш поглянути?"
+                                       TextWrapping="Wrap"
+                                       FontSize="18"
+                                       Foreground="{DynamicResource MainForegroundBrush}"
+                                       Opacity="0.9"
+                                       Margin="5,10,5,20"
+                                       FontFamily="Inter 18pt 18pt" />
+                        </StackPanel>
+
+                        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right">
+                            <Button x:Name="NoQuestionTutorialButton"
+                                    Content="Ні, дякую"
+                                    Width="120" Height="40"
+                                    Click="NoQuestionTutorialButton_MouseDown"
+                                    Cursor="Hand" Margin="0,0,10,0"
+                                    Background="{DynamicResource MainBackgroundButton}"
+                                    Foreground="{DynamicResource MainForegroundBrush}" BorderThickness="0"
+                                    HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
+
+                            <Button x:Name="YesQuestionTutorialButton"
+                                    Width="150" Height="40"
+                                    Click="YesQuestionTutorialButton_MouseDown"
+                                    Cursor="Hand" BorderThickness="0"
+                                    Foreground="{DynamicResource MainForegroundBrush}"
+                                    Background="{DynamicResource MainBackgroundButton}"
+                                    HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <ic:SymbolIcon Symbol="BookOpen" FontSize="20" />
+                                    <TextBlock Text="Так, давай!" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Grid>
+
+        <Grid x:Name="TutorialOverlay" ZIndex="1000" IsVisible="False">
+            <Path x:Name="TutorialOverlayPath" Fill="#CC000000" Stretch="None" HorizontalAlignment="Left" VerticalAlignment="Top">
+                <Path.Data>
+                    <CombinedGeometry GeometryCombineMode="Exclude">
+                        <CombinedGeometry.Geometry1>
+                            <RectangleGeometry Rect="0,0,2000,2000" />
+                        </CombinedGeometry.Geometry1>
+
+                        <CombinedGeometry.Geometry2>
+                            <RectangleGeometry Rect="0,0,0,0" RadiusX="5" RadiusY="5" />
+                        </CombinedGeometry.Geometry2>
+                    </CombinedGeometry>
+                </Path.Data>
+            </Path>
+
+            <Border x:Name="TutorialMessageParams"
+                    HorizontalAlignment="Left" VerticalAlignment="Top"
+                    Background="White" CornerRadius="8" Padding="15"
+                    Width="300"
+                    BoxShadow="0 5 15 0 #66000000">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0" Padding="0,0,5,0">
+                    <StackPanel>
+                        <TextBlock x:Name="TutorialTitleText" Text="Довідка тут!" FontWeight="Bold" FontSize="16"
+                                   Foreground="Black" Margin="0,0,0,5" />
+                        <TextBlock x:Name="TutorialBodyText"
+                                   Text="Якщо що, я (документація) завжди поряд з вами! Звертайтесь, якщо потрібно, натиснувши на цю кнопку. &quot;Інформація&quot;&gt;&quot;Документація&quot;"
+                                   TextWrapping="Wrap" Foreground="#555" Margin="0,0,0,15" />
+
+                        <Button x:Name="Loc_BtnUnderstood" Content="Зрозуміло, далі" Click="CloseTutorial_Click"
+                                HorizontalAlignment="Right" Padding="15,5"
+                                Background="{DynamicResource MainBackgroundButton}"
+                                Foreground="{DynamicResource MainForegroundBrush}" BorderThickness="0"
+                                HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+
+        <Grid x:Name="ExportProgressOverlay" ZIndex="1000" IsVisible="False">
+            <Border IsVisible="{DynamicResource GlassVisibility}">
+                <Border.Background>
+                    <VisualBrush Visual="{Binding #MainBackgroundContainer}" Stretch="None" />
+                </Border.Background>
+                <Border.Effect>
+                    <BlurEffect Radius="{DynamicResource GlassBlurRadius}" />
+                </Border.Effect>
+            </Border>
+            <Border CornerRadius="12" Background="{DynamicResource GlassTintBrush}" />
+
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                <progRing:ProgressRing x:Name="ExportProgressRing" IsActive="True" Width="80" Height="80"
+                                       Foreground="{DynamicResource MainBackgroundProgressBar}" />
+
+                <TextBlock x:Name="ExportProgressText" Text="Експорт збірки: 0%"
+                           Margin="0,20,0,0" FontSize="18" FontFamily="Inter"
+                           FontWeight="SemiBold" Foreground="{DynamicResource MainForegroundBrush}"
+                           HorizontalAlignment="Center" TextAlignment="Center" />
+
+                <ProgressBar x:Name="ExportProgressBar" Minimum="0" Maximum="100" Value="0"
+                             Width="260" Height="6" CornerRadius="3" Margin="0,15,0,0"
+                             Foreground="{DynamicResource MainBackgroundProgressBar}"
+                             Background="#33FFFFFF" HorizontalAlignment="Center" />
+            </StackPanel>
+        </Grid>
+
+</Grid>
+</LayoutTransformControl>
+</Window>

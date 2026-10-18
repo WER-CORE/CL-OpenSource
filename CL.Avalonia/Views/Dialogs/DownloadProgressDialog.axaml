@@ -1,0 +1,147 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:fluentIcons="using:FluentIcons.Avalonia"
+        xmlns:vm="using:CL_CLegendary_Launcher_.Avalonia.ViewModels.Dialogs"
+        x:DataType="vm:DownloadProgressViewModel"
+        mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="400"
+        x:Class="CL_CLegendary_Launcher_.Avalonia.Views.Dialogs.DownloadProgressDialog"
+        Title="{Binding TitleText}" Width="600"
+        SizeToContent="Height" MinHeight="300"
+        Background="Transparent"
+        TransparencyLevelHint="Transparent"
+        WindowDecorations="None"
+        WindowStartupLocation="CenterScreen"
+        FontFamily="Inter">
+
+    <Window.Styles>
+        <Style Selector="ProgressBar">
+            <Setter Property="Height" Value="10"/>
+            <Setter Property="Background" Value="{DynamicResource MainBackgroundBrushServer}"/>
+            <Setter Property="Foreground" Value="{DynamicResource MainBackgroundProgressBar}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Grid>
+                        <Border Name="PART_Track" CornerRadius="5" Background="{TemplateBinding Background}"/>
+                        <Border Name="PART_Indicator" CornerRadius="5" HorizontalAlignment="Left" Background="{TemplateBinding Foreground}"/>
+                    </Grid>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+
+        <Style Selector="ProgressBar /template/ Border#PART_Indicator">
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Property="Width" Duration="0:0:0.2" Easing="LinearEasing"/>
+                </Transitions>
+            </Setter>
+        </Style>
+
+        <Style Selector="Button.close-btn:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#C42B1C"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+
+        <Style Selector="Button.cancelBtn">
+            <Setter Property="Background" Value="{DynamicResource MainBackgroundBrushServer}"/>
+        </Style>
+        <Style Selector="Button.cancelBtn:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#22FFFFFF"/>
+        </Style>
+    </Window.Styles>
+
+    <Border Background="{DynamicResource MainBackgroundBrush}"
+            CornerRadius="12"
+            BorderBrush="#33FFFFFF"
+            BorderThickness="1"
+            Margin="10"
+            BoxShadow="0 2 15 0 #4D000000">
+
+        <Grid x:Name="MainGird" Margin="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="35"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="60"/>
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0" Background="Transparent" PointerPressed="BorderTool_PointerPressed">
+                <Grid Margin="10,0" ColumnDefinitions="*,Auto">
+                    <TextBlock Text="{Binding TitleText}"
+                               VerticalAlignment="Center"
+                               Foreground="{DynamicResource MainForegroundBrush}"
+                               FontSize="12" FontWeight="SemiBold" />
+
+                    <Button Grid.Column="1" Classes="close-btn" Command="{Binding ExitLauncherCommand}"
+                            Background="Transparent" BorderThickness="0"
+                            Foreground="{DynamicResource MainForegroundBrush}"
+                            Width="35" Height="30" Padding="0" Cursor="Hand"
+                            CornerRadius="6" ToolTip.Tip="Закрити вікно">
+                        <fluentIcons:SymbolIcon Symbol="Dismiss" FontSize="16" />
+                    </Button>
+                </Grid>
+            </Border>
+
+            <StackPanel Grid.Row="1" VerticalAlignment="Center" Margin="25,0">
+                <Grid Margin="0,0,0,5">
+                    <TextBlock Text="{Binding FileTXTName}" FontWeight="Bold" Foreground="{DynamicResource MainForegroundBrush}" FontSize="14" TextTrimming="CharacterEllipsis"/>
+                    <TextBlock Text="{Binding ProgressFileDowloadTXT}" HorizontalAlignment="Right" Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.7"/>
+                </Grid>
+
+                <ProgressBar Value="{Binding ProgressDowloadFile}" Height="8" Minimum="0" Maximum="100"/>
+
+                <TextBlock Text="{Binding FileTXT}" FontSize="11" Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6" Margin="0,5,0,0"/>
+            </StackPanel>
+
+            <StackPanel Grid.Row="2" VerticalAlignment="Center" Margin="25,0">
+                <Grid Margin="0,0,0,5">
+                    <TextBlock Text="{Binding VersionTXT}" Foreground="{DynamicResource MainForegroundBrush}" FontSize="13"/>
+                    <TextBlock Text="{Binding ProgressDowloadTXT}" HorizontalAlignment="Right" Foreground="{DynamicResource MainForegroundBrush}" FontWeight="Bold"/>
+                </Grid>
+
+                <ProgressBar Value="{Binding ProgressDowloadVersion}" Height="12" Minimum="0" Maximum="100"/>
+            </StackPanel>
+
+            <Border Grid.Row="3" IsVisible="{Binding IsParallelDownloadsVisible}" Margin="25,15,25,0" MaxHeight="150" Background="#11FFFFFF" CornerRadius="8" Padding="5">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <ItemsControl ItemsSource="{Binding ActiveDownloads}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="5,5">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="40"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <TextBlock Grid.Column="0" Grid.Row="0" Text="{Binding FileName}" Foreground="{DynamicResource MainForegroundBrush}" FontSize="11" TextTrimming="CharacterEllipsis" Opacity="0.8"/>
+                                    <TextBlock Grid.Column="1" Grid.Row="0" Text="{Binding Progress, StringFormat={}{0}%}" Foreground="{DynamicResource MainForegroundBrush}" FontSize="10" HorizontalAlignment="Right" Opacity="0.8"/>
+                                    <ProgressBar Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Value="{Binding Progress}" Height="4" Margin="0,3,0,0" Minimum="0" Maximum="100"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Border>
+
+            <Grid Grid.Row="4" VerticalAlignment="Center">
+                <Button Height="36"
+                        CornerRadius="18"
+                        BorderBrush="#33FFFFFF" BorderThickness="1"
+                        Cursor="Hand"
+                        Classes="cancelBtn"
+                        Margin="24,0,19,0"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"
+                        Command="{Binding CancelDownloadCommand}">
+                    <TextBlock Text="{Binding CancelButtonText}" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource MainForegroundBrush}" FontWeight="SemiBold"/>
+                </Button>
+            </Grid>
+        </Grid>
+    </Border>
+</Window>

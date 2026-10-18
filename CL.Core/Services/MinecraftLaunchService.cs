@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,7 +19,6 @@ namespace CL.Core.Services
         public bool FullScreen { get; init; }
     }
 
-    /// Запуск гри без залежностей від UI: усе, що потрібно, приходить у LaunchRequest.
     public sealed class MinecraftLaunchService
     {
         private readonly MinecraftLauncher _launcher;

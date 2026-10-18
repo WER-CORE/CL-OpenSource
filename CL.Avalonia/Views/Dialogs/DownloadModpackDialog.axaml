@@ -1,0 +1,265 @@
+﻿<Window x:Class="CL_CLegendary_Launcher_.Avalonia.Views.Dialogs.DownloadModpackDialog"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:ui="using:FluentAvalonia.UI.Controls"
+        xmlns:progRing="clr-namespace:AvaloniaProgressRing;assembly=AvaloniaProgressRing"
+        xmlns:vm="using:CL_CLegendary_Launcher_.Avalonia.ViewModels.Dialogs"
+        xmlns:controls="using:CL_CLegendary_Launcher_.Avalonia.ViewModels.Controls"
+        xmlns:viewsControls="using:CL_CLegendary_Launcher_.Avalonia.Views.Controls"
+        xmlns:fluentIcons="using:FluentIcons.Avalonia"
+        xmlns:conv="using:CL_CLegendary_Launcher_.Avalonia.Converters"
+        x:DataType="vm:DownloadModpackDialogViewModel"
+        mc:Ignorable="d" d:DesignWidth="450" d:DesignHeight="550"
+        Title="{Binding WindowTitle}" Height="550" Width="450"
+        WindowStartupLocation="CenterOwner"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaTitleBarHeightHint="-1"
+        WindowDecorations="None"
+        TransparencyLevelHint="Mica"
+        Background="Transparent"
+        Foreground="{DynamicResource MainForegroundBrush}"
+        FontFamily="Inter">
+
+    <Window.Styles>
+        <Style Selector="Button.close-btn:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#C42B1C"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+    </Window.Styles>
+
+    <Window.Resources>
+        <conv:StringEqualityToOpacityConverter x:Key="SiteOpacityConverter" />
+        <ControlTheme x:Key="TabButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{DynamicResource MainForegroundBrush}" />
+            <Setter Property="Padding" Value="10,5" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Border Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" Padding="{TemplateBinding Padding}">
+                        <ContentPresenter Content="{TemplateBinding Content}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                </ControlTemplate>
+            </Setter>
+            <Style Selector="^:pointerover">
+                <Setter Property="Background" Value="{DynamicResource MainBackgroundBrushServer}" />
+            </Style>
+        </ControlTheme>
+    </Window.Resources>
+
+    <Border Background="{DynamicResource MainBackgroundBrush}" CornerRadius="12" BorderThickness="1" BorderBrush="#33808080" ClipToBounds="True">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="35" />
+                <RowDefinition Height="50" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="70" />
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0" Background="Transparent" PointerPressed="Header_PointerPressed">
+                <Grid Margin="10,0" ColumnDefinitions="*,Auto">
+                    <TextBlock Text="{Binding WindowTitle}"
+                               VerticalAlignment="Center"
+                               Foreground="{DynamicResource MainForegroundBrush}"
+                               FontSize="12" FontWeight="SemiBold" />
+
+                    <Button Grid.Column="1" Classes="close-btn" Click="ExitButton_Click"
+                            Background="Transparent" BorderThickness="0"
+                            Foreground="{DynamicResource MainForegroundBrush}"
+                            Width="35" Height="30" Padding="0" Cursor="Hand"
+                            CornerRadius="6" ToolTip.Tip="Закрити вікно">
+                        <fluentIcons:SymbolIcon Symbol="Dismiss" FontSize="16" />
+                    </Button>
+                </Grid>
+            </Border>
+
+            <Grid Grid.Row="1" Margin="15,5,15,5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <Button Grid.Column="0" Command="{Binding ImportCommand}" IsEnabled="{Binding CanInteract}"
+                        Width="90" Height="32" Margin="0,0,10,0"
+                        Background="{DynamicResource MainBackgroundBrushServer}"
+                        CornerRadius="8" Cursor="Hand"
+                        ToolTip.Tip="Встановити модпак з .zip або .mrpack файлу">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <fluentIcons:SymbolIcon Symbol="ArrowImport" FontSize="16" Margin="0,0,5,0" />
+                        <TextBlock Text="{Binding ImportButtonText}" FontSize="12" Foreground="{DynamicResource MainForegroundBrush}" />
+                    </StackPanel>
+                </Button>
+
+                <TextBox Grid.Column="1" Height="32" CornerRadius="8"
+                         Text="{Binding SearchQuery, Mode=TwoWay}"
+                         IsEnabled="{Binding CanInteract}"
+                         Background="Transparent"
+                         BorderThickness="0"
+                         Foreground="{DynamicResource MainForegroundBrush}"
+                         VerticalContentAlignment="Center" Padding="10,0" FontSize="13"
+                         PlaceholderText="{Binding SearchPlaceholder}"
+                         ToolTip.Tip="Введіть назву для пошуку">
+                    <TextBox.InnerLeftContent>
+                        <fluentIcons:SymbolIcon Symbol="Search" Margin="5,0" />
+                    </TextBox.InnerLeftContent>
+                    <TextBox.Styles>
+                        <Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
+                            <Setter Property="Background" Value="Transparent" />
+                            <Setter Property="BorderThickness" Value="0" />
+                        </Style>
+                        <Style Selector="TextBox:pointerover /template/ Border#PART_BorderElement">
+                            <Setter Property="Background" Value="Transparent" />
+                            <Setter Property="BorderThickness" Value="0" />
+                        </Style>
+                    </TextBox.Styles>
+                </TextBox>
+
+                <Border Grid.Column="2" Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="8" Padding="6,0" Margin="10,0,0,0"
+                        IsEnabled="{Binding CanInteract}">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Spacing="8">
+                        <Button Background="Transparent" Padding="0" Command="{Binding SelectSiteCommand}" CommandParameter="Modrinth" Cursor="Hand" ToolTip.Tip="Шукати на Modrinth">
+                            <Image Source="avares://CL.Avalonia/Assets/1200-818013157 1.png" Width="20" Height="20" Opacity="{Binding SelectedSite, Converter={StaticResource SiteOpacityConverter}, ConverterParameter=Modrinth}" />
+                        </Button>
+                        <Button Background="Transparent" Padding="0" Command="{Binding SelectSiteCommand}" CommandParameter="CurseForge" Cursor="Hand" ToolTip.Tip="Шукати на CurseForge">
+                            <Image Source="avares://CL.Avalonia/Assets/curseforge-logo-3499974474.png" Width="20" Height="20" Opacity="{Binding SelectedSite, Converter={StaticResource SiteOpacityConverter}, ConverterParameter=CurseForge}" />
+                        </Button>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <Grid Grid.Row="2" Margin="15,10,15,5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="100" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Grid Grid.Column="0" Margin="0,0,10,0" IsEnabled="{Binding CanInteract}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" Text="{Binding Step1Title}" FontSize="10" FontWeight="SemiBold" Opacity="0.5" Margin="2,0,0,5" Foreground="{DynamicResource MainForegroundBrush}" />
+
+                    <Border Grid.Row="1" Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="8" Margin="0,0,0,10">
+                        <ListBox ItemsSource="{Binding McVersions}" SelectedItem="{Binding SelectedMcVersion}"
+                                 Foreground="{DynamicResource MainForegroundBrush}" Background="Transparent"
+                                 BorderThickness="0" FontSize="12" Padding="5" />
+                    </Border>
+
+                    <TextBlock Grid.Row="2" Text="{Binding LoaderTitle}" FontSize="10" FontWeight="SemiBold" Opacity="0.5" Margin="2,0,0,5" Foreground="{DynamicResource MainForegroundBrush}" />
+
+                    <Border Grid.Row="3" Height="32" Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="8" ToolTip.Tip="Тип завантажувача">
+                        <ComboBox ItemsSource="{Binding Loaders}" SelectedItem="{Binding SelectedLoader}"
+                                  Foreground="{DynamicResource MainForegroundBrush}" Background="Transparent"
+                                  BorderThickness="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                                  FontSize="12" Cursor="Hand" HorizontalAlignment="Stretch" />
+                    </Border>
+                </Grid>
+
+                <Grid Grid.Column="1" IsEnabled="{Binding CanInteract}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" Text="{Binding Step2Title}" FontSize="10" FontWeight="SemiBold" Opacity="0.5" Margin="2,0,0,5" Foreground="{DynamicResource MainForegroundBrush}" />
+
+                    <Border Grid.Row="1" Background="Transparent" ClipToBounds="True">
+                        <Grid>
+
+                            <ProgressBar IsIndeterminate="True"
+                                         IsVisible="{Binding IsLoading}"
+                                         Height="3"
+                                         VerticalAlignment="Top"
+                                         HorizontalAlignment="Stretch"
+                                         Foreground="{DynamicResource MainBackgroundProgressBar}"
+                                         ZIndex="10"/>
+
+                            <StackPanel IsVisible="{Binding IsLoading}" VerticalAlignment="Top" Margin="0,5,0,0">
+                                <viewsControls:ModSearchCardSkeleton />
+                                <viewsControls:ModSearchCardSkeleton />
+                                <viewsControls:ModSearchCardSkeleton />
+                                <viewsControls:ModSearchCardSkeleton />
+                                <viewsControls:ModSearchCardSkeleton />
+                                <viewsControls:ModSearchCardSkeleton />
+                                <viewsControls:ModSearchCardSkeleton />
+                                <viewsControls:ModSearchCardSkeleton />
+                            </StackPanel>
+
+                            <ListBox x:Name="ModpacksList" ItemsSource="{Binding Modpacks}" SelectedItem="{Binding SelectedModpack}"
+                                     IsVisible="{Binding !IsLoading}"
+                                     Foreground="{DynamicResource MainForegroundBrush}" Background="Transparent"
+                                     BorderThickness="0" Margin="0,0,0,10">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate x:DataType="controls:ModpackSearchResultViewModel">
+                                        <Border BorderThickness="1" Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="8" Margin="0,0,0,5" Padding="10,5">
+                                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                                <Image Grid.Column="0" Source="{Binding Icon}" Height="24" Width="24" VerticalAlignment="Center" RenderOptions.BitmapInterpolationMode="HighQuality"/>
+                                                <TextBlock Grid.Column="1" Text="{Binding Name}" VerticalAlignment="Center" Margin="10,0" FontSize="12" FontFamily="Inter" Foreground="{DynamicResource MainForegroundBrush}" TextTrimming="CharacterEllipsis"/>
+                                                <Button Grid.Column="2" Padding="0" Background="Transparent" Width="36" Height="36" Cursor="Hand" Command="{Binding OpenDetailsCommand}" ToolTip.Tip="Відкрити сторінку">
+                                                    <fluentIcons:SymbolIcon Symbol="Open" FontSize="18" Foreground="{DynamicResource MainForegroundBrush}" />
+                                                </Button>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </Grid>
+                    </Border>
+
+                    <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,5,0,0">
+                        <Button Command="{Binding PrevPageCommand}" IsEnabled="{Binding HasPrevPage}"
+                                Classes="transparent" Margin="0,0,10,0" Width="40" Height="32" CornerRadius="8" Cursor="Hand">
+                            <fluentIcons:SymbolIcon Symbol="ChevronLeft" FontSize="18" />
+                        </Button>
+                        <Border Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="8" Height="32" Padding="20,0">
+                            <TextBlock Text="{Binding CurrentPageDisplay}" VerticalAlignment="Center" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource MainForegroundBrush}" />
+                        </Border>
+                        <Button Command="{Binding NextPageCommand}" IsEnabled="{Binding HasNextPage}"
+                                Classes="transparent" Margin="10,0,0,0" Width="40" Height="32" CornerRadius="8" Cursor="Hand">
+                            <fluentIcons:SymbolIcon Symbol="ChevronRight" FontSize="18" />
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Grid>
+
+            <Grid Grid.Row="3" Margin="15,0,15,15" ColumnDefinitions="*,140">
+                <StackPanel Grid.Column="0" Margin="0,0,10,0" VerticalAlignment="Center" IsEnabled="{Binding CanInteract}">
+                    <TextBlock Text="{Binding Step3Title}" FontSize="10" FontWeight="SemiBold" Opacity="0.5" Margin="2,0,0,3" Foreground="{DynamicResource MainForegroundBrush}" />
+                    <Border Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="10">
+                        <ComboBox ItemsSource="{Binding PackVersions}" SelectedItem="{Binding SelectedPackVersion}"
+                                  DisplayMemberBinding="{Binding Name}"
+                                  Foreground="{DynamicResource MainForegroundBrush}"
+                                  Background="Transparent" BorderThickness="0"
+                                  HorizontalAlignment="Stretch" Padding="10,0" Height="36" Cursor="Hand" />
+                    </Border>
+                </StackPanel>
+
+                <Button Grid.Column="1" Command="{Binding DownloadCommand}" IsEnabled="{Binding CanDownload}"
+                        Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="10" Height="36"
+                        Cursor="Hand" ToolTip.Tip="Почати встановлення обраної версії" VerticalAlignment="Bottom">
+                    <TextBlock Text="{Binding DownloadProgressText}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource MainForegroundBrush}" />
+                </Button>
+            </Grid>
+
+            <Border Grid.Row="1" Grid.RowSpan="3" Background="#E6181818" CornerRadius="0,0,12,12"
+                    IsVisible="{Binding IsImporting}" ZIndex="100">
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="12">
+                    <ProgressBar Value="{Binding ProgressValue}" Minimum="0" Maximum="100" Width="260" Height="8" CornerRadius="4"
+                                 Foreground="{DynamicResource MainBackgroundProgressBar}" />
+                    <TextBlock Text="{Binding DownloadProgressText}" HorizontalAlignment="Center"
+                               FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource MainForegroundBrush}" />
+                    <TextBlock Text="{Binding ImportOverlayText}" HorizontalAlignment="Center"
+                               FontSize="11" Opacity="0.7" Foreground="{DynamicResource MainForegroundBrush}" />
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

@@ -1,0 +1,401 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:fluentIcons="using:FluentIcons.Avalonia"
+        xmlns:vm="using:CL_CLegendary_Launcher_.Avalonia.ViewModels.Dialogs"
+        xmlns:cvm="using:CL_CLegendary_Launcher_.Avalonia.ViewModels.Controls"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="500"
+        x:Class="CL_CLegendary_Launcher_.Avalonia.Views.Dialogs.EditModpackDialog"
+        x:DataType="vm:EditModpackDialogViewModel"
+        Title="{Binding DialogTitle}" Height="500" Width="800"
+        WindowStartupLocation="CenterOwner"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaTitleBarHeightHint="-1"
+        WindowDecorations="None"
+        TransparencyLevelHint="Mica"
+        Background="Transparent"
+        FontFamily="Inter">
+
+    <Window.Styles>
+
+        <Style Selector="Button.tab-item">
+            <Setter Property="Height" Value="35"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Padding" Value="15,0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.15"/>
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Button.tab-item:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#15FFFFFF"/>
+        </Style>
+        <Style Selector="Button.tab-item.selected">
+            <Setter Property="Background" Value="{DynamicResource MainBackgroundButton}"/>
+        </Style>
+        <Style Selector="Button.tab-item.selected /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource MainBackgroundButton}"/>
+        </Style>
+
+        <Style Selector="Button.close-btn:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#C42B1C"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+    </Window.Styles>
+
+    <Border Background="{DynamicResource MainBackgroundBrush}" CornerRadius="12" ClipToBounds="True">
+        <Grid RowDefinitions="35,*">
+
+            <Border Grid.Row="0" Background="Transparent" PointerPressed="Header_PointerPressed">
+                <Grid Margin="10,0" ColumnDefinitions="*,Auto">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding DialogTitle}"
+                                   VerticalAlignment="Center" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource MainForegroundBrush}" FontSize="12" />
+                    </StackPanel>
+
+                    <Button Grid.Column="1" Classes="close-btn" Command="{Binding CloseWindowCommand}"
+                            Background="Transparent" BorderThickness="0"
+                            Foreground="{DynamicResource MainForegroundBrush}"
+                            Width="35" Height="30" Padding="0" Cursor="Hand"
+                            CornerRadius="6">
+                        <fluentIcons:SymbolIcon Symbol="Dismiss" FontSize="16" />
+                    </Button>
+                </Grid>
+            </Border>
+
+            <Grid Grid.Row="1" Margin="15,0,15,15" ColumnDefinitions="200,*">
+
+                <Border Grid.Column="0" Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="12"
+                        Margin="0,0,15,0" Padding="10">
+                    <StackPanel Spacing="5">
+                        <Button Classes="tab-item"
+                                Classes.selected="{Binding SelectedTabIndex, Converter={StaticResource EqualityConverter}, ConverterParameter=0}"
+                                Command="{Binding SwitchTabCommand}" CommandParameter="0">
+                            <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                                <fluentIcons:SymbolIcon Symbol="Box" FontSize="18" Foreground="{DynamicResource MainForegroundBrush}" />
+                                <TextBlock Text="{Binding TabMods}" VerticalAlignment="Center" Foreground="{DynamicResource MainForegroundBrush}" FontSize="13" />
+                            </StackPanel>
+                        </Button>
+
+                        <Button Classes="tab-item"
+                                Classes.selected="{Binding SelectedTabIndex, Converter={StaticResource EqualityConverter}, ConverterParameter=1}"
+                                Command="{Binding SwitchTabCommand}" CommandParameter="1">
+                            <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                                <fluentIcons:SymbolIcon Symbol="ColorBackground" FontSize="18" Foreground="{DynamicResource MainForegroundBrush}" />
+                                <TextBlock Text="{Binding TabResourcePacks}" VerticalAlignment="Center" Foreground="{DynamicResource MainForegroundBrush}" FontSize="13" />
+                            </StackPanel>
+                        </Button>
+
+                        <Button Classes="tab-item"
+                                Classes.selected="{Binding SelectedTabIndex, Converter={StaticResource EqualityConverter}, ConverterParameter=2}"
+                                Command="{Binding SwitchTabCommand}" CommandParameter="2">
+                            <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                                <fluentIcons:SymbolIcon Symbol="Lightbulb" FontSize="18" Foreground="{DynamicResource MainForegroundBrush}" />
+                                <TextBlock Text="{Binding TabShaders}" VerticalAlignment="Center" Foreground="{DynamicResource MainForegroundBrush}" FontSize="13" />
+                            </StackPanel>
+                        </Button>
+
+                        <Button Classes="tab-item"
+                                Classes.selected="{Binding SelectedTabIndex, Converter={StaticResource EqualityConverter}, ConverterParameter=3}"
+                                Command="{Binding SwitchTabCommand}" CommandParameter="3">
+                            <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                                <fluentIcons:SymbolIcon Symbol="Map" FontSize="18" Foreground="{DynamicResource MainForegroundBrush}" />
+                                <TextBlock Text="{Binding TabMaps}" VerticalAlignment="Center" Foreground="{DynamicResource MainForegroundBrush}" FontSize="13" />
+                            </StackPanel>
+                        </Button>
+
+                        <Button Classes="tab-item"
+                                Classes.selected="{Binding SelectedTabIndex, Converter={StaticResource EqualityConverter}, ConverterParameter=4}"
+                                Command="{Binding SwitchTabCommand}" CommandParameter="4">
+                            <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                                <fluentIcons:SymbolIcon Symbol="Settings" FontSize="18" Foreground="{DynamicResource MainForegroundBrush}" />
+                                <TextBlock Text="{Binding TabOptions}" VerticalAlignment="Center" Foreground="{DynamicResource MainForegroundBrush}" FontSize="13" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Border>
+
+                <Grid Grid.Column="1">
+
+                    <Grid IsVisible="{Binding SelectedTabIndex, Converter={StaticResource InequalityConverter}, ConverterParameter=4}"
+                          RowDefinitions="Auto,*">
+
+                        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,15">
+                            <TextBox Grid.Column="0" Text="{Binding SearchQuery, Mode=TwoWay}"
+                                     PlaceholderText="{Binding SearchPlaceholder}"
+                                     Background="Transparent" BorderThickness="0"
+                                     Height="40" CornerRadius="8" Margin="0,0,10,0" VerticalContentAlignment="Center"
+                                     Padding="10,0" FontSize="13"
+                                     Foreground="{DynamicResource MainForegroundBrush}">
+                                <TextBox.InnerLeftContent>
+                                    <fluentIcons:SymbolIcon Symbol="Search" FontSize="18" Margin="8,0,5,0" Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.7"/>
+                                </TextBox.InnerLeftContent>
+                                <TextBox.Styles>
+                                    <Style Selector="TextBox /template/ Border#PART_BorderElement">
+                                        <Setter Property="Background" Value="Transparent" />
+                                        <Setter Property="BorderThickness" Value="0" />
+                                    </Style>
+                                    <Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
+                                        <Setter Property="Background" Value="Transparent" />
+                                        <Setter Property="BorderThickness" Value="0" />
+                                    </Style>
+                                    <Style Selector="TextBox:pointerover /template/ Border#PART_BorderElement">
+                                        <Setter Property="Background" Value="Transparent" />
+                                        <Setter Property="BorderThickness" Value="0" />
+                                    </Style>
+                                </TextBox.Styles>
+                            </TextBox>
+
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="5">
+                                <Button Command="{Binding DownloadModCommand}"
+                                        Height="40" CornerRadius="8"
+                                        Background="{DynamicResource MainBackgroundButton}"
+                                        Foreground="{DynamicResource MainForegroundBrush}" Cursor="Hand"
+                                        Padding="15,0">
+                                    <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                        <fluentIcons:SymbolIcon Symbol="ArrowDownload" FontSize="18" />
+                                        <TextBlock Text="{Binding DownloadBtnText}" VerticalAlignment="Center" FontWeight="SemiBold" />
+                                    </StackPanel>
+                                </Button>
+
+                                <Button Command="{Binding AddFileCommand}"
+                                        Height="40" CornerRadius="8"
+                                        Background="{DynamicResource MainBackgroundButton}"
+                                        Foreground="{DynamicResource MainForegroundBrush}" Cursor="Hand"
+                                        Padding="15,0">
+                                    <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                        <fluentIcons:SymbolIcon Symbol="Add" FontSize="18" />
+                                        <TextBlock Text="{Binding AddFileBtnText}" VerticalAlignment="Center" FontWeight="SemiBold" />
+                                    </StackPanel>
+                                </Button>
+                            </StackPanel>
+                        </Grid>
+
+                        <Border Grid.Row="1" Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="12" Padding="10">
+                            <ListBox ItemsSource="{Binding ItemsList}" Background="Transparent" BorderThickness="0"
+                                     ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate DataType="cvm:EditModpackItemViewModel">
+                                        <Border Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="8" Padding="10,5" Margin="0,0,0,5">
+                                            <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+                                                <Panel Grid.Column="0" Width="24" Height="24" Margin="0,0,10,0" VerticalAlignment="Center">
+                                                    <fluentIcons:SymbolIcon Symbol="Document" FontSize="20"
+                                                                            Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.7"
+                                                                            IsVisible="{Binding Icon, Converter={x:Static ObjectConverters.IsNull}}"/>
+                                                    <Image Source="{Binding Icon}" Stretch="UniformToFill"/>
+                                                </Panel>
+
+                                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding Name}" Foreground="{DynamicResource MainForegroundBrush}" FontSize="13" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                                    <TextBlock Text="{Binding Description}" Foreground="{DynamicResource MainForegroundBrush}" FontSize="11" Opacity="0.6" TextTrimming="CharacterEllipsis"
+                                                               IsVisible="{Binding Description, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                                                </StackPanel>
+
+                                                <ToggleSwitch Grid.Column="2" OnContent="{x:Null}" OffContent="{x:Null}" IsChecked="{Binding IsEnabled, Mode=TwoWay}" Margin="10,0" VerticalAlignment="Center" Cursor="Hand" />
+
+                                                <Button Grid.Column="3" Command="{Binding DeleteCommand}" Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="5" ToolTip.Tip="Видалити файл">
+                                                    <fluentIcons:SymbolIcon Symbol="Delete" Foreground="#FF5555" FontSize="18" />
+                                                </Button>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </Border>
+                    </Grid>
+
+                    <ScrollViewer IsVisible="{Binding SelectedTabIndex, Converter={StaticResource EqualityConverter}, ConverterParameter=4}"
+                                  VerticalScrollBarVisibility="Auto" Margin="0,-10,0,0">
+                        <StackPanel Margin="0,10,0,0" Spacing="15">
+
+                            <StackPanel Spacing="5">
+                                <TextBlock Text="{Binding VersionSectionTitle}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource MainForegroundBrush}" Margin="5,0,0,0" />
+                                <Border CornerRadius="8" Background="{DynamicResource MainBackgroundBrushServer}" Padding="10">
+                                    <StackPanel Spacing="5">
+
+                                        <Grid Height="35" ColumnDefinitions="*,Auto">
+                                            <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                                                <fluentIcons:SymbolIcon Symbol="Cube" FontSize="18" Foreground="{DynamicResource MainForegroundBrush}" />
+                                                <TextBlock Text="{Binding McVersionTitle}" VerticalAlignment="Center" Foreground="{DynamicResource MainForegroundBrush}" FontSize="14" />
+                                            </StackPanel>
+                                            <ComboBox Grid.Column="1" ItemsSource="{Binding AvailableMcVersions}" SelectedItem="{Binding MinecraftVersion, Mode=TwoWay}" Width="150" Height="32" />
+                                        </Grid>
+
+                                        <Separator Background="#20FFFFFF" Margin="0,5" IsVisible="{Binding !IsVanilla}" />
+
+                                        <Grid Height="35" ColumnDefinitions="*,Auto" IsVisible="{Binding !IsVanilla}">
+                                            <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                                                <fluentIcons:SymbolIcon Symbol="Cube" FontSize="18" Foreground="{DynamicResource MainForegroundBrush}" />
+                                                <TextBlock Text="{Binding LoaderTypeTitle}" VerticalAlignment="Center" Foreground="{DynamicResource MainForegroundBrush}" FontSize="14" />
+                                            </StackPanel>
+                                            <ComboBox Grid.Column="1" ItemsSource="{Binding AvailableLoaders}" SelectedItem="{Binding LoaderType, Mode=TwoWay}" Width="150" Height="32" />
+                                        </Grid>
+
+                                        <Separator Background="#20FFFFFF" Margin="0,5" IsVisible="{Binding !IsVanilla}" />
+
+                                        <Grid Height="35" ColumnDefinitions="*,Auto" IsVisible="{Binding !IsVanilla}">
+                                            <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                                                <fluentIcons:SymbolIcon Symbol="PuzzlePiece" FontSize="18" Foreground="{DynamicResource MainForegroundBrush}" />
+                                                <TextBlock Text="{Binding LoaderVersionTitle}" VerticalAlignment="Center" Foreground="{DynamicResource MainForegroundBrush}" FontSize="14" />
+                                            </StackPanel>
+                                            <ComboBox Grid.Column="1" ItemsSource="{Binding AvailableLoaderVersions}" SelectedItem="{Binding LoaderVersion, Mode=TwoWay}" Width="150" Height="32" />
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+
+                            <StackPanel Spacing="5">
+                                <TextBlock Text="{Binding SystemSectionTitle}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource MainForegroundBrush}" Margin="5,0,0,0" />
+                                <Border CornerRadius="8" Background="{DynamicResource MainBackgroundBrushServer}" Padding="10">
+                                    <StackPanel Spacing="5">
+
+                                        <Grid Height="35" ColumnDefinitions="*,Auto">
+                                            <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                                                <fluentIcons:SymbolIcon Symbol="DocumentText" FontSize="18" Foreground="{DynamicResource MainForegroundBrush}" />
+                                                <TextBlock Text="{Binding LogsTitle}" VerticalAlignment="Center" Foreground="{DynamicResource MainForegroundBrush}" FontSize="14" />
+                                            </StackPanel>
+                                            <ToggleSwitch Grid.Column="1" OnContent="{x:Null}" OffContent="{x:Null}" IsChecked="{Binding IsConsoleLogOpened, Mode=TwoWay}" Cursor="Hand" />
+                                        </Grid>
+
+                                        <Separator Background="#20FFFFFF" Margin="0,5" />
+
+                                        <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,5,0,0">
+                                            <fluentIcons:SymbolIcon Symbol="Desktop" FontSize="18" Foreground="{DynamicResource MainForegroundBrush}" VerticalAlignment="Center" Margin="0,0,10,0" />
+                                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding RamTitle}" Foreground="{DynamicResource MainForegroundBrush}" FontSize="14" />
+                                                <TextBlock Text="{Binding Ram, StringFormat={}{0} MB}" Foreground="{DynamicResource MainForegroundBrush}" FontSize="11" Opacity="0.7" />
+                                            </StackPanel>
+                                            <Slider Grid.Column="2" Width="150" Minimum="2048" Maximum="{Binding MaxRam}" Value="{Binding Ram, Mode=TwoWay}"
+                                                    SmallChange="512" LargeChange="1024" IsSnapToTickEnabled="True" TickFrequency="512" VerticalAlignment="Center" Cursor="Hand" />
+                                        </Grid>
+
+                                        <Separator Background="#20FFFFFF" Margin="0,5" />
+
+                                        <StackPanel Spacing="8">
+                                            <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                                                <fluentIcons:SymbolIcon Symbol="Code" FontSize="18" Foreground="{DynamicResource MainForegroundBrush}" />
+                                                <StackPanel>
+                                                    <TextBlock Text="{Binding JavaPathTitle}" Foreground="{DynamicResource MainForegroundBrush}" FontSize="14" />
+                                                    <TextBlock Text="{Binding JavaPathDesc}" Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.5" FontSize="11" />
+                                                </StackPanel>
+                                            </StackPanel>
+                                            <Grid ColumnDefinitions="*,Auto,Auto">
+                                                <ComboBox Grid.Column="0" ItemsSource="{Binding AvailableJavaPaths}" SelectedItem="{Binding JavaPath, Mode=TwoWay}"
+                                                          PlaceholderText="Автоматичний пошук Java (за замовчуванням)"
+                                                          HorizontalAlignment="Stretch" Height="32" />
+                                                <Button Grid.Column="1" Command="{Binding ClearJavaCommand}" ToolTip.Tip="Скинути до авто-пошуку"
+                                                        Height="32" Width="34" Margin="6,0,0,0" Padding="0"
+                                                        Background="{DynamicResource MainBackgroundButton}" Foreground="{DynamicResource MainForegroundBrush}"
+                                                        Cursor="Hand" CornerRadius="6">
+                                                    <fluentIcons:SymbolIcon Symbol="Dismiss" FontSize="14" />
+                                                </Button>
+                                                <Button Grid.Column="2" Command="{Binding BrowseJavaCommand}" Content="{Binding BrowseBtnText}"
+                                                        Height="32" Margin="6,0,0,0" Padding="15,0"
+                                                        Background="{DynamicResource MainBackgroundButton}" Foreground="{DynamicResource MainForegroundBrush}"
+                                                        Cursor="Hand" CornerRadius="6" />
+                                            </Grid>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+
+                            <StackPanel Spacing="5">
+                                <TextBlock Text="{Binding GameSectionTitle}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource MainForegroundBrush}" Margin="5,0,0,0" />
+                                <Border CornerRadius="8" Background="{DynamicResource MainBackgroundBrushServer}" Padding="10">
+                                    <StackPanel Spacing="5">
+
+                                        <Grid Height="40" ColumnDefinitions="*,Auto">
+                                            <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                                                <fluentIcons:SymbolIcon Symbol="Maximize" FontSize="18" Foreground="{DynamicResource MainForegroundBrush}" />
+                                                <TextBlock Text="{Binding WindowSizeTitle}" VerticalAlignment="Center" Foreground="{DynamicResource MainForegroundBrush}" FontSize="14" />
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                                <TextBox Text="{Binding WindowWidth, Mode=TwoWay}" Width="60" TextAlignment="Center"
+                                                         Background="{DynamicResource MainBackgroundBrush}" BorderThickness="0" CornerRadius="6" />
+                                                <TextBlock Text="x" VerticalAlignment="Center" Foreground="Gray" Margin="5,0" />
+                                                <TextBox Text="{Binding WindowHeight, Mode=TwoWay}" Width="60" TextAlignment="Center"
+                                                         Background="{DynamicResource MainBackgroundBrush}" BorderThickness="0" CornerRadius="6" />
+                                            </StackPanel>
+                                        </Grid>
+
+                                        <Separator Background="#20FFFFFF" Margin="0,5" />
+
+                                        <Grid Height="40" ColumnDefinitions="*,Auto">
+                                            <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                                                <fluentIcons:SymbolIcon Symbol="ArrowAutofitContent" FontSize="18" Foreground="{DynamicResource MainForegroundBrush}" />
+                                                <StackPanel VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding AutoJoinTitle}" Foreground="{DynamicResource MainForegroundBrush}" FontSize="14" />
+                                                    <TextBox Text="{Binding ServerIp, Mode=TwoWay}" IsEnabled="{Binding EnterInServer}"
+                                                             PlaceholderText="{Binding ServerIpPlaceholder}" FontSize="11"
+                                                             Background="Transparent" BorderThickness="0" Padding="0" Margin="0,2,0,0"
+                                                             Foreground="{DynamicResource MainForegroundBrush}" />
+                                                </StackPanel>
+                                            </StackPanel>
+                                            <ToggleSwitch Grid.Column="1" OnContent="{x:Null}" OffContent="{x:Null}" IsChecked="{Binding EnterInServer, Mode=TwoWay}" Cursor="Hand" />
+                                        </Grid>
+
+                                        <Separator Background="#20FFFFFF" Margin="0,5" />
+
+                                        <Grid Height="40" ColumnDefinitions="*,Auto">
+                                            <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                                                <fluentIcons:SymbolIcon Symbol="ArrowUndo" FontSize="18" Foreground="{DynamicResource MainForegroundBrush}" />
+                                                <StackPanel VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding ResetOptionsTitle}" Foreground="{DynamicResource MainForegroundBrush}" FontSize="14" />
+                                                    <TextBlock Text="{Binding ResetOptionsDesc}" Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.5" FontSize="11" />
+                                                </StackPanel>
+                                            </StackPanel>
+                                            <Button Grid.Column="1" Command="{Binding ResetOptionsCommand}" Content="{Binding ResetBtnText}"
+                                                    Background="{DynamicResource MainBackgroundButton}" Foreground="{DynamicResource MainForegroundBrush}"
+                                                    Height="30" Padding="15,0" CornerRadius="6" Cursor="Hand" />
+                                        </Grid>
+
+                                        <Separator Background="#20FFFFFF" Margin="0,5" />
+
+                                        <Grid Height="40" ColumnDefinitions="*,Auto">
+                                            <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                                                <fluentIcons:SymbolIcon Symbol="Wrench" FontSize="18" Foreground="{DynamicResource MainForegroundBrush}" />
+                                                <StackPanel VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding RepairTitle}" Foreground="{DynamicResource MainForegroundBrush}" FontSize="14" />
+                                                    <TextBlock Text="{Binding RepairDesc}" Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.5" FontSize="11" />
+                                                </StackPanel>
+                                            </StackPanel>
+                                            <Button Grid.Column="1" Command="{Binding RepairModpackCommand}" Content="{Binding RepairBtnText}"
+                                                    Background="{DynamicResource MainBackgroundButton}" Foreground="{DynamicResource MainForegroundBrush}"
+                                                    Height="30" Padding="15,0" CornerRadius="6" Cursor="Hand" />
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+
+                            <StackPanel Spacing="5" Margin="0,0,0,10">
+                                <TextBlock Text="{Binding CustomizationSectionTitle}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource MainForegroundBrush}" Margin="5,0,0,0" />
+                                <Border CornerRadius="8" Background="{DynamicResource MainBackgroundBrushServer}" Padding="10">
+                                    <Grid Height="40" ColumnDefinitions="*,Auto">
+                                        <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                                            <Border Width="24" Height="24" CornerRadius="4" Background="#20FFFFFF" ClipToBounds="True">
+                                                <Image Source="{Binding ModpackIcon}" Stretch="UniformToFill" />
+                                            </Border>
+                                            <TextBlock Text="{Binding ModpackIconTitle}" VerticalAlignment="Center" Foreground="{DynamicResource MainForegroundBrush}" FontSize="14" />
+                                        </StackPanel>
+                                        <Button Grid.Column="1" Command="{Binding ChangeIconCommand}" Content="{Binding ChangeIconBtnText}"
+                                                Background="{DynamicResource MainBackgroundButton}" Foreground="{DynamicResource MainForegroundBrush}"
+                                                Height="30" Padding="15,0" CornerRadius="6" Cursor="Hand" />
+                                    </Grid>
+                                </Border>
+                            </StackPanel>
+
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+            </Grid>
+        </Grid>
+    </Border>
+</Window>

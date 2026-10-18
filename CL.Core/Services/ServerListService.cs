@@ -1,4 +1,4 @@
-using CL.Core.Models;
+﻿using CL.Core.Models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -36,8 +36,7 @@ namespace CL.Core.Services
                         if (data == null) continue;
 
                         string name = data.ContainsKey("name") ? data["name"].ToString() : "Unknown";
-                        
-                        // Apply search filter
+
                         if (!string.IsNullOrEmpty(searchQuery) && !name.Contains(searchQuery, StringComparison.OrdinalIgnoreCase))
                         {
                             continue;
@@ -79,7 +78,7 @@ namespace CL.Core.Services
             }
             catch
             {
-                // We let the caller handle error display
+
                 throw;
             }
 

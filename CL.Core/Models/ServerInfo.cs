@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 namespace CL.Core.Models
 {
@@ -20,6 +20,6 @@ namespace CL.Core.Models
         public string Description { get; set; }
         public string LogoUrl { get; set; }
         public string BgUrl { get; set; }
-        public System.Collections.Generic.List<string> VersionsSupported { get; set; }        
+        public System.Collections.Generic.List<string> VersionsSupported { get; set; }
     }
 }

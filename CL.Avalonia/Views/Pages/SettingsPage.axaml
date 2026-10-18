@@ -1,0 +1,1097 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:ic="using:FluentIcons.Avalonia"
+             xmlns:pages="clr-namespace:CL_CLegendary_Launcher_.Avalonia.Views.Pages"
+             xmlns:vm="using:CL_CLegendary_Launcher_.Avalonia.ViewModels.Pages"
+             mc:Ignorable="d" d:DesignWidth="960" d:DesignHeight="1500"
+             x:Class="CL_CLegendary_Launcher_.Avalonia.Views.Pages.SettingsPage"
+             x:DataType="vm:SettingsPageViewModel">
+    <Grid>
+                <ScrollViewer x:Name="ScrollSetting"
+                      Padding="0,0,0,20" Margin="0,0,0,-38"
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled" IsVisible="True">
+
+                    <Grid x:Name="SettingPanelMinecraft" HorizontalAlignment="Stretch" VerticalAlignment="Top">
+                        <Border CornerRadius="12" Background="{DynamicResource GlassTintBrush}" />
+
+                        <StackPanel Orientation="Vertical" Margin="20,65,20,20">
+
+                            <TextBlock x:Name="Loc_Settings_TitleMinecraft" Text="Майнкрафт" Height="40" FontSize="24"
+                               HorizontalAlignment="Left"
+                               FontFamily="Inter" FontWeight="Bold" Foreground="{DynamicResource MainForegroundBrush}" />
+                            <Grid Height="55" Margin="0,5">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition />
+                                    <ColumnDefinition Width="Auto" MinWidth="63.2" />
+                                </Grid.ColumnDefinitions>
+                                <Border Grid.ColumnSpan="2" BorderThickness="1" CornerRadius="15"
+                                Background="{DynamicResource MainBackgroundBrushServer}" />
+
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="15,0,0,0">
+                                    <TextBlock x:Name="Loc_Settings_DevConsoleTitle" Text="Логи (Консоль розробника)"
+                                       Foreground="{DynamicResource MainForegroundBrush}" FontSize="20"
+                                       FontFamily="Inter" />
+                                    <TextBlock x:Name="Loc_Settings_DevConsoleDesc"
+                                       Text="Відкриває вікно з технічною інформацією під час гри"
+                                       Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6" FontSize="12"
+                                       FontFamily="Inter" Margin="0,2,0,0" />
+                                </StackPanel>
+
+                                <ToggleSwitch OnContent="{x:Null}" OffContent="{x:Null}" Grid.Column="1" x:Name="DebugToggle"
+                                         VerticalAlignment="Center" Margin="0,0,20,0"
+                                         IsChecked="{Binding EnableLog}" Height="36" Cursor="Hand" />
+                            </Grid>
+
+                            <Grid Height="55" Margin="0,5">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition />
+                                    <ColumnDefinition Width="Auto" MinWidth="63.2" />
+                                </Grid.ColumnDefinitions>
+                                <Border Grid.ColumnSpan="2" BorderThickness="1" CornerRadius="15"
+                                Background="{DynamicResource MainBackgroundBrushServer}" />
+
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="15,0,0,0">
+                                    <TextBlock x:Name="Loc_Settings_FullScreenTitle" Text="Повноекраний режим"
+                                       Foreground="{DynamicResource MainForegroundBrush}" FontSize="20"
+                                       FontFamily="Inter" />
+                                    <TextBlock x:Name="Loc_Settings_FullScreenDesc"
+                                       Text="Запускає гру на весь монітор без рамок вікна"
+                                       Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6" FontSize="12"
+                                       FontFamily="Inter" Margin="0,2,0,0" />
+                                </StackPanel>
+
+                                <ToggleSwitch OnContent="{x:Null}" OffContent="{x:Null}" Grid.Column="1" x:Name="FullScreenToggle"
+                                         VerticalAlignment="Center" Margin="0,0,20,0"
+                                         IsChecked="{Binding FullScreen}" Height="36" Cursor="Hand" />
+                            </Grid>
+
+                            <StackPanel>
+                                <Grid Height="55" Margin="0,5">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <Border Grid.ColumnSpan="2" BorderThickness="1" CornerRadius="15"
+                                    Background="{DynamicResource MainBackgroundBrushServer}" />
+
+                                    <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="15,0,0,0">
+                                        <TextBlock x:Name="Loc_Settings_ResolutionTitle" Text="Роздільна здатність екрану"
+                                           Foreground="{DynamicResource MainForegroundBrush}" FontSize="20"
+                                           FontFamily="Inter" />
+                                        <TextBlock x:Name="Loc_Settings_ResolutionDesc" Text="Розмір вікна гри."
+                                           Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6"
+                                           FontSize="12" FontFamily="Inter" Margin="0,2,0,0" />
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="0,0,15,0"
+                                        VerticalAlignment="Center">
+                                        <Button x:Name="MincraftWindowSize" Content="{Binding ResolutionDisplayText}" Width="110" Height="30"
+                                           Command="{Binding ToggleResolutionPickerCommand}"
+                                           Background="{DynamicResource MainBackgroundButton}"
+                                           Foreground="{DynamicResource MainForegroundBrush}" BorderBrush="{x:Null}"
+                                           Margin="0,0,10,0" Cursor="Hand" />
+
+                                        <Button Command="{Binding ResetResolutionCommand}"
+                                           Background="Transparent" BorderThickness="0" Padding="0" Margin="0" Cursor="Hand"
+                                           ToolTip.Tip="Скинути до стандартного розміру">
+                                            <Path
+                                                Data="M17.65,6.35C16.2,4.9 14.21,4 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20C15.73,20 18.84,17.45 19.73,14H17.65C16.83,16.33 14.61,18 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6C13.66,6 15.14,6.69 16.22,7.78L13,11H20V4L17.65,6.35Z"
+                                                Fill="{DynamicResource MainForegroundBrush}" Stretch="Uniform" Width="20"
+                                                Height="20" />
+                                        </Button>
+                                    </StackPanel>
+                                </Grid>
+
+                                <Grid x:Name="EditWditXHeghit" HorizontalAlignment="Right" Margin="0,0,60,10" Width="155"
+                               Height="160" IsVisible="{Binding IsResolutionPickerOpen}">
+                                    <StackPanel>
+                                        <Border x:Name="HandEditScreen" BorderBrush="{DynamicResource MainBackgroundButton}"
+                                        BorderThickness="1" CornerRadius="6" Margin="0,0,0,5"
+                                        Background="{DynamicResource MainBackgroundBrushServer}" Height="50">
+                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="5">
+                                                <TextBox x:Name="Width" Width="50" Height="35" Text="{Binding WidthText, Mode=TwoWay}"
+                                                 Background="Transparent" BorderBrush="{x:Null}"
+                                                 Foreground="{DynamicResource MainForegroundBrush}" FontSize="12"
+                                                 HorizontalContentAlignment="Center" />
+                                                <TextBlock Text="X" FontSize="12"
+                                                   Foreground="{DynamicResource MainForegroundBrush}"
+                                                   VerticalAlignment="Center" />
+                                                <TextBox x:Name="Height" Width="50" Height="35" Text="{Binding HeightText, Mode=TwoWay}"
+                                                 Background="Transparent" BorderBrush="{x:Null}"
+                                                 Foreground="{DynamicResource MainForegroundBrush}" FontSize="12"
+                                                 HorizontalContentAlignment="Center" />
+                                            </StackPanel>
+                                        </Border>
+                                        <Border x:Name="TemplateListScreen" BorderThickness="1" CornerRadius="6"
+                                        BorderBrush="Gray" Background="{DynamicResource MainBackgroundBrushServer}">
+                                            <ListBox x:Name="ScreenSizeListBox"
+                                             ItemsSource="{Binding ResolutionPresets}"
+                                             SelectedItem="{Binding SelectedResolutionPreset, Mode=TwoWay}"
+                                             Background="Transparent" Height="100" BorderBrush="{x:Null}"
+                                             Foreground="{DynamicResource MainForegroundBrush}" />
+                                        </Border>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+
+                            <Grid Height="55" Margin="0,5">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <Border Grid.ColumnSpan="2" BorderThickness="1" CornerRadius="15"
+                                Background="{DynamicResource MainBackgroundBrushServer}" />
+
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="15,0,0,0">
+                                    <TextBlock x:Name="Loc_Settings_RamTitle" Text="Оперативна пам’ять (RAM)"
+                                       Foreground="{DynamicResource MainForegroundBrush}" FontSize="20"
+                                       FontFamily="Inter" />
+                                    <TextBlock x:Name="Loc_Settings_RamDesc"
+                                       Text="Пам'ять для Java. Рекомендовано 4096 MB. Не ставте максимум!"
+                                       Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6" FontSize="12"
+                                       FontFamily="Inter" Margin="0,2,0,0" />
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="0,0,15,0"
+                                    VerticalAlignment="Center">
+                                    <Slider x:Name="OPSlider" Width="200" Minimum="1024" Maximum="{Binding MaxRamAllocation}" Value="{Binding RamAllocation, Mode=TwoWay}"
+                                    SmallChange="512" Margin="0,0,15,0" Cursor="Hand" />
+
+                                    <Button x:Name="SliderOPTXT" Content="{Binding RamAllocationText}" Width="80" Height="30"
+                                       IsHitTestVisible="False"
+                                       Background="{DynamicResource MainBackgroundButton}"
+                                       Foreground="{DynamicResource MainForegroundBrush}" BorderBrush="{x:Null}"
+                                       Margin="0,0,10,0" Cursor="No" />
+
+                                    <Button Command="{Binding ResetRamCommand}"
+                                       Background="Transparent" BorderThickness="0" Padding="0" Margin="0" Cursor="Hand"
+                                       ToolTip.Tip="Скинути до рекомендованих">
+                                        <Path
+                                            Data="M17.65,6.35C16.2,4.9 14.21,4 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20C15.73,20 18.84,17.45 19.73,14H17.65C16.83,16.33 14.61,18 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6C13.66,6 15.14,6.69 16.22,7.78L13,11H20V4L17.65,6.35Z"
+                                            Fill="{DynamicResource MainForegroundBrush}" Stretch="Uniform" Width="20" Height="20" />
+                                    </Button>
+                                </StackPanel>
+                            </Grid>
+
+                            <Grid Height="55" Margin="0,5">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <Border Grid.ColumnSpan="3" BorderThickness="1" CornerRadius="15"
+                                Background="{DynamicResource MainBackgroundBrushServer}" />
+
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="15,0,10,0">
+                                    <TextBlock x:Name="Loc_Settings_PathTitle" Text="Шлях папки для лаунчера"
+                                       Foreground="{DynamicResource MainForegroundBrush}" FontSize="20"
+                                       FontFamily="Inter" />
+                                    <TextBlock x:Name="Loc_Settings_PathDesc"
+                                       Text="Місце зберігання світів, модів та налаштувань"
+                                       Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6" FontSize="12"
+                                       FontFamily="Inter" Margin="0,2,0,0" />
+                                </StackPanel>
+
+                                <Button Grid.Column="1" x:Name="LauncherFloderButton" Content="{Binding LauncherPath}" Height="30"
+                                   HorizontalAlignment="Stretch" Margin="0,0,10,0" VerticalAlignment="Center"
+                                   Command="{Binding ChangeLauncherPathCommand}" BorderBrush="{x:Null}"
+                                   Background="{DynamicResource MainBackgroundButton}"
+                                   Foreground="{DynamicResource MainForegroundBrush}" Cursor="Hand" />
+
+                                <Button Grid.Column="2" Command="{Binding ResetLauncherPathCommand}"
+                                   Background="Transparent" BorderThickness="0" Padding="0" Margin="0,0,15,0" Cursor="Hand"
+                                   ToolTip.Tip="Скинути шлях">
+                                    <Path
+                                        Data="M17.65,6.35C16.2,4.9 14.21,4 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20C15.73,20 18.84,17.45 19.73,14H17.65C16.83,16.33 14.61,18 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6C13.66,6 15.14,6.69 16.22,7.78L13,11H20V4L17.65,6.35Z"
+                                        Fill="{DynamicResource MainForegroundBrush}" Stretch="Uniform" Width="20" Height="20" />
+                                </Button>
+                            </Grid>
+                            <Border x:Name="SettingsBackupBorder" BorderThickness="1" CornerRadius="15"
+                            Background="{DynamicResource MainBackgroundBrushServer}" Padding="15" Margin="0,5">
+                                <StackPanel>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                            <TextBlock x:Name="Loc_Settings_BackupTitle" Text="Автоматичні бекапи світів"
+                                               Foreground="{DynamicResource MainForegroundBrush}" FontSize="20"
+                                               FontFamily="Inter" />
+                                            <TextBlock x:Name="Loc_Settings_BackupDesc"
+                                               Text="Створює копію світу перед кожним запуском гри"
+                                               Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6"
+                                               FontSize="12" FontFamily="Inter" Margin="0,2,0,0" />
+                                        </StackPanel>
+
+                                        <ToggleSwitch OnContent="{x:Null}" OffContent="{x:Null}" Grid.Column="1" x:Name="AutoBackupToggle"
+                                                 VerticalAlignment="Center"
+                                                 IsChecked="{Binding EnableAutoBackup}" Width="43.2" Height="36" Cursor="Hand" />
+                                    </Grid>
+
+                                    <Border Height="1" Background="{DynamicResource MainForegroundBrush}" Opacity="0.1"
+                                    Margin="0,10" />
+
+                                    <Grid x:Name="BackupCountPanel"
+                                  IsEnabled="{Binding IsChecked, ElementName=AutoBackupToggle}">
+                                        <Grid.Styles>
+                                            <Style Selector="Grid:disabled">
+                                                <Setter Property="Opacity" Value="0.4" />
+                                            </Style>
+                                        </Grid.Styles>
+
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                            <TextBlock x:Name="Loc_Settings_BackupCountTitle" Text="Кількість копій"
+                                               Foreground="{DynamicResource MainForegroundBrush}" FontSize="16"
+                                               FontFamily="Inter" />
+                                            <TextBlock x:Name="Loc_Settings_BackupCountDesc"
+                                               Text="Максимальна кількість архівів. Старі будуть видалятися"
+                                               Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6"
+                                               FontSize="12" FontFamily="Inter" Margin="0,2,0,0" />
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal"
+                                            Background="{DynamicResource MainBackgroundButton}" x:Name="CounterPanel">
+                                            <StackPanel.Styles>
+                                                <Style Selector="Border">
+                                                    <Setter Property="CornerRadius" Value="6" />
+                                                </Style>
+                                            </StackPanel.Styles>
+
+                                            <Button Content="-" Command="{Binding DecreaseBackupCountCommand}"
+                                               Width="40" Height="30" FontSize="18" FontWeight="Bold" Padding="0,0,0,2"
+                                               Background="Transparent"
+                                               Foreground="{DynamicResource MainForegroundBrush}" BorderThickness="0"
+                                               Cursor="Hand" />
+
+                                            <TextBlock x:Name="BackupCountText" Text="{Binding MaxAutoBackups}"
+                                                  Width="30" VerticalAlignment="Center" TextAlignment="Center"
+                                                  Foreground="{DynamicResource MainForegroundBrush}" FontWeight="Bold"
+                                                  FontSize="16" />
+
+                                            <Button Content="+" Command="{Binding IncreaseBackupCountCommand}"
+                                               Width="40" Height="30" FontSize="18" FontWeight="Bold" Padding="0,0,0,2"
+                                               Background="Transparent"
+                                               Foreground="{DynamicResource MainForegroundBrush}" BorderThickness="0"
+                                               Cursor="Hand" />
+                                        </StackPanel>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <TextBlock x:Name="Loc_Settings_TitleLauncher" Text="Запускач" Height="40" FontSize="24"
+                               HorizontalAlignment="Left" Margin="0,10,0,0"
+                               FontFamily="Inter" FontWeight="Bold" Foreground="{DynamicResource MainForegroundBrush}" />
+                            <Grid Margin="0,5,0,15">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition />
+                                    <ColumnDefinition Width="Auto" MinWidth="218.2" />
+                                </Grid.ColumnDefinitions>
+
+                                <Border Grid.ColumnSpan="2" BorderThickness="1" CornerRadius="15"
+                                Background="{DynamicResource MainBackgroundBrushServer}" />
+
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="15,10,15,10">
+                                    <TextBlock x:Name="LanguageTitleTXT" Text="Мова інтерфейсу (Language)"
+                                       Foreground="{DynamicResource MainForegroundBrush}" FontSize="20"
+                                       FontFamily="Inter" TextWrapping="Wrap" />
+
+                                    <TextBlock x:Name="LanguageDescTXT" Text="Оберіть мову для лаунчера. Оновлюється миттєво."
+                                       Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6" FontSize="12"
+                                       FontFamily="Inter" Margin="0,2,0,0" TextWrapping="Wrap" />
+
+                                    <HyperlinkButton x:Name="HelpTranslateTXT" Content="Як допомогти з перекладом?"
+                                                NavigateUri="https://uk.crowdin.com/project/clegendary-launcher"
+                                                Foreground="#FF005DF1" Background="{x:Null}" BorderBrush="{x:Null}"
+                                                HorizontalContentAlignment="Left" Padding="0" Margin="0,2,0,0" />
+                                </StackPanel>
+
+                                <ComboBox Grid.Column="1" x:Name="LanguageComboBox" Height="40"
+                                  VerticalAlignment="Center" Margin="2,0,16,0"
+                                  ItemsSource="{Binding Languages}"
+                                  SelectedItem="{Binding SelectedLanguage}"
+                                  IsEnabled="{Binding !IsLoadingLanguage}"
+                                  Background="{DynamicResource MainBackgroundButton}"
+                                  Foreground="{DynamicResource MainForegroundBrush}" Cursor="Hand">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal" Margin="2">
+                                                <Border CornerRadius="3" ClipToBounds="True" Width="24" Height="16"
+                                                Margin="0,0,10,0" VerticalAlignment="Center">
+                                                    <Image Source="{Binding FlagUrl, Converter={StaticResource BitmapConverter}}" Stretch="UniformToFill" />
+                                                </Border>
+
+                                                <TextBlock Text="{Binding Name}"
+                                                   FontWeight="Medium"
+                                                   VerticalAlignment="Center"
+                                                   Width="100" />
+
+                                                <TextBlock Text="{Binding Progress, StringFormat=\{0\}%}"
+                                                   Foreground="LightGray"
+                                                   VerticalAlignment="Center"
+                                                   FontSize="11"
+                                                   Opacity="0.7" />
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                            </Grid>
+
+                            <Grid Height="55" Margin="0,5">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition />
+                                    <ColumnDefinition Width="Auto" MinWidth="63.2" />
+                                </Grid.ColumnDefinitions>
+                                <Border Grid.ColumnSpan="2" BorderThickness="1" CornerRadius="15"
+                                Background="{DynamicResource MainBackgroundBrushServer}" />
+
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="15,0,0,0">
+                                    <TextBlock x:Name="Loc_Settings_SoundTitle" Text="Звуки інтерфейсу"
+                                       Foreground="{DynamicResource MainForegroundBrush}" FontSize="20"
+                                       FontFamily="Inter" />
+                                    <TextBlock x:Name="Loc_Settings_SoundDesc"
+                                       Text="Озвучка кліків та натискань кнопок"
+                                       Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6" FontSize="12"
+                                       FontFamily="Inter" Margin="0,2,0,0" />
+                                </StackPanel>
+
+                                <ToggleSwitch OnContent="{x:Null}" OffContent="{x:Null}" Grid.Column="1" x:Name="SoundToggle"
+                                         VerticalAlignment="Center" Margin="0,0,20,0"
+                                         IsChecked="{Binding EnableSound}" Height="36" Cursor="Hand" />
+                            </Grid>
+
+                            <Grid Height="55" Margin="0,5">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <Border Grid.ColumnSpan="2" BorderThickness="1" CornerRadius="15"
+                                Background="{DynamicResource MainBackgroundBrushServer}" />
+
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="15,0,0,0">
+                                    <TextBlock x:Name="Loc_Settings_ScaleTitle" Text="Масштаб інтерфейсу"
+                                       Foreground="{DynamicResource MainForegroundBrush}" FontSize="20"
+                                       FontFamily="Inter" />
+                                    <TextBlock x:Name="Loc_Settings_ScaleDesc"
+                                       Text="Збільшує або зменшує розмір всіх елементів у лаунчері"
+                                       Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6" FontSize="12"
+                                       FontFamily="Inter" Margin="0,2,0,0" />
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="0,0,15,0" VerticalAlignment="Center">
+                                    <ComboBox x:Name="UIScaleComboBox" Width="100" Height="30" Margin="0,0,10,0"
+                                      ItemsSource="{Binding AvailableUiScales}"
+                                      SelectedItem="{Binding SelectedUiScale}"
+                                      Background="{DynamicResource MainBackgroundButton}"
+                                      Foreground="{DynamicResource MainForegroundBrush}" Cursor="Hand">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding Display}" VerticalAlignment="Center" />
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
+
+                                    <Button Command="{Binding ResetUiScaleCommand}"
+                                       Background="Transparent" BorderThickness="0" Padding="0" Margin="0" Cursor="Hand"
+                                       ToolTip.Tip="Скинути масштаб">
+                                        <Path
+                                            Data="M17.65,6.35C16.2,4.9 14.21,4 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20C15.73,20 18.84,17.45 19.73,14H17.65C16.83,16.33 14.61,18 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6C13.66,6 15.14,6.69 16.22,7.78L13,11H20V4L17.65,6.35Z"
+                                            Fill="{DynamicResource MainForegroundBrush}" Stretch="Uniform" Width="20" Height="20" />
+                                    </Button>
+                                </StackPanel>
+                            </Grid>
+
+                            <Grid Height="55" Margin="0,5">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition />
+                                    <ColumnDefinition Width="Auto" MinWidth="63.2" />
+                                </Grid.ColumnDefinitions>
+                                <Border Grid.ColumnSpan="2" BorderThickness="1" CornerRadius="15"
+                                Background="{DynamicResource MainBackgroundBrushServer}" />
+
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="15,0,0,0">
+                                    <TextBlock x:Name="Loc_Settings_CrashReportTitle" Text="Звіти про помилки"
+                                       Foreground="{DynamicResource MainForegroundBrush}" FontSize="20"
+                                       FontFamily="Inter" />
+                                    <TextBlock x:Name="Loc_Settings_CrashReportDesc"
+                                       Text="Анонімне відправлення даних про критичні збої розробнику для їх виправлення"
+                                       Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6" FontSize="12"
+                                       FontFamily="Inter" Margin="0,2,0,0" />
+                                </StackPanel>
+
+                                <ToggleSwitch OnContent="{x:Null}" OffContent="{x:Null}" Grid.Column="1" x:Name="ToggleCrashReports"
+                                         VerticalAlignment="Center" Margin="0,0,20,0"
+                                         IsChecked="{Binding IsCrashReportingEnabled}" Height="36" Cursor="Hand" />
+                            </Grid>
+                            <Grid Height="55" Margin="0,5">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition />
+                                    <ColumnDefinition Width="Auto" MinWidth="63.2" />
+                                </Grid.ColumnDefinitions>
+                                <Border Grid.ColumnSpan="2" BorderThickness="1" CornerRadius="15"
+                                Background="{DynamicResource MainBackgroundBrushServer}" />
+
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="15,0,0,0">
+                                    <TextBlock x:Name="Loc_Settings_CloseLaunchTitle" Text="Закриття лаунчера під час гри"
+                                       Foreground="{DynamicResource MainForegroundBrush}" FontSize="20"
+                                       FontFamily="Inter" />
+                                    <TextBlock x:Name="Loc_Settings_CloseLaunchDesc"
+                                       Text="Економить ресурси ПК, закриваючи меню після старту"
+                                       Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6" FontSize="12"
+                                       FontFamily="Inter" Margin="0,2,0,0" />
+                                </StackPanel>
+
+                                <ToggleSwitch OnContent="{x:Null}" OffContent="{x:Null}" Grid.Column="1" x:Name="CloseLauncherToggle"
+                                         VerticalAlignment="Center" Margin="0,0,20,0"
+                                         IsChecked="{Binding CloseLauncher}" Height="36" Cursor="Hand" />
+                            </Grid>
+                            <Grid Height="55" Margin="0,5">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition />
+                                    <ColumnDefinition Width="Auto" MinWidth="63.2" />
+                                </Grid.ColumnDefinitions>
+                                <Border Grid.ColumnSpan="2" BorderThickness="1" CornerRadius="15"
+                                Background="{DynamicResource MainBackgroundBrushServer}" />
+
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="15,0,0,0">
+                                    <TextBlock x:Name="Loc_Settings_AutoDepTitle" Text="Автозавантаження залежностей"
+                                       Foreground="{DynamicResource MainForegroundBrush}" FontSize="16"
+                                       FontFamily="Inter" />
+                                    <TextBlock x:Name="Loc_Settings_AutoDepDesc"
+                                       Text="Автоматично додає потрібні бібліотеки (API) до модів"
+                                       Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6" FontSize="12"
+                                       FontFamily="Inter" Margin="0,2,0,0" />
+                                </StackPanel>
+
+                                <ToggleSwitch OnContent="{x:Null}" OffContent="{x:Null}" Grid.Column="1" x:Name="ModDepsToggle"
+                                         VerticalAlignment="Center" Margin="0,0,20,0"
+                                         IsChecked="{Binding ModDep}" Height="36" Cursor="Hand" />
+                            </Grid>
+                            <Grid Height="55" Margin="0,5">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition />
+                                    <ColumnDefinition Width="Auto" MinWidth="63.2" />
+                                </Grid.ColumnDefinitions>
+                                <Border Grid.ColumnSpan="2" BorderThickness="1" CornerRadius="15"
+                                Background="{DynamicResource MainBackgroundBrushServer}" />
+
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="15,0,0,0">
+                                    <TextBlock x:Name="Loc_Settings_GlassTitle" Text="Ефект прозорості (Скло)"
+                                       Foreground="{DynamicResource MainForegroundBrush}" FontSize="20"
+                                       FontFamily="Inter" />
+                                    <TextBlock x:Name="Loc_Settings_GlassDesc"
+                                       Text="Напівпрозорий фон вікна (Mica). Вимкніть, якщо лагає"
+                                       Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6" FontSize="12"
+                                       FontFamily="Inter" Margin="0,2,0,0" />
+                                </StackPanel>
+
+                                <ToggleSwitch OnContent="{x:Null}" OffContent="{x:Null}" Grid.Column="1" x:Name="GlassEffectToggle"
+                                         VerticalAlignment="Center" Margin="0,0,20,0"
+                                         IsChecked="{Binding EnableGlassEffect}" Height="36"
+                                         Cursor="Hand" />
+                            </Grid>
+                            <Border x:Name="ModulesBorder"
+                            BorderThickness="1" CornerRadius="15"
+                            Background="{DynamicResource MainBackgroundBrushServer}"
+                            Padding="15" Margin="0,5"
+                            HorizontalAlignment="Stretch" VerticalAlignment="Top">
+                                <StackPanel>
+
+                                    <StackPanel Margin="0,0,0,15">
+                                        <TextBlock x:Name="Loc_Settings_ModulesTitle" Text="Модульність (Кастомізація)"
+                                           Foreground="{DynamicResource MainForegroundBrush}" FontSize="24"
+                                           FontWeight="Bold" FontFamily="Inter" TextWrapping="Wrap" />
+                                        <TextBlock x:Name="Loc_Settings_ModulesDesc"
+                                           Text="Оберіть готовий шаблон або вимкніть непотрібні функції власноруч:"
+                                           Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6"
+                                           FontSize="12" FontFamily="Inter" Margin="0,2,0,0" TextWrapping="Wrap" />
+                                    </StackPanel>
+
+                                    <Grid Margin="0,0,0,15">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <Button Grid.Column="0" x:Name="Loc_Settings_PresetLiteBtn" Content="Мінімалізм"
+                                           HorizontalAlignment="Stretch" Margin="0,0,5,0" Height="40"
+                                           Background="{DynamicResource MainBackgroundButton}"
+                                           Foreground="{DynamicResource MainForegroundBrush}"
+                                           Command="{Binding ApplyPresetCommand}" CommandParameter="Lite"
+                                           Cursor="Hand" ToolTip.Tip="Вимкнути все зайве" />
+
+                                        <Button Grid.Column="1" x:Name="Loc_Settings_PresetBalanceBtn" Content="Баланс"
+                                           HorizontalAlignment="Stretch" Margin="5,0,5,0" Height="40"
+                                           Background="{DynamicResource MainBackgroundButton}"
+                                           Foreground="{DynamicResource MainForegroundBrush}"
+                                           Command="{Binding ApplyPresetCommand}" CommandParameter="Balance"
+                                           Cursor="Hand" ToolTip.Tip="Оптимальний набір функцій" />
+
+                                        <Button Grid.Column="2" x:Name="Loc_Settings_PresetUltraBtn" Content="Ультра"
+                                           HorizontalAlignment="Stretch" Margin="5,0,0,0" Height="40"
+                                           Background="{DynamicResource MainBackgroundButton}"
+                                           Foreground="{DynamicResource MainForegroundBrush}" BorderBrush="{x:Null}"
+                                           Command="{Binding ApplyPresetCommand}" CommandParameter="Ultra"
+                                           Cursor="Hand" ToolTip.Tip="Увімкнути всі можливості (Комбайн)" />
+                                    </Grid>
+
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition />
+                                            <ColumnDefinition Width="Auto" MinWidth="57.2" />
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+                                        <StackPanel Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,15,0"
+                                            Height="36">
+                                            <TextBlock x:Name="Loc_Settings_ModModpacksTitle" Text="Вкладка «Збірки»"
+                                               Foreground="{DynamicResource MainForegroundBrush}" FontSize="16"
+                                               FontFamily="Inter" />
+                                            <TextBlock x:Name="Loc_Settings_ModModpacksDesc"
+                                               Text="Відображає розділ створення та гри з модовими збірками"
+                                               Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6"
+                                               FontSize="12" FontFamily="Inter" Margin="0,2,0,0" />
+                                        </StackPanel>
+                                        <ToggleSwitch OnContent="{x:Null}" OffContent="{x:Null}" Grid.Row="0" Grid.Column="1" x:Name="ToggleMod_Modpacks"
+                                                 VerticalAlignment="Center" Margin="5,0,5,0" Height="36" Cursor="Hand"
+                                                 IsChecked="{Binding EnableModpacks}" />
+
+                                        <StackPanel Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,15,0"
+                                            Height="35">
+                                            <TextBlock x:Name="Loc_Settings_ModModsTitle" Text="Вкладка «Моди»"
+                                               Foreground="{DynamicResource MainForegroundBrush}" FontSize="16"
+                                               FontFamily="Inter" />
+                                            <TextBlock x:Name="Loc_Settings_ModModsDesc"
+                                               Text="Вбудований завантажувач модифікацій, ресурспаків та шейдерів"
+                                               Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6"
+                                               FontSize="12" FontFamily="Inter" Margin="0,2,0,0" />
+                                        </StackPanel>
+                                        <ToggleSwitch OnContent="{x:Null}" OffContent="{x:Null}" Grid.Row="1" Grid.Column="1" x:Name="ToggleMod_Mods"
+                                                 VerticalAlignment="Center" Margin="5,0,5,0" Height="36" Cursor="Hand"
+                                                 IsChecked="{Binding EnableMods}" />
+
+                                        <StackPanel Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,15,0"
+                                            Height="36">
+                                            <TextBlock x:Name="Loc_Settings_ModServersTitle" Text="Вкладка «Сервери»"
+                                               Foreground="{DynamicResource MainForegroundBrush}" FontSize="16"
+                                               FontFamily="Inter" />
+                                            <TextBlock x:Name="Loc_Settings_ModServersDesc"
+                                               Text="Загальний моніторинг серверів (Плашка партнерів не вимикається)"
+                                               Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6"
+                                               FontSize="12" FontFamily="Inter" Margin="0,2,0,0" />
+                                        </StackPanel>
+                                        <ToggleSwitch OnContent="{x:Null}" OffContent="{x:Null}" Grid.Row="2" Grid.Column="1" x:Name="ToggleMod_Servers"
+                                                 VerticalAlignment="Center" Margin="5,0,5,0" Height="36" Cursor="Hand"
+                                                 IsChecked="{Binding EnableServers}" />
+
+                                        <StackPanel Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,15,0"
+                                            Height="35">
+                                            <TextBlock x:Name="Loc_Settings_ModGalleryTitle" Text="Вкладка «Галерея»"
+                                               Foreground="{DynamicResource MainForegroundBrush}" FontSize="16"
+                                               FontFamily="Inter" />
+                                            <TextBlock x:Name="Loc_Settings_ModGalleryDesc"
+                                               Text="Перегляд та управління скріншотами з гри"
+                                               Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6"
+                                               FontSize="12" FontFamily="Inter" Margin="0,2,0,0" />
+                                        </StackPanel>
+                                        <ToggleSwitch OnContent="{x:Null}" OffContent="{x:Null}" Grid.Row="3" Grid.Column="1" x:Name="ToggleMod_Gallery"
+                                                 VerticalAlignment="Center" Margin="5,0,5,0" Height="36" Cursor="Hand"
+                                                 IsChecked="{Binding EnableGallery}" />
+
+                                        <StackPanel Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,15,0"
+                                            Height="36">
+                                            <TextBlock x:Name="Loc_Settings_ModAITitle" Text="ШІ-Асистент (Agent C.L.)"
+                                               Foreground="{DynamicResource MainForegroundBrush}" FontSize="16"
+                                               FontFamily="Inter" />
+                                            <TextBlock x:Name="Loc_Settings_ModAIDesc"
+                                               Text="Розумний аналіз помилок у вікні логів гри"
+                                               Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6"
+                                               FontSize="12" FontFamily="Inter" Margin="0,2,0,0" />
+                                        </StackPanel>
+                                        <ToggleSwitch OnContent="{x:Null}" OffContent="{x:Null}" Grid.Row="4" Grid.Column="1" x:Name="ToggleMod_AI"
+                                                 VerticalAlignment="Center" Margin="5,0,5,0" Height="36" Cursor="Hand"
+                                                 IsChecked="{Binding EnableAIAgent}" />
+
+                                        <StackPanel Grid.Row="5" Grid.Column="0" VerticalAlignment="Center" Margin="0,5,15,5">
+                                            <TextBlock x:Name="Loc_Settings_ModFilesTitle" Text="Кнопка «Файли та Бекапи»"
+                                               Foreground="{DynamicResource MainForegroundBrush}" FontSize="16"
+                                               FontFamily="Inter" />
+                                            <TextBlock x:Name="Loc_Settings_ModFilesDesc"
+                                               Text="Швидкий доступ до папок та управління архівами світів"
+                                               Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6"
+                                               FontSize="12" FontFamily="Inter" Margin="0,2,0,0" />
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Row="6" Grid.ColumnSpan="2" Margin="30,0,0,5">
+                                            <StackPanel.Styles>
+                                                <Style Selector="StackPanel:disabled">
+                                                    <Setter Property="Opacity" Value="0.4" />
+                                                </Style>
+                                            </StackPanel.Styles>
+
+                                            <Grid Height="30" Margin="0,2">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition />
+                                                    <ColumnDefinition Width="Auto" MinWidth="57.2" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0" x:Name="Loc_Settings_SubFilesMods"
+                                                   Text="↳ Показувати функцію «Відкрити папку...»"
+                                                   Foreground="{DynamicResource MainForegroundBrush}" FontSize="14"
+                                                   FontFamily="Inter" VerticalAlignment="Center" Opacity="0.8"
+                                                   Height="16" />
+                                                <ToggleSwitch OnContent="{x:Null}" OffContent="{x:Null}" Grid.Column="1" x:Name="ToggleSub_FilesMods"
+                                                         VerticalAlignment="Center" Margin="5,0,5,0" Height="36"
+                                                         Cursor="Hand" IsChecked="{Binding EnableSubFiles}" />
+                                            </Grid>
+
+                                            <Grid Height="30" Margin="0,2">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition />
+                                                    <ColumnDefinition Width="Auto" MinWidth="57.2" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0" x:Name="Loc_Settings_SubFilesBackups"
+                                                   Text="↳ Показувати функцію «Менеджер світів (Backups)»"
+                                                   Foreground="{DynamicResource MainForegroundBrush}" FontSize="14"
+                                                   FontFamily="Inter" VerticalAlignment="Center" Opacity="0.8"
+                                                   Height="16" />
+                                                <ToggleSwitch OnContent="{x:Null}" OffContent="{x:Null}" Grid.Column="1" x:Name="ToggleSub_FilesBackups"
+                                                         VerticalAlignment="Center" Margin="5,0,5,0" Height="36"
+                                                         Cursor="Hand" IsChecked="{Binding EnableSubFilesBackups}" />
+                                            </Grid>
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Row="7" Grid.Column="0" VerticalAlignment="Center" Margin="0,10,15,5">
+                                            <TextBlock x:Name="Loc_Settings_ModInfoTitle" Text="Кнопка «Інформація»"
+                                               Foreground="{DynamicResource MainForegroundBrush}" FontSize="16"
+                                               FontFamily="Inter" />
+                                            <TextBlock x:Name="Loc_Settings_ModInfoDesc"
+                                               Text="Меню з посиланнями на новини, Wiki, GitHub та подяки"
+                                               Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6"
+                                               FontSize="12" FontFamily="Inter" Margin="0,2,0,0" />
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Row="8" Grid.ColumnSpan="2" Margin="30,0,0,10">
+                                            <StackPanel.Styles>
+                                                <Style Selector="StackPanel:disabled">
+                                                    <Setter Property="Opacity" Value="0.4" />
+                                                </Style>
+                                            </StackPanel.Styles>
+
+                                            <Grid Height="30" Margin="0,2">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" MinWidth="63.2" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0" x:Name="Loc_Settings_SubInfoBug"
+                                                   Text="↳ Показувати «Повідомити про баг»"
+                                                   Foreground="{DynamicResource MainForegroundBrush}" FontSize="14"
+                                                   FontFamily="Inter" VerticalAlignment="Center" Opacity="0.8" />
+                                                <ToggleSwitch OnContent="{x:Null}" OffContent="{x:Null}" Grid.Column="1" x:Name="ToggleSub_InfoBug"
+                                                         VerticalAlignment="Center" Margin="5,0" Height="30"
+                                                         Cursor="Hand" IsChecked="{Binding EnableSubInfoBug}" />
+                                            </Grid>
+
+                                            <Grid Height="30" Margin="0,2">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" MinWidth="63.2" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0" x:Name="Loc_Settings_SubInfoNews"
+                                                   Text="↳ Показувати «Новини запускача»"
+                                                   Foreground="{DynamicResource MainForegroundBrush}" FontSize="14"
+                                                   FontFamily="Inter" VerticalAlignment="Center" Opacity="0.8" />
+                                                <ToggleSwitch OnContent="{x:Null}" OffContent="{x:Null}" Grid.Column="1" x:Name="ToggleSub_InfoNews"
+                                                         VerticalAlignment="Center" Margin="5,0" Height="30"
+                                                         Cursor="Hand" IsChecked="{Binding EnableSubInfoNews}" />
+                                            </Grid>
+
+                                            <Grid Height="30" Margin="0,2">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" MinWidth="63.2" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0" x:Name="Loc_Settings_SubInfoWiki"
+                                                   Text="↳ Показувати «Документація (Wiki)»"
+                                                   Foreground="{DynamicResource MainForegroundBrush}" FontSize="14"
+                                                   FontFamily="Inter" VerticalAlignment="Center" Opacity="0.8" />
+                                                <ToggleSwitch OnContent="{x:Null}" OffContent="{x:Null}" Grid.Column="1" x:Name="ToggleSub_InfoWiki"
+                                                         VerticalAlignment="Center" Margin="5,0" Height="30"
+                                                         Cursor="Hand" IsChecked="{Binding EnableSubInfoWiki}" />
+                                            </Grid>
+
+                                            <Grid Height="30" Margin="0,2">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" MinWidth="63.2" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0" x:Name="Loc_Settings_SubInfoGithub"
+                                                   Text="↳ Показувати «GitHub (Код)»"
+                                                   Foreground="{DynamicResource MainForegroundBrush}" FontSize="14"
+                                                   FontFamily="Inter" VerticalAlignment="Center" Opacity="0.8" />
+                                                <ToggleSwitch OnContent="{x:Null}" OffContent="{x:Null}" Grid.Column="1" x:Name="ToggleSub_InfoGithub"
+                                                         VerticalAlignment="Center" Margin="5,0" Height="30"
+                                                         Cursor="Hand" IsChecked="{Binding EnableSubInfoGithub}" />
+                                            </Grid>
+
+                                            <Grid Height="30" Margin="0,2">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" MinWidth="63.2" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0" x:Name="Loc_Settings_SubInfoCredits"
+                                                   Text="↳ Показувати «Подяки (Автори та Перекладачі)»"
+                                                   Foreground="{DynamicResource MainForegroundBrush}" FontSize="14"
+                                                   FontFamily="Inter" VerticalAlignment="Center" Opacity="0.8" />
+                                                <ToggleSwitch OnContent="{x:Null}" OffContent="{x:Null}" Grid.Column="1" x:Name="ToggleSub_InfoCredits"
+                                                         VerticalAlignment="Center" Margin="5,0" Height="30"
+                                                         Cursor="Hand" IsChecked="{Binding EnableSubInfoCredits}" />
+                                            </Grid>
+
+                                            <Grid Height="30" Margin="0,2">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" MinWidth="63.2" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0" x:Name="Loc_Settings_SubInfoSupport"
+                                                   Text="↳ Показувати кнопки підтримки та донатів"
+                                                   Foreground="{DynamicResource MainForegroundBrush}" FontSize="14"
+                                                   FontFamily="Inter" VerticalAlignment="Center" Opacity="0.8" />
+                                                <ToggleSwitch OnContent="{x:Null}" OffContent="{x:Null}" Grid.Column="1" x:Name="ToggleSub_InfoSupport"
+                                                         VerticalAlignment="Center" Margin="5,0" Height="30"
+                                                         Cursor="Hand" IsChecked="{Binding EnableSubInfoSupport}" />
+                                            </Grid>
+                                        </StackPanel>
+                                        <StackPanel Grid.Row="9" Grid.Column="0" VerticalAlignment="Center" Margin="0,10,15,5">
+                                            <TextBlock x:Name="Loc_Settings_ModChangelogTitle"
+                                               Text="Блок «Що нового? (Changelog)»"
+                                               Foreground="{DynamicResource MainForegroundBrush}" FontSize="16"
+                                               FontFamily="Inter" />
+                                            <TextBlock x:Name="Loc_Settings_ModChangelogDesc"
+                                               Text="Відображає список змін оновлень гри на головному екрані"
+                                               Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6"
+                                               FontSize="12" FontFamily="Inter" Margin="0,2,0,0" />
+                                        </StackPanel>
+                                        <ToggleSwitch OnContent="{x:Null}" OffContent="{x:Null}" Grid.Row="9" Grid.Column="1" x:Name="ToggleMod_Changelog"
+                                                 VerticalAlignment="Center" Margin="5,4" Height="36" Cursor="Hand"
+                                                 IsChecked="{Binding EnableModChangelog}" />
+
+                                        <StackPanel Grid.Row="10" Grid.Column="0" VerticalAlignment="Center" Margin="0,5,15,5">
+                                            <TextBlock x:Name="Loc_Settings_ModActionsTitle" Text="Блок «Останні дії»"
+                                               Foreground="{DynamicResource MainForegroundBrush}" FontSize="16"
+                                               FontFamily="Inter" />
+                                            <TextBlock x:Name="Loc_Settings_ModActionsDesc"
+                                               Text="Відображає історію запусків та дій на головному екрані"
+                                               Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6"
+                                               FontSize="12" FontFamily="Inter" Margin="0,2,0,0" />
+                                        </StackPanel>
+                                        <ToggleSwitch OnContent="{x:Null}" OffContent="{x:Null}" Grid.Row="10" Grid.Column="1" x:Name="ToggleMod_Actions"
+                                                 VerticalAlignment="Center" Margin="5,4" Height="36" Cursor="Hand"
+                                                 IsChecked="{Binding EnableModLatestActions}" />
+                                        <StackPanel Grid.Row="11" Grid.Column="0" VerticalAlignment="Center" Margin="0,5,15,5">
+                                            <TextBlock x:Name="Loc_Settings_ModDiscordTitle"
+                                               Text="Discord RPC (Ігрова активність)"
+                                               Foreground="{DynamicResource MainForegroundBrush}" FontSize="16"
+                                               FontFamily="Inter" />
+                                            <TextBlock x:Name="Loc_Settings_ModDiscordDesc"
+                                               Text="Відображає ваш статус та ігрову активність у профілі Discord"
+                                               Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6"
+                                               FontSize="12" FontFamily="Inter" Margin="0,2,0,0" />
+                                        </StackPanel>
+                                        <ToggleSwitch OnContent="{x:Null}" OffContent="{x:Null}" Grid.Row="11" Grid.Column="1" x:Name="ToggleMod_Discord"
+                                                 VerticalAlignment="Center" Margin="5,4" Height="36" Cursor="Hand"
+                                                 IsChecked="{Binding EnableModDiscordRPC}" />
+
+                                        <StackPanel Grid.Row="12" Grid.Column="0" VerticalAlignment="Center" Margin="0,5,15,5">
+                                            <TextBlock x:Name="Loc_Settings_ModStatsTitle" Text="Функція Статистики"
+                                               Foreground="{DynamicResource MainForegroundBrush}" FontSize="16"
+                                               FontFamily="Inter" />
+                                            <TextBlock x:Name="Loc_Settings_ModStatsDesc"
+                                               Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6"
+                                               FontSize="12" FontFamily="Inter" Margin="0,2,0,0" />
+                                        </StackPanel>
+                                        <ToggleSwitch OnContent="{x:Null}" OffContent="{x:Null}" Grid.Row="12" Grid.Column="1" x:Name="ToggleMod_Stats"
+                                                 VerticalAlignment="Center" Margin="5,4" Height="36" Cursor="Hand"
+                                                 IsChecked="{Binding EnableModStatistics}" />
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+                            <Border x:Name="ThemBorder"
+                            BorderThickness="1" CornerRadius="15"
+                            Background="{DynamicResource MainBackgroundBrushServer}"
+                            Padding="15" Margin="0,5"
+                            HorizontalAlignment="Stretch" VerticalAlignment="Top">
+                                <StackPanel>
+                                    <Grid Margin="0,0,0,15">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,15,0">
+                                            <TextBlock x:Name="Loc_Settings_ThemeTitle" Text="Тема інтерфейсу"
+                                               Foreground="{DynamicResource MainForegroundBrush}" FontSize="24"
+                                               FontWeight="Bold" FontFamily="Inter" TextWrapping="Wrap" />
+                                            <TextBlock x:Name="Loc_Settings_ThemeDesc"
+                                               Text="Оберіть готовий стиль або створіть власний та поділіться ним"
+                                               Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6"
+                                               FontSize="12" FontFamily="Inter" Margin="0,2,0,0" TextWrapping="Wrap" />
+                                        </StackPanel>
+
+                                        <ComboBox Grid.Column="1" x:Name="ThemeComboBox"
+                                          Width="140" Height="35"
+                                          VerticalAlignment="Top"
+                                          ItemsSource="{Binding AvailableThemes}"
+                                          SelectedItem="{Binding SelectedThemeOption}"
+                                          Background="{DynamicResource MainBackgroundButton}"
+                                          Foreground="{DynamicResource MainForegroundBrush}" Cursor="Hand">
+                                            <ComboBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center" />
+                                                </DataTemplate>
+                                            </ComboBox.ItemTemplate>
+                                        </ComboBox>
+                                    </Grid>
+
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+
+                                        <TextBlock Grid.Row="0" Grid.Column="0" x:Name="Loc_Settings_ThemeSection"
+                                           Text="Колір секції" Foreground="{DynamicResource MainForegroundBrush}"
+                                           FontSize="16" VerticalAlignment="Center" Margin="0,5" FontFamily="Inter" />
+                                        <Button Grid.Row="0" Grid.Column="1" x:Name="Section_colourButton"
+                                           Command="{Binding PickSectionColorCommand}" Content="{Binding SectionColor}" Width="120" Height="32"
+                                           Margin="5,4" Background="{DynamicResource MainBackgroundButton}"
+                                           Foreground="{DynamicResource MainForegroundBrush}" BorderBrush="{x:Null}"
+                                           Cursor="Hand" />
+
+                                        <TextBlock Grid.Row="1" Grid.Column="0" x:Name="Loc_Settings_ThemeBg" Text="Колір фону"
+                                           Foreground="{DynamicResource MainForegroundBrush}" FontSize="16"
+                                           VerticalAlignment="Center" Margin="0,5" FontFamily="Inter" />
+                                        <Button Grid.Row="1" Grid.Column="1" x:Name="Background_colourButton"
+                                           Command="{Binding PickBackgroundColorCommand}" Content="{Binding BackgroundColor}" Width="120" Height="32"
+                                           Margin="5,4" Background="{DynamicResource MainBackgroundButton}"
+                                           Foreground="{DynamicResource MainForegroundBrush}" BorderBrush="{x:Null}"
+                                           Cursor="Hand" />
+
+                                        <TextBlock Grid.Row="2" Grid.Column="0" x:Name="Loc_Settings_ThemeAccent"
+                                           Text="Додатковий колір" Foreground="{DynamicResource MainForegroundBrush}"
+                                           FontSize="16" VerticalAlignment="Center" Margin="0,5" FontFamily="Inter" />
+                                        <Button Grid.Row="2" Grid.Column="1" x:Name="Additional_colourButton"
+                                           Command="{Binding PickAdditionalColorCommand}" Content="{Binding AdditionalColor}" Width="120" Height="32"
+                                           Margin="5,4" Background="{DynamicResource MainBackgroundButton}"
+                                           Foreground="{DynamicResource MainForegroundBrush}" BorderBrush="{x:Null}"
+                                           Cursor="Hand" />
+
+                                        <TextBlock Grid.Row="3" Grid.Column="0" x:Name="Loc_Settings_ThemeText"
+                                           Text="Колір тексту" Foreground="{DynamicResource MainForegroundBrush}"
+                                           FontSize="16" VerticalAlignment="Center" Margin="0,5" FontFamily="Inter" />
+                                        <Button Grid.Row="3" Grid.Column="1" x:Name="Text_colourButton"
+                                           Command="{Binding PickTextColorCommand}" Content="{Binding TextColor}"
+                                           Width="120" Height="32" Margin="5,4"
+                                           Background="{DynamicResource MainBackgroundButton}"
+                                           Foreground="{DynamicResource MainForegroundBrush}" BorderBrush="{x:Null}"
+                                           Cursor="Hand" />
+
+                                        <TextBlock Grid.Row="4" Grid.Column="0" x:Name="Loc_Settings_ThemeBtn"
+                                           Text="Колір кнопки" Foreground="{DynamicResource MainForegroundBrush}"
+                                           FontSize="16" VerticalAlignment="Center" Margin="0,5" FontFamily="Inter" />
+                                        <Button Grid.Row="4" Grid.Column="1" x:Name="Button_colourButton"
+                                           Command="{Binding PickButtonColorCommand}" Content="{Binding ButtonColor}"
+                                           Width="120" Height="32" Margin="5,4"
+                                           Background="{DynamicResource MainBackgroundButton}"
+                                           Foreground="{DynamicResource MainForegroundBrush}" BorderBrush="{x:Null}"
+                                           Cursor="Hand" />
+
+                                        <TextBlock Grid.Row="5" Grid.Column="0" x:Name="Loc_Settings_ThemeImage"
+                                           Text="Зображення фону" Foreground="{DynamicResource MainForegroundBrush}"
+                                           FontSize="16" VerticalAlignment="Center" Margin="0,5" FontFamily="Inter" />
+                                        <Button Grid.Row="5" Grid.Column="1" x:Name="Background_imageButton"
+                                           Command="{Binding PickBackgroundImageCommand}" Content="Файл..." Width="120"
+                                           Height="32" Margin="5,4" Foreground="{DynamicResource MainForegroundBrush}"
+                                           Background="{DynamicResource MainBackgroundButton}" BorderBrush="{x:Null}"
+                                           Cursor="Hand" />
+                                    </Grid>
+
+                                    <Button x:Name="Loc_BtnResetTheme" Command="{Binding ResetThemeCommand}"
+                                       HorizontalAlignment="Right" Margin="0,15,0,0" Cursor="Hand">
+                                       <StackPanel Orientation="Horizontal">
+                                           <ic:SymbolIcon Symbol="ArrowReset" FontSize="20" Margin="0,0,5,0" />
+                                           <TextBlock x:Name="Loc_TxtResetTheme" Text="Скинути" />
+                                       </StackPanel>
+                                    </Button>
+
+                                    <Border BorderThickness="0,1,0,0" BorderBrush="#33FFFFFF" Margin="0,15,0,0"
+                                    Padding="0,15,0,0" Background="{x:Null}">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                                                <TextBlock x:Name="Loc_Settings_ThemeCodeTitle"
+                                                   Text="Код теми (Для головного вікна)"
+                                                   Foreground="{DynamicResource MainForegroundBrush}" FontSize="12"
+                                                   FontFamily="Inter" Margin="0,0,0,5" />
+                                                <TextBox x:Name="ThemeCodeBox" Height="32"
+                                                 Background="{DynamicResource MainBackgroundButton}"
+                                                 Foreground="{DynamicResource MainForegroundBrush}" BorderThickness="0"
+                                                 Padding="8,0" VerticalContentAlignment="Center"
+                                                 Text="{Binding ThemeCode, Mode=TwoWay}" />
+                                            </StackPanel>
+
+                                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Bottom">
+                                                <Button x:Name="Loc_BtnCopyTheme" Content="Копіювати"
+                                                   Command="{Binding CopyThemeCommand}" Width="105" Height="32" Margin="0,0,5,0"
+                                                   Background="{DynamicResource MainBackgroundButton}"
+                                                   Foreground="{DynamicResource MainForegroundBrush}"
+                                                   BorderBrush="{x:Null}" Cursor="Hand" />
+                                                <Button x:Name="Loc_BtnPasteTheme" Content="Вставити"
+                                                   Command="{Binding PasteThemeCommand}" Width="105" Height="32"
+                                                   Background="{DynamicResource MainBackgroundButton}"
+                                                   Foreground="{DynamicResource MainForegroundBrush}"
+                                                   BorderBrush="{x:Null}" Cursor="Hand" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </StackPanel>
+                            </Border>
+                            <Border x:Name="LoadScreenSettingBorder"
+                            BorderThickness="1" CornerRadius="15"
+                            Background="{DynamicResource MainBackgroundBrushServer}"
+                            Padding="15" Margin="0,5"
+                            HorizontalAlignment="Stretch" VerticalAlignment="Top">
+                                <StackPanel>
+                                    <StackPanel Margin="0,0,0,15">
+                                        <TextBlock x:Name="Loc_Settings_LoadScreenTitle" Text="Завантажувальний екран"
+                                           Foreground="{DynamicResource MainForegroundBrush}" FontSize="24"
+                                           FontWeight="Bold" FontFamily="Inter" TextWrapping="Wrap" />
+                                        <TextBlock x:Name="Loc_Settings_LoadScreenDesc"
+                                           Text="Налаштуйте вигляд вікна запуску (Splash Screen) та поділіться своїм стилем"
+                                           Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6"
+                                           FontSize="12" FontFamily="Inter" Margin="0,2,0,0" TextWrapping="Wrap" />
+                                    </StackPanel>
+
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition />
+                                            <ColumnDefinition Width="Auto" MinWidth="127.2" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <StackPanel Grid.Column="0">
+                                            <TextBlock x:Name="Loc_Settings_LoadScreenBg" Text="Зображення фону"
+                                               Foreground="{DynamicResource MainForegroundBrush}" FontSize="16"
+                                               Margin="0,9" FontFamily="Inter" />
+                                            <TextBlock x:Name="Loc_Settings_LoadScreenColor" Text="Колір смужки завантаження"
+                                               Foreground="{DynamicResource MainForegroundBrush}" FontSize="16"
+                                               Margin="0,9" FontFamily="Inter" />
+                                            <TextBlock x:Name="Loc_Settings_LoadScreenPhrases" Text="Кастомні фрази"
+                                               Foreground="{DynamicResource MainForegroundBrush}" FontSize="16"
+                                               Margin="0,9" FontFamily="Inter" ToolTip.Tip="Відкриває текстовий файл..." />
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Column="1" HorizontalAlignment="Center" Width="100">
+                                            <Button x:Name="LoadScreenBgButton" Command="{Binding PickLoadScreenBgCommand}"
+                                               Content="Файл..." Width="109" Height="30" Margin="0,5"
+                                               Foreground="{DynamicResource MainForegroundBrush}"
+                                               Background="{DynamicResource MainBackgroundButton}"
+                                               BorderBrush="{x:Null}" Cursor="Hand" />
+                                            <Button x:Name="LoadScreenColorButton" Command="{Binding PickLoadScreenColorCommand}"
+                                               Content="{Binding LoadScreenColor}" Width="109" Height="30" Margin="0,5"
+                                               Background="{DynamicResource MainBackgroundButton}"
+                                               Foreground="{DynamicResource MainForegroundBrush}"
+                                               BorderBrush="{x:Null}" Cursor="Hand" />
+                                            <Button x:Name="EditPhrasesButton" Command="{Binding EditPhrasesCommand}"
+                                               Content="Текст..." Width="109" Height="30" Margin="0,5"
+                                               Foreground="{DynamicResource MainForegroundBrush}"
+                                               Background="{DynamicResource MainBackgroundButton}"
+                                               BorderBrush="{x:Null}" Cursor="Hand" />
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
+                                        <Button x:Name="Loc_BtnResetLoadScreen"
+                                           Command="{Binding ResetLoadScreenCommand}" Cursor="Hand"
+                                           ToolTip.Tip="Скинути налаштування екрану завантаження">
+                                           <StackPanel Orientation="Horizontal">
+                                               <ic:SymbolIcon Symbol="ArrowReset" FontSize="20" Margin="0,0,5,0" />
+                                               <TextBlock x:Name="Loc_TxtResetLoadScreen" Text="Скинути" />
+                                           </StackPanel>
+                                        </Button>
+                                    </StackPanel>
+
+                                    <Border BorderThickness="0,1,0,0" BorderBrush="#33FFFFFF" Margin="0,15,0,0"
+                                    Padding="0,15,0,0" Background="Transparent">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                                                <TextBlock x:Name="Loc_Settings_LoadScreenCodeTitle"
+                                                   Text="Код теми (Завантажувального екрану)"
+                                                   Foreground="{DynamicResource MainForegroundBrush}" FontSize="12"
+                                                   FontFamily="Inter" Margin="0,0,0,5" />
+                                                <TextBox x:Name="LoadScreenCodeBox" Height="32"
+                                                 Background="{DynamicResource MainBackgroundButton}"
+                                                 Foreground="{DynamicResource MainForegroundBrush}" BorderThickness="0"
+                                                 Padding="8,0" VerticalContentAlignment="Center"
+                                                 Text="{Binding LoadScreenCode, Mode=TwoWay}" />
+                                            </StackPanel>
+
+                                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Bottom">
+                                                <Button x:Name="Loc_BtnCopyLoadScreen" Content="Копіювати"
+                                                   Command="{Binding CopyLoadScreenCommand}" Width="102" Height="32"
+                                                   Margin="0,0,5,0" Background="{DynamicResource MainBackgroundButton}"
+                                                   Foreground="{DynamicResource MainForegroundBrush}"
+                                                   BorderBrush="{x:Null}" Cursor="Hand" />
+                                                <Button x:Name="Loc_BtnPasteLoadScreen" Content="Вставити"
+                                                   Command="{Binding PasteLoadScreenCommand}" Width="97" Height="32"
+                                                   Margin="0,0,0,0" Background="{DynamicResource MainBackgroundButton}"
+                                                   Foreground="{DynamicResource MainForegroundBrush}"
+                                                   BorderBrush="{x:Null}" Cursor="Hand" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </Grid>
+                </ScrollViewer>
+    </Grid>
+</UserControl>

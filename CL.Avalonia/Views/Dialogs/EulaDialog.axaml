@@ -1,0 +1,119 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:models="clr-namespace:CL.Core.Models;assembly=CL.Core"
+        xmlns:fluentIcons="using:FluentIcons.Avalonia"
+        x:Class="CL_CLegendary_Launcher_.Avalonia.Views.Windows.EulaWindow"
+        Title="CL - Agreement" Height="600" Width="900"
+        WindowStartupLocation="CenterScreen"
+        WindowDecorations="None" CanResize="False"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaTitleBarHeightHint="-1"
+        TransparencyLevelHint="Mica"
+        Background="Transparent">
+
+    <Window.Styles>
+        <Style Selector="Button.close-btn:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#C42B1C"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+    </Window.Styles>
+
+    <Grid>
+        <Border CornerRadius="12" Background="#1A1A1A" BorderBrush="#333333" BorderThickness="1" Margin="10" ClipToBounds="True">
+            <Border.BoxShadow>
+                <BoxShadows>0 10 30 0 #80000000</BoxShadows>
+            </Border.BoxShadow>
+
+            <Grid RowDefinitions="35,*">
+                <Border Grid.Row="0" Background="Transparent" PointerPressed="Header_PointerPressed">
+                    <Grid Margin="10,0" ColumnDefinitions="*,Auto">
+                        <TextBlock Text="CL - Угода користувача"
+                                   Foreground="{DynamicResource MainForegroundBrush}"
+                                   FontWeight="SemiBold" FontSize="12"
+                                   VerticalAlignment="Center"/>
+
+                        <Button Grid.Column="1" Classes="close-btn" Click="Decline_Click"
+                                Background="Transparent" BorderThickness="0"
+                                Foreground="{DynamicResource MainForegroundBrush}"
+                                Width="35" Height="30" Padding="0" Cursor="Hand"
+                                CornerRadius="6" ToolTip.Tip="Закрити вікно">
+                            <fluentIcons:SymbolIcon Symbol="Dismiss" FontSize="16" />
+                        </Button>
+                    </Grid>
+                </Border>
+
+                <Grid Grid.Row="1" Margin="20,5,20,15" ColumnDefinitions="250, *">
+
+                <StackPanel Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <TextBlock x:Name="TxtMascotName"
+                               Text="Сіель"
+                               Foreground="{DynamicResource MainForegroundBrush}"
+                               FontSize="24" FontWeight="Bold" HorizontalAlignment="Center"/>
+
+                    <TextBlock x:Name="TxtMascotRole"
+                               Text="Головний адміністратор"
+                               Foreground="Gray"
+                               FontSize="14" HorizontalAlignment="Center" Margin="0,5,0,0" TextWrapping="Wrap" TextAlignment="Center"/>
+                </StackPanel>
+
+                <Grid Grid.Column="1" Margin="20,0,0,0" RowDefinitions="Auto, *, Auto, Auto">
+
+                    <Border Grid.Row="0" Background="#2B2B2B" CornerRadius="0,15,15,15" Margin="0,0,0,15" Padding="15">
+                        <TextBlock x:Name="MascotMessageText"
+                                   Text="Привіт! Тут мають бути важливі правила..."
+                                   Foreground="{DynamicResource MainForegroundBrush}" TextWrapping="Wrap" FontSize="15"/>
+                    </Border>
+
+                    <Border Grid.Row="1" Background="#222222" CornerRadius="10" BorderBrush="#333333" BorderThickness="1">
+                        <ScrollViewer Margin="10,10,-1,10">
+                            <TextBlock x:Name="EulaContentText"
+                                       Foreground="{DynamicResource MainForegroundBrush}" FontSize="13" TextWrapping="Wrap"
+                                       FontFamily="Consolas, Segoe UI" Width="503"/>
+                        </ScrollViewer>
+                    </Border>
+
+                    <Border Grid.Row="2" Background="#2B2B2B" CornerRadius="8" Margin="0,15,0,0" Padding="10,8">
+                        <CheckBox x:Name="ChkAllowCrashReports" IsChecked="True" Cursor="Hand" Background="{DynamicResource MainBackgroundButton}" Foreground="{DynamicResource MainForegroundBrush}">
+                            <TextBlock Foreground="{DynamicResource MainForegroundBrush}" TextWrapping="Wrap">
+                                <Run x:Name="RunCrashTitle" FontWeight="SemiBold" Text="Дозволити анонімну відправку звітів про помилки."/>
+                                <LineBreak/>
+                                <Run x:Name="RunCrashDesc" FontSize="11" Foreground="Gray" Text="Це допоможе нам швидше виправляти баги. Жодні особисті дані не збираються."/>
+                            </TextBlock>
+                        </CheckBox>
+                    </Border>
+
+                    <Grid Grid.Row="3" Margin="0,15,0,0" ColumnDefinitions="Auto, *">
+                        <ComboBox Grid.Column="0" x:Name="LanguageComboBox"
+                                  Width="160" Height="40"
+                                  VerticalContentAlignment="Center" HorizontalContentAlignment="Stretch"
+                                  SelectionChanged="LanguageComboBox_SelectionChanged"
+                                  Background="#2B2B2B" Foreground="{DynamicResource MainForegroundBrush}" BorderBrush="#333333" Cursor="Hand">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate x:DataType="models:LanguageItem">
+                                    <StackPanel Orientation="Horizontal" Margin="2" Background="Transparent">
+                                        <Border CornerRadius="3" ClipToBounds="True" Width="24" Height="16" Margin="0,0,10,0" VerticalAlignment="Center">
+
+                                            <Image Source="{Binding FlagUrl}" Stretch="UniformToFill" />
+                                        </Border>
+                                        <TextBlock Text="{Binding Name}" FontWeight="Medium" VerticalAlignment="Center" Foreground="White"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
+                            <Button x:Name="BtnDecline" Content="Я не згоден (Вихід)" Height="40" Padding="20,0"
+                                    Background="Transparent" Foreground="#FF5555" BorderThickness="0"
+                                    Cursor="Hand" Click="Decline_Click" FontWeight="SemiBold" Margin="0,0,15,0"/>
+
+                            <Button x:Name="BtnAccept" Content="Згода!" Height="40" Padding="30,0"
+                                    Background="#FF1843C9" Foreground="White" BorderThickness="0" CornerRadius="10"
+                                    Cursor="Hand" Click="Accept_Click" FontWeight="Bold"/>
+                        </StackPanel>
+                    </Grid>
+                </Grid>
+                </Grid>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

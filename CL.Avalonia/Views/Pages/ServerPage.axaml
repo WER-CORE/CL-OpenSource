@@ -1,0 +1,355 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:ic="using:FluentIcons.Avalonia"
+             xmlns:pages="clr-namespace:CL_CLegendary_Launcher_.Avalonia.Views.Pages"
+             xmlns:controls="clr-namespace:CL_CLegendary_Launcher_.Avalonia.Views.Controls"
+             xmlns:controlsVm="clr-namespace:CL_CLegendary_Launcher_.Avalonia.ViewModels.Controls"
+             xmlns:progRing="clr-namespace:AvaloniaProgressRing;assembly=AvaloniaProgressRing"
+             mc:Ignorable="d" d:DesignWidth="960" d:DesignHeight="540"
+             x:Class="CL_CLegendary_Launcher_.Avalonia.Views.Pages.ServerPage"
+             x:CompileBindings="False">
+    <Grid>
+        <Grid x:Name="ServerName" IsVisible="True">
+            <Border IsVisible="{DynamicResource GlassVisibility}">
+                <Border.Background>
+                    <VisualBrush Visual="{Binding BackgroundVisual, RelativeSource={RelativeSource AncestorType=pages:ServerPage}}" Stretch="None" />
+                </Border.Background>
+                <Border.Effect>
+                    <BlurEffect Radius="{DynamicResource GlassBlurRadius}" />
+                </Border.Effect>
+            </Border>
+            <Border CornerRadius="12" Background="{DynamicResource GlassTintBrush}" />
+
+            <Border Background="{DynamicResource GlassTintBrush}" Opacity="0.6" />
+
+            <Grid MaxWidth="920" Margin="20,100,20,20">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" MinHeight="60" />
+                            <RowDefinition />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <Grid Grid.Row="0" Margin="0,0,0,15">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="15" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <TextBox x:Name="SearchSystemTXT"
+                                     Grid.Column="0"
+                                     Height="38"
+                                     CornerRadius="8"
+                                     Background="Transparent"
+                                     BorderThickness="0"
+                                     Foreground="{DynamicResource MainForegroundBrush}"
+                                     VerticalContentAlignment="Center"
+                                     Padding="10,0"
+                                     FontSize="13"
+                                     PlaceholderText="Пошук сервера..."
+                                     TextWrapping="NoWrap"
+                                     TextChanged="SearchSystem_TextChanged">
+                                <TextBox.InnerLeftContent>
+                                    <ic:SymbolIcon Symbol="Search" Margin="8,0,4,0" />
+                                </TextBox.InnerLeftContent>
+                                <TextBox.Styles>
+                                    <Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
+                                        <Setter Property="Background" Value="Transparent" />
+                                        <Setter Property="BorderThickness" Value="0" />
+                                    </Style>
+                                    <Style Selector="TextBox:pointerover /template/ Border#PART_BorderElement">
+                                        <Setter Property="Background" Value="Transparent" />
+                                        <Setter Property="BorderThickness" Value="0" />
+                                    </Style>
+                                </TextBox.Styles>
+                            </TextBox>
+
+                            <Border Grid.Column="2" Background="#15FFFFFF" CornerRadius="10" Padding="4" IsVisible="False">
+                                <StackPanel Orientation="Horizontal">
+                                    <RadioButton x:Name="Loc_RadioNormalServers" Content="Звичайні" IsChecked="True"
+                                         Width="100" />
+                                    <RadioButton x:Name="Loc_RadioModdedServers" Content="Модові"
+                                         Width="100" />
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+
+                        <Grid Grid.Row="1">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <Grid Grid.Row="0">
+                                <ListBox x:Name="ServerList"
+                                     Background="Transparent" BorderThickness="0"
+                                     ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                     Foreground="{DynamicResource MainForegroundBrush}"
+                                     ItemsSource="{Binding ServerCards}">
+                                    <ListBox.Styles>
+                                        <Style Selector="ListBox">
+                                            <Setter Property="Background" Value="Transparent" />
+                                            <Setter Property="BorderThickness" Value="0" />
+                                        </Style>
+                                        <Style Selector="ListBox /template/ Border#border">
+                                            <Setter Property="Background" Value="Transparent" />
+                                            <Setter Property="BorderThickness" Value="0" />
+                                        </Style>
+                                        <Style Selector="ListBox /template/ ScrollViewer#PART_ScrollViewer">
+                                            <Setter Property="Background" Value="Transparent" />
+                                        </Style>
+                                        <Style Selector="ListBoxItem">
+                                            <Setter Property="HorizontalContentAlignment" Value="Center" />
+                                            <Setter Property="Padding" Value="0" />
+                                            <Setter Property="Margin" Value="0,4" />
+                                            <Setter Property="Background" Value="Transparent" />
+                                            <Setter Property="BorderThickness" Value="0" />
+                                        </Style>
+                                        <Style Selector="ListBoxItem /template/ ContentPresenter#PART_ContentPresenter">
+                                            <Setter Property="Background" Value="Transparent" />
+                                            <Setter Property="BorderThickness" Value="0" />
+                                        </Style>
+                                        <Style Selector="ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter">
+                                            <Setter Property="Background" Value="Transparent" />
+                                            <Setter Property="BorderThickness" Value="0" />
+                                        </Style>
+                                        <Style Selector="ListBoxItem:selected:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+                                            <Setter Property="Background" Value="Transparent" />
+                                            <Setter Property="BorderThickness" Value="0" />
+                                        </Style>
+                                        <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+                                            <Setter Property="Background" Value="Transparent" />
+                                            <Setter Property="BorderThickness" Value="0" />
+                                        </Style>
+                                        <Style Selector="ListBoxItem:pressed /template/ ContentPresenter#PART_ContentPresenter">
+                                            <Setter Property="Background" Value="Transparent" />
+                                            <Setter Property="BorderThickness" Value="0" />
+                                        </Style>
+                                    </ListBox.Styles>
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate x:DataType="controlsVm:ServerCardViewModel">
+                                            <controls:ServerCard />
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+
+                                <StackPanel x:Name="ServerCardSkeletonTemplate"
+                                            VerticalAlignment="Top"
+                                            HorizontalAlignment="Center"
+                                            IsVisible="False"
+                                            Margin="0,5,0,0">
+                                    <controls:ServerCardSkeleton />
+                                    <controls:ServerCardSkeleton />
+                                    <controls:ServerCardSkeleton />
+                                </StackPanel>
+
+                                <ProgressBar x:Name="ServerSearchLoader"
+                                             IsIndeterminate="True"
+                                             Height="3"
+                                             VerticalAlignment="Top"
+                                             HorizontalAlignment="Stretch"
+                                             Foreground="{DynamicResource MainBackgroundProgressBar}"
+                                             IsVisible="False"
+                                             ZIndex="10" />
+                            </Grid>
+
+                            <StackPanel x:Name="PaginationPanel" Grid.Row="1" Orientation="Horizontal"
+                                HorizontalAlignment="Center" Margin="0,15,0,15" IsVisible="False">
+
+                                <Button x:Name="BtnPrevPage"
+                                   Click="BtnPrevPage_Click" IsEnabled="False"
+                                   Width="40" Height="40" CornerRadius="8"
+                                   Background="#20FFFFFF" BorderBrush="Transparent" Foreground="White"
+                                   Margin="0,0,15,0" Cursor="Hand">
+                                   <ic:SymbolIcon Symbol="ChevronLeft" FontSize="24" />
+                                </Button>
+
+                                <TextBlock x:Name="TxtPageInfo" Text="Сторінка 1 з 1"
+                                   VerticalAlignment="Center" Foreground="{DynamicResource MainForegroundBrush}"
+                                   FontSize="16" FontFamily="Inter" FontWeight="SemiBold" Margin="0,0,15,0" />
+
+                                <Button x:Name="BtnNextPage"
+                                   Click="BtnNextPage_Click" IsEnabled="False"
+                                   Width="40" Height="40" CornerRadius="8"
+                                   Background="#20FFFFFF" BorderBrush="Transparent" Foreground="White" Cursor="Hand">
+                                   <ic:SymbolIcon Symbol="ChevronRight" FontSize="24" />
+                                </Button>
+                            </StackPanel>
+                        </Grid>
+
+                        <HyperlinkButton x:Name="OwnerButton"
+                                    Grid.Row="2"
+                                    NavigateUri="https://forms.gle/QpncJ9qJzAj7d1Ds7"
+                                    Content="Додати свій сервер"
+                                    Margin="0,15,0,0"
+                                    HorizontalAlignment="Center"
+                                    Opacity="0.7"
+                                    Width="180"
+                                    Background="{DynamicResource MainBackgroundButton}"
+                                    Foreground="{DynamicResource MainForegroundBrush}">
+                                <HyperlinkButton.ContentTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <ic:SymbolIcon Symbol="ServerMultiple" FontSize="20" Margin="0,0,10,0"/>
+                                            <TextBlock Text="{Binding}" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </HyperlinkButton.ContentTemplate>
+                        </HyperlinkButton>
+                    </Grid>
+                </Grid>
+                <Grid x:Name="PanelInfoServer" Margin="13,95,10,10" IsVisible="False">
+                    <Border CornerRadius="24" Background="{DynamicResource MainBackgroundBrush}" BorderThickness="1"
+                    BorderBrush="#33FFFFFF" ClipToBounds="True">
+                        <Grid>
+                            <Image x:Name="BG" Opacity="0.5">
+                                <Image.Effect>
+                                    <BlurEffect Radius="60" />
+                                </Image.Effect>
+                            </Image>
+
+                            <Border Background="#99000000" />
+
+                            <Grid Margin="30">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="Auto" MinHeight="116" />
+                                </Grid.RowDefinitions>
+
+                                <Grid Grid.Row="0" Margin="0,0,0,20">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <Border Grid.Column="0" Width="90" Height="90" CornerRadius="20" Background="#202020"
+                                    Margin="0,0,20,0">
+                                        <Image x:Name="MainIcon3" Stretch="Uniform" ClipToBounds="True">
+                                            <Image.Clip>
+                                                <RectangleGeometry Rect="0,0,90,90" RadiusX="20" RadiusY="20" />
+                                            </Image.Clip>
+                                        </Image>
+                                    </Border>
+
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock x:Name="TitleMain1" Text="DragonSevenUA"
+                                           FontSize="28" FontWeight="Bold" FontFamily="Inter"
+                                           Foreground="White" Margin="0,0,0,8" />
+
+                                        <WrapPanel Orientation="Horizontal">
+                                            <Border ToolTip.Tip="IP" Margin="0,0,10,0" Padding="8,4" CornerRadius="6" Background="#20FFFFFF">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <ic:SymbolIcon Symbol="Globe" FontSize="14" Margin="0,0,6,0"
+                                                           Foreground="White" />
+                                                    <TextBlock x:Name="IPServerTXT" Text="dragonseven.top"
+                                                       Foreground="{DynamicResource MainForegroundBrush}" />
+                                                </StackPanel>
+                                            </Border>
+
+                                            <Border ToolTip.Tip="Port" Margin="0,0,10,0" Padding="8,4" CornerRadius="6" Background="#20FFFFFF">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <ic:SymbolIcon Symbol="Router" FontSize="14" Margin="0,0,6,0"
+                                                           Foreground="White" />
+                                                    <TextBlock x:Name="PortTXT" Text="25574"
+                                                       Foreground="{DynamicResource MainForegroundBrush}" />
+                                                </StackPanel>
+                                            </Border>
+
+                                            <Border ToolTip.Tip="Online" Margin="0,0,10,0" Padding="8,4" CornerRadius="6" Background="#20FFFFFF">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <ic:SymbolIcon Symbol="People" FontSize="14" Margin="0,0,6,0"
+                                                           Foreground="White" />
+                                                    <TextBlock x:Name="OnlinePlayerTXT" Text="6/2026"
+                                                       Foreground="{DynamicResource MainForegroundBrush}" />
+                                                </StackPanel>
+                                            </Border>
+
+                                            <Border ToolTip.Tip="Version" Margin="0,0,10,0" Padding="8,4" CornerRadius="6" Background="#20FFFFFF">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <ic:SymbolIcon Symbol="Cube" FontSize="14" Margin="0,0,6,0"
+                                                           Foreground="White" />
+                                                    <TextBlock x:Name="VersionTXT" Text="1.21.7"
+                                                       Foreground="{DynamicResource MainForegroundBrush}" />
+                                                </StackPanel>
+                                            </Border>
+                                        </WrapPanel>
+                                    </StackPanel>
+
+                                    <Button x:Name="Loc_BtnCloseServerInfo" Grid.Column="2" VerticalAlignment="Top"
+                                       Width="35" Height="35" CornerRadius="18"
+                                       ToolTip.Tip="Закрити" Click="BackMainWindow_MouseDown"
+                                       Background="{DynamicResource MainBackgroundButton}" BorderBrush="Transparent"
+                                       Foreground="{DynamicResource MainForegroundBrush}" Cursor="Hand">
+                                       <ic:SymbolIcon Symbol="Dismiss" FontSize="24" />
+                                    </Button>
+                                </Grid>
+
+                                <Border Grid.Row="1" Background="#15FFFFFF" CornerRadius="16" Padding="15" Margin="0,0,0,20">
+                                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                        <TextBlock x:Name="DescriptionServer"
+                                           Text="Опис..."
+                                           TextWrapping="Wrap"
+                                           FontSize="15" LineHeight="24"
+                                           Foreground="#CCCCCC" />
+                                    </ScrollViewer>
+                                </Border>
+
+                                <Grid Grid.Row="2">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <ComboBox x:Name="VersionSelector" Grid.Column="0"
+                                      Width="120" Height="50" Margin="0,0,15,0"
+                                      FontSize="16" FontFamily="Inter" FontWeight="SemiBold"
+                                      Foreground="{DynamicResource MainForegroundBrush}"
+                                      Background="#20FFFFFF" BorderThickness="0"
+                                      IsVisible="False" Cursor="Hand" />
+
+                                    <Button x:Name="PlayServer" Grid.Column="1"
+                                       Height="50" CornerRadius="12"
+                                       HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                                       Cursor="Hand" Click="PlayServer_Click" Margin="0,0,15,0"
+                                       Background="{DynamicResource MainBackgroundButton}" BorderBrush="Transparent"
+                                       Foreground="{DynamicResource MainForegroundBrush}">
+                                       <StackPanel Orientation="Horizontal">
+                                            <ic:SymbolIcon Symbol="Play" FontSize="24" Margin="0,0,10,0"/>
+                                            <TextBlock x:Name="Loc_TxtPlayServer" Text="ГРАТИ НА СЕРВЕРІ" FontSize="16" FontWeight="Bold"/>
+                                       </StackPanel>
+                                    </Button>
+
+                                    <StackPanel Grid.Column="2" Orientation="Horizontal">
+                                        <Button x:Name="DiscordLink" Width="50" Height="50" Margin="0,0,10,0"
+                                           ToolTip.Tip="Discord" CornerRadius="12" Click="DiscordLink_Click"
+                                           Background="{DynamicResource MainBackgroundButton}" BorderBrush="Transparent"
+                                           Foreground="{DynamicResource MainForegroundBrush}" Cursor="Hand">
+                                           <ic:SymbolIcon Symbol="Chat" FontSize="24" />
+                                        </Button>
+
+                                        <Button x:Name="SiteLink" Width="50" Height="50" Margin="0,0,10,0"
+                                           ToolTip.Tip="Сайт" CornerRadius="12" Click="SiteLink_Click"
+                                           BorderBrush="Transparent" Background="{DynamicResource MainBackgroundButton}"
+                                           Foreground="{DynamicResource MainForegroundBrush}" Cursor="Hand">
+                                           <ic:SymbolIcon Symbol="Globe" FontSize="24" />
+                                        </Button>
+
+                                        <Button x:Name="DonateLink" Width="50" Height="50"
+                                           ToolTip.Tip="Донат" CornerRadius="12" Click="DonateLink_Click"
+                                           BorderBrush="Transparent" Background="{DynamicResource MainBackgroundButton}"
+                                           Foreground="{DynamicResource MainForegroundBrush}" Cursor="Hand">
+                                           <ic:SymbolIcon Symbol="Money" FontSize="24" />
+                                        </Button>
+                                    </StackPanel>
+                                </Grid>
+                            </Grid>
+                        </Grid>
+                    </Border>
+                </Grid>
+    </Grid>
+</UserControl>

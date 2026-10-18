@@ -1,0 +1,258 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:ic="using:FluentIcons.Avalonia"
+             xmlns:pages="clr-namespace:CL_CLegendary_Launcher_.Avalonia.Views.Pages"
+             mc:Ignorable="d" d:DesignWidth="960" d:DesignHeight="600"
+             x:Class="CL_CLegendary_Launcher_.Avalonia.Views.Pages.GalleryPage"
+             x:CompileBindings="False">
+    <Grid>
+
+                <Grid x:Name="GalleryContainer" Margin="0,0,0,-10">
+
+                    <Border CornerRadius="12" ClipToBounds="True">
+                        <Grid>
+                            <Border IsVisible="{DynamicResource GlassVisibility}" Margin="-20">
+                                <Border.Background>
+                                    <VisualBrush Visual="{Binding BackgroundVisual, RelativeSource={RelativeSource AncestorType=pages:GalleryPage}}" Stretch="None" />
+                                </Border.Background>
+                                <Border.Effect>
+                                    <BlurEffect Radius="{DynamicResource GlassBlurRadius}" />
+                                </Border.Effect>
+                            </Border>
+                            <Border Background="{DynamicResource GlassTintBrush}" />
+                        </Grid>
+                    </Border>
+
+                    <Grid Margin="20,100,20,20">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <Grid Grid.Row="0" Margin="0,0,0,15">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" MinWidth="220" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <Border Grid.Column="0" Height="38" CornerRadius="10"
+                            Background="{DynamicResource MainBackgroundBrushServer}"
+                            BorderThickness="1" BorderBrush="#33FFFFFF">
+
+                                <ComboBox x:Name="SourceSelector"
+                                  HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                  Background="Transparent" BorderThickness="0"
+                                  Foreground="{DynamicResource MainForegroundBrush}"
+                                  VerticalContentAlignment="Center" Padding="10,0"
+                                  SelectionChanged="SourceSelector_SelectionChanged"
+                                  FontSize="13" Cursor="Hand" Margin="2">
+
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Name}" Foreground="{DynamicResource MainForegroundBrush}" VerticalAlignment="Center" />
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+
+                                    <ComboBox.Styles>
+                                        <Style Selector="ComboBoxItem">
+                                            <Setter Property="Foreground" Value="{DynamicResource MainForegroundBrush}" />
+                                            <Setter Property="Background" Value="Transparent" />
+                                            <Setter Property="BorderThickness" Value="0" />
+                                            <Setter Property="Padding" Value="10,8" />
+                                            <Setter Property="CornerRadius" Value="6" />
+                                        </Style>
+                                        <Style Selector="ComboBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+                                            <Setter Property="Background" Value="#33FFFFFF" />
+                                        </Style>
+                                        <Style Selector="ComboBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter">
+                                            <Setter Property="Background" Value="{DynamicResource MainBackgroundButton}" />
+                                        </Style>
+                                    </ComboBox.Styles>
+                                </ComboBox>
+                            </Border>
+
+                            <StackPanel Grid.Column="2" Orientation="Horizontal">
+                                <Button x:Name="BtnOpenFolder"
+                                   Click="BtnOpenFolder_Click"
+                                   Height="38" CornerRadius="10" Margin="0,0,10,0"
+                                   Background="{DynamicResource MainBackgroundButton}"
+                                   Foreground="{DynamicResource MainForegroundBrush}"
+                                   BorderBrush="#33FFFFFF" BorderThickness="1"
+                                   Cursor="Hand">
+                                   <StackPanel Orientation="Horizontal" Spacing="5">
+                                       <ic:SymbolIcon Symbol="Folder" />
+                                       <TextBlock Text="Відкрити папку" VerticalAlignment="Center" />
+                                   </StackPanel>
+                                </Button>
+
+                                <Button x:Name="BtnRefresh"
+                                   Click="BtnRefresh_Click"
+                                   Height="38" Width="38" CornerRadius="10"
+                                   ToolTip.Tip="Оновити список"
+                                   Background="{DynamicResource MainBackgroundButton}"
+                                   Foreground="{DynamicResource MainForegroundBrush}"
+                                   BorderBrush="#33FFFFFF" BorderThickness="1"
+                                   Cursor="Hand">
+                                   <ic:SymbolIcon Symbol="ArrowClockwise" />
+                                </Button>
+                            </StackPanel>
+                        </Grid>
+
+                        <Grid Grid.Row="1">
+
+                            <ProgressBar x:Name="LoadingProgressBar" Height="3" IsIndeterminate="True" VerticalAlignment="Top"
+                                         IsVisible="False" Foreground="{DynamicResource MainForegroundBrush}"
+                                         Background="Transparent" BorderThickness="0" ZIndex="10" />
+
+                            <Border VerticalAlignment="Top" Height="1" Background="{DynamicResource MainBackgroundBrushServer}"
+                            Opacity="0.5" />
+
+                            <ListBox x:Name="ScreenshotsList"
+                                 Margin="0,10,0,0"
+                                 Background="Transparent" BorderThickness="0"
+                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                 SelectionMode="Single"
+                                 DoubleTapped="ScreenshotsList_DoubleTapped"
+                                 SelectionChanged="ScreenshotsList_SelectionChanged">
+
+                                <ListBox.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel Orientation="Horizontal" />
+                                    </ItemsPanelTemplate>
+                                </ListBox.ItemsPanel>
+
+                                <ListBox.Styles>
+                                    <Style Selector="ListBoxItem">
+                                        <Setter Property="Padding" Value="0" />
+                                        <Setter Property="Margin" Value="0" />
+                                        <Setter Property="Background" Value="Transparent" />
+                                        <Setter Property="BorderThickness" Value="0" />
+                                    </Style>
+                                    <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
+                                        <Setter Property="Background" Value="Transparent" />
+                                    </Style>
+                                    <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+                                        <Setter Property="Background" Value="Transparent" />
+                                    </Style>
+
+                                    <Style Selector="ListBoxItem Border.ImageContainer">
+                                        <Setter Property="BorderThickness" Value="1" />
+                                        <Setter Property="BorderBrush" Value="#20FFFFFF" />
+                                        <Setter Property="Background" Value="#10FFFFFF" />
+                                    </Style>
+                                    <Style Selector="ListBoxItem:pointerover Border.ImageContainer">
+                                        <Setter Property="Background" Value="#25FFFFFF" />
+                                        <Setter Property="RenderTransform" Value="scale(1.03)" />
+                                    </Style>
+                                    <Style Selector="ListBoxItem:selected Border.ImageContainer">
+                                        <Setter Property="BorderBrush" Value="{DynamicResource MainForegroundBrush}" />
+                                        <Setter Property="Background" Value="#30FFFFFF" />
+                                        <Setter Property="BorderThickness" Value="2" />
+                                    </Style>
+                                </ListBox.Styles>
+
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Classes="ImageContainer" Width="220" Height="175" Margin="8" CornerRadius="12" Cursor="Hand"
+                                        ToolTip.Tip="{Binding FilePath}" BoxShadow="0 4 15 0 #26000000">
+
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="*" />
+                                                    <RowDefinition Height="Auto" />
+                                                </Grid.RowDefinitions>
+
+                                                <Border Grid.Row="0" Margin="6" CornerRadius="8" ClipToBounds="True"
+                                                Background="#05000000">
+                                                    <Image Source="{Binding ImagePath}" Stretch="UniformToFill" />
+                                                </Border>
+
+                                                <Grid Grid.Row="1" Margin="10,2,10,10">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                                        <TextBlock Text="{Binding FileName}" FontWeight="SemiBold"
+                                                           FontSize="12" TextTrimming="CharacterEllipsis"
+                                                           Foreground="{DynamicResource MainForegroundBrush}" />
+                                                        <TextBlock Text="{Binding CreationDate}" FontSize="10" Opacity="0.6"
+                                                           Foreground="{DynamicResource MainForegroundBrush}"
+                                                           Margin="0,2,0,0" />
+                                                    </StackPanel>
+
+                                                    <TextBlock Grid.Column="1" Text="{Binding FileSize}" FontSize="10"
+                                                       Opacity="0.5" VerticalAlignment="Bottom"
+                                                       Foreground="{DynamicResource MainForegroundBrush}" />
+                                                </Grid>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+
+                            <StackPanel x:Name="NoScreenshotsText"
+                                HorizontalAlignment="Center" VerticalAlignment="Center"
+                                IsVisible="False" Opacity="0.6">
+                                <ic:SymbolIcon Symbol="ImageSearch" FontSize="48" Margin="0,0,0,15"
+                                       Foreground="{DynamicResource MainForegroundBrush}" />
+                                <TextBlock x:Name="Loc_TxtGalleryEmptyTitle" Text="Тут поки що пусто" FontSize="18"
+                                   FontWeight="SemiBold" HorizontalAlignment="Center"
+                                   Foreground="{DynamicResource MainForegroundBrush}" />
+                                <TextBlock x:Name="Loc_TxtGalleryEmptyDesc"
+                                   Text="Зробіть скріншот у грі (F2), щоб він з'явився тут" FontSize="14" Opacity="0.7"
+                                   HorizontalAlignment="Center" Foreground="{DynamicResource MainForegroundBrush}" />
+                            </StackPanel>
+
+                            <Border x:Name="ActionPanel"
+                            VerticalAlignment="Bottom" HorizontalAlignment="Center"
+                            Margin="0,0,0,30" Padding="20,10"
+                            Background="{DynamicResource MainBackgroundBrushServer}"
+                            BorderBrush="#33FFFFFF" BorderThickness="1"
+                            CornerRadius="16" IsVisible="False"
+                            BoxShadow="0 10 30 0 #66000000">
+
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <StackPanel VerticalAlignment="Center" Margin="0,0,20,0">
+                                        <TextBlock x:Name="Loc_TxtGallerySelected" Text="ВИБРАНО" FontSize="10" Opacity="0.5"
+                                           FontWeight="Bold" Foreground="{DynamicResource MainForegroundBrush}" />
+                                        <TextBlock x:Name="SelectedFileNameText" Text="screenshot.png" FontWeight="SemiBold"
+                                           MaxWidth="180" TextTrimming="CharacterEllipsis"
+                                           Foreground="{DynamicResource MainForegroundBrush}" />
+                                    </StackPanel>
+
+                                    <Rectangle Width="1" Fill="#33FFFFFF" Margin="0,2,15,2" />
+
+                                    <Button x:Name="BtnOpenImage"
+                                       Click="BtnOpenImage_Click"
+                                       Background="#2000FF00" Foreground="#AAFFAA" BorderBrush="#4000FF00"
+                                       BorderThickness="1"
+                                       Height="36" CornerRadius="8" Margin="0,0,10,0" Cursor="Hand">
+                                       <StackPanel Orientation="Horizontal" Spacing="5">
+                                           <ic:SymbolIcon Symbol="FolderOpen" />
+                                           <TextBlock Text="Відкрити" VerticalAlignment="Center" />
+                                       </StackPanel>
+                                    </Button>
+
+                                    <Button x:Name="BtnDelete"
+                                       Click="BtnDelete_Click"
+                                       Background="#20FF0000" Foreground="#FFAAAA" BorderBrush="#40FF0000"
+                                       BorderThickness="1"
+                                       Height="36" CornerRadius="8" Cursor="Hand">
+                                       <StackPanel Orientation="Horizontal" Spacing="5">
+                                           <ic:SymbolIcon Symbol="Delete" />
+                                           <TextBlock Text="Видалити" VerticalAlignment="Center" />
+                                       </StackPanel>
+                                    </Button>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </Grid>
+                </Grid>
+
+    </Grid>
+</UserControl>

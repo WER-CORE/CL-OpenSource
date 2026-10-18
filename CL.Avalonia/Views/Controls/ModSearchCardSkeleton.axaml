@@ -1,0 +1,38 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="CL_CLegendary_Launcher_.Avalonia.Views.Controls.ModSearchCardSkeleton"
+             Height="40"
+             HorizontalAlignment="Stretch">
+    <Border Height="40"
+            Background="{DynamicResource MainBackgroundBrushServer}"
+            CornerRadius="8"
+            Margin="0,0,0,5">
+        <Grid Margin="10,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0"
+                    Width="24" Height="24"
+                    CornerRadius="4"
+                    Background="{DynamicResource MainBackgroundBrush}"
+                    VerticalAlignment="Center" />
+
+            <Border Grid.Column="1"
+                    Height="12" Width="180"
+                    CornerRadius="3"
+                    Background="{DynamicResource MainBackgroundBrush}"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    Margin="10,0" />
+
+            <Border Grid.Column="2"
+                    Width="24" Height="24"
+                    CornerRadius="4"
+                    Background="{DynamicResource MainBackgroundBrush}"
+                    VerticalAlignment="Center" />
+        </Grid>
+    </Border>
+</UserControl>

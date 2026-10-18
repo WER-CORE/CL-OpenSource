@@ -1,0 +1,71 @@
+﻿<UserControl x:Class="CL_CLegendary_Launcher_.Avalonia.Views.Controls.PartnerServerCard"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:CL_CLegendary_Launcher_.Avalonia.ViewModels.Controls"
+             x:DataType="vm:PartnerServerCardViewModel"
+             Height="60" Width="315">
+
+    <UserControl.Styles>
+        <Style Selector="Button.cardBtn">
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Background" Value="{DynamicResource MainBackgroundButton}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="4"/>
+        </Style>
+        <Style Selector="Button.cardBtn:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#33FFFFFF"/>
+        </Style>
+    </UserControl.Styles>
+
+    <Grid>
+        <Border CornerRadius="7" ClipToBounds="True" BorderThickness="1">
+            <Border.Background>
+                <ImageBrush Source="{Binding BackgroundBitmap}" Stretch="UniformToFill"/>
+            </Border.Background>
+        </Border>
+
+        <Border CornerRadius="7" Background="Black" Opacity="0.4" IsHitTestVisible="False"/>
+
+        <Border HorizontalAlignment="Left" Height="32" Width="32"
+                VerticalAlignment="Center" Margin="10,0,0,0" CornerRadius="4" BoxShadow="0 1 5 0 #80000000">
+            <Image Source="{Binding IconBitmap}"/>
+        </Border>
+
+        <TextBlock Text="{Binding Title}"
+                   HorizontalAlignment="Left" Margin="48,0,0,0" VerticalAlignment="Center"
+                   Foreground="{DynamicResource MainForegroundBrush}"
+                   FontFamily="Inter" FontWeight="Bold" FontSize="14"
+                   TextTrimming="CharacterEllipsis" MaxWidth="110">
+            <TextBlock.Effect>
+                <DropShadowDirectionEffect ShadowDepth="1" BlurRadius="2" Opacity="0.8" Color="Black"/>
+            </TextBlock.Effect>
+        </TextBlock>
+
+        <Button Command="{Binding OpenInfoCommand}" Classes="cardBtn"
+                HorizontalAlignment="Left" Height="24" Margin="158,6,0,0" VerticalAlignment="Top" Width="151"
+                Cursor="Hand" ToolTip.Tip="{Binding InfoTooltip}">
+            <TextBlock Text="{Binding VisitPageText}" Foreground="{DynamicResource MainForegroundBrush}" FontSize="10" FontFamily="Inter"/>
+        </Button>
+
+        <Button Command="{Binding OpenOnlineCommand}" Classes="cardBtn"
+                HorizontalAlignment="Left" Height="22" Margin="158,30,0,0" VerticalAlignment="Top" Width="39"
+                Cursor="Hand" ToolTip.Tip="{Binding OnlineTooltip}">
+            <TextBlock Text="{Binding OnlinePlayers}" Foreground="{DynamicResource MainForegroundBrush}" FontSize="10" FontFamily="Inter"/>
+        </Button>
+
+        <Button Command="{Binding CopyIpCommand}" Classes="cardBtn"
+                HorizontalAlignment="Left" Height="22" Margin="199,30,0,0" VerticalAlignment="Top" Width="68"
+                Cursor="Hand" ToolTip.Tip="{Binding CopyIpTooltip}">
+            <TextBlock Text="{Binding IpAddress}" Foreground="{DynamicResource MainForegroundBrush}" FontSize="10" FontFamily="Inter" TextTrimming="CharacterEllipsis"/>
+        </Button>
+
+        <Button Command="{Binding PlayCommand}" Classes="cardBtn"
+                HorizontalAlignment="Left" Height="22" Margin="269,30,0,0" VerticalAlignment="Top" Width="40"
+                Cursor="Hand" ToolTip.Tip="{Binding PlayTooltip}">
+            <TextBlock Text="{Binding PlayBtnText}" Foreground="{DynamicResource MainForegroundBrush}" FontSize="10" FontFamily="Inter"/>
+        </Button>
+
+    </Grid>
+</UserControl>

@@ -1,0 +1,46 @@
+﻿<UserControl x:Class="CL_CLegendary_Launcher_.Avalonia.Views.Controls.AccountCard"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:CL_CLegendary_Launcher_.Avalonia.ViewModels.Controls"
+             x:DataType="vm:AccountCardViewModel"
+             Height="50" Width="196">
+
+    <Grid>
+        <Border BorderThickness="1"
+                Background="{DynamicResource MainBackgroundBrushServer}"
+                CornerRadius="9" Width="196"/>
+
+        <Image HorizontalAlignment="Left" VerticalAlignment="Top"
+               Height="42" Width="42" Margin="5,4,0,0"
+               Source="{Binding IconBitmap}"
+               Stretch="Uniform"/>
+
+        <TextBlock HorizontalAlignment="Left" VerticalAlignment="Center"
+                   Margin="52,0,0,0"
+                   Text="{Binding NameAccount}"
+                   TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"
+                   Foreground="{DynamicResource MainForegroundBrush}"
+                   Width="115"
+                   FontFamily="Inter" FontSize="12" FontWeight="SemiBold"/>
+
+        <Button x:Name="DeleteAccountBtn" Command="{Binding DeleteCommand}"
+                HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                Margin="0,0,6,6" Width="20" Height="20"
+                Cursor="Hand" ToolTip.Tip="Видалити"
+                Background="Transparent" BorderThickness="0" Padding="2">
+            <Path Data="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"
+                  Fill="{DynamicResource MainForegroundBrush}"
+                  Stretch="Uniform"/>
+        </Button>
+
+        <Button Command="{Binding SelectCommand}"
+                HorizontalAlignment="Left" Height="50" VerticalAlignment="Center"
+                Width="160" Cursor="Hand">
+            <Button.Template>
+                <ControlTemplate>
+                    <Border Background="Transparent"/>
+                </ControlTemplate>
+            </Button.Template>
+        </Button>
+    </Grid>
+</UserControl>

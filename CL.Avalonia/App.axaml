@@ -1,9 +1,29 @@
-<Application xmlns="https://github.com/avaloniaui"
+﻿<Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:suki="clr-namespace:SukiUI;assembly=SukiUI"
+             xmlns:sty="using:FluentAvalonia.Styling"
+             xmlns:converters="using:CL_CLegendary_Launcher_.Avalonia.Converters"
              x:Class="CL_CLegendary_Launcher_.Avalonia.App"
              RequestedThemeVariant="Dark">
-	<Application.Styles>
-		<suki:SukiTheme ThemeColor="Blue" />
-	</Application.Styles>
+    <Application.Styles>
+        <sty:FluentAvaloniaTheme />
+        <StyleInclude Source="avares://AvaloniaProgressRing/Styles/ProgressRing.xaml"/>
+        <Style Selector="Window">
+            <Setter Property="Icon" Value="avares://CL.Avalonia/Icon/IconCL(Halloween).png" />
+        </Style>
+        <Style Selector="ToggleSwitch">
+            <Setter Property="OnContent" Value="{x:Null}" />
+            <Setter Property="OffContent" Value="{x:Null}" />
+        </Style>
+    </Application.Styles>
+
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://CL.Avalonia/Themes/Colors.axaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <converters:BitmapAssetValueConverter x:Key="BitmapConverter" />
+            <converters:IntEqualityConverter x:Key="EqualityConverter" />
+            <converters:IntInequalityConverter x:Key="InequalityConverter" />
+        </ResourceDictionary>
+    </Application.Resources>
 </Application>

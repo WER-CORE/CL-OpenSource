@@ -1,0 +1,99 @@
+﻿<UserControl x:Class="CL_CLegendary_Launcher_.Avalonia.Views.Controls.ModCard"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:ui="using:FluentAvalonia.UI.Controls"
+             xmlns:vm="using:CL_CLegendary_Launcher_.Avalonia.ViewModels.Controls"
+             x:DataType="vm:ModCardViewModel"
+             mc:Ignorable="d"
+             Height="108" Width="440">
+
+    <Grid x:Name="Gird">
+
+        <Border x:Name="Border"
+                BorderThickness="1"
+                CornerRadius="12"
+                Cursor="Hand" Background="{DynamicResource MainBackgroundBrushServer}">
+
+            <Border.Styles>
+                <Style Selector="Border">
+                    <Setter Property="Background" Value="{DynamicResource MainBackgroundBrushServer}"/>
+                    <Setter Property="BorderBrush" Value="Transparent"/>
+                </Style>
+                <Style Selector="Border:pointerover">
+                    <Setter Property="Background" Value="#15FFFFFF"/>
+                    <Setter Property="BorderBrush" Value="#33FFFFFF"/>
+                </Style>
+            </Border.Styles>
+
+            <Grid Margin="10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0" x:Name="BorderImage"
+                        Height="86" Width="86"
+                        CornerRadius="8"
+                        Background="{DynamicResource MainBackgroundBrush}"
+                        BorderBrush="#33000000" BorderThickness="1">
+                    <Image x:Name="ImageIcon" Stretch="UniformToFill" Margin="4" Source="{Binding Icon}"/>
+                </Border>
+
+                <Grid Grid.Column="1" Margin="15,0,10,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock x:Name="Title"
+                               Text="{Binding Title, FallbackValue='Mod Name'}"
+                               FontFamily="Inter" FontWeight="Bold" FontSize="16"
+                               Foreground="{DynamicResource MainForegroundBrush}"
+                               TextTrimming="CharacterEllipsis"
+                               VerticalAlignment="Top" Margin="0,5,0,0"/>
+
+                    <TextBlock Grid.Row="1" x:Name="Description"
+                               Text="{Binding Description, FallbackValue='Mod description goes here...'}"
+                               FontSize="11" Foreground="Gray" FontFamily="Inter"
+                               TextWrapping="Wrap" TextTrimming="CharacterEllipsis"
+                               VerticalAlignment="Top" Margin="0,5,0,0"/>
+                </Grid>
+
+                <StackPanel Grid.Column="2" VerticalAlignment="Bottom" Orientation="Horizontal" Margin="0,0,0,5">
+
+                    <ToggleSwitch x:Name="IsOnOffSwitch"
+                                  Height="34" Width="54"
+                                  FontFamily="Inter"
+                                  OnContent="{x:Null}" OffContent="{x:Null}"
+                                  IsChecked="{Binding IsEnabled}"
+                                  Command="{Binding ToggleModCommand}"/>
+                    <Button x:Name="DeleteMod" Padding="0"
+                            Height="26" Width="90"
+                            CornerRadius="6" Cursor="Hand"
+                            Command="{Binding DeleteCommand}"
+                            BorderThickness="1"
+                            BorderBrush="Transparent" Background="{DynamicResource MainBackgroundButton}">
+
+                        <Button.Styles>
+                            <Style Selector="Button">
+                                <Setter Property="Background" Value="{DynamicResource MainBackgroundBrush}"/>
+                            </Style>
+                            <Style Selector="Button:pointerover">
+                                <Setter Property="Background" Value="#33FF0000"/>
+                                <Setter Property="BorderBrush" Value="#FF5555"/>
+                            </Style>
+                        </Button.Styles>
+
+                        <TextBlock x:Name="DeleteModText" Text="Видалити"
+                                   Foreground="{DynamicResource MainForegroundBrush}"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   FontSize="12" FontWeight="SemiBold"/>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

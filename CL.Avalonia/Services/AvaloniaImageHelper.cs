@@ -1,0 +1,221 @@
+﻿using System;
+using System.Collections.Concurrent;
+using System.IO;
+using System.Net.Http;
+using System.Threading.Tasks;
+using Avalonia.Media.Imaging;
+using Avalonia.Platform;
+
+namespace CL_CLegendary_Launcher_.Avalonia.Services;
+
+public static class AvaloniaImageHelper
+{
+    private static readonly ConcurrentDictionary<string, Bitmap> _bitmapCache = new();
+    private static readonly HttpClient _httpClient = new() { Timeout = TimeSpan.FromSeconds(10) };
+
+    public static void ClearCache()
+    {
+        _bitmapCache.Clear();
+    }
+
+    public static async Task<Bitmap?> LoadOptimizedImageAsync(string? path, int decodeWidth = 0)
+    {
+        if (string.IsNullOrWhiteSpace(path)) return null;
+
+        string cacheKey = $"{path}_{decodeWidth}";
+        if (_bitmapCache.TryGetValue(cacheKey, out var cachedBitmap))
+        {
+            return cachedBitmap;
+        }
+
+        try
+        {
+            Bitmap? bitmap = null;
+
+            if (path.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+                path.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+            {
+                byte[] data = await _httpClient.GetByteArrayAsync(path).ConfigureAwait(false);
+                bitmap = LoadFromBytes(data, decodeWidth);
+            }
+            else
+            {
+                bitmap = await Task.Run(() => LoadOptimizedImage(path, decodeWidth)).ConfigureAwait(false);
+            }
+
+            if (bitmap != null)
+            {
+                _bitmapCache[cacheKey] = bitmap;
+            }
+
+            return bitmap;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    public static Bitmap? LoadOptimizedImage(string? path, int decodeWidth = 0)
+    {
+        if (string.IsNullOrWhiteSpace(path)) return null;
+
+        string cacheKey = $"{path}_{decodeWidth}";
+        if (_bitmapCache.TryGetValue(cacheKey, out var cachedBitmap))
+        {
+            return cachedBitmap;
+        }
+
+        try
+        {
+            Bitmap? bitmap = null;
+
+            if (path.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+                path.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+            {
+                byte[] data = _httpClient.GetByteArrayAsync(path).GetAwaiter().GetResult();
+                bitmap = LoadFromBytes(data, decodeWidth);
+            }
+
+            else if (path.StartsWith("pack://", StringComparison.OrdinalIgnoreCase) ||
+                     path.StartsWith("avares://", StringComparison.OrdinalIgnoreCase))
+            {
+                bitmap = LoadFromResourceUri(path, decodeWidth);
+            }
+
+            else
+            {
+                string localPath = path.Replace('\\', Path.DirectorySeparatorChar).Replace('/', Path.DirectorySeparatorChar);
+
+                if (File.Exists(localPath))
+                {
+                    using var stream = File.OpenRead(localPath);
+                    bitmap = decodeWidth > 0
+                        ? Bitmap.DecodeToWidth(stream, decodeWidth)
+                        : new Bitmap(stream);
+                }
+                else if (File.Exists(path))
+                {
+                    using var stream = File.OpenRead(path);
+                    bitmap = decodeWidth > 0
+                        ? Bitmap.DecodeToWidth(stream, decodeWidth)
+                        : new Bitmap(stream);
+                }
+                else if (TryFindCaseInsensitiveFile(localPath, out var matchedFile))
+                {
+                    using var stream = File.OpenRead(matchedFile);
+                    bitmap = decodeWidth > 0
+                        ? Bitmap.DecodeToWidth(stream, decodeWidth)
+                        : new Bitmap(stream);
+                }
+
+                else if (path.StartsWith("/") || path.StartsWith("Assets", StringComparison.OrdinalIgnoreCase) || path.StartsWith("Icon", StringComparison.OrdinalIgnoreCase))
+                {
+                    bitmap = LoadFromResourceUri(path, decodeWidth);
+                }
+            }
+
+            if (bitmap != null)
+            {
+                _bitmapCache[cacheKey] = bitmap;
+            }
+
+            return bitmap;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    public static Bitmap? LoadFromBytes(byte[]? imageData, int decodeWidth = 0)
+    {
+        if (imageData == null || imageData.Length == 0) return null;
+
+        try
+        {
+            using var stream = new MemoryStream(imageData);
+            return decodeWidth > 0
+                ? Bitmap.DecodeToWidth(stream, decodeWidth)
+                : new Bitmap(stream);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static Bitmap? LoadFromResourceUri(string rawPath, int decodeWidth)
+    {
+        try
+        {
+
+            string relativePath = rawPath;
+            if (relativePath.StartsWith("pack://application:,,,/", StringComparison.OrdinalIgnoreCase))
+            {
+                relativePath = relativePath.Substring("pack://application:,,,/".Length);
+            }
+            else if (relativePath.StartsWith("pack://application:,,,", StringComparison.OrdinalIgnoreCase))
+            {
+                relativePath = relativePath.Substring("pack://application:,,,".Length);
+            }
+
+            relativePath = relativePath.TrimStart('/');
+            string fileName = Path.GetFileName(relativePath);
+
+            string[] candidates =
+            {
+                rawPath.StartsWith("avares://") ? rawPath : $"avares://CL.Avalonia/{relativePath}",
+                $"avares://CL.Avalonia/Icon/{relativePath}",
+                $"avares://CL.Avalonia/Icon/{fileName}",
+                $"avares://CL.Avalonia/Assets/{relativePath}",
+                $"avares://CL.Avalonia/Assets/{fileName}",
+                $"avares://CL.Avalonia/Assets/Backgrounds/{relativePath}"
+            };
+
+            foreach (var candidate in candidates)
+            {
+                try
+                {
+                    var uri = new Uri(candidate, UriKind.Absolute);
+                    if (AssetLoader.Exists(uri))
+                    {
+                        using var stream = AssetLoader.Open(uri);
+                        return decodeWidth > 0
+                            ? Bitmap.DecodeToWidth(stream, decodeWidth)
+                            : new Bitmap(stream);
+                    }
+                }
+                catch { }
+            }
+
+            return null;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static bool TryFindCaseInsensitiveFile(string path, out string matchedPath)
+    {
+        matchedPath = string.Empty;
+        try
+        {
+            string? dir = Path.GetDirectoryName(path);
+            string fileName = Path.GetFileName(path);
+            if (!string.IsNullOrEmpty(dir) && Directory.Exists(dir) && !string.IsNullOrEmpty(fileName))
+            {
+                var files = Directory.GetFiles(dir);
+                var found = Array.Find(files, f => string.Equals(Path.GetFileName(f), fileName, StringComparison.OrdinalIgnoreCase));
+                if (found != null)
+                {
+                    matchedPath = found;
+                    return true;
+                }
+            }
+        }
+        catch { }
+        return false;
+    }
+}

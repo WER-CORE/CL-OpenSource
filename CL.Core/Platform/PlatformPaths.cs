@@ -1,3 +1,4 @@
+﻿using CL.Core.Helpers;
 using System;
 using System.IO;
 
@@ -16,7 +17,48 @@ namespace CL.Core.Services
             return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".clminecraft");
         }
 
-        // Регістр важливий лише на Linux: .clminecraft і .ClMinecraft - різні каталоги
+        public static string AppDataDirectory()
+        {
+            if (OperatingSystem.IsWindows())
+                return AppDomain.CurrentDomain.BaseDirectory;
+
+            if (OperatingSystem.IsMacOS())
+                return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Library", "Application Support", "CLLauncher");
+
+            string? dataHome = Environment.GetEnvironmentVariable("XDG_DATA_HOME");
+            if (string.IsNullOrWhiteSpace(dataHome) || !Path.IsPathRooted(dataHome))
+                dataHome = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "share");
+
+            return Path.Combine(dataHome, "cl-launcher");
+        }
+
+        public static string DataFolder() => Path.Combine(AppDataDirectory(), "Data");
+
+        public static string LocalesFolder() => Path.Combine(AppDataDirectory(), "Locales");
+
+        public static void MigrateLegacyAppData() => MigrateLegacyAppData(AppDomain.CurrentDomain.BaseDirectory, AppDataDirectory());
+
+        public static void MigrateLegacyAppData(string legacyRoot, string appDataRoot)
+        {
+            if (PathsEqual(legacyRoot, appDataRoot))
+                return;
+
+            foreach (var folder in new[] { "Data", "Locales" })
+            {
+                string source = Path.Combine(legacyRoot, folder);
+                string target = Path.Combine(appDataRoot, folder);
+
+                if (Directory.Exists(source) && !Directory.Exists(target))
+                {
+                    try
+                    {
+                        DirectoryHelper.CopyDirectoryParallel(source, target);
+                    }
+                    catch { }
+                }
+            }
+        }
+
         public static bool PathsEqual(string? left, string? right)
         {
             if (string.IsNullOrWhiteSpace(left) || string.IsNullOrWhiteSpace(right))

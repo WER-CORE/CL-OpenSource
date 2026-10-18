@@ -1,4 +1,4 @@
-using CL.Core.Models;
+﻿using CL.Core.Models;
 
 using CmlLib.Core;
 using CmlLib.Core.Installers;
@@ -18,7 +18,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using CL.Core.Platform;
 using CL.Core.Interfaces;
-
 
 using Path = System.IO.Path;
 
@@ -45,12 +44,12 @@ namespace CL.Core.Services
 
     public static class ModpackPaths
     {
-        public static string DataDirectory => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data");
+        public static string DataDirectory => PlatformPaths.DataFolder();
         public static string InstalledModpacksJson => Path.Combine(DataDirectory, "installed_modpacks.json");
     }
     public class ModpackService
     {
-        
+
         private readonly GameSessionManager _gameSessionManager;
         private readonly GameLaunchService _gameLaunchService;
         private readonly ModDownloadService _modDownloadService;
@@ -60,7 +59,7 @@ namespace CL.Core.Services
 
         public ModpackService(GameSessionManager gameSessionManager, GameLaunchService gameLaunchService, ModDownloadService modDownloadService)
         {
-            
+
             _gameSessionManager = gameSessionManager;
             _gameLaunchService = gameLaunchService;
             _modDownloadService = modDownloadService;
@@ -68,7 +67,7 @@ namespace CL.Core.Services
         private async Task<ApiClient> GetCfClientAsync() => await CurseForgeClientProvider.GetClientAsync();
         public List<InstalledModpack> LoadInstalledModpacks()
         {
-            string jsonPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "installed_modpacks.json");
+            string jsonPath = ModpackPaths.InstalledModpacksJson;
             if (!File.Exists(jsonPath)) return new List<InstalledModpack>();
 
             string json = File.ReadAllText(jsonPath);
@@ -77,7 +76,7 @@ namespace CL.Core.Services
 
         public void DeleteModpack(string modpackName)
         {
-            string pathToJson = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "installed_modpacks.json");
+            string pathToJson = ModpackPaths.InstalledModpacksJson;
             if (!File.Exists(pathToJson)) return;
 
             var jsonText = File.ReadAllText(pathToJson);
@@ -123,7 +122,6 @@ namespace CL.Core.Services
         }
         public async void PlayModPack(string version, string versionMod, string loader, string nameModPack, string pathModPack, string pathJson, string typeSite, string javaPath, LaunchConfiguration config)
         {
-            
 
             var cts = new CancellationTokenSource();
             var token = cts.Token;
@@ -290,7 +288,7 @@ namespace CL.Core.Services
                     JavaPath = !string.IsNullOrWhiteSpace(javaPath)
                                 ? javaPath
                                 : (!string.IsNullOrWhiteSpace(installedModpack.JavaPath) ? installedModpack.JavaPath : null)
-                }; 
+                };
                 var activeJvmArgs = new List<string>();
 
                 if (config.AccountType == AccountType.LittleSkin)
@@ -369,7 +367,7 @@ namespace CL.Core.Services
                     ServiceLocator.Current.GetService<IMainWindowController>().Minimize();
                 });
 
-                await DiscordController.UpdatePresence(string.Format(LocalizationManager.GetString("DiscordRPC.PlayingModpack", "Грає в мод-збірку {0}"), nameModPack));
+                await DiscordController.UpdatePresence(string.Format(LocalizationManager.GetString("DiscordRPC.PlayingModpack", "Грає в мод-збірку {0}"), nameModPack), resetTimer: true);
 
                 if (installedModpack.IsConsoleLogOpened)
                     ServiceLocator.Current.GetService<IMainWindowController>().ShowGameLog(process);
@@ -383,6 +381,11 @@ namespace CL.Core.Services
                 await MemoryCleaner.FlushMemoryAsync(trimWorkingSet: true);
                 await process.WaitForExitAsync();
                 int exitCode = process.ExitCode;
+
+                if (!SettingsManager.Default.CloseLaucnher)
+                {
+                    _ = DiscordController.UpdatePresence(LocalizationManager.GetString("DiscordRPC.InHome", "В головному вікні"), resetTimer: true);
+                }
 
                 if (exitCode != 0)
                 {
@@ -490,11 +493,11 @@ namespace CL.Core.Services
                             else
                             {
                                 await Task.Delay(150, token);
-                                try 
-                                { 
-                                    var file = await cfApi.GetModFileAsync(projectId, fileId); 
+                                try
+                                {
+                                    var file = await cfApi.GetModFileAsync(projectId, fileId);
                                     data = file?.Data;
-                                } 
+                                }
                                 catch { }
                             }
 
@@ -539,7 +542,7 @@ namespace CL.Core.Services
 
                                     progress.UpdateFileTaskProgress(total, completed, "");
                                     bool success = await DownloadFileWithProgress(downloadUrl, fullPath, progress, token, activeItem);
-                                    
+
                                     progress.RemoveActiveDownload(activeItem);
                                     if (!success) await HandleManualDownloadPrompt(downloadUrl, fullPath, fileName);
                                 }
@@ -617,7 +620,7 @@ namespace CL.Core.Services
 
                                     progress.UpdateFileTaskProgress(total, completed, "");
                                     bool success = await DownloadFileWithProgress(downloadUrl, fullPath, progress, token, activeItem);
-                                    
+
                                     progress.RemoveActiveDownload(activeItem);
                                     if (!success) await HandleManualDownloadPrompt(downloadUrl, fullPath, fileName);
                                 }
@@ -980,11 +983,7 @@ namespace CL.Core.Services
             {
                 try
                 {
-                    Process.Start(new ProcessStartInfo
-                    {
-                        FileName = url,
-                        UseShellExecute = true
-                    });
+                    UrlOpener.Open(url);
 
                     ServiceLocator.Current.GetService<IDialogService>().ShowMessage(
                                     string.Format(LocalizationManager.GetString("DownloadManager.ManualDownloadInstructionDesc", "Я відкрила посилання. Будь ласка, збережи файл ось сюди:\n{0}"), fullPath),
@@ -1049,14 +1048,19 @@ namespace CL.Core.Services
             {
                 if (!Directory.Exists(folder)) continue;
 
-                foreach (var name in commonNames)
+                try
                 {
-                    string fullPath = Path.Combine(folder, name);
-                    if (File.Exists(fullPath))
+                    var files = Directory.GetFiles(folder);
+                    foreach (var name in commonNames)
                     {
-                        return fullPath;
+                        var match = Array.Find(files, f => string.Equals(Path.GetFileName(f), name, StringComparison.OrdinalIgnoreCase));
+                        if (match != null)
+                        {
+                            return match;
+                        }
                     }
                 }
+                catch { }
             }
 
             foreach (var folder in foldersToCheck)
@@ -1172,7 +1176,7 @@ namespace CL.Core.Services
                 foundIconPath = FindIconInFolder(extractPath);
             }
 
-            string finalIconUrl = foundIconPath ?? "pack://application:,,,/Icon/IconCL(Common).png";
+            string finalIconUrl = foundIconPath ?? $"{CL.Core.Platform.UIConfig.AssetScheme}/Icon/IconCL(Common).png";
 
             if (File.Exists(modrinthPath))
             {

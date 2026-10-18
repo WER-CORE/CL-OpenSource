@@ -1,4 +1,4 @@
-using DiscordRPC;
+﻿using DiscordRPC;
 using System;
 using System.Threading.Tasks;
 
@@ -6,78 +6,122 @@ namespace CL.Core.Services
 {
     public class DiscordController
     {
-        public static DiscordRpcClient clientdsc;
+        public const string ApplicationId = "1210664596289884200";
 
-        public static async Task Initialize(string textDetails)
+        public static DiscordRpcClient? clientdsc;
+        private static readonly object _syncRoot = new();
+        private static Timestamps? _startTime;
+
+        public static Task Initialize(string textDetails = "")
         {
-            if (SettingsManager.Default.OfflineModLauncher || !SettingsManager.Default.EnableMod_DiscordRPC) { return; }
-
-            try
+            if (SettingsManager.Default.OfflineModLauncher || !SettingsManager.Default.EnableMod_DiscordRPC)
             {
-                clientdsc = new DiscordRpcClient("1210664596289884200");
+                return Task.CompletedTask;
+            }
 
-                clientdsc.Initialize();
-
-                clientdsc.SetPresence(new RichPresence()
+            return Task.Run(() =>
+            {
+                lock (_syncRoot)
                 {
-                    State = textDetails,
-                    Details = LocalizationManager.GetString("DiscordRPC.Details", "Український лаунчер майнкрафт"),
-                    Timestamps = Timestamps.Now,
-                    Assets = new Assets()
+                    try
                     {
-                        LargeImageKey = "frame_73",
-                        SmallImageKey = "ua",
+                        if (clientdsc != null && !clientdsc.IsDisposed)
+                        {
+                            UpdatePresenceInternal(textDetails);
+                            return;
+                        }
+
+                        _startTime = Timestamps.Now;
+                        clientdsc = new DiscordRpcClient(ApplicationId);
+                        clientdsc.Initialize();
+                        UpdatePresenceInternal(textDetails);
                     }
-                });
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error initializing Discord RPC: {ex.Message}");
-            }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error initializing Discord RPC: {ex.Message}");
+                    }
+                }
+            });
         }
 
-        public static async Task UpdatePresence(string textDetails)
+        public static Task UpdatePresence(string textState, string? customDetails = null, bool resetTimer = false)
         {
-            if (SettingsManager.Default.OfflineModLauncher || !SettingsManager.Default.EnableMod_DiscordRPC) { return; }
-
-            if (clientdsc == null)
+            if (SettingsManager.Default.OfflineModLauncher || !SettingsManager.Default.EnableMod_DiscordRPC)
             {
-                Console.WriteLine("Discord RPC client not initialized.");
-                return;
+                return Task.CompletedTask;
             }
 
-            try
+            return Task.Run(() =>
             {
-                clientdsc.SetPresence(new RichPresence()
+                lock (_syncRoot)
                 {
-                    State = textDetails,
-                    Details = LocalizationManager.GetString("DiscordRPC.Details", "Український лаунчер майнкрафт"),
-                    Timestamps = Timestamps.Now,
-                    Assets = new Assets()
+                    try
                     {
-                        LargeImageKey = "frame_73",
-                        SmallImageKey = "ua",
+                        if (resetTimer || _startTime == null)
+                        {
+                            _startTime = Timestamps.Now;
+                        }
+
+                        if (clientdsc == null || clientdsc.IsDisposed)
+                        {
+                            clientdsc = new DiscordRpcClient(ApplicationId);
+                            clientdsc.Initialize();
+                        }
+
+                        UpdatePresenceInternal(textState, customDetails);
                     }
-                });
-            }
-            catch (Exception ex)
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error updating Discord presence: {ex.Message}");
+                    }
+                }
+            });
+        }
+
+        private static void UpdatePresenceInternal(string textState, string? customDetails = null)
+        {
+            if (clientdsc == null || clientdsc.IsDisposed) return;
+
+            string details = !string.IsNullOrWhiteSpace(customDetails)
+                ? customDetails
+                : LocalizationManager.GetString("DiscordRPC.Details", "Український лаунчер майнкрафт");
+
+            clientdsc.SetPresence(new RichPresence()
             {
-                Console.WriteLine($"Error updating Discord presence: {ex.Message}");
-            }
+                State = textState,
+                Details = details,
+                Timestamps = _startTime ?? Timestamps.Now,
+                Assets = new Assets()
+                {
+                    LargeImageKey = "frame_73",
+                    LargeImageText = "CLegendary Launcher",
+                    SmallImageKey = "ua",
+                    SmallImageText = "Україна"
+                }
+            });
         }
 
         public static void Deinitialize()
         {
-            if (SettingsManager.Default.OfflineModLauncher || !SettingsManager.Default.EnableMod_DiscordRPC) { return; }
-
-            try
+            lock (_syncRoot)
             {
-                clientdsc?.Dispose();
-                clientdsc = null;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error deinitializing Discord RPC: {ex.Message}");
+                try
+                {
+                    if (clientdsc != null)
+                    {
+                        if (!clientdsc.IsDisposed)
+                        {
+                            clientdsc.ClearPresence();
+                            clientdsc.Dispose();
+                        }
+                        clientdsc = null;
+                    }
+                    _startTime = null;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error deinitializing Discord RPC: {ex.Message}");
+                }
             }
         }
     }

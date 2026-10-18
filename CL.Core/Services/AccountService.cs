@@ -1,9 +1,9 @@
-using CL.Core.Interfaces;
+﻿using CL.Core.Interfaces;
 using CL.Core.Platform;
-using CL.Core.Models;
 using CL.Core.Models;
 using CmlLib.Core.Auth;
 using CmlLib.Core.Auth.Microsoft;
+using Microsoft.Identity.Client;
 using MojangAPI;
 using System;
 using System.Collections.Generic;
@@ -24,8 +24,9 @@ namespace CL.Core.Services
         private readonly ProfileManagerService _profileManager;
         private readonly JELoginHandler _loginHandler;
 
-        public MSession CurrentSession { get; private set; }
-        public ProfileItem CurrentProfile { get; private set; }
+        public MSession? CurrentSession { get; private set; }
+        public ProfileItem? CurrentProfile { get; private set; }
+        public event Action<ProfileItem?, MSession?>? AccountChanged;
 
         public AccountService(ProfileManagerService profileManager)
         {
@@ -91,6 +92,7 @@ namespace CL.Core.Services
                 }
 
                 CurrentProfile = profile;
+                AccountChanged?.Invoke(CurrentProfile, CurrentSession);
                 return true;
             }
             catch (Exception ex)
@@ -123,18 +125,32 @@ namespace CL.Core.Services
                     {
                         _loginHandler.Signout();
                     }
+                    AccountChanged?.Invoke(null, null);
                 }
             }
         }
-        public async Task<ProfileItem> AddMicrosoftAccountAsync()
+        public async Task<ProfileItem?> AddMicrosoftAccountAsync(Func<DeviceCodeResult, Task>? deviceCodeCallback = null)
         {
+            if (string.IsNullOrWhiteSpace(Secrets.CLIENT_ID_AZURE))
+            {
+                ServiceLocator.Current.GetService<IDispatcherService>().Invoke(() => {
+                    ServiceLocator.Current.GetService<IDialogService>().ShowMessage(
+                        LocalizationManager.GetString("Accounts.NoAzureClientId", "У цій збірці не налаштовано CLIENT_ID_AZURE, тому вхід через Microsoft недоступний."),
+                        LocalizationManager.GetString("Accounts.NeedAuth", "Потрібна авторизація"),
+                        MascotEmotion.Alert);
+                });
+                return null;
+            }
+
             try
             {
                 var app = await MsalClientHelper.BuildApplicationWithCache($"{Secrets.CLIENT_ID_AZURE}");
                 var loginHandler = new JELoginHandlerBuilder().Build();
 
                 var authenticator = loginHandler.CreateAuthenticatorWithNewAccount();
-                authenticator.AddMsalOAuth(app, msal => msal.Interactive());
+                authenticator.AddMsalOAuth(app, msal => deviceCodeCallback == null
+                    ? msal.Interactive()
+                    : msal.DeviceCode(deviceCodeCallback));
                 authenticator.AddXboxAuthForJE(xbox => xbox.Basic());
                 authenticator.AddForceJEAuthenticator();
 
@@ -242,6 +258,7 @@ namespace CL.Core.Services
                 _profileManager.UpdateProfile(profile);
 
                 CurrentSession = session;
+                AccountChanged?.Invoke(CurrentProfile, CurrentSession);
                 return true;
             }
             catch (Exception ex)
@@ -260,7 +277,7 @@ namespace CL.Core.Services
                 NameAccount = nickname,
                 UUID = uuid,
                 AccessToken = "-",
-                ImageUrl = "pack://application:,,,/Assets/big-steve-face-2002298922 2.png",
+                ImageUrl = $"{CL.Core.Platform.UIConfig.AssetScheme}/Assets/default_steve.png",
                 TypeAccount = AccountType.Offline
             };
 
@@ -294,7 +311,7 @@ namespace CL.Core.Services
                 NameAccount = session.Username,
                 UUID = session.UUID,
                 AccessToken = session.AccessToken,
-                ImageUrl = "pack://application:,,,/Assets/LittleSkinAccount.png",
+                ImageUrl = $"{CL.Core.Platform.UIConfig.AssetScheme}/Assets/LittleSkinAccount.png",
                 TypeAccount = AccountType.LittleSkin
             };
 

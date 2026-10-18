@@ -1,0 +1,134 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:ic="using:FluentIcons.Avalonia"
+             xmlns:pages="clr-namespace:CL_CLegendary_Launcher_.Avalonia.Views.Pages"
+             xmlns:pagesVm="using:CL_CLegendary_Launcher_.Avalonia.ViewModels.Pages"
+             xmlns:controls="using:CL_CLegendary_Launcher_.Avalonia.Views.Controls"
+             xmlns:ctrlVm="using:CL_CLegendary_Launcher_.Avalonia.ViewModels.Controls"
+             xmlns:progRing="clr-namespace:AvaloniaProgressRing;assembly=AvaloniaProgressRing"
+             mc:Ignorable="d" d:DesignWidth="960" d:DesignHeight="600"
+             x:Class="CL_CLegendary_Launcher_.Avalonia.Views.Pages.NewsPage"
+             x:DataType="pagesVm:NewsPageViewModel">
+
+	<Grid ZIndex="10">
+
+		<Grid x:Name="GirdTXTNews" Background="Transparent" IsVisible="{Binding IsArticleOpen}">
+			<Border IsVisible="{DynamicResource GlassVisibility}">
+				<Border.Background>
+					<VisualBrush Visual="{Binding BackgroundVisual, RelativeSource={RelativeSource AncestorType=pages:NewsPage}}" Stretch="None" />
+				</Border.Background>
+				<Border.Effect>
+					<BlurEffect Radius="{DynamicResource GlassBlurRadius}" />
+				</Border.Effect>
+			</Border>
+			<Border CornerRadius="12" Background="{DynamicResource GlassTintBrush}" />
+			<Border Background="{DynamicResource GlassTintBrush}" Opacity="0.8" />
+
+			<Button x:Name="BtnBackToNewsList"
+                    HorizontalAlignment="Left" VerticalAlignment="Top"
+                    Margin="50,55,0,0" Height="34" CornerRadius="8"
+                    Background="{DynamicResource MainBackgroundButton}"
+                    Foreground="{DynamicResource MainForegroundBrush}"
+                    Command="{Binding BackToListCommand}"
+                    ToolTip.Tip="{Binding BackButtonTooltip}"
+                    Cursor="Hand">
+				<StackPanel Orientation="Horizontal" Spacing="6" Margin="10,0">
+					<ic:SymbolIcon Symbol="ArrowLeft" />
+					<TextBlock Text="{Binding BackButtonText}" VerticalAlignment="Center" />
+				</StackPanel>
+			</Button>
+
+			<ScrollViewer Margin="50,105,50,40" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+				<StackPanel Spacing="16" MaxWidth="840" HorizontalAlignment="Left">
+					<TextBlock Text="{Binding SelectedNewsTitle}"
+                               FontSize="22" FontWeight="Bold"
+                               FontFamily="Inter"
+                               Foreground="{DynamicResource MainForegroundBrush}"
+                               TextWrapping="Wrap" />
+
+					<Border CornerRadius="10" ClipToBounds="True" MaxHeight="320" HorizontalAlignment="Left"
+                            IsVisible="{Binding HasSelectedNewsImage}" BoxShadow="0 4 12 0 #40000000">
+						<Image Source="{Binding SelectedNewsImage}" Stretch="Uniform" RenderOptions.BitmapInterpolationMode="HighQuality"/>
+					</Border>
+
+					<SelectableTextBlock Text="{Binding SelectedNewsContent}"
+                                         FontSize="15" LineHeight="24"
+                                         FontFamily="Inter"
+                                         Foreground="{DynamicResource MainForegroundBrush}"
+                                         TextWrapping="Wrap" />
+				</StackPanel>
+			</ScrollViewer>
+		</Grid>
+
+		<Grid x:Name="GirdNews" Background="Transparent" IsVisible="{Binding IsNewsListVisible}">
+			<Border IsVisible="{DynamicResource GlassVisibility}">
+				<Border.Background>
+					<VisualBrush Visual="{Binding BackgroundVisual, RelativeSource={RelativeSource AncestorType=pages:NewsPage}}" Stretch="None" />
+				</Border.Background>
+				<Border.Effect>
+					<BlurEffect Radius="{DynamicResource GlassBlurRadius}" />
+				</Border.Effect>
+			</Border>
+			<Border CornerRadius="12" Background="{DynamicResource GlassTintBrush}" />
+			<Border Background="{DynamicResource GlassTintBrush}" Opacity="0.6" />
+
+			<ListBox x:Name="ListNews"
+                     ItemsSource="{Binding NewsCards}"
+                     HorizontalAlignment="Stretch"
+                     VerticalAlignment="Stretch"
+                     Margin="20,100,20,20"
+                     Background="{x:Null}"
+                     Foreground="{DynamicResource MainForegroundBrush}"
+                     BorderBrush="{x:Null}"
+                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                     ScrollViewer.VerticalScrollBarVisibility="Auto"
+                     SelectionMode="Single">
+				<ListBox.ItemsPanel>
+					<ItemsPanelTemplate>
+						<WrapPanel Orientation="Horizontal" HorizontalAlignment="Center" />
+					</ItemsPanelTemplate>
+				</ListBox.ItemsPanel>
+				<ListBox.ItemTemplate>
+					<DataTemplate x:DataType="ctrlVm:NewsCardViewModel">
+						<controls:NewsCard />
+					</DataTemplate>
+				</ListBox.ItemTemplate>
+				<ListBox.Styles>
+					<Style Selector="ListBoxItem">
+						<Setter Property="HorizontalAlignment" Value="Left" />
+						<Setter Property="Margin" Value="10" />
+						<Setter Property="Padding" Value="0" />
+						<Setter Property="BorderThickness" Value="0" />
+						<Setter Property="Background" Value="Transparent" />
+					</Style>
+					<Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
+						<Setter Property="Background" Value="Transparent" />
+					</Style>
+					<Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+						<Setter Property="Background" Value="Transparent" />
+					</Style>
+				</ListBox.Styles>
+			</ListBox>
+
+			<StackPanel x:Name="NewsLoader"
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Center"
+                        Orientation="Vertical"
+                        IsVisible="{Binding IsLoading}">
+				<progRing:ProgressRing Width="60" Height="60"
+                                       IsActive="{Binding IsLoading}"
+                                       Foreground="{DynamicResource MainBackgroundProgressBar}" />
+				<TextBlock Text="{Binding SearchingNewsText}"
+                           Margin="0,20,0,0"
+                           FontSize="16"
+                           FontFamily="Inter"
+                           FontWeight="Medium"
+                           Foreground="{DynamicResource MainForegroundBrush}"
+                           HorizontalAlignment="Center"
+                           TextAlignment="Center" />
+			</StackPanel>
+		</Grid>
+	</Grid>
+</UserControl>

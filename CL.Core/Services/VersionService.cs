@@ -60,7 +60,7 @@ namespace CL.Core.Services
                     JObject manifest = JObject.Parse(json);
                     JArray versions = (JArray)manifest["versions"];
 
-                    string iconBase = "pack://application:,,,/Assets/";
+                    string iconBase = $"{CL.Core.Platform.UIConfig.AssetScheme}/Assets/";
 
                     foreach (var version in versions)
                     {

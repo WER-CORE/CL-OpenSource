@@ -1,0 +1,85 @@
+﻿<UserControl x:Class="CL_CLegendary_Launcher_.Avalonia.Views.Controls.NewsCard"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:vm="using:CL_CLegendary_Launcher_.Avalonia.ViewModels.Controls"
+             xmlns:progRing="clr-namespace:AvaloniaProgressRing;assembly=AvaloniaProgressRing"
+             x:DataType="vm:NewsCardViewModel"
+             mc:Ignorable="d" Height="120" Width="245">
+
+    <UserControl.Styles>
+        <Style Selector="Button.newsCardBtn">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Margin" Value="0"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="VerticalAlignment" Value="Stretch"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.newsCardBtn:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="Transparent"/>
+        </Style>
+        <Style Selector="Button.newsCardBtn:pressed /template/ ContentPresenter">
+            <Setter Property="Background" Value="Transparent"/>
+        </Style>
+        <Style Selector="Border#MainBorder">
+            <Setter Property="Transitions">
+                <Transitions>
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.15" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Button.newsCardBtn:pointerover Border#MainBorder">
+            <Setter Property="RenderTransform" Value="scale(1.02)" />
+        </Style>
+    </UserControl.Styles>
+
+    <Button Classes="newsCardBtn" Command="{Binding OpenNewsCommand}">
+        <Border x:Name="MainBorder"
+                Background="{DynamicResource MainBackgroundBrushServer}"
+                CornerRadius="12"
+                BorderThickness="1"
+                ClipToBounds="True"
+                BoxShadow="0 1 5 0 #33000000">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="40"/>
+                </Grid.RowDefinitions>
+
+                <Panel Grid.Row="0">
+                    <Border Background="#15FFFFFF" IsVisible="{Binding Image, Converter={x:Static ObjectConverters.IsNull}}"/>
+
+                    <progRing:ProgressRing Width="24" Height="24"
+                                           IsActive="{Binding IsLoadingImage}"
+                                           IsVisible="{Binding IsLoadingImage}"
+                                           Foreground="{DynamicResource MainForegroundBrush}"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+
+                    <Image x:Name="ImageNews"
+                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                           RenderOptions.BitmapInterpolationMode="HighQuality"
+                           Stretch="UniformToFill"
+                           Source="{Binding Image}"/>
+                </Panel>
+
+                <Border Grid.Row="0" VerticalAlignment="Bottom" Height="20"
+                        Background="{DynamicResource MainBackgroundBrushServer}"
+                        Opacity="0.2" Margin="0,0,0,-10"/>
+
+                <Border Grid.Row="1" Background="Transparent" Padding="10,0">
+                    <TextBlock x:Name="TitleUpdate"
+                               Text="{Binding Title}"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                               Foreground="{DynamicResource MainForegroundBrush}"
+                               FontFamily="Inter" FontSize="12" FontWeight="SemiBold"
+                               TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"/>
+                </Border>
+            </Grid>
+        </Border>
+    </Button>
+</UserControl>

@@ -1,0 +1,106 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:fluentIcons="using:FluentIcons.Avalonia"
+        xmlns:vm="using:CL_CLegendary_Launcher_.Avalonia.ViewModels.Dialogs"
+        x:DataType="vm:ColorPickerDialogViewModel"
+        mc:Ignorable="d" d:DesignWidth="420" d:DesignHeight="520"
+        x:Class="CL_CLegendary_Launcher_.Avalonia.Views.Dialogs.ColorPickerDialog"
+        Title="CL - ColorPicker" Height="520" Width="420"
+        WindowStartupLocation="CenterOwner" CanResize="False"
+        WindowDecorations="None"
+        Background="Transparent"
+        TransparencyLevelHint="Transparent"
+        FontFamily="Inter">
+
+    <Window.Styles>
+        <Style Selector="Button.close-btn:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#C42B1C"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+        <Style Selector="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource MainForegroundBrush}" />
+        </Style>
+        <Style Selector="Label">
+            <Setter Property="Foreground" Value="{DynamicResource MainForegroundBrush}" />
+        </Style>
+
+        <Style Selector="TextBox">
+            <Setter Property="Background" Value="{DynamicResource MainBackgroundButton}" />
+            <Setter Property="Foreground" Value="{DynamicResource MainForegroundBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="BorderBrush" Value="#33FFFFFF" />
+            <Setter Property="Padding" Value="4,0" />
+            <Setter Property="Height" Value="20" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="FontSize" Value="11" />
+        </Style>
+
+        <Style Selector="RadioButton">
+            <Setter Property="Foreground" Value="{DynamicResource MainForegroundBrush}" />
+            <Setter Property="Margin" Value="2,0" />
+        </Style>
+
+        <Style Selector="ComboBox">
+            <Setter Property="IsVisible" Value="False" />
+        </Style>
+
+        <Style Selector="Button.cancelBtn">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#33FFFFFF"/>
+        </Style>
+        <Style Selector="Button.cancelBtn:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#11FFFFFF"/>
+        </Style>
+
+        <Style Selector="Button.applyBtn">
+            <Setter Property="Background" Value="{DynamicResource MainBackgroundButton}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+        <Style Selector="Button.applyBtn:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource MainBackgroundButton}"/>
+            <Setter Property="Opacity" Value="0.8"/>
+        </Style>
+    </Window.Styles>
+
+    <Border Background="{DynamicResource MainBackgroundBrush}"
+            CornerRadius="16" BorderThickness="1" BorderBrush="#33FFFFFF"
+            Margin="10" BoxShadow="0 4 20 0 #4D000000">
+
+        <Grid Margin="20,0,20,20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="35"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0" Background="Transparent"
+                    PointerPressed="Window_PointerPressed"
+                    Cursor="SizeAll">
+                <TextBlock Text="⋮" FontWeight="Bold" FontSize="16"
+                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                           Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.3" />
+            </Border>
+
+            <ColorView Grid.Row="1"
+                       Color="{Binding SelectedColor, Mode=TwoWay}"
+                       IsAlphaEnabled="False"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center" />
+
+            <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+                <Button Content="{Binding CancelButtonText}" Width="100" Height="35" Margin="0,0,10,0"
+                        Classes="cancelBtn" Foreground="{DynamicResource MainForegroundBrush}"
+                        Command="{Binding CancelCommand}" Cursor="Hand" FontFamily="Inter"
+                        HorizontalContentAlignment="Center" VerticalContentAlignment="Center" CornerRadius="6" />
+
+                <Button Content="{Binding ApplyButtonText}" Width="100" Height="35"
+                        Classes="applyBtn" Foreground="{DynamicResource MainForegroundBrush}"
+                        Command="{Binding ApplyCommand}" Cursor="Hand" FontFamily="Inter"
+                        HorizontalContentAlignment="Center" VerticalContentAlignment="Center" CornerRadius="6" />
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>

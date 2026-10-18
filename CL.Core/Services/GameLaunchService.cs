@@ -1,4 +1,4 @@
-using CL.Core.Models;
+﻿using CL.Core.Models;
 using CL.Core.Platform;
 using CL.Core.Interfaces;
 using CmlLib.Core;
@@ -39,14 +39,14 @@ namespace CL.Core.Services
 
     public class GameLaunchService
     {
-        
+
         private readonly GameSessionManager _gameSessionManager;
         private readonly LastActionService _lastActionService;
         private CancellationTokenSource _cts;
 
         public GameLaunchService(GameSessionManager sessionManager, LastActionService lastActionService)
         {
-            
+
             _gameSessionManager = sessionManager;
             _lastActionService = lastActionService;
         }
@@ -54,7 +54,7 @@ namespace CL.Core.Services
         {
             return SettingsManager.Default.OfflineModLauncher || !NetworkInterface.GetIsNetworkAvailable();
         }
-        private string GetOfflineVersionName(LoaderType loaderType, string mcVersion, string loaderVersion)
+        private string GetOfflineVersionName(LoaderType loaderType, string mcVersion, string? loaderVersion)
         {
             if (mcVersion.ToLower().Contains("optifine") ||
                 mcVersion.ToLower().Contains("forge") ||
@@ -84,7 +84,7 @@ namespace CL.Core.Services
                     return mcVersion;
             }
         }
-        public async Task LaunchGameAsync(LoaderType loaderType, string minecraftVersion, string loaderVersion, LaunchConfiguration config)
+        public async Task LaunchGameAsync(LoaderType loaderType, string minecraftVersion, string? loaderVersion, LaunchConfiguration config)
         {
             _cts = new CancellationTokenSource();
             var token = _cts.Token;
@@ -220,7 +220,7 @@ namespace CL.Core.Services
                     ServiceLocator.Current.GetService<IMainWindowController>().Minimize();
                 });
 
-                await DiscordController.UpdatePresence(string.Format(LocalizationManager.GetString("DiscordRPC.PlayingVersion", "Грає версію {0}"), versionName));
+                await DiscordController.UpdatePresence(string.Format(LocalizationManager.GetString("DiscordRPC.PlayingVersion", "Грає версію {0}"), versionName), resetTimer: true);
 
                 if (SettingsManager.Default.EnableLog)
                 {
@@ -232,14 +232,27 @@ namespace CL.Core.Services
                 }
 
                 string loaderName = loaderType.ToString();
-                var action = new Dictionary<string, string>
+                var action = new Dictionary<string, string>();
+
+                if (!string.IsNullOrEmpty(config.ServerIp))
                 {
-                    ["type"] = loaderType == LoaderType.Vanilla ? "version" : "version",
-                    ["name"] = loaderName,
-                    ["version"] = minecraftVersion,
-                    ["loader"] = loaderName.ToLower(),
-                    ["loaderVersion"] = loaderVersion
-                };
+                    action["type"] = "server";
+                    action["name"] = !string.IsNullOrEmpty(config.ServerName) ? config.ServerName : config.ServerIp;
+                    action["version"] = minecraftVersion;
+                    action["ip"] = config.ServerIp;
+                    action["port"] = config.ServerPort.ToString();
+                    action["loader"] = loaderName.ToLower();
+                    action["loaderVersion"] = loaderVersion;
+                }
+                else
+                {
+                    action["type"] = "version";
+                    action["name"] = loaderName;
+                    action["version"] = minecraftVersion;
+                    action["loader"] = loaderName.ToLower();
+                    action["loaderVersion"] = loaderVersion;
+                }
+
                 if (SettingsManager.Default.EnableMod_LatestActions) { await _lastActionService.AddLastActionAsync(action); }
 
                 if (SettingsManager.Default.CloseLaucnher)
@@ -251,6 +264,11 @@ namespace CL.Core.Services
                 await MemoryCleaner.FlushMemoryAsync(trimWorkingSet: true);
                 await process.WaitForExitAsync();
                 int exitCode = process.ExitCode;
+
+                if (!SettingsManager.Default.CloseLaucnher)
+                {
+                    _ = DiscordController.UpdatePresence(LocalizationManager.GetString("DiscordRPC.InHome", "В головному вікні"), resetTimer: true);
+                }
 
                 if (exitCode != 0)
                 {
@@ -385,7 +403,7 @@ namespace CL.Core.Services
             var baseOptions = new MLaunchOption
             {
                 MinimumRamMb = config.MinimumRamMb,
-                MaximumRamMb = config.MinimumRamMb,
+                MaximumRamMb = config.MaximumRamMb,
                 Session = config.Session,
                 ScreenWidth = config.ScreenWidth,
                 ScreenHeight = config.ScreenHeight,
@@ -411,8 +429,8 @@ namespace CL.Core.Services
                 string proxyPort = GetProxyPort(versionName);
                 if (proxyPort != null)
                 {
-                    var argsList = baseOptions.ExtraJvmArguments != null 
-                        ? baseOptions.ExtraJvmArguments.ToList() 
+                    var argsList = baseOptions.ExtraJvmArguments != null
+                        ? baseOptions.ExtraJvmArguments.ToList()
                         : new List<MArgument>();
 
                     argsList.Add(new MArgument("-Dhttp.proxyHost=betacraft.uk"));
@@ -429,7 +447,7 @@ namespace CL.Core.Services
         public static string GetProxyPort(string version)
         {
             if (string.IsNullOrWhiteSpace(version)) return null;
-            
+
             version = version.ToLower();
 
             if (version.StartsWith("rd-") || version.StartsWith("c0.0") || version.StartsWith("c0.2") || version.StartsWith("c0.30"))
@@ -444,7 +462,7 @@ namespace CL.Core.Services
             if (version.StartsWith("1.0") || version.StartsWith("1.1") || version.StartsWith("1.2") || version.StartsWith("1.3") || version.StartsWith("1.4") || version.StartsWith("1.5"))
                 return "11707";
 
-            return null; 
+            return null;
         }
     }
 }

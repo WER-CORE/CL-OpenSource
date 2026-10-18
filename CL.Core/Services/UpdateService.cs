@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.IO.Compression;
 using System.Net.Http;
@@ -92,14 +92,14 @@ namespace CL.Core.Services
             var buffer = new byte[8192];
             long totalRead = 0;
             int read;
-            
+
             long lastReportTime = 0;
-            
+
             while ((read = await contentStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
             {
                 await fileStream.WriteAsync(buffer, 0, read);
                 totalRead += read;
-                
+
                 long now = Environment.TickCount64;
                 if (totalBytes > 0 && (now - lastReportTime > 50 || totalRead == totalBytes))
                 {
@@ -114,7 +114,7 @@ namespace CL.Core.Services
         public void ExtractUpdate(string destination)
         {
             if (!Directory.Exists(destination)) Directory.CreateDirectory(destination);
-            
+
             if (File.Exists(_tempZipPath))
             {
                 ZipFile.ExtractToDirectory(_tempZipPath, destination, true);

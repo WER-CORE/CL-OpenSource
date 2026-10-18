@@ -1,4 +1,4 @@
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
 namespace CL.Core.Models
 {
@@ -21,7 +21,7 @@ namespace CL.Core.Models
 
         [JsonPropertyName("url_osx_x64")]
         public string UrlOsxX64 { get; set; } = "";
-        
+
         [JsonPropertyName("url_osx_arm64")]
         public string UrlOsxArm64 { get; set; } = "";
     }

@@ -1,4 +1,4 @@
-using CL.Core.Services;
+﻿using CL.Core.Services;
 using System;
 using System.Threading;
 
@@ -8,7 +8,7 @@ namespace CL.Core.Interfaces
     {
         void ShowProgressWindow();
         void CloseProgressWindow();
-        
+
         void UpdateVersionProgress(int progress, object version);
         void UpdateFileTaskProgress(int totalFiles, int downloadedFiles, string fileName);
         void UpdateFileProgress(int progress);

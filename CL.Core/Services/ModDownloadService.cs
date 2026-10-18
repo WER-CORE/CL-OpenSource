@@ -1,4 +1,4 @@
-using CurseForge.APIClient;
+﻿using CurseForge.APIClient;
 using CL.Core.Platform;
 using CL.Core.Models;
 using CL.Core.Interfaces;
@@ -99,7 +99,7 @@ namespace CL.Core.Services
 
             ServiceLocator.Current.GetService<IDispatcherService>().Invoke(() =>
             {
-                
+
                 progressWindow.CTS = cts;
                 progressWindow.ShowProgressWindow();
                 progressWindow.UpdateVersionProgress(0, version.VersionName);
@@ -110,7 +110,6 @@ namespace CL.Core.Services
             {
                 if (progressWindow == null) return;
 
-                
                 progressWindow.UpdateFileProgress(info.Percent);
 
                 if (info.TotalFiles > 0)
@@ -283,19 +282,15 @@ namespace CL.Core.Services
                 1 => "shader",
                 2 => "resourcepack",
                 3 => "no",
-                4 => "datapacks",
+                4 => "datapack",
                 _ => "mod"
             };
 
             var facets = new List<string>();
 
-            if (!string.IsNullOrEmpty(projectType) && modType != 4)
+            if (!string.IsNullOrEmpty(projectType))
             {
                 facets.Add($"[\"project_type:{projectType}\"]");
-            }
-            else if (modType == 4)
-            {
-                facets.Add("[\"categories:datapack\"]");
             }
 
             if (projectType == "mod" && !string.IsNullOrEmpty(loader) && modType != 4)
@@ -718,7 +713,7 @@ namespace CL.Core.Services
             }
             catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"CurseForge ModPack Error: {ex.Message}"); }
             return list;
-        }        
+        }
         #endregion
     }
 

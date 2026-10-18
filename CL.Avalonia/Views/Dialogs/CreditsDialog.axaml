@@ -1,0 +1,98 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:ui="using:FluentAvalonia.UI.Controls"
+        xmlns:progRing="clr-namespace:AvaloniaProgressRing;assembly=AvaloniaProgressRing"
+        xmlns:fluentIcons="using:FluentIcons.Avalonia"
+        xmlns:vm="using:CL_CLegendary_Launcher_.Avalonia.ViewModels.Dialogs"
+        x:DataType="vm:CreditsDialogViewModel"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="500"
+        x:Class="CL_CLegendary_Launcher_.Avalonia.Views.Dialogs.CreditsDialog"
+        Title="{Binding WindowTitle}" Height="500" Width="800"
+        WindowStartupLocation="CenterScreen"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaTitleBarHeightHint="-1"
+        WindowDecorations="None"
+        CanResize="False"
+        Background="Transparent"
+        TransparencyLevelHint="Transparent">
+
+    <Window.Styles>
+        <Style Selector="Button.close-btn:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#C42B1C"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+    </Window.Styles>
+
+    <Grid>
+        <Border CornerRadius="12" Background="{DynamicResource MainBackgroundBrush}" BorderBrush="{DynamicResource MainBackgroundBrushServer}" BorderThickness="1" Margin="10" ClipToBounds="True"
+                BoxShadow="0 0 20 0 #80000000"
+                PointerPressed="Window_PointerPressed">
+
+            <Grid RowDefinitions="35,*">
+                <Border Grid.Row="0" Background="Transparent" PointerPressed="Window_PointerPressed">
+                    <Grid Margin="10,0" ColumnDefinitions="*,Auto">
+                        <TextBlock Text="{Binding WindowTitle}"
+                                   VerticalAlignment="Center"
+                                   Foreground="{DynamicResource MainForegroundBrush}"
+                                   FontSize="12" FontWeight="SemiBold" />
+
+                        <Button Grid.Column="1" Classes="close-btn" Command="{Binding CloseCommand}"
+                                Background="Transparent" BorderThickness="0"
+                                Foreground="{DynamicResource MainForegroundBrush}"
+                                Width="35" Height="30" Padding="0" Cursor="Hand"
+                                CornerRadius="6" ToolTip.Tip="Закрити вікно">
+                            <fluentIcons:SymbolIcon Symbol="Dismiss" FontSize="16" />
+                        </Button>
+                    </Grid>
+                </Border>
+
+                <Grid Grid.Row="1" Margin="20,5,20,15">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="200"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" x:Name="MascotPanel" VerticalAlignment="Center">
+                    <Image Height="200"
+                           RenderOptions.BitmapInterpolationMode="HighQuality"
+                           Source=""/>
+                    <TextBlock Text="{Binding CreditsTitle}" Foreground="{DynamicResource MainForegroundBrush}" FontWeight="Bold" FontSize="16" HorizontalAlignment="Center" Margin="0,15,0,5" TextAlignment="Center" TextWrapping="Wrap"/>
+                </StackPanel>
+
+                <Grid Grid.Column="1" Margin="20,0,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Row="0" Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="10" BorderThickness="0" Padding="15">
+                        <ScrollViewer>
+                            <Grid>
+                                <progRing:ProgressRing IsVisible="{Binding IsLoading}" IsActive="{Binding IsLoading}" Width="40" Height="40" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="{DynamicResource MainForegroundBrush}"/>
+
+                                <TextBlock Text="{Binding CreditsContent}"
+                                           Foreground="{DynamicResource MainForegroundBrush}"
+                                           FontSize="15" TextWrapping="Wrap"
+                                           FontFamily="Inter, Consolas, Segoe UI"
+                                           VerticalAlignment="{Binding ContentVerticalAlignment}"
+                                           HorizontalAlignment="{Binding ContentHorizontalAlignment}"/>
+                            </Grid>
+                        </ScrollViewer>
+                    </Border>
+
+                    <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,15,0,0">
+                        <Button Command="{Binding CloseCommand}" Height="40" Padding="30,0"
+                                Background="{DynamicResource MainBackgroundProgressBar}"
+                                Foreground="{DynamicResource MainForegroundBrush}" BorderThickness="0"
+                                Cursor="Hand" FontWeight="Bold" CornerRadius="10">
+                            <TextBlock Text="{Binding CloseButtonText}" VerticalAlignment="Center"/>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+                </Grid>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

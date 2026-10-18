@@ -1,0 +1,264 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:ui="using:FluentAvalonia.UI.Controls"
+        xmlns:ic="using:FluentIcons.Avalonia"
+        xmlns:progRing="clr-namespace:AvaloniaProgressRing;assembly=AvaloniaProgressRing"
+        xmlns:vm="using:CL_CLegendary_Launcher_.Avalonia.ViewModels.Dialogs"
+        xmlns:controls="using:CL_CLegendary_Launcher_.Avalonia.Views.Controls"
+        xmlns:controlsVm="using:CL_CLegendary_Launcher_.Avalonia.ViewModels.Controls"
+        x:Class="CL_CLegendary_Launcher_.Avalonia.Views.Dialogs.CreateModpackDialog"
+        x:DataType="vm:CreateModpackViewModel"
+        Title="{Binding DialogTitle}" Height="600" Width="850"
+        Background="Transparent"
+        Foreground="{DynamicResource MainForegroundBrush}"
+        FontFamily="Inter"
+        WindowStartupLocation="CenterScreen"
+        Icon="/Icon/IconCL(Common).png"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaTitleBarHeightHint="-1"
+        WindowDecorations="None"
+        TransparencyLevelHint="Mica"
+        CanResize="False">
+
+    <Window.Styles>
+        <Style Selector="Button.close-btn:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#C42B1C"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+
+        <Style Selector="Button.TabButtonStyle">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="{DynamicResource MainForegroundBrush}"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Padding" Value="10,5"/>
+            <Setter Property="CornerRadius" Value="4"/>
+        </Style>
+        <Style Selector="Button.TabButtonStyle:pointerover /template/ ContentPresenter">
+            <Setter Property="Foreground" Value="#FF00Aaff"/>
+            <Setter Property="Background" Value="Transparent"/>
+        </Style>
+
+        <Style Selector="Button.ActionButtonStyle">
+            <Setter Property="Background" Value="{DynamicResource MainBackgroundBrushServer}"/>
+            <Setter Property="Foreground" Value="{DynamicResource MainForegroundBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#33FFFFFF"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="15,0"/>
+        </Style>
+        <Style Selector="Button.ActionButtonStyle:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#44FFFFFF"/>
+        </Style>
+        <Style Selector="Button.ActionButtonStyle:pressed /template/ ContentPresenter">
+            <Setter Property="Background" Value="#22FFFFFF"/>
+        </Style>
+    </Window.Styles>
+
+    <Border Background="{DynamicResource MainBackgroundBrush}" CornerRadius="12" ClipToBounds="True">
+        <Grid Background="Transparent">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="35"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition/>
+                <RowDefinition Height="65.2"/>
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0" Background="Transparent" PointerPressed="Header_PointerPressed">
+                <Grid Margin="10,0" ColumnDefinitions="*,Auto">
+                    <TextBlock Text="{Binding DialogTitle}"
+                               VerticalAlignment="Center"
+                               Foreground="{DynamicResource MainForegroundBrush}"
+                               FontSize="12" FontWeight="SemiBold" />
+
+                    <Button Grid.Column="1" Classes="close-btn" Command="{Binding CloseDialogCommand}"
+                            Background="Transparent" BorderThickness="0"
+                            Foreground="{DynamicResource MainForegroundBrush}"
+                            Width="35" Height="30" Padding="0" Cursor="Hand"
+                            CornerRadius="6">
+                        <ic:SymbolIcon Symbol="Dismiss" FontSize="16" />
+                    </Button>
+                </Grid>
+            </Border>
+
+        <Border Grid.Row="1" Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="8" Padding="15" Margin="10">
+            <Grid ColumnDefinitions="1.5*,1*,1*,1.2*">
+
+                <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                    <TextBlock Text="{Binding ModpackNameLabel}" FontSize="10" Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,0,5"/>
+                    <TextBox Text="{Binding ModpackName}" PlaceholderText="{Binding ModpackNamePlaceholder}" Height="38" Background="{DynamicResource MainBackgroundBrush}"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Margin="0,0,10,0">
+                    <TextBlock Text="{Binding MinecraftVersionLabel}" FontSize="10" Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,0,5"/>
+                    <ComboBox ItemsSource="{Binding MinecraftVersions}" SelectedItem="{Binding SelectedMinecraftVersion}" Height="38" Background="{DynamicResource MainBackgroundBrush}" Foreground="{DynamicResource MainForegroundBrush}" Cursor="Hand" HorizontalAlignment="Stretch"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2" Margin="0,0,10,0">
+                    <TextBlock Text="{Binding LoaderTypeLabel}" FontSize="10" Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,0,5"/>
+                    <ComboBox ItemsSource="{Binding LoaderTypes}" SelectedItem="{Binding SelectedLoaderType}" Height="38" Background="{DynamicResource MainBackgroundBrush}" Foreground="{DynamicResource MainForegroundBrush}" Cursor="Hand" HorizontalAlignment="Stretch"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="3">
+                    <TextBlock Text="{Binding LoaderVersionLabel}" FontSize="10" Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,0,5" IsVisible="{Binding CanInstallMods}"/>
+                    <ComboBox ItemsSource="{Binding LoaderVersions}" SelectedItem="{Binding SelectedLoaderVersion}" Height="38" Background="{DynamicResource MainBackgroundBrush}" Foreground="{DynamicResource MainForegroundBrush}" Cursor="Hand" IsVisible="{Binding CanInstallMods}" HorizontalAlignment="Stretch"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="2" Margin="10,0,10,10" ColumnDefinitions="Auto,*,200,Auto">
+
+            <StackPanel Orientation="Horizontal" Grid.Column="0" Spacing="5">
+                <Button Content="{Binding TabModsText}" Classes="TabButtonStyle" IsVisible="{Binding CanInstallMods}" Command="{Binding SelectTabCommand}" CommandParameter="Mods"/>
+                <Button Content="{Binding TabResourcePacksText}" Classes="TabButtonStyle" Command="{Binding SelectTabCommand}" CommandParameter="ResourcePacks"/>
+                <Button Content="{Binding TabShadersText}" Classes="TabButtonStyle" IsVisible="{Binding CanInstallMods}" Command="{Binding SelectTabCommand}" CommandParameter="Shaders"/>
+                <Button Content="{Binding TabDatapacksText}" Classes="TabButtonStyle" IsVisible="{Binding CanInstallMods}" Command="{Binding SelectTabCommand}" CommandParameter="Datapacks"/>
+                <Button Content="{Binding TabMapsText}" Classes="TabButtonStyle" Command="{Binding SelectTabCommand}" CommandParameter="Maps"/>
+            </StackPanel>
+
+            <TextBox Grid.Column="2" Height="32" CornerRadius="8"
+                     Text="{Binding SearchQuery, Mode=TwoWay}"
+                     Background="Transparent"
+                     BorderThickness="0"
+                     Foreground="{DynamicResource MainForegroundBrush}"
+                     VerticalContentAlignment="Center" Padding="10,0" FontSize="13"
+                     PlaceholderText="{Binding SearchPlaceholder}" Margin="10,0"
+                     ToolTip.Tip="{Binding SearchToolTip}">
+                <TextBox.InnerLeftContent>
+                    <ic:SymbolIcon Symbol="Search" Margin="5,0" />
+                </TextBox.InnerLeftContent>
+                <TextBox.Styles>
+                    <Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
+                        <Setter Property="Background" Value="Transparent" />
+                        <Setter Property="BorderThickness" Value="0" />
+                    </Style>
+                    <Style Selector="TextBox:pointerover /template/ Border#PART_BorderElement">
+                        <Setter Property="Background" Value="Transparent" />
+                        <Setter Property="BorderThickness" Value="0" />
+                    </Style>
+                </TextBox.Styles>
+            </TextBox>
+
+            <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center" Spacing="10">
+                <Button Background="Transparent" Padding="0" Cursor="Hand" Command="{Binding SelectProviderCommand}" CommandParameter="Modrinth">
+                    <Image Source="avares://CL.Avalonia/Assets/1200-818013157 1.png" Width="24" Height="24" Opacity="{Binding ModrinthOpacity}" />
+                </Button>
+                <Button Background="Transparent" Padding="0" Cursor="Hand" Command="{Binding SelectProviderCommand}" CommandParameter="CurseForge">
+                    <Image Source="avares://CL.Avalonia/Assets/curseforge-logo-3499974474.png" Width="24" Height="24" Opacity="{Binding CurseForgeOpacity}" />
+                </Button>
+            </StackPanel>
+        </Grid>
+
+        <Grid Grid.Row="3" Margin="10,0,10,10" ColumnDefinitions="1.5*,10,1*">
+
+            <Grid Grid.Column="0" RowDefinitions="Auto,*,Auto">
+                <TextBlock Grid.Row="0" Text="{Binding SearchResultsTitle}" FontSize="12" Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,0,5"/>
+
+                <Border Grid.Row="1" Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="8" Padding="5" ClipToBounds="True">
+                    <Grid>
+
+                        <ProgressBar IsIndeterminate="True"
+                                     IsVisible="{Binding IsLoadingMods}"
+                                     Height="3"
+                                     VerticalAlignment="Top"
+                                     HorizontalAlignment="Stretch"
+                                     Foreground="{DynamicResource MainBackgroundProgressBar}"
+                                     ZIndex="10" />
+
+                        <StackPanel IsVisible="{Binding IsLoadingMods}" VerticalAlignment="Top" Margin="0,5,0,0">
+                            <controls:ModSearchCardSkeleton />
+                            <controls:ModSearchCardSkeleton />
+                            <controls:ModSearchCardSkeleton />
+                            <controls:ModSearchCardSkeleton />
+                            <controls:ModSearchCardSkeleton />
+                            <controls:ModSearchCardSkeleton />
+                            <controls:ModSearchCardSkeleton />
+                        </StackPanel>
+
+                        <ListBox x:Name="SearchResultsList" ItemsSource="{Binding SearchResults}" IsVisible="{Binding !IsLoadingMods}" Background="Transparent" BorderThickness="0" Margin="0,5,0,0">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate x:DataType="controlsVm:ModSearchCardViewModel">
+                                    <controls:ModSearchCard DataContext="{Binding}"/>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </Grid>
+                </Border>
+
+                <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10,0,0" Spacing="15">
+                    <Button Classes="ActionButtonStyle" Width="64" Height="40" Command="{Binding PrevPageCommand}" IsEnabled="{Binding HasPrevPage}">
+                        <ic:SymbolIcon Symbol="ChevronLeft" FontSize="20"/>
+                    </Button>
+
+                    <Border Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="8" Height="40" Padding="15,0">
+                        <TextBlock Text="{Binding PageNumber}" VerticalAlignment="Center" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource MainForegroundBrush}"/>
+                    </Border>
+
+                    <Button Classes="ActionButtonStyle" Width="64" Height="40" Command="{Binding NextPageCommand}" IsEnabled="{Binding HasNextPage}">
+                        <ic:SymbolIcon Symbol="ChevronRight" FontSize="20"/>
+                    </Button>
+                </StackPanel>
+            </Grid>
+
+            <Grid Grid.Column="2" RowDefinitions="Auto,*">
+                <TextBlock Text="{Binding SelectedModsTitle}" FontSize="12" Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,0,5"/>
+
+                <Border Grid.Row="1" Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="8" Padding="5">
+                    <ListBox ItemsSource="{Binding SelectedMods}" Background="Transparent" BorderThickness="0">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="controlsVm:SelectedModItemViewModel">
+                                <Border Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="8" Margin="0,0,0,5" Height="40">
+                                    <Grid Margin="10,0" ColumnDefinitions="Auto,*,Auto">
+                                        <Image Grid.Column="0" Source="{Binding Icon}" Height="20" Width="20" VerticalAlignment="Center" RenderOptions.BitmapInterpolationMode="HighQuality"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding Name}" VerticalAlignment="Center" Margin="10,0" FontSize="12" FontFamily="Inter" Foreground="{DynamicResource MainForegroundBrush}" TextTrimming="CharacterEllipsis"/>
+                                        <Button Grid.Column="2" Padding="0" Background="Transparent" Width="36" Height="36" Cursor="Hand" Command="{Binding DeleteCommand}">
+                                            <Path Data="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"
+                                                  Fill="{DynamicResource MainForegroundBrush}"
+                                                  Height="16" Width="16" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Button>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Border>
+            </Grid>
+        </Grid>
+
+        <Grid Grid.Row="4" Margin="10,15,10,0" ColumnDefinitions="*,10,Auto">
+            <Button Grid.Column="0" Classes="ActionButtonStyle" Height="40" Command="{Binding CreateModpackCommand}" HorizontalAlignment="Stretch" Cursor="Hand">
+                <StackPanel Orientation="Horizontal" Spacing="5">
+                    <ic:SymbolIcon Symbol="AddCircle" FontSize="20"/>
+                    <TextBlock Text="{Binding CreateButtonText}" FontWeight="Bold" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Button>
+        </Grid>
+
+        <Grid Grid.Row="0" Grid.RowSpan="5" Background="#80000000" IsVisible="{Binding IsMenuInstallerVisible}">
+            <Border Background="{DynamicResource MainBackgroundBrush}" CornerRadius="14" Width="254" Height="206" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <Grid>
+                    <Border BorderBrush="Black" BorderThickness="1" CornerRadius="14"/>
+
+                    <Border BorderThickness="1" Height="30" Margin="0,15,0,0" VerticalAlignment="Top" Width="235" CornerRadius="8" Background="{DynamicResource MainBackgroundBrush}">
+                        <TextBlock Text="{Binding SelectedModName}" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource MainForegroundBrush}" FontSize="12" TextTrimming="CharacterEllipsis" Padding="5,0"/>
+                    </Border>
+
+                    <Border BorderBrush="Black" BorderThickness="1" Height="83" Margin="0,55,0,0" VerticalAlignment="Top" Width="235" CornerRadius="8" Background="{DynamicResource MainBackgroundBrush}">
+                        <ListBox ItemsSource="{Binding SelectedModVersions}" SelectedItem="{Binding SelectedModVersion}" Background="Transparent" BorderThickness="0" ScrollViewer.VerticalScrollBarVisibility="Hidden" ScrollViewer.HorizontalScrollBarVisibility="Hidden" FontSize="12">
+
+                        </ListBox>
+                    </Border>
+
+                    <Button Content="{Binding AddButtonText}" Command="{Binding AddModCommand}" Background="{DynamicResource MainBackgroundButton}" Foreground="{DynamicResource MainForegroundBrush}" FontWeight="Bold" FontSize="18" Width="234" Height="35" CornerRadius="8" Margin="0,155,0,0" VerticalAlignment="Top" HorizontalAlignment="Center" Cursor="Hand"/>
+
+                    <Button Content="✕" Command="{Binding CloseMenuInstallerCommand}" Background="Transparent" Foreground="{DynamicResource MainForegroundBrush}" FontSize="14" Width="30" Height="30" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,5,5,0" Cursor="Hand" BorderThickness="0"/>
+                </Grid>
+            </Border>
+        </Grid>
+        </Grid>
+    </Border>
+</Window>

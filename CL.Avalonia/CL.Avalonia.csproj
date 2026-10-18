@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
@@ -11,20 +11,95 @@
 		<AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
 		<DebugSymbols>false</DebugSymbols>
 		<DebugType>none</DebugType>
+		<Version>1.0.0</Version>
+		<AssemblyVersion>1.0.0.6</AssemblyVersion>
+		<FileVersion>1.0.0.6</FileVersion>
+		<InformationalVersion>1.0.0</InformationalVersion>
+		<UserSecretsId>CLegendary-Launcher-Secrets-5f3a9e2d</UserSecretsId>
+		<ApplicationIcon>Icon\IconCL(Halloween).ico</ApplicationIcon>
 	</PropertyGroup>
+
+	<ItemGroup>
+	  <AvaloniaXaml Remove="Assets\Icons\**" />
+	  <Compile Remove="Assets\Icons\**" />
+	  <EmbeddedResource Remove="Assets\Icons\**" />
+	  <None Remove="Assets\Icons\**" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Remove="Assets\1200-818013157 1.png" />
+	  <None Remove="Assets\Backgrounds\DarkThemBG.png" />
+	  <None Remove="Assets\Backgrounds\ForestBG.png" />
+	  <None Remove="Assets\Backgrounds\LightThemBG.png" />
+	  <None Remove="Assets\Backgrounds\OceanBG.png" />
+	  <None Remove="Assets\Backgrounds\SunSetBG.png" />
+	  <None Remove="Assets\CobblestoneIconAlpha.png" />
+	  <None Remove="Assets\curseforge-logo-3499974474.png" />
+	  <None Remove="Assets\CustomVersion.png" />
+	  <None Remove="Assets\default_steve.png" />
+	  <None Remove="Assets\DirtIconSnapshot.png" />
+	  <None Remove="Assets\fabric.png" />
+	  <None Remove="Assets\ForgeIcon.jpg" />
+	  <None Remove="Assets\IconNeoForge.png" />
+	  <None Remove="Assets\IconOptiFine.png" />
+	  <None Remove="Assets\images.png" />
+	  <None Remove="Assets\LittleSkinAccount.png" />
+	  <None Remove="Assets\microsoft logo.png" />
+	  <None Remove="Assets\StoneIconBeta.png" />
+	  <None Remove="Assets\VanilaVersion.png" />
+	  <None Remove="Icon\IconCL%28Common%29.ico" />
+	  <None Remove="Icon\IconCL%28Common%29.png" />
+	  <None Remove="Icon\IconCL%28Halloween%29.ico" />
+	  <None Remove="Icon\IconCL%28Halloween%29.png" />
+	  <None Remove="Icon\IconCL%28Winter%29.ico" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <AvaloniaResource Include="Assets\1200-818013157 1.png" />
+	  <AvaloniaResource Include="Assets\Backgrounds\DarkThemBG.png" />
+	  <AvaloniaResource Include="Assets\Backgrounds\ForestBG.png" />
+	  <AvaloniaResource Include="Assets\Backgrounds\LightThemBG.png" />
+	  <AvaloniaResource Include="Assets\Backgrounds\OceanBG.png" />
+	  <AvaloniaResource Include="Assets\Backgrounds\SunSetBG.png" />
+	  <AvaloniaResource Include="Assets\CobblestoneIconAlpha.png" />
+	  <AvaloniaResource Include="Assets\curseforge-logo-3499974474.png" />
+	  <AvaloniaResource Include="Assets\CustomVersion.png" />
+	  <AvaloniaResource Include="Assets\default_steve.png" />
+	  <AvaloniaResource Include="Assets\DirtIconSnapshot.png" />
+	  <AvaloniaResource Include="Assets\fabric.png" />
+	  <AvaloniaResource Include="Assets\ForgeIcon.jpg" />
+	  <AvaloniaResource Include="Assets\IconNeoForge.png" />
+	  <AvaloniaResource Include="Assets\IconOptiFine.png" />
+	  <AvaloniaResource Include="Assets\images.png" />
+	  <AvaloniaResource Include="Assets\LittleSkinAccount.png" />
+	  <AvaloniaResource Include="Assets\microsoft logo.png" />
+	  <AvaloniaResource Include="Assets\StoneIconBeta.png" />
+	  <AvaloniaResource Include="Assets\VanilaVersion.png" />
+	  <AvaloniaResource Include="Icon\IconCL(Common).ico" />
+	  <AvaloniaResource Include="Icon\IconCL(Common).png" />
+	  <AvaloniaResource Include="Icon\IconCL(Halloween).ico" />
+	  <AvaloniaResource Include="Icon\IconCL(Halloween).png" />
+	  <AvaloniaResource Include="Icon\IconCL(Winter).ico" />
+	  <AvaloniaResource Include="Assets\Sounds\click.wav" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\CL.Core\CL.Core.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Avalonia" Version="12.1.1" />
-		<PackageReference Include="Avalonia.Desktop" Version="12.1.1" />
-		<PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.1" />
-		<PackageReference Include="Avalonia.Fonts.Inter" Version="12.1.1" />
-		<PackageReference Include="FluentIcons.Avalonia" Version="2.1.337" />
-		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.11" />
-		<PackageReference Include="SukiUI" Version="7.0.1" />
+		<PackageReference Include="Avalonia" Version="12.1.4" />
+		<PackageReference Include="Avalonia.Desktop" Version="12.1.4" />
+		<PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.4" />
+		<PackageReference Include="Avalonia.Fonts.Inter" Version="12.1.4" />
+		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+		<PackageReference Include="Deadpikle.AvaloniaProgressRing" Version="0.11.0" />
+		<PackageReference Include="FluentAvaloniaUI" Version="3.1.0" />
+		<PackageReference Include="FluentIcons.Avalonia" Version="2.1.341" />
+		<PackageReference Include="Markdown.Avalonia" Version="12.0.0-a3" />
+		<PackageReference Include="MCQuery" Version="2022.7.13.192844" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.12" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.0" />
 	</ItemGroup>
 
 </Project>

@@ -1,0 +1,460 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:ic="using:FluentIcons.Avalonia"
+             xmlns:pages="clr-namespace:CL_CLegendary_Launcher_.Avalonia.Views.Pages"
+             xmlns:controls="using:CL_CLegendary_Launcher_.Avalonia.Views.Controls"
+             xmlns:controlsVm="using:CL_CLegendary_Launcher_.Avalonia.ViewModels.Controls"
+             xmlns:progRing="clr-namespace:AvaloniaProgressRing;assembly=AvaloniaProgressRing"
+             mc:Ignorable="d" d:DesignWidth="960" d:DesignHeight="540"
+             x:Class="CL_CLegendary_Launcher_.Avalonia.Views.Pages.ModsPage"
+             x:CompileBindings="False">
+
+    <Grid>
+        <Grid x:Name="GirdModsDowload" Margin="0,0,1,0" Cursor="Hand" ToolTip.Tip="Натисніть щоб повернутись"
+              PointerPressed="GirdModsDowload_MouseDown" IsVisible="False" ZIndex="9">
+            <Border IsVisible="{DynamicResource GlassVisibility}">
+                <Border.Background>
+                    <VisualBrush Visual="{Binding BackgroundVisual, RelativeSource={RelativeSource AncestorType=pages:ModsPage}}" Stretch="None" />
+                </Border.Background>
+                <Border.Effect>
+                    <BlurEffect Radius="{DynamicResource GlassBlurRadius}" />
+                </Border.Effect>
+            </Border>
+            <Border CornerRadius="16" Background="{DynamicResource GlassTintBrush}" />
+            <Border HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                    Margin="0,0,165,95" CornerRadius="8"
+                    Background="#E01A241B" BorderBrush="#30FFFFFF" BorderThickness="1"
+                    Padding="14,9">
+                <TextBlock Text="Натисніть щоб повернутись"
+                           Foreground="{DynamicResource MainForegroundBrush}"
+                           FontSize="13" FontFamily="Inter" FontWeight="Medium"/>
+            </Border>
+        </Grid>
+                <Grid x:Name="MenuInstaller" HorizontalAlignment="Center" Height="206" VerticalAlignment="Center" Width="256"
+              IsVisible="False" ZIndex="10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+
+                    <Border BorderThickness="1" Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="14" />
+
+                    <Border x:Name="VersionVanilBorder"
+                    BorderThickness="1" HorizontalAlignment="Left" Height="118" Margin="15,41,0,0"
+                    VerticalAlignment="Top" Width="70" CornerRadius="8"
+                    Background="{DynamicResource MainBackgroundBrush}">
+
+                        <ListBox x:Name="Version"
+                             BorderBrush="{x:Null}"
+                             Background="Transparent"
+                             SelectionChanged="Version_SelectionChanged"
+                             FontSize="11">
+                            <ListBox.Styles>
+                                <Style Selector="ListBoxItem">
+                                    <Setter Property="Foreground" Value="{DynamicResource MainForegroundBrush}" />
+                                    <Setter Property="HorizontalContentAlignment" Value="Left" />
+                                </Style>
+                            </ListBox.Styles>
+                        </ListBox>
+                    </Border>
+
+                    <Border x:Name="CollectionListBorder"
+                    BorderBrush="Black" BorderThickness="1" HorizontalAlignment="Left" Height="118" Margin="15,41,0,0"
+                    VerticalAlignment="Top" Width="70" CornerRadius="8"
+                    IsVisible="False"
+                    Background="{DynamicResource MainBackgroundBrush}">
+
+                        <ListBox x:Name="CollectionList"
+                             Background="Transparent"
+                             BorderBrush="{x:Null}"
+                             SelectionChanged="CollectionList_SelectionChanged"
+                             FontSize="10">
+                            <ListBox.Styles>
+                                <Style Selector="ListBoxItem">
+                                    <Setter Property="Foreground" Value="{DynamicResource MainForegroundBrush}" />
+                                    <Setter Property="HorizontalContentAlignment" Value="Center" />
+                                </Style>
+                            </ListBox.Styles>
+                        </ListBox>
+                    </Border>
+                    <Border BorderBrush="Black" BorderThickness="1" HorizontalAlignment="Left" Height="118" Margin="96,41,0,0"
+                    VerticalAlignment="Top" Width="149" CornerRadius="8"
+                    Background="{DynamicResource MainBackgroundBrush}">
+                        <ListBox x:Name="VersionMods"
+                             Background="Transparent"
+                             BorderBrush="{x:Null}"
+                             SelectionChanged="VersionMods_SelectionChanged"
+                             FontSize="11">
+                            <ListBox.Styles>
+                                <Style Selector="ListBoxItem">
+                                    <Setter Property="Foreground" Value="{DynamicResource MainForegroundBrush}" />
+                                    <Setter Property="HorizontalContentAlignment" Value="Center" />
+                                </Style>
+                            </ListBox.Styles>
+                        </ListBox>
+                    </Border>
+
+                    <Border BorderBrush="Black" BorderThickness="1" HorizontalAlignment="Center" Height="30" Margin="0,6,0,0"
+                    VerticalAlignment="Top" Width="234" CornerRadius="8"
+                    Background="{DynamicResource MainBackgroundBrush}">
+                        <TextBlock x:Name="TitleModsDowload" Text="Вибір версії моду"
+                           Foreground="{DynamicResource MainForegroundBrush}"
+                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                           FontSize="14" FontFamily="Inter" />
+                    </Border>
+
+                    <Button x:Name="DowloadMod" BorderThickness="1"
+                       HorizontalAlignment="Center" Height="29" Margin="0,169,0,0" VerticalAlignment="Top" Width="234"
+                       Background="{DynamicResource MainBackgroundButton}" CornerRadius="8" Cursor="Hand"
+                       Foreground="{DynamicResource MainForegroundBrush}" BorderBrush="{x:Null}"
+                       Click="DowloadMod_Click">
+                       <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                           <ic:SymbolIcon Symbol="ArrowDownload" FontSize="20" Margin="0,0,5,0" />
+                           <TextBlock x:Name="Loc_TxtInstallMod" Text="Встановити" VerticalAlignment="Center"/>
+                       </StackPanel>
+                    </Button>
+                </Grid>
+
+                <Grid x:Name="ListModsGird" Background="Transparent" IsVisible="True">
+                    <Border IsVisible="{DynamicResource GlassVisibility}">
+                        <Border.Background>
+                            <VisualBrush Visual="{Binding BackgroundVisual, RelativeSource={RelativeSource AncestorType=pages:ModsPage}}" Stretch="None" />
+                        </Border.Background>
+                        <Border.Effect>
+                            <BlurEffect Radius="{DynamicResource GlassBlurRadius}" />
+                        </Border.Effect>
+                    </Border>
+                    <Border CornerRadius="12" Background="{DynamicResource GlassTintBrush}" />
+                    <Border Background="{DynamicResource GlassTintBrush}" Opacity="0.6" />
+
+                    <Grid Margin="20,85,20,20">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="160" />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+
+                        <ScrollViewer Grid.Column="0"
+                              VerticalScrollBarVisibility="Hidden" Margin="0,-45,15,0">
+                            <StackPanel Orientation="Vertical">
+
+                                <StackPanel.Styles>
+                                    <Style Selector="StackPanel.MenuItemPanel">
+                                        <Setter Property="Orientation" Value="Horizontal" />
+                                        <Setter Property="Height" Value="40" />
+                                        <Setter Property="Cursor" Value="Hand" />
+                                        <Setter Property="Background" Value="Transparent" />
+                                        <Setter Property="Margin" Value="0,2" />
+                                    </Style>
+                                    <Style Selector="Image.MenuIcon">
+                                        <Setter Property="Width" Value="20" />
+                                        <Setter Property="Height" Value="20" />
+                                        <Setter Property="Margin" Value="15,0,10,0" />
+                                        <Setter Property="VerticalAlignment" Value="Center" />
+                                    </Style>
+                                    <Style Selector="TextBlock.MenuText">
+                                        <Setter Property="FontFamily" Value="Inter" />
+                                        <Setter Property="FontSize" Value="14" />
+                                        <Setter Property="FontWeight" Value="SemiBold" />
+                                        <Setter Property="VerticalAlignment" Value="Center" />
+                                        <Setter Property="Foreground" Value="{DynamicResource MainForegroundBrush}" />
+                                    </Style>
+                                </StackPanel.Styles>
+
+                                <TextBlock x:Name="Loc_SourceTitle" Text="Джерело" Foreground="#80FFFFFF" FontSize="12"
+                                   Margin="5,0,0,5" FontWeight="Bold" />
+                                <Grid x:Name="GirdSiteMods" Height="90" Margin="0,0,0,20">
+                                    <Border x:Name="BorderSiteMods" BorderThickness="1" BorderBrush="#20FFFFFF"
+                                    CornerRadius="12" Background="{DynamicResource MainBackgroundBrushServer}" />
+
+                                    <Border x:Name="PanelSelectNowSiteMods" Height="40" Margin="5,4,5,0"
+                                    CornerRadius="10" Background="{DynamicResource MainBackgroundButton}"
+                                    HorizontalAlignment="Stretch" VerticalAlignment="Top">
+                                        <Border.Effect>
+                                            <DropShadowEffect BlurRadius="10" OffsetX="0" OffsetY="2" Opacity="0.3" />
+                                        </Border.Effect>
+                                        <Border.RenderTransform>
+                                            <TranslateTransform />
+                                        </Border.RenderTransform>
+                                    </Border>
+
+                                    <StackPanel VerticalAlignment="Top" Margin="0,4,0,0">
+                                        <StackPanel Tag="Modrinth" Classes="MenuItemPanel"
+                                            PointerPressed="OnModProviderClicked">
+                                            <Image Source="avares://CL.Avalonia/Assets/1200-818013157 1.png" Classes="MenuIcon" />
+                                            <TextBlock x:Name="Loc_TxtModrinth" Text="Modrinth"
+                                               Classes="MenuText" />
+                                        </StackPanel>
+                                        <StackPanel Tag="CurseForge" Classes="MenuItemPanel"
+                                            PointerPressed="OnModProviderClicked">
+                                            <Image Source="avares://CL.Avalonia/Assets/curseforge-logo-3499974474.png"
+                                           Classes="MenuIcon" />
+                                            <TextBlock x:Name="Loc_TxtCurseForge" Text="CurseForge"
+                                               Classes="MenuText" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Grid>
+
+                                <TextBlock x:Name="Loc_LoaderTitle" Text="Завантажувач" Foreground="#80FFFFFF" FontSize="12"
+                                   Margin="5,0,0,5" FontWeight="Bold" />
+                                <Grid x:Name="GirdVersionType" Height="178" Margin="0,0,0,20">
+                                    <Border x:Name="BorderVersionType" BorderThickness="1" BorderBrush="#20FFFFFF"
+                                    CornerRadius="12" Background="{DynamicResource MainBackgroundBrushServer}" />
+
+                                    <Border x:Name="PanelSelectNowVersionType" Height="40" Margin="5,4,5,0"
+                                    CornerRadius="10" Background="{DynamicResource MainBackgroundButton}"
+                                    HorizontalAlignment="Stretch" VerticalAlignment="Top">
+                                        <Border.Effect>
+                                            <DropShadowEffect BlurRadius="10" OffsetX="0" OffsetY="2" Opacity="0.3" />
+                                        </Border.Effect>
+                                        <Border.RenderTransform>
+                                            <TranslateTransform />
+                                        </Border.RenderTransform>
+                                    </Border>
+
+                                    <StackPanel VerticalAlignment="Top" Margin="0,4,0,0">
+                                        <StackPanel Tag="Fabric" Classes="MenuItemPanel"
+                                            PointerPressed="OnLoaderTypeClicked">
+                                            <Image Source="avares://CL.Avalonia/Assets/fabric.png" Classes="MenuIcon" />
+                                            <TextBlock x:Name="Loc_TxtFabric" Text="Fabric" Classes="MenuText" />
+                                        </StackPanel>
+                                        <StackPanel Tag="Forge" Classes="MenuItemPanel"
+                                            PointerPressed="OnLoaderTypeClicked">
+                                            <Image Source="avares://CL.Avalonia/Assets/ForgeIcon.jpg" Classes="MenuIcon" />
+                                            <TextBlock x:Name="Loc_TxtForge" Text="Forge" Classes="MenuText" />
+                                        </StackPanel>
+                                        <StackPanel Tag="Quilt" Classes="MenuItemPanel"
+                                            PointerPressed="OnLoaderTypeClicked">
+                                            <Image Source="avares://CL.Avalonia/Assets/images.png" Classes="MenuIcon" />
+                                            <TextBlock x:Name="Loc_TxtQuilt" Text="Quilt" Classes="MenuText" />
+                                        </StackPanel>
+                                        <StackPanel Tag="NeoForge" Classes="MenuItemPanel"
+                                            PointerPressed="OnLoaderTypeClicked">
+                                            <Image Source="avares://CL.Avalonia/Assets/IconNeoForge.png" Classes="MenuIcon" />
+                                            <TextBlock x:Name="Loc_TxtNeoForge" Text="NeoForge"
+                                               Classes="MenuText" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Grid>
+
+                                <TextBlock x:Name="Loc_ModeTitle" Text="Режим" Foreground="#80FFFFFF" FontSize="12"
+                                   Margin="5,0,0,5" FontWeight="Bold" />
+                                <Grid x:Name="GirdModsType" Height="90">
+                                    <Border x:Name="ModsTypeBorder" BorderThickness="1" BorderBrush="#20FFFFFF"
+                                    CornerRadius="12" Background="{DynamicResource MainBackgroundBrushServer}" />
+
+                                    <Border x:Name="PanelSelectNowModsType" Height="40" Margin="5,4,5,0"
+                                    CornerRadius="10" Background="{DynamicResource MainBackgroundButton}"
+                                    HorizontalAlignment="Stretch" VerticalAlignment="Top">
+                                        <Border.Effect>
+                                            <DropShadowEffect BlurRadius="10" OffsetX="0" OffsetY="2" Opacity="0.3" />
+                                        </Border.Effect>
+                                        <Border.RenderTransform>
+                                            <TranslateTransform />
+                                        </Border.RenderTransform>
+                                    </Border>
+
+                                    <StackPanel VerticalAlignment="Top" Margin="0,4,0,0">
+                                        <Border Height="40" Cursor="Hand" Background="Transparent"
+                                        PointerPressed="ModsDowloadTypeTXT_MouseDown">
+                                            <TextBlock x:Name="Loc_ModeModpack" Text="У збірку"
+                                               Classes="MenuText" HorizontalAlignment="Center" />
+                                        </Border>
+                                        <Border Height="40" Cursor="Hand" Background="Transparent"
+                                        PointerPressed="ModsManegerTypeTXT_MouseDown">
+                                            <TextBlock x:Name="Loc_ModeSeparate" Text="Окремо"
+                                               Classes="MenuText" HorizontalAlignment="Center" />
+                                        </Border>
+                                    </StackPanel>
+                                </Grid>
+
+                            </StackPanel>
+                        </ScrollViewer>
+
+                        <Grid Grid.Column="1">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <Grid Grid.Row="0" Height="45" Margin="0,0,0,15">
+                                <Border x:Name="BorderSelectDowloadModificed" BorderThickness="1" BorderBrush="#20FFFFFF"
+                                CornerRadius="12" Background="{DynamicResource MainBackgroundBrushServer}" />
+
+                                <Border x:Name="PanelSelectNowDowloadModifi" Width="0" Height="35"
+                                CornerRadius="10" Background="{DynamicResource MainBackgroundButton}"
+                                HorizontalAlignment="Left" VerticalAlignment="Center" Margin="5,0,0,0">
+                                    <Border.Effect>
+                                        <DropShadowEffect BlurRadius="10" OffsetX="0" OffsetY="2" Opacity="0.3" />
+                                    </Border.Effect>
+                                    <Border.RenderTransform>
+                                        <TranslateTransform />
+                                    </Border.RenderTransform>
+                                </Border>
+
+                                <Grid x:Name="CategoriesGrid" SizeChanged="CategoriesGrid_SizeChanged">
+                                    <Grid.Styles>
+                                        <Style Selector="Grid#CategoriesGrid TextBlock">
+                                            <Setter Property="FontFamily" Value="Inter" />
+                                            <Setter Property="FontSize" Value="14" />
+                                            <Setter Property="FontWeight" Value="SemiBold" />
+                                            <Setter Property="Foreground" Value="{DynamicResource MainForegroundBrush}" />
+                                            <Setter Property="HorizontalAlignment" Value="Center" />
+                                            <Setter Property="VerticalAlignment" Value="Center" />
+                                            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+                                        </Style>
+                                        <Style Selector="Grid#CategoriesGrid Border">
+                                            <Setter Property="Background" Value="Transparent" />
+                                            <Setter Property="Cursor" Value="Hand" />
+                                        </Style>
+                                    </Grid.Styles>
+
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <Border Grid.Column="0" Tag="0" PointerPressed="OnModCategoryClicked">
+                                        <TextBlock x:Name="ModsTXT" Text="Моди" />
+                                    </Border>
+                                    <Border Grid.Column="1" Tag="1" PointerPressed="OnModCategoryClicked">
+                                        <TextBlock x:Name="ShardTXT" Text="Шейдери" />
+                                    </Border>
+                                    <Border Grid.Column="2" Tag="2" PointerPressed="OnModCategoryClicked">
+                                        <TextBlock x:Name="ResourcePackTXT" Text="Ресурспаки" />
+                                    </Border>
+                                    <Border Grid.Column="3" Tag="3" PointerPressed="OnModCategoryClicked">
+                                        <TextBlock x:Name="MapsTXT" Text="Мапи" />
+                                    </Border>
+                                    <Border Grid.Column="4" Tag="4" PointerPressed="OnModCategoryClicked">
+                                        <TextBlock x:Name="DataPacksTXT" Text="Датапаки" />
+                                    </Border>
+                                </Grid>
+                            </Grid>
+
+                            <Grid Grid.Row="1" Margin="0,0,0,15">
+                                <TextBox x:Name="SearchSystemModsTXT"
+                                         Height="38"
+                                         CornerRadius="8"
+                                         Background="Transparent"
+                                         BorderThickness="0"
+                                         Foreground="{DynamicResource MainForegroundBrush}"
+                                         VerticalContentAlignment="Center"
+                                         Padding="10,0"
+                                         FontSize="13"
+                                         PlaceholderText="Пошук модифікацій..."
+                                         TextChanged="SearchSystemModsTXT_TextChanged">
+                                    <TextBox.InnerLeftContent>
+                                        <ic:SymbolIcon Symbol="Search" Margin="8,0,4,0" />
+                                    </TextBox.InnerLeftContent>
+                                    <TextBox.Styles>
+                                        <Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
+                                            <Setter Property="Background" Value="Transparent" />
+                                            <Setter Property="BorderThickness" Value="0" />
+                                        </Style>
+                                        <Style Selector="TextBox:pointerover /template/ Border#PART_BorderElement">
+                                            <Setter Property="Background" Value="Transparent" />
+                                            <Setter Property="BorderThickness" Value="0" />
+                                        </Style>
+                                    </TextBox.Styles>
+                                </TextBox>
+                            </Grid>
+
+                            <Border Grid.Row="2" Background="{x:Null}" CornerRadius="8">
+                                <Grid>
+                                    <ListBox x:Name="ModsDowloadList"
+                                      Background="Transparent"
+                                      BorderThickness="0"
+                                      ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                      ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                      Foreground="{DynamicResource MainForegroundBrush}"
+                                      ItemsSource="{Binding ModCards}">
+                                        <ListBox.Styles>
+                                            <Style Selector="ListBoxItem">
+                                                <Setter Property="HorizontalContentAlignment" Value="Center" />
+                                                <Setter Property="Padding" Value="0" />
+                                                <Setter Property="Margin" Value="0,4" />
+                                                <Setter Property="Background" Value="Transparent" />
+                                                <Setter Property="BorderThickness" Value="0" />
+                                            </Style>
+                                            <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+                                                <Setter Property="Background" Value="Transparent" />
+                                            </Style>
+                                            <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
+                                                <Setter Property="Background" Value="Transparent" />
+                                            </Style>
+                                        </ListBox.Styles>
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate x:DataType="controlsVm:ModsListItemViewModel">
+                                                <controls:ModsListItem />
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+
+                                    <TextBlock Text="Пошук не дав результатів (або кінець списку)."
+                                               Foreground="{DynamicResource MainForegroundBrush}"
+                                               Margin="10"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"
+                                               FontFamily="Inter"
+                                               FontSize="14"
+                                               IsVisible="{Binding IsResultsEmpty}" />
+
+                                    <StackPanel x:Name="ModsSkeletonPanel"
+                                        VerticalAlignment="Top"
+                                        IsVisible="False"
+                                        Margin="0,10,0,0">
+                                        <controls:ModCardSkeleton />
+                                        <controls:ModCardSkeleton />
+                                        <controls:ModCardSkeleton />
+                                        <controls:ModCardSkeleton />
+                                        <controls:ModCardSkeleton />
+                                    </StackPanel>
+
+                                    <ProgressBar x:Name="ModsSearchLoader"
+                                                 IsIndeterminate="True"
+                                                 Height="3"
+                                                 VerticalAlignment="Top"
+                                                 HorizontalAlignment="Stretch"
+                                                 Foreground="{DynamicResource MainBackgroundProgressBar}"
+                                                 IsVisible="False"
+                                                 ZIndex="10" />
+                                </Grid>
+                            </Border>
+
+                            <StackPanel x:Name="ModsPaginationPanel" Grid.Row="3" Orientation="Horizontal"
+                                HorizontalAlignment="Center" Margin="0,15,0,0"
+                                Background="Transparent"
+                                PointerWheelChanged="ModsPaginationPanel_PointerWheelChanged">
+                                <Button x:Name="PrevPageBtn" Click="PrevPageBtn_Click"
+                                   IsEnabled="False" Margin="0,0,15,0"
+                                   Width="43" Height="40" CornerRadius="8"
+                                   Foreground="{DynamicResource MainForegroundBrush}" BorderBrush="{x:Null}"
+                                   Background="{DynamicResource MainBackgroundButton}" Cursor="Hand">
+                                   <ic:SymbolIcon Symbol="ChevronLeft" FontSize="20" />
+                                </Button>
+
+                                <Border Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="8" Height="40"
+                                Padding="15,0">
+                                    <TextBlock x:Name="PageNumberText" Text="1" VerticalAlignment="Center" FontSize="16"
+                                       FontWeight="Bold" Foreground="{DynamicResource MainForegroundBrush}" />
+                                </Border>
+
+                                <Button x:Name="NextPageBtn" Click="NextPageBtn_Click"
+                                   Margin="15,0,0,0"
+                                   Width="43" Height="40" CornerRadius="8"
+                                   Background="{DynamicResource MainBackgroundButton}" BorderBrush="{x:Null}"
+                                   Foreground="{DynamicResource MainForegroundBrush}" Cursor="Hand">
+                                   <ic:SymbolIcon Symbol="ChevronRight" FontSize="20" />
+                                </Button>
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
+                </Grid>
+    </Grid>
+</UserControl>

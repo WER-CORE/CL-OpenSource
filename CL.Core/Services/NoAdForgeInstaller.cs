@@ -3,6 +3,8 @@ using CmlLib.Core.Installer.Forge;
 using CmlLib.Core.Installer.Forge.Versions;
 using CmlLib.Core.Installer.NeoForge.Installers;
 using CmlLib.Core.Installer.NeoForge.Versions;
+using NeoForgeVersion = CmlLib.Core.Installer.NeoForge.Versions.NeoForgeVersion;
+using NeoForgeVersionLoader = CmlLib.Core.Installer.NeoForge.Versions.NeoForgeVersionLoader;
 using CmlLib.Core.Version;
 using System;
 using System.Collections.Generic;

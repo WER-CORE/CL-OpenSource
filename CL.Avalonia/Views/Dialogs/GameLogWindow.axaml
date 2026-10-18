@@ -1,0 +1,370 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:progRing="clr-namespace:AvaloniaProgressRing;assembly=AvaloniaProgressRing"
+        xmlns:fi="clr-namespace:FluentIcons.Avalonia;assembly=FluentIcons.Avalonia"
+        xmlns:vm="using:CL_CLegendary_Launcher_.Avalonia.ViewModels.Dialogs"
+        x:Class="CL_CLegendary_Launcher_.Avalonia.Views.Dialogs.GameLogWindow"
+        x:DataType="vm:GameLogViewModel"
+        mc:Ignorable="d"
+        Title="{Binding WindowTitle}" Height="565" Width="879"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource MainBackgroundBrush}"
+        Foreground="{DynamicResource MainForegroundBrush}"
+        FontFamily="Inter"
+        CanResize="True"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaTitleBarHeightHint="35"
+        TransparencyLevelHint="Mica">
+
+    <Window.Styles>
+        <Style Selector="Button.win-control-btn:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#20FFFFFF"/>
+        </Style>
+        <Style Selector="Button.close-btn:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#C42B1C"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+    </Window.Styles>
+
+    <Grid x:Name="GridMain">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <Border x:Name="BorderTool" Grid.Row="0"
+                BorderThickness="0,0,0,1"
+                BorderBrush="#33FFFFFF"
+                Height="35"
+                VerticalAlignment="Top"
+                HorizontalAlignment="Stretch"
+                CornerRadius="0"
+                PointerPressed="BorderTool_PointerPressed"
+                Background="{DynamicResource MainBackgroundBrushServer}">
+            <Grid Margin="10,0" ColumnDefinitions="*,Auto">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Spacing="8">
+                    <fi:SymbolIcon Symbol="WindowDevTools" FontSize="16" Foreground="{DynamicResource MainForegroundBrush}" />
+                    <TextBlock Text="{Binding WindowTitle}"
+                               VerticalAlignment="Center" FontWeight="SemiBold"
+                               Foreground="{DynamicResource MainForegroundBrush}" FontSize="12" />
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
+
+                    <Button Classes="win-control-btn" Click="MinimizeButton_Click" ToolTip.Tip="Згорнути"
+                            Background="Transparent" BorderThickness="0"
+                            Foreground="{DynamicResource MainForegroundBrush}"
+                            Width="35" Height="30" Padding="0" Cursor="Hand" CornerRadius="6">
+                        <fi:SymbolIcon Symbol="Subtract" FontSize="14" />
+                    </Button>
+
+                    <Button Classes="win-control-btn" Click="MaximizeButton_Click" ToolTip.Tip="Розгорнути / Відновити"
+                            Background="Transparent" BorderThickness="0"
+                            Foreground="{DynamicResource MainForegroundBrush}"
+                            Width="35" Height="30" Padding="0" Cursor="Hand" CornerRadius="6">
+                        <fi:SymbolIcon Symbol="Maximize" FontSize="14" />
+                    </Button>
+
+                    <Button Classes="close-btn" Click="CloseButton_Click" ToolTip.Tip="Закрити"
+                            Background="Transparent" BorderThickness="0"
+                            Foreground="{DynamicResource MainForegroundBrush}"
+                            Width="35" Height="30" Padding="0" Cursor="Hand" CornerRadius="6">
+                        <fi:SymbolIcon Symbol="Dismiss" FontSize="16" />
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <TextBox x:Name="GameLogTXTMincraft"
+                 Grid.Row="1"
+                 Text="{Binding LogText, Mode=OneWay}"
+                 AcceptsReturn="True"
+                 HorizontalAlignment="Stretch"
+                 VerticalAlignment="Stretch"
+                 Margin="0"
+                 TextWrapping="Wrap"
+                 Background="{DynamicResource MainBackgroundBrush}"
+                 Foreground="{DynamicResource MainForegroundBrush}"
+                 SelectionBrush="#FF0F57C9"
+                 FontFamily="Consolas, Inter"
+                 FontSize="12"
+                 IsReadOnly="True"
+                 BorderThickness="0"
+                 ScrollViewer.VerticalScrollBarVisibility="Visible"
+                 Padding="8"
+                 IsUndoEnabled="False" />
+
+        <Border Grid.Row="2"
+                Background="{DynamicResource MainBackgroundBrushServer}"
+                BorderThickness="0,1,0,0"
+                BorderBrush="#33FFFFFF"
+                Padding="10">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Opacity="0.7" Spacing="6">
+                    <fi:SymbolIcon Symbol="Code" FontSize="16" Foreground="{DynamicResource MainForegroundBrush}" />
+                    <TextBlock Text="{Binding LiveOutputText}" FontSize="12"
+                               VerticalAlignment="Center" Foreground="{DynamicResource MainForegroundBrush}" />
+                </StackPanel>
+
+                <Button x:Name="BtnAiAnalyze"
+                        Grid.Column="1"
+                        Cursor="Hand"
+                        IsVisible="{Binding IsAiAgentEnabled}"
+                        Command="{Binding OpenAiOverlayCommand}"
+                        ToolTip.Tip="{Binding BtnAiAnalyzeTooltip}"
+                        Background="{DynamicResource MainBackgroundButton}"
+                        BorderThickness="0"
+                        Foreground="{DynamicResource MainForegroundBrush}">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <fi:SymbolIcon Symbol="Sparkle" FontSize="16" />
+                        <TextBlock Text="{Binding BtnAiAnalyzeText}" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+            </Grid>
+        </Border>
+
+        <Grid x:Name="AiOverlay" Grid.RowSpan="3" ZIndex="100" IsVisible="{Binding IsAiOverlayVisible}">
+            <Border Background="#CC000000" PointerPressed="OverlayBackgroundDimmer_PointerPressed" />
+
+            <Border MaxWidth="580" MaxHeight="480"
+                    MinWidth="300" MinHeight="300"
+                    Margin="20"
+                    Background="{DynamicResource MainBackgroundBrushServer}"
+                    BorderBrush="#33FFFFFF" BorderThickness="1"
+                    CornerRadius="16" Padding="20">
+                <Border.BoxShadow>
+                    <BoxShadows>0 8 32 0 #80000000</BoxShadows>
+                </Border.BoxShadow>
+
+                <Grid>
+                    <Button HorizontalAlignment="Right" VerticalAlignment="Top"
+                            Command="{Binding CloseAiOverlayCommand}" Cursor="Hand" ZIndex="10"
+                            Background="Transparent" BorderThickness="0" Padding="5">
+                        <fi:SymbolIcon Symbol="Dismiss" FontSize="16" Foreground="{DynamicResource MainForegroundBrush}" />
+                    </Button>
+
+                    <Grid IsVisible="{Binding IsInputState}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <StackPanel Grid.Row="0" Margin="0,0,0,15">
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,5" Spacing="10">
+                                <fi:SymbolIcon Symbol="Bot" FontSize="24"
+                                               Foreground="{DynamicResource MainBackgroundProgressBar}" />
+                                <TextBlock Text="{Binding AiInputTitle}"
+                                           FontSize="20" FontWeight="Bold" VerticalAlignment="Center"
+                                           Foreground="{DynamicResource MainForegroundBrush}" />
+                            </StackPanel>
+                        </StackPanel>
+
+                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="0,0,10,0">
+                            <StackPanel Spacing="15">
+                                <Border Background="{DynamicResource MainBackgroundBrush}" CornerRadius="8" Padding="15">
+                                    <StackPanel Spacing="10">
+                                        <TextBlock Text="{Binding AiProviderTitle}"
+                                                   FontWeight="SemiBold" FontSize="14"
+                                                   Foreground="{DynamicResource MainForegroundBrush}" />
+                                        <ComboBox SelectedIndex="{Binding SelectedProviderIndex}"
+                                                  HorizontalAlignment="Stretch"
+                                                  Foreground="{DynamicResource MainForegroundBrush}"
+                                                  Background="{DynamicResource MainBackgroundButton}"
+                                                  BorderBrush="#33FFFFFF">
+                                            <ComboBoxItem Content="{Binding AiProviderGemini}"
+                                                          Foreground="{DynamicResource MainForegroundBrush}" />
+                                            <ComboBoxItem Content="{Binding AiProviderOllama}"
+                                                          Foreground="{DynamicResource MainForegroundBrush}" />
+                                        </ComboBox>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Background="{DynamicResource MainBackgroundBrush}"
+                                        CornerRadius="8" Padding="15"
+                                        IsVisible="{Binding IsGeminiProvider}">
+                                    <StackPanel Spacing="10">
+                                        <TextBlock Text="{Binding AiApiKeyTitle}"
+                                                   FontWeight="SemiBold" FontSize="14"
+                                                   Foreground="{DynamicResource MainForegroundBrush}" />
+
+                                        <StackPanel Orientation="Horizontal" Spacing="10">
+                                            <RadioButton GroupName="ApiMode"
+                                                         Content="{Binding AiCustomKeyRadio}"
+                                                         IsChecked="{Binding IsCustomApiKeySelected}"
+                                                         Command="{Binding SelectCustomApiCommand}"
+                                                         Foreground="{DynamicResource MainForegroundBrush}" />
+                                            <Button Content="{Binding AiWhatIsThisBtn}"
+                                                    Background="Transparent" BorderThickness="0"
+                                                    Foreground="#FF5E9BFF" Padding="5,0" Cursor="Hand"
+                                                    Command="{Binding OpenTutorialCommand}" />
+                                        </StackPanel>
+
+                                        <StackPanel Margin="25,0,0,0" IsVisible="{Binding IsCustomApiKeySelected}">
+                                            <TextBox Text="{Binding CustomApiKey}" PasswordChar="•"
+                                                     PlaceholderText="{Binding AiApiKeyPlaceholder}" Height="35" />
+                                        </StackPanel>
+
+                                        <RadioButton GroupName="ApiMode"
+                                                     Content="{Binding AiLauncherKeyRadio}"
+                                                     IsChecked="{Binding IsLauncherApiSelected}"
+                                                     Command="{Binding SelectLauncherApiCommand}"
+                                                     Foreground="{DynamicResource MainForegroundBrush}" />
+                                        <TextBlock Text="{Binding AiLauncherApiWarning}"
+                                                   Foreground="#FFFFB300" TextWrapping="Wrap" FontSize="11"
+                                                   Margin="25,0,0,0" IsVisible="{Binding IsLauncherApiSelected}" />
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Background="{DynamicResource MainBackgroundBrush}"
+                                        CornerRadius="8" Padding="15"
+                                        IsVisible="{Binding IsOllamaProvider}">
+                                    <StackPanel Spacing="8">
+                                        <TextBlock Text="{Binding OllamaModelTitle}"
+                                                   FontWeight="SemiBold" FontSize="14"
+                                                   Foreground="{DynamicResource MainForegroundBrush}" />
+                                        <TextBox Text="{Binding OllamaModel}"
+                                                 PlaceholderText="{Binding OllamaModelPlaceholder}" Height="35"
+                                                 FontSize="14" />
+                                        <TextBlock Text="{Binding OllamaModelWarning}"
+                                                   Foreground="#FFFFB300" TextWrapping="Wrap" FontSize="11" />
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Background="{DynamicResource MainBackgroundBrush}" CornerRadius="8" Padding="15">
+                                    <StackPanel Spacing="6">
+                                        <TextBlock Text="{Binding AiContextTitle}"
+                                                   FontWeight="SemiBold" FontSize="14"
+                                                   Foreground="{DynamicResource MainForegroundBrush}" />
+                                        <TextBlock Text="{Binding AiContextDesc}"
+                                                   Opacity="0.7" FontSize="12"
+                                                   Foreground="{DynamicResource MainForegroundBrush}" />
+                                        <TextBox Text="{Binding UserContext}" AcceptsReturn="True" TextWrapping="Wrap"
+                                                 PlaceholderText="{Binding AiContextPlaceholder}"
+                                                 Height="80" FontSize="13" />
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </ScrollViewer>
+
+                        <StackPanel Grid.Row="2" Orientation="Horizontal"
+                                    HorizontalAlignment="Right" Margin="0,15,0,0" Spacing="10">
+                            <Button Content="{Binding BtnCancelAnalysis}"
+                                    Command="{Binding CloseAiOverlayCommand}" Cursor="Hand"
+                                    Foreground="{DynamicResource MainForegroundBrush}"
+                                    Background="{DynamicResource MainBackgroundButton}" />
+                            <Button Command="{Binding StartAnalysisCommand}" Cursor="Hand"
+                                    Background="{DynamicResource MainBackgroundButton}" BorderThickness="0"
+                                    Foreground="{DynamicResource MainForegroundBrush}">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <fi:SymbolIcon Symbol="Play" FontSize="16" />
+                                    <TextBlock Text="{Binding BtnStartAnalysis}" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+
+                    <Grid IsVisible="{Binding IsTutorialState}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0" Text="{Binding TutorialTitle}"
+                                   FontSize="20" FontWeight="Bold" Margin="0,0,0,15"
+                                   Foreground="{DynamicResource MainForegroundBrush}" />
+
+                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="0,0,10,0">
+                            <StackPanel Spacing="10">
+                                <TextBlock Text="{Binding TutorialIntroText}"
+                                           TextWrapping="Wrap" Opacity="0.9"
+                                           Foreground="{DynamicResource MainForegroundBrush}" />
+
+                                <TextBlock Text="{Binding TutorialStep1Title}" FontWeight="Bold"
+                                           Foreground="{DynamicResource MainBackgroundProgressBar}" />
+                                <TextBlock Text="{Binding TutorialStep1Desc}"
+                                           TextWrapping="Wrap" Foreground="{DynamicResource MainForegroundBrush}" />
+
+                                <TextBlock Text="{Binding TutorialStep2Title}" FontWeight="Bold"
+                                           Foreground="{DynamicResource MainBackgroundProgressBar}" />
+                                <TextBlock Text="{Binding TutorialStep2Desc}" TextWrapping="Wrap"
+                                           Foreground="{DynamicResource MainForegroundBrush}" />
+
+                                <TextBlock Text="{Binding TutorialStep3Title}" FontWeight="Bold"
+                                           Foreground="{DynamicResource MainBackgroundProgressBar}" />
+                                <TextBlock Text="{Binding TutorialStep3Desc}"
+                                           TextWrapping="Wrap" Foreground="{DynamicResource MainForegroundBrush}" />
+
+                                <TextBlock Text="{Binding TutorialStep4Title}" FontWeight="Bold"
+                                           Foreground="{DynamicResource MainBackgroundProgressBar}" />
+                                <TextBlock Text="{Binding TutorialStep4Desc}"
+                                           TextWrapping="Wrap" Foreground="{DynamicResource MainForegroundBrush}" />
+
+                                <Button Command="{Binding OpenAiStudioCommand}" Cursor="Hand" HorizontalAlignment="Left"
+                                        Background="{DynamicResource MainBackgroundButton}"
+                                        Foreground="{DynamicResource MainForegroundBrush}">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <fi:SymbolIcon Symbol="Globe" FontSize="16" />
+                                        <TextBlock Text="{Binding BtnOpenAiStudioLink}" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Button>
+                            </StackPanel>
+                        </ScrollViewer>
+
+                        <Button Grid.Row="2" Content="{Binding BtnBackFromTutorial}"
+                                Command="{Binding BackToInputCommand}" Cursor="Hand"
+                                HorizontalAlignment="Left" Margin="0,15,0,0"
+                                Foreground="{DynamicResource MainForegroundBrush}"
+                                Background="{DynamicResource MainBackgroundButton}" />
+                    </Grid>
+
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center"
+                                IsVisible="{Binding IsThinkingState}" Spacing="15">
+                        <fi:SymbolIcon Symbol="Bot" FontSize="48"
+                                       Foreground="{DynamicResource MainBackgroundProgressBar}" HorizontalAlignment="Center" />
+                        <progRing:ProgressRing IsActive="True" Width="50" Height="50"
+                                               Foreground="{DynamicResource MainBackgroundProgressBar}" HorizontalAlignment="Center" />
+                        <TextBlock Text="{Binding ThinkingMainText}" FontSize="18"
+                                   FontWeight="Bold" HorizontalAlignment="Center"
+                                   Foreground="{DynamicResource MainForegroundBrush}" />
+                        <TextBlock Text="{Binding ThinkingSubText}" FontSize="14"
+                                   Opacity="0.7" HorizontalAlignment="Center"
+                                   Foreground="{DynamicResource MainForegroundBrush}" />
+                    </StackPanel>
+
+                    <Grid IsVisible="{Binding IsResultState}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,15" Spacing="10">
+                            <fi:SymbolIcon Symbol="PersonSupport" FontSize="24"
+                                           Foreground="{DynamicResource MainBackgroundProgressBar}" />
+                            <TextBlock Text="{Binding ResultTitleText}" FontSize="20" FontWeight="Bold"
+                                       VerticalAlignment="Center" Foreground="{DynamicResource MainForegroundBrush}" />
+                        </StackPanel>
+
+                        <Border Grid.Row="1" Background="{DynamicResource MainBackgroundBrush}" CornerRadius="8" Padding="10">
+                            <ScrollViewer>
+                                <SelectableTextBlock Text="{Binding AiResponseText}" TextWrapping="Wrap"
+                                                     FontSize="14" LineHeight="22" FontFamily="Inter"
+                                                     Foreground="{DynamicResource MainForegroundBrush}" />
+                            </ScrollViewer>
+                        </Border>
+                    </Grid>
+
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</Window>

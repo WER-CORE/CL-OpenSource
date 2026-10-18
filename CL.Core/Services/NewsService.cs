@@ -1,4 +1,4 @@
-using CL.Core.Models;
+﻿using CL.Core.Models;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
