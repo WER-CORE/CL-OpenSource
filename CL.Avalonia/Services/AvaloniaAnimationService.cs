@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Animation;
@@ -14,6 +16,8 @@ namespace CL_CLegendary_Launcher_.Avalonia.Services
 {
     public static class AvaloniaAnimationService
     {
+        private static readonly Dictionary<Control, CancellationTokenSource> _tabIndicatorCts = new();
+
         public static void AnimateProgressBar(RangeBase progressBar, double targetValue, double durationMs = 250)
         {
             if (progressBar == null) return;
@@ -69,9 +73,19 @@ namespace CL_CLegendary_Launcher_.Avalonia.Services
         {
             if (indicator == null || transform == null) return;
 
+            if (_tabIndicatorCts.TryGetValue(indicator, out var oldCts))
+            {
+                oldCts.Cancel();
+                oldCts.Dispose();
+                _tabIndicatorCts.Remove(indicator);
+            }
+
             if (animate)
             {
-                var duration = TimeSpan.FromMilliseconds(300);
+                var cts = new CancellationTokenSource();
+                _tabIndicatorCts[indicator] = cts;
+
+                var duration = TimeSpan.FromMilliseconds(250);
                 var easing = new BackEaseOut();
 
                 var moveAnim = new Animation
@@ -88,7 +102,7 @@ namespace CL_CLegendary_Launcher_.Avalonia.Services
                         }
                     }
                 };
-                _ = moveAnim.RunAsync(indicator);
+                _ = moveAnim.RunAsync(indicator, cts.Token);
 
                 var widthAnim = new Animation
                 {
@@ -100,12 +114,11 @@ namespace CL_CLegendary_Launcher_.Avalonia.Services
                         new KeyFrame
                         {
                             Cue = new Cue(1d),
-
                             Setters = { new Setter { Property = Layoutable.WidthProperty, Value = targetWidth } }
                         }
                     }
                 };
-                _ = widthAnim.RunAsync(indicator);
+                _ = widthAnim.RunAsync(indicator, cts.Token);
             }
             else
             {

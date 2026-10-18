@@ -17,7 +17,7 @@
                     <Grid x:Name="SettingPanelMinecraft" HorizontalAlignment="Stretch" VerticalAlignment="Top">
                         <Border CornerRadius="12" Background="{DynamicResource GlassTintBrush}" />
 
-                        <StackPanel Orientation="Vertical" Margin="20,65,20,20">
+                        <StackPanel Orientation="Vertical" Margin="20,80,20,20">
 
                             <TextBlock x:Name="Loc_Settings_TitleMinecraft" Text="Майнкрафт" Height="40" FontSize="24"
                                HorizontalAlignment="Left"

@@ -19,7 +19,7 @@ public class LauncherNavigationService
     private readonly IServiceProvider _sp;
     private readonly Control? _bgVisual;
 
-    private bool _isNavigating;
+    private int _navigationToken;
     private Control? _currentPage;
 
     private HomePage? _homePage;
@@ -108,12 +108,12 @@ public class LauncherNavigationService
 
     private async Task NavigateToPage(Control targetPage, string discordStatus, Func<Task>? loadDataAction = null)
     {
-        if (_isNavigating || _currentPage == targetPage) return;
+        if (_currentPage == targetPage) return;
+
+        int currentToken = unchecked(++_navigationToken);
 
         try
         {
-            _isNavigating = true;
-
             var previousPage = _currentPage;
             if (previousPage?.DataContext is ITrimmablePage trimmableVm)
             {
@@ -152,24 +152,25 @@ public class LauncherNavigationService
                 await MemoryCleaner.FlushMemoryAsync(trimWorkingSet: OperatingSystem.IsWindows() || OperatingSystem.IsLinux());
             });
 
-            _isNavigating = false;
-
-            if (loadDataAction != null)
+            if (loadDataAction != null && currentToken == _navigationToken)
             {
                 _ = loadDataAction();
             }
         }
         catch
         {
-            _isNavigating = false;
         }
     }
 
-    public async void NavigateToHome() =>
+    public async void NavigateToHome()
+    {
+        _main.SetActiveTab(_main.PlayBtnBorder);
         await NavigateToPage(GetOrCreateHomePage(), LocalizationManager.GetString("DiscordRPC.InHome", "В головному вікні"));
+    }
 
     public async void NavigateToMods()
     {
+        _main.SetActiveTab(_main.ModsBtnBorder);
         var page = GetOrCreateModsPage();
         await NavigateToPage(page, LocalizationManager.GetString("DiscordRPC.SearchingMods", "Шукає моди"), async () =>
         {
@@ -180,11 +181,15 @@ public class LauncherNavigationService
         });
     }
 
-    public async void NavigateToModPacks() =>
+    public async void NavigateToModPacks()
+    {
+        _main.SetActiveTab(_main.ModpacksBtnBorder);
         await NavigateToPage(GetOrCreateModPacksPage(), LocalizationManager.GetString("DiscordRPC.ViewingModpacks", "Дивиться збірки"));
+    }
 
     public async void NavigateToServers()
     {
+        _main.SetActiveTab(_main.ServersBtnBorder);
         var page = GetServerPage();
         await NavigateToPage(page, LocalizationManager.GetString("DiscordRPC.ViewingServers", "Дивиться список серверів"), async () =>
         {
@@ -203,6 +208,7 @@ public class LauncherNavigationService
 
     public async void NavigateToGallery()
     {
+        _main.SetActiveTab(_main.GalleryBtnBorder);
         var page = GetOrCreateGalleryPage();
         await NavigateToPage(page, LocalizationManager.GetString("DiscordRPC.ViewingGallery", "Переглядає галерею"), async () =>
         {

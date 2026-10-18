@@ -1,4 +1,4 @@
-﻿<Window xmlns="https://github.com/avaloniaui"
+<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -86,12 +86,11 @@
                             BorderThickness="1"
                             CornerRadius="26"
                             BorderBrush="#15FFFFFF"
-                            Padding="4,4"
                             Background="Transparent"
                             ClipToBounds="True">
                         <Grid Name="SelectPanelGrid">
 
-                            <Border IsVisible="{DynamicResource GlassVisibility}">
+                            <Border CornerRadius="26" IsVisible="{DynamicResource GlassVisibility}">
                                 <Border.Background>
                                     <VisualBrush Visual="{Binding #MainBackgroundContainer}" Stretch="None"
                                          AlignmentX="Center" AlignmentY="Top" />
@@ -101,25 +100,22 @@
                                 </Border.Effect>
                             </Border>
 
-                            <Border Background="{DynamicResource GlassTintBrush}" />
+                            <Border CornerRadius="26" Background="{DynamicResource GlassTintBrush}" />
 
                             <Border Name="PanelSelectNow"
                                     BorderThickness="1"
-                                    CornerRadius="22"
+                                    CornerRadius="18"
                                     Background="{DynamicResource MainBackgroundBrushServer}"
-                                    Height="44" Width="90"
+                                    Height="36" Width="90"
                                     HorizontalAlignment="Left" VerticalAlignment="Center">
-                                <Border.Transitions>
-                                    <Transitions>
-                                        <DoubleTransition Property="Width" Duration="0:0:0.25" Easing="CubicEaseOut" />
-                                        <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.25" Easing="CubicEaseOut" />
-                                    </Transitions>
-                                </Border.Transitions>
+                                <Border.RenderTransform>
+                                    <TranslateTransform />
+                                </Border.RenderTransform>
                             </Border>
 
-                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+                            <StackPanel Name="TopMenuStackPanel" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="8,0">
 
-                                <Border Name="PlayBtnBorder" CornerRadius="22" Height="44" Margin="0,0,2,0" Padding="12,0"
+                                <Border Name="PlayBtnBorder" CornerRadius="18" Height="36" Margin="0,0,2,0" Padding="12,0"
                                         Background="Transparent" Cursor="Hand" PointerPressed="PlayTXTPanelSelect_MouseDown"
                                         ToolTip.Tip="Головна сторінка"
                                         PointerEntered="MenuButton_MouseEnter" PointerExited="MenuButton_MouseLeave">
@@ -134,7 +130,7 @@
                                     </StackPanel>
                                 </Border>
 
-                                <Border Name="ModpacksBtnBorder" CornerRadius="22" Height="44" Margin="0,0,2,0" Padding="12,0"
+                                <Border Name="ModpacksBtnBorder" CornerRadius="18" Height="36" Margin="0,0,2,0" Padding="12,0"
                                         Background="Transparent" Cursor="Hand" PointerPressed="modbuilds_MouseDown"
                                         ToolTip.Tip="Створити або імпортувати збірку"
                                         PointerEntered="MenuButton_MouseEnter" PointerExited="MenuButton_MouseLeave">
@@ -150,7 +146,7 @@
                                     </StackPanel>
                                 </Border>
 
-                                <Border Name="ModsBtnBorder" CornerRadius="22" Height="44" Margin="0,0,2,0" Padding="12,0"
+                                <Border Name="ModsBtnBorder" CornerRadius="18" Height="36" Margin="0,0,2,0" Padding="12,0"
                                         Background="Transparent" Cursor="Hand" PointerPressed="ModsTXTPanelSelect_MouseDown"
                                         ToolTip.Tip="Завантаження модів"
                                         PointerEntered="MenuButton_MouseEnter" PointerExited="MenuButton_MouseLeave">
@@ -165,7 +161,7 @@
                                     </StackPanel>
                                 </Border>
 
-                                <Border Name="ServersBtnBorder" CornerRadius="22" Height="44" Margin="0,0,2,0" Padding="12,0"
+                                <Border Name="ServersBtnBorder" CornerRadius="18" Height="36" Margin="0,0,2,0" Padding="12,0"
                                         Background="Transparent" Cursor="Hand" PointerPressed="ServerTXTPanelSelect_MouseDown"
                                         ToolTip.Tip="Список серверів"
                                         PointerEntered="MenuButton_MouseEnter" PointerExited="MenuButton_MouseLeave">
@@ -181,7 +177,7 @@
                                     </StackPanel>
                                 </Border>
 
-                                <Border Name="GalleryBtnBorder" CornerRadius="22" Height="44" Margin="0" Padding="12,0"
+                                <Border Name="GalleryBtnBorder" CornerRadius="18" Height="36" Margin="0" Padding="12,0"
                                         Background="Transparent" Cursor="Hand" PointerPressed="PhotoMinecraftTXT_MouseDown"
                                         ToolTip.Tip="Скріншоти"
                                         PointerEntered="MenuButton_MouseEnter" PointerExited="MenuButton_MouseLeave">
@@ -225,7 +221,7 @@
                             ClipToBounds="True">
                         <Grid>
 
-                            <Border IsVisible="{DynamicResource GlassVisibility}" Margin="-25,30,25,-30">
+                            <Border CornerRadius="26" IsVisible="{DynamicResource GlassVisibility}" Margin="-25,30,25,-30">
                                 <Border.Effect>
                                     <BlurEffect Radius="{DynamicResource GlassBlurRadius}" />
                                 </Border.Effect>
@@ -240,7 +236,7 @@
                                 </Border.RenderTransform>
                             </Border>
 
-                            <Border Background="{DynamicResource GlassTintBrush}" />
+                            <Border CornerRadius="26" Background="{DynamicResource GlassTintBrush}" />
 
                             <Grid Cursor="Hand" PointerPressed="IconAccount_MouseDown" Background="Transparent">
                                 <Grid.ColumnDefinitions>

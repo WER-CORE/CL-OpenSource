@@ -54,6 +54,11 @@ public partial class CL_Main : Window
         SettingsPageViewModel.LanguageConfigurationChanged += OnLanguageChanged;
         ModpacksPageViewModel.ExportProgressChanged += OnExportProgressChanged;
 
+        if (TopMenuStackPanel != null)
+        {
+            TopMenuStackPanel.SizeChanged += TopMenuStackPanel_SizeChanged;
+        }
+
         Opened += (_, _) =>
         {
             _activeTabBorder = PlayBtnBorder;
@@ -61,7 +66,7 @@ public partial class CL_Main : Window
             ApplyLocalization();
             ApplyCurrentUiScale();
 
-            MoveSlider(PlayBtnBorder, animate: false);
+            Dispatcher.UIThread.Post(() => MoveSlider(PlayBtnBorder, animate: false), DispatcherPriority.Loaded);
             NavigationService.NavigateToHome();
             if (!_isProfilesLoaded)
             {
@@ -71,6 +76,9 @@ public partial class CL_Main : Window
 
         Closed += (_, _) =>
         {
+            if (TopMenuStackPanel != null)
+                TopMenuStackPanel.SizeChanged -= TopMenuStackPanel_SizeChanged;
+
             if (_themeService != null)
                 _themeService.BackgroundBitmapChanged -= OnBackgroundBitmapChanged;
 
@@ -263,12 +271,31 @@ public partial class CL_Main : Window
 
     #region Навігація та Верхній Слайдер
 
+    public void SetActiveTab(Control? target, bool animate = true)
+    {
+        if (_activeTabBorder == target && PanelSelectNow != null && PanelSelectNow.Width > 0) return;
+        _activeTabBorder = target;
+        MoveSlider(target, animate);
+    }
+
+    private void TopMenuStackPanel_SizeChanged(object? sender, SizeChangedEventArgs e)
+    {
+        Dispatcher.UIThread.Post(() => MoveSlider(_activeTabBorder ?? PlayBtnBorder, animate: false), DispatcherPriority.Loaded);
+    }
+
     private void MoveSlider(Control? target, bool animate = true)
     {
-        if (target?.Parent is not Control parent || PanelSelectNow == null) return;
+        if (target == null || SelectPanelGrid == null || PanelSelectNow == null) return;
 
-        double targetX = target.Bounds.X + parent.Bounds.X;
-        double newWidth = target.Bounds.Width > 0 ? target.Bounds.Width : 90;
+        var pt = target.TranslatePoint(new Point(0, 0), SelectPanelGrid);
+        if (pt == null || target.Bounds.Width <= 0)
+        {
+            Dispatcher.UIThread.Post(() => MoveSlider(target, animate), DispatcherPriority.Loaded);
+            return;
+        }
+
+        double targetX = pt.Value.X;
+        double newWidth = target.Bounds.Width;
 
         if (PanelSelectNow.RenderTransform is not TranslateTransform transform)
         {
@@ -282,9 +309,11 @@ public partial class CL_Main : Window
     private void NavigateWithSlider(object? sender, Action navigateAction)
     {
         AvaloniaSoundService.Click();
-        _activeTabBorder = sender as Control;
+        if (sender is Control target)
+        {
+            SetActiveTab(target, animate: true);
+        }
         navigateAction();
-        MoveSlider(_activeTabBorder);
     }
 
     private void PlayTXTPanelSelect_MouseDown(object? sender, PointerPressedEventArgs e) =>
