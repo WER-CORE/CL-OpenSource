@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -652,7 +652,7 @@
                                                 </Style>
                                             </StackPanel.Styles>
 
-                                            <Grid Height="30" Margin="0,2">
+                                            <Grid MinHeight="36" Margin="0,3">
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition />
                                                     <ColumnDefinition Width="Auto" MinWidth="57.2" />
@@ -660,14 +660,13 @@
                                                 <TextBlock Grid.Column="0" x:Name="Loc_Settings_SubFilesMods"
                                                    Text="↳ Показувати функцію «Відкрити папку...»"
                                                    Foreground="{DynamicResource MainForegroundBrush}" FontSize="14"
-                                                   FontFamily="Inter" VerticalAlignment="Center" Opacity="0.8"
-                                                   Height="16" />
+                                                   FontFamily="Inter" VerticalAlignment="Center" Opacity="0.8" />
                                                 <ToggleSwitch OnContent="{x:Null}" OffContent="{x:Null}" Grid.Column="1" x:Name="ToggleSub_FilesMods"
                                                          VerticalAlignment="Center" Margin="5,0,5,0" Height="36"
                                                          Cursor="Hand" IsChecked="{Binding EnableSubFiles}" />
                                             </Grid>
 
-                                            <Grid Height="30" Margin="0,2">
+                                            <Grid MinHeight="36" Margin="0,3">
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition />
                                                     <ColumnDefinition Width="Auto" MinWidth="57.2" />
@@ -675,8 +674,7 @@
                                                 <TextBlock Grid.Column="0" x:Name="Loc_Settings_SubFilesBackups"
                                                    Text="↳ Показувати функцію «Менеджер світів (Backups)»"
                                                    Foreground="{DynamicResource MainForegroundBrush}" FontSize="14"
-                                                   FontFamily="Inter" VerticalAlignment="Center" Opacity="0.8"
-                                                   Height="16" />
+                                                   FontFamily="Inter" VerticalAlignment="Center" Opacity="0.8" />
                                                 <ToggleSwitch OnContent="{x:Null}" OffContent="{x:Null}" Grid.Column="1" x:Name="ToggleSub_FilesBackups"
                                                          VerticalAlignment="Center" Margin="5,0,5,0" Height="36"
                                                          Cursor="Hand" IsChecked="{Binding EnableSubFilesBackups}" />
@@ -700,7 +698,7 @@
                                                 </Style>
                                             </StackPanel.Styles>
 
-                                            <Grid Height="30" Margin="0,2">
+                                            <Grid MinHeight="36" Margin="0,3">
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="*" />
                                                     <ColumnDefinition Width="Auto" MinWidth="63.2" />
@@ -710,11 +708,11 @@
                                                    Foreground="{DynamicResource MainForegroundBrush}" FontSize="14"
                                                    FontFamily="Inter" VerticalAlignment="Center" Opacity="0.8" />
                                                 <ToggleSwitch OnContent="{x:Null}" OffContent="{x:Null}" Grid.Column="1" x:Name="ToggleSub_InfoBug"
-                                                         VerticalAlignment="Center" Margin="5,0" Height="30"
+                                                         VerticalAlignment="Center" Margin="5,0" Height="36"
                                                          Cursor="Hand" IsChecked="{Binding EnableSubInfoBug}" />
                                             </Grid>
 
-                                            <Grid Height="30" Margin="0,2">
+                                            <Grid MinHeight="36" Margin="0,3">
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="*" />
                                                     <ColumnDefinition Width="Auto" MinWidth="63.2" />
@@ -724,11 +722,11 @@
                                                    Foreground="{DynamicResource MainForegroundBrush}" FontSize="14"
                                                    FontFamily="Inter" VerticalAlignment="Center" Opacity="0.8" />
                                                 <ToggleSwitch OnContent="{x:Null}" OffContent="{x:Null}" Grid.Column="1" x:Name="ToggleSub_InfoNews"
-                                                         VerticalAlignment="Center" Margin="5,0" Height="30"
+                                                         VerticalAlignment="Center" Margin="5,0" Height="36"
                                                          Cursor="Hand" IsChecked="{Binding EnableSubInfoNews}" />
                                             </Grid>
 
-                                            <Grid Height="30" Margin="0,2">
+                                            <Grid MinHeight="36" Margin="0,3">
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="*" />
                                                     <ColumnDefinition Width="Auto" MinWidth="63.2" />
@@ -738,11 +736,11 @@
                                                    Foreground="{DynamicResource MainForegroundBrush}" FontSize="14"
                                                    FontFamily="Inter" VerticalAlignment="Center" Opacity="0.8" />
                                                 <ToggleSwitch OnContent="{x:Null}" OffContent="{x:Null}" Grid.Column="1" x:Name="ToggleSub_InfoWiki"
-                                                         VerticalAlignment="Center" Margin="5,0" Height="30"
+                                                         VerticalAlignment="Center" Margin="5,0" Height="36"
                                                          Cursor="Hand" IsChecked="{Binding EnableSubInfoWiki}" />
                                             </Grid>
 
-                                            <Grid Height="30" Margin="0,2">
+                                            <Grid MinHeight="36" Margin="0,3">
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="*" />
                                                     <ColumnDefinition Width="Auto" MinWidth="63.2" />
@@ -752,11 +750,11 @@
                                                    Foreground="{DynamicResource MainForegroundBrush}" FontSize="14"
                                                    FontFamily="Inter" VerticalAlignment="Center" Opacity="0.8" />
                                                 <ToggleSwitch OnContent="{x:Null}" OffContent="{x:Null}" Grid.Column="1" x:Name="ToggleSub_InfoGithub"
-                                                         VerticalAlignment="Center" Margin="5,0" Height="30"
+                                                         VerticalAlignment="Center" Margin="5,0" Height="36"
                                                          Cursor="Hand" IsChecked="{Binding EnableSubInfoGithub}" />
                                             </Grid>
 
-                                            <Grid Height="30" Margin="0,2">
+                                            <Grid MinHeight="36" Margin="0,3">
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="*" />
                                                     <ColumnDefinition Width="Auto" MinWidth="63.2" />
@@ -766,11 +764,11 @@
                                                    Foreground="{DynamicResource MainForegroundBrush}" FontSize="14"
                                                    FontFamily="Inter" VerticalAlignment="Center" Opacity="0.8" />
                                                 <ToggleSwitch OnContent="{x:Null}" OffContent="{x:Null}" Grid.Column="1" x:Name="ToggleSub_InfoCredits"
-                                                         VerticalAlignment="Center" Margin="5,0" Height="30"
+                                                         VerticalAlignment="Center" Margin="5,0" Height="36"
                                                          Cursor="Hand" IsChecked="{Binding EnableSubInfoCredits}" />
                                             </Grid>
 
-                                            <Grid Height="30" Margin="0,2">
+                                            <Grid MinHeight="36" Margin="0,3">
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="*" />
                                                     <ColumnDefinition Width="Auto" MinWidth="63.2" />
@@ -780,7 +778,7 @@
                                                    Foreground="{DynamicResource MainForegroundBrush}" FontSize="14"
                                                    FontFamily="Inter" VerticalAlignment="Center" Opacity="0.8" />
                                                 <ToggleSwitch OnContent="{x:Null}" OffContent="{x:Null}" Grid.Column="1" x:Name="ToggleSub_InfoSupport"
-                                                         VerticalAlignment="Center" Margin="5,0" Height="30"
+                                                         VerticalAlignment="Center" Margin="5,0" Height="36"
                                                          Cursor="Hand" IsChecked="{Binding EnableSubInfoSupport}" />
                                             </Grid>
                                         </StackPanel>

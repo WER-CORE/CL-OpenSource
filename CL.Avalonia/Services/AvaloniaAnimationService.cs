@@ -1,9 +1,10 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Animation;
 using Avalonia.Animation.Easings;
 using Avalonia.Controls;
+using Avalonia.Threading;
 using Avalonia.Controls.Primitives;
 using Avalonia.Layout;
 using Avalonia.Media;
@@ -137,7 +138,7 @@ namespace CL_CLegendary_Launcher_.Avalonia.Services
                     }
                 }
             };
-            _ = animationX.RunAsync(targetButton);
+            _ = animationX.RunAsync(movingPanel);
 
             var animationWidth = new Animation
             {
@@ -284,8 +285,14 @@ namespace CL_CLegendary_Launcher_.Avalonia.Services
                 }
             };
 
-            _ = opacityAnim.RunAsync(element);
-            _ = slideAnim.RunAsync(element);
+            _ = opacityAnim.RunAsync(element).ContinueWith(_ =>
+            {
+                Dispatcher.UIThread.Post(() => element.Opacity = 1d);
+            });
+            _ = slideAnim.RunAsync(element).ContinueWith(_ =>
+            {
+                Dispatcher.UIThread.Post(() => transform.Y = 0d);
+            });
         }
 
         public static async void AnimatePageTransitionExit(Control element, double endOffset = 40, double durationSeconds = 0.3)

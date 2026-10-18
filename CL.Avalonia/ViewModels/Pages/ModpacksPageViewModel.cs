@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -421,10 +421,10 @@ public partial class ModpacksPageViewModel : ObservableObject
 
         var dialog = new EditModpackDialog();
         var vm = sp.GetRequiredService<EditModpackDialogViewModel>();
-
-        await vm.InitializeAsync(modpackInfo);
         vm.CloseAction = () => dialog.Close();
         dialog.DataContext = vm;
+
+        _ = vm.InitializeAsync(modpackInfo);
 
         await dialog.ShowDialog(mainWindow);
         await RefreshModpacksListAsync();

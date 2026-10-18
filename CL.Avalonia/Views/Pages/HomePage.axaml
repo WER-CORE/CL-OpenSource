@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:pages="clr-namespace:CL_CLegendary_Launcher_.Avalonia.Views.Pages"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -58,69 +58,85 @@
                            Foreground="{DynamicResource MainForegroundBrush}" />
 			</StackPanel>
 
-			<ListBox x:Name="VersionMinecraftChangeLog"
-                     ItemsSource="{Binding ChangelogItems}"
-                     SelectedItem="{Binding SelectedChangelogItem}"
-                     Grid.Column="0"
-                     HorizontalAlignment="Left" VerticalAlignment="Bottom"
-                     Margin="10,0,0,0" Height="135" Width="310"
-                     Background="{DynamicResource MainBackgroundBrushServer}"
-                     Foreground="{DynamicResource MainForegroundBrush}"
-                     BorderBrush="{x:Null}"
-                     Cursor="Hand"
-                     ScrollViewer.HorizontalScrollBarVisibility="Hidden"
-                     Tapped="VersionMinecraftChangeLog_Tapped"
-                     ToolTip.Tip="Натисніть, щоб прочитати список змін цієї версії">
+			<Border x:Name="VersionMinecraftChangeLogBorder"
+                    Grid.Column="0"
+                    HorizontalAlignment="Left" VerticalAlignment="Bottom"
+                    Margin="10,0,0,0" Height="135" Width="310"
+                    Background="{DynamicResource MainBackgroundBrushServer}"
+                    CornerRadius="12"
+                    ClipToBounds="True"
+                    IsVisible="{Binding #VersionMinecraftChangeLog.IsVisible}">
+				<Grid RowDefinitions="*,Auto">
+					<ListBox x:Name="VersionMinecraftChangeLog"
+                             Grid.Row="0"
+                             ItemsSource="{Binding ChangelogItems}"
+                             SelectedItem="{Binding SelectedChangelogItem}"
+                             Background="Transparent"
+                             Foreground="{DynamicResource MainForegroundBrush}"
+                             BorderBrush="{x:Null}"
+                             BorderThickness="0"
+                             Cursor="Hand"
+                             ScrollViewer.HorizontalScrollBarVisibility="Hidden"
+                             Tapped="VersionMinecraftChangeLog_Tapped"
+                             ToolTip.Tip="Натисніть, щоб прочитати список змін цієї версії">
 
-				<ListBox.ItemsPanel>
-					<ItemsPanelTemplate>
-						<VirtualizingStackPanel />
-					</ItemsPanelTemplate>
-				</ListBox.ItemsPanel>
+						<ListBox.ItemsPanel>
+							<ItemsPanelTemplate>
+								<VirtualizingStackPanel />
+							</ItemsPanelTemplate>
+						</ListBox.ItemsPanel>
 
-				<ListBox.Styles>
-					<Style Selector="ListBox">
-						<Setter Property="Template">
-							<Setter.Value>
-								<ControlTemplate TargetType="ListBox">
-									<Border CornerRadius="12" Background="{TemplateBinding Background}"
-                                            BorderBrush="{TemplateBinding BorderBrush}"
-                                            BorderThickness="{TemplateBinding BorderThickness}">
-										<ScrollViewer Margin="{TemplateBinding Padding}">
-											<ItemsPresenter />
-										</ScrollViewer>
+						<ListBox.ItemTemplate>
+							<DataTemplate x:DataType="models:VersionLogItem">
+								<Grid Margin="2,4">
+									<Grid.ColumnDefinitions>
+										<ColumnDefinition Width="Auto" />
+										<ColumnDefinition Width="*" />
+										<ColumnDefinition Width="Auto" />
+									</Grid.ColumnDefinitions>
+
+									<Border Grid.Column="0" CornerRadius="4" Width="24" Height="24" Margin="0,0,10,0"
+                                            ClipToBounds="True">
+										<Image Source="{Binding IconPath, Converter={StaticResource BitmapConverter}}" />
 									</Border>
-								</ControlTemplate>
-							</Setter.Value>
-						</Setter>
-					</Style>
-				</ListBox.Styles>
 
-				<ListBox.ItemTemplate>
-					<DataTemplate x:DataType="models:VersionLogItem">
-						<Grid Margin="2,4">
-							<Grid.ColumnDefinitions>
-								<ColumnDefinition Width="Auto" />
-								<ColumnDefinition Width="*" />
-								<ColumnDefinition Width="Auto" />
-							</Grid.ColumnDefinitions>
+									<TextBlock Grid.Column="1" VerticalAlignment="Center"
+                                               FontFamily="Inter" FontSize="14"
+                                               Foreground="{DynamicResource MainForegroundBrush}"
+                                               Text="{Binding VersionId}" FontWeight="Medium" />
 
-							<Border Grid.Column="0" CornerRadius="4" Width="24" Height="24" Margin="0,0,10,0"
-                                    ClipToBounds="True">
-								<Image Source="{Binding IconPath, Converter={StaticResource BitmapConverter}}" />
-							</Border>
+									<ic:SymbolIcon Grid.Column="2" Symbol="Open" FontSize="14" Opacity="0.5"
+                                                   Foreground="{DynamicResource MainForegroundBrush}" />
+								</Grid>
+							</DataTemplate>
+						</ListBox.ItemTemplate>
+					</ListBox>
 
-							<TextBlock Grid.Column="1" VerticalAlignment="Center"
-                                       FontFamily="Inter" FontSize="14"
+					<Button x:Name="BtnLoadMoreChangelog"
+                            Grid.Row="1"
+                            Command="{Binding LoadMoreChangelogCommand}"
+                            IsVisible="{Binding HasMoreChangelogItems}"
+                            Height="26"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center"
+                            Background="Transparent"
+                            BorderBrush="#22FFFFFF"
+                            BorderThickness="0,1,0,0"
+                            CornerRadius="0,0,12,12"
+                            Cursor="Hand"
+                            Padding="0">
+						<StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center" VerticalAlignment="Center">
+							<ic:SymbolIcon Symbol="ArrowSync" FontSize="12" Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.7" />
+							<TextBlock x:Name="Loc_BtnLoadMoreChangelog"
+                                       Text="Завантажити ще"
+                                       FontSize="11" FontFamily="Inter"
                                        Foreground="{DynamicResource MainForegroundBrush}"
-                                       Text="{Binding VersionId}" FontWeight="Medium" />
-
-							<ic:SymbolIcon Grid.Column="2" Symbol="Open" FontSize="14" Opacity="0.5"
-                                           Foreground="{DynamicResource MainForegroundBrush}" />
-						</Grid>
-					</DataTemplate>
-				</ListBox.ItemTemplate>
-			</ListBox>
+                                       Opacity="0.8" VerticalAlignment="Center" />
+						</StackPanel>
+					</Button>
+				</Grid>
+			</Border>
 
 			<Grid Grid.Column="1" VerticalAlignment="Top" Margin="0,7,0,0" Height="207">
 				<Grid VerticalAlignment="Top" Margin="10,7,10,0" Width="250" Height="207">
@@ -418,63 +434,56 @@
                            Foreground="{DynamicResource MainForegroundBrush}" />
 			</StackPanel>
 
-			<ListBox x:Name="ServerMonitoring" Grid.Column="2"
-					 ItemsSource="{Binding RecentActions}"
-					 VerticalAlignment="Top"
-					 HorizontalAlignment="Right"
-					 Width="315"
-					 Margin="0,150,10,0"
-					 Height="64"
-					 Background="{DynamicResource MainBackgroundBrushServer}"
-					 Foreground="{DynamicResource MainForegroundBrush}"
-					 BorderBrush="{x:Null}" Cursor="Hand" FontSize="11">
+			<Border x:Name="ServerMonitoringBorder"
+                    Grid.Column="2"
+                    VerticalAlignment="Top"
+                    HorizontalAlignment="Right"
+                    Width="315"
+                    Margin="0,150,10,0"
+                    Height="64"
+                    Background="{DynamicResource MainBackgroundBrushServer}"
+                    CornerRadius="12"
+                    ClipToBounds="True"
+                    IsVisible="{Binding #ServerMonitoring.IsVisible}">
+				<ListBox x:Name="ServerMonitoring"
+						 ItemsSource="{Binding RecentActions}"
+						 Background="Transparent"
+						 Foreground="{DynamicResource MainForegroundBrush}"
+						 BorderBrush="{x:Null}"
+						 BorderThickness="0"
+						 Cursor="Hand" FontSize="11">
 
-				<ListBox.ItemsPanel>
-					<ItemsPanelTemplate>
-						<VirtualizingStackPanel />
-					</ItemsPanelTemplate>
-				</ListBox.ItemsPanel>
+					<ListBox.ItemsPanel>
+						<ItemsPanelTemplate>
+							<VirtualizingStackPanel />
+						</ItemsPanelTemplate>
+					</ListBox.ItemsPanel>
 
-				<ListBox.ItemTemplate>
-					<DataTemplate x:DataType="ctrlVm:HistoryActionItemViewModel">
-						<Button Command="{Binding ExecuteActionCommand}"
-								Background="Transparent"
-								BorderThickness="0"
-								Padding="4,2"
-								HorizontalAlignment="Stretch"
-								HorizontalContentAlignment="Left"
-								Cursor="Hand">
-							<TextBlock Text="{Binding DisplayText}"
-									   TextWrapping="Wrap"
-									   FontSize="11"
-									   Foreground="{DynamicResource MainForegroundBrush}" />
-						</Button>
-					</DataTemplate>
-				</ListBox.ItemTemplate>
+					<ListBox.ItemTemplate>
+						<DataTemplate x:DataType="ctrlVm:HistoryActionItemViewModel">
+							<Button Command="{Binding ExecuteActionCommand}"
+									Background="Transparent"
+									BorderThickness="0"
+									Padding="4,2"
+									HorizontalAlignment="Stretch"
+									HorizontalContentAlignment="Left"
+									Cursor="Hand">
+								<TextBlock Text="{Binding DisplayText}"
+										   TextWrapping="Wrap"
+										   FontSize="11"
+										   Foreground="{DynamicResource MainForegroundBrush}" />
+							</Button>
+						</DataTemplate>
+					</ListBox.ItemTemplate>
 
-				<ListBox.Styles>
-					<Style Selector="ListBoxItem">
-						<Setter Property="Padding" Value="2,1" />
-						<Setter Property="Margin" Value="0" />
-					</Style>
-					<Style Selector="ListBox">
-						<Setter Property="Template">
-							<Setter.Value>
-								<ControlTemplate TargetType="ListBox">
-									<Border CornerRadius="12" Background="{TemplateBinding Background}"
-											BorderBrush="{TemplateBinding BorderBrush}"
-											BorderThickness="{TemplateBinding BorderThickness}"
-											ClipToBounds="True">
-										<ScrollViewer Margin="{TemplateBinding Padding}">
-											<ItemsPresenter />
-										</ScrollViewer>
-									</Border>
-								</ControlTemplate>
-							</Setter.Value>
-						</Setter>
-					</Style>
-				</ListBox.Styles>
-			</ListBox>
+					<ListBox.Styles>
+						<Style Selector="ListBoxItem">
+							<Setter Property="Padding" Value="2,1" />
+							<Setter Property="Margin" Value="0" />
+						</Style>
+					</ListBox.Styles>
+				</ListBox>
+			</Border>
 		</Grid>
 
 		<Grid x:Name="VersionControlContainer"

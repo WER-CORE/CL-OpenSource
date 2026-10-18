@@ -29,6 +29,7 @@ public partial class EditModpackDialogViewModel : ObservableObject, IDisposable
     private readonly IDialogService _dialogService;
     private readonly ModpackService _modpackService;
     private ModpackInfo _modpack = null!;
+    private bool _isInitializing;
 
     public Action? CloseAction { get; set; }
 
@@ -146,37 +147,65 @@ public partial class EditModpackDialogViewModel : ObservableObject, IDisposable
 
     public async Task InitializeAsync(ModpackInfo modpack)
     {
-        _modpack = modpack;
-        MinecraftVersion = modpack.MinecraftVersion ?? "";
-        LoaderType = modpack.LoaderType ?? "Vanilla";
-        LoaderVersion = modpack.LoaderVersion ?? "";
-        IsConsoleLogOpened = modpack.IsConsoleLogOpened;
-        Ram = modpack.OPack > 0 ? modpack.OPack : 2048;
-        MaxRam = 16384;
-        JavaPath = modpack.JavaPath ?? "";
-        WindowWidth = modpack.Wdith > 0 ? modpack.Wdith : 800;
-        WindowHeight = modpack.Height > 0 ? modpack.Height : 600;
-        EnterInServer = modpack.EnterInServer;
-        ServerIp = modpack.ServerIP ?? "";
-
-        CheckIsVanilla();
-        LoadIcon();
-
-        var path = new MinecraftPath(SettingsManager.Default.PathLacunher);
-        var launcher = new MinecraftLauncher(path);
-        var allVersions = await launcher.GetAllVersionsAsync();
-        foreach (var v in allVersions.Where(v => v.Type == "release").Select(v => v.Name))
-            AvailableMcVersions.Add(v);
-
-        var javas = JavaLocator.FindInstalled(SettingsManager.Default.PathLacunher);
-        foreach (var j in javas) AvailableJavaPaths.Add(j);
-        if (!string.IsNullOrEmpty(JavaPath) && !AvailableJavaPaths.Contains(JavaPath))
-            AvailableJavaPaths.Add(JavaPath);
-
-        if (!IsVanilla)
+        _isInitializing = true;
+        try
         {
-            await LoadLoaderVersionsAsync();
-            await RefreshListAsync();
+            _modpack = modpack;
+            var targetMcVersion = modpack.MinecraftVersion ?? "";
+            var targetLoaderType = modpack.LoaderType ?? "Vanilla";
+            var targetLoaderVersion = modpack.LoaderVersion ?? "";
+
+            AvailableMcVersions.Clear();
+            if (!string.IsNullOrWhiteSpace(targetMcVersion))
+            {
+                AvailableMcVersions.Add(targetMcVersion);
+            }
+            MinecraftVersion = targetMcVersion;
+
+            LoaderType = targetLoaderType;
+
+            AvailableLoaderVersions.Clear();
+            if (!string.IsNullOrWhiteSpace(targetLoaderVersion))
+            {
+                AvailableLoaderVersions.Add(targetLoaderVersion);
+            }
+            LoaderVersion = targetLoaderVersion;
+
+            IsConsoleLogOpened = modpack.IsConsoleLogOpened;
+            Ram = modpack.OPack > 0 ? modpack.OPack : 2048;
+            MaxRam = 16384;
+            JavaPath = modpack.JavaPath ?? "";
+            WindowWidth = modpack.Wdith > 0 ? modpack.Wdith : 800;
+            WindowHeight = modpack.Height > 0 ? modpack.Height : 600;
+            EnterInServer = modpack.EnterInServer;
+            ServerIp = modpack.ServerIP ?? "";
+
+            CheckIsVanilla();
+            LoadIcon();
+
+            var path = new MinecraftPath(SettingsManager.Default.PathLacunher);
+            var launcher = new MinecraftLauncher(path);
+            var allVersions = await Task.Run(async () => await launcher.GetAllVersionsAsync());
+            foreach (var v in allVersions.Where(v => v.Type == "release").Select(v => v.Name))
+            {
+                if (!AvailableMcVersions.Contains(v))
+                    AvailableMcVersions.Add(v);
+            }
+
+            var javas = await Task.Run(() => JavaLocator.FindInstalled(SettingsManager.Default.PathLacunher));
+            foreach (var j in javas) AvailableJavaPaths.Add(j);
+            if (!string.IsNullOrEmpty(JavaPath) && !AvailableJavaPaths.Contains(JavaPath))
+                AvailableJavaPaths.Add(JavaPath);
+
+            if (!IsVanilla)
+            {
+                await LoadLoaderVersionsAsync(targetLoaderVersion);
+                await RefreshListAsync();
+            }
+        }
+        finally
+        {
+            _isInitializing = false;
         }
     }
 
@@ -381,9 +410,14 @@ public partial class EditModpackDialogViewModel : ObservableObject, IDisposable
 
     private void SaveProperty(string propName, object value)
     {
+        if (_isInitializing || _modpack == null) return;
         try
         {
-            string jsonPath = Path.Combine(AppContext.BaseDirectory, "Data", "installed_modpacks.json");
+            string jsonPath = ModpackPaths.InstalledModpacksJson;
+            if (!File.Exists(jsonPath))
+            {
+                jsonPath = Path.Combine(AppContext.BaseDirectory, "Data", "installed_modpacks.json");
+            }
             if (!File.Exists(jsonPath)) return;
             string json = File.ReadAllText(jsonPath);
             var modpacks = System.Text.Json.JsonSerializer.Deserialize<List<InstalledModpack>>(json);
@@ -404,68 +438,137 @@ public partial class EditModpackDialogViewModel : ObservableObject, IDisposable
 
     partial void OnMinecraftVersionChanged(string value)
     {
+        if (_isInitializing) return;
         SaveProperty("MinecraftVersion", value);
         if (!IsVanilla) _ = LoadLoaderVersionsAsync();
     }
     partial void OnLoaderTypeChanged(string value)
     {
+        if (_isInitializing) return;
         SaveProperty("LoaderType", value);
         CheckIsVanilla();
         if (!IsVanilla) _ = LoadLoaderVersionsAsync();
     }
-    partial void OnLoaderVersionChanged(string value) => SaveProperty("LoaderVersion", value);
-    partial void OnIsConsoleLogOpenedChanged(bool value) => SaveProperty("IsConsoleLogOpened", value);
-    partial void OnRamChanged(int value) => SaveProperty("OPack", value);
-    partial void OnJavaPathChanged(string value) => SaveProperty("JavaPath", value);
-    partial void OnWindowWidthChanged(int value) => SaveProperty("Wdith", value);
-    partial void OnWindowHeightChanged(int value) => SaveProperty("Height", value);
-    partial void OnEnterInServerChanged(bool value) => SaveProperty("EnterInServer", value);
-    partial void OnServerIpChanged(string value) => SaveProperty("ServerIP", value);
-
-    private async Task LoadLoaderVersionsAsync()
+    partial void OnLoaderVersionChanged(string value)
     {
-        AvailableLoaderVersions.Clear();
+        if (_isInitializing || string.IsNullOrEmpty(value)) return;
+        SaveProperty("LoaderVersion", value);
+    }
+    partial void OnIsConsoleLogOpenedChanged(bool value)
+    {
+        if (_isInitializing) return;
+        SaveProperty("IsConsoleLogOpened", value);
+    }
+    partial void OnRamChanged(int value)
+    {
+        if (_isInitializing) return;
+        SaveProperty("OPack", value);
+    }
+    partial void OnJavaPathChanged(string value)
+    {
+        if (_isInitializing) return;
+        SaveProperty("JavaPath", value);
+    }
+    partial void OnWindowWidthChanged(int value)
+    {
+        if (_isInitializing) return;
+        SaveProperty("Wdith", value);
+    }
+    partial void OnWindowHeightChanged(int value)
+    {
+        if (_isInitializing) return;
+        SaveProperty("Height", value);
+    }
+    partial void OnEnterInServerChanged(bool value)
+    {
+        if (_isInitializing) return;
+        SaveProperty("EnterInServer", value);
+    }
+    partial void OnServerIpChanged(string value)
+    {
+        if (_isInitializing) return;
+        SaveProperty("ServerIP", value);
+    }
+
+    private async Task LoadLoaderVersionsAsync(string? preferredVersion = null)
+    {
+        var currentLoader = preferredVersion ?? LoaderVersion;
+        var mcVersion = MinecraftVersion;
+        if (string.IsNullOrEmpty(mcVersion) || IsVanilla) return;
+
         try
         {
-            var versions = new List<string>();
-            var mcVersion = MinecraftVersion;
+            var versions = await Task.Run(async () =>
+            {
+                var list = new List<string>();
+                try
+                {
+                    if (LoaderType == "Forge")
+                    {
+                        var fv = await new ForgeVersionLoader(WebHelper.Client).GetForgeVersions(mcVersion);
+                        list = fv.Select(x => x.ForgeVersionName).ToList();
+                    }
+                    else if (LoaderType == "Fabric")
+                    {
+                        var fv = await new FabricInstaller(WebHelper.Client).GetLoaders(mcVersion);
+                        list = fv.Select(x => x.Version).OfType<string>().ToList();
+                    }
+                    else if (LoaderType == "Quilt")
+                    {
+                        var qv = await new QuiltInstaller(WebHelper.Client).GetLoaders(mcVersion);
+                        list = qv.Select(x => x.Version).OfType<string>().ToList();
+                    }
+                    else if (LoaderType == "NeoForge")
+                    {
+                        var path = new MinecraftPath(SettingsManager.Default.PathLacunher);
+                        var nf = await new NoAdNeoForgeInstaller(new MinecraftLauncher(path)).GetNeoForgeVersions(mcVersion);
+                        list = nf.Select(x => x.VersionName).OfType<string>().ToList();
+                    }
+                    else if (LoaderType == "LiteLoader")
+                    {
+                        var ll = await new LiteLoaderInstaller(WebHelper.Client).GetAllLiteLoaders();
+                        list = ll.Where(l => l.BaseVersion == mcVersion).Select(l => l.Version).OfType<string>().ToList();
+                    }
+                    else if (LoaderType == "Optifine")
+                    {
+                        var opt = await new OptifineInstaller(WebHelper.Client).GetOptifineVersionsAsync();
+                        list = opt.Where(v => v.MinecraftVersion == mcVersion).Select(v => v.Version).ToList();
+                    }
+                }
+                catch { }
+                return list;
+            });
 
-            if (LoaderType == "Forge")
+            if (versions.Count > 0)
             {
-                var fv = await new ForgeVersionLoader(WebHelper.Client).GetForgeVersions(mcVersion);
-                versions = fv.Select(x => x.ForgeVersionName).ToList();
-            }
-            else if (LoaderType == "Fabric")
-            {
-                var fv = await new FabricInstaller(WebHelper.Client).GetLoaders(mcVersion);
-                versions = fv.Select(x => x.Version).OfType<string>().ToList();
-            }
-            else if (LoaderType == "Quilt")
-            {
-                var qv = await new QuiltInstaller(WebHelper.Client).GetLoaders(mcVersion);
-                versions = qv.Select(x => x.Version).OfType<string>().ToList();
-            }
-            else if (LoaderType == "NeoForge")
-            {
-                var path = new MinecraftPath(SettingsManager.Default.PathLacunher);
-                var nf = await new NoAdNeoForgeInstaller(new MinecraftLauncher(path)).GetNeoForgeVersions(mcVersion);
-                versions = nf.Select(x => x.VersionName).OfType<string>().ToList();
-            }
-            else if (LoaderType == "LiteLoader")
-            {
-                var ll = await new LiteLoaderInstaller(WebHelper.Client).GetAllLiteLoaders();
-                versions = ll.Where(l => l.BaseVersion == mcVersion).Select(l => l.Version).OfType<string>().ToList();
-            }
-            else if (LoaderType == "Optifine")
-            {
-                var opt = await new OptifineInstaller(WebHelper.Client).GetOptifineVersionsAsync();
-                versions = opt.Where(v => v.MinecraftVersion == mcVersion).Select(v => v.Version).ToList();
-            }
+                AvailableLoaderVersions.Clear();
+                if (!string.IsNullOrEmpty(currentLoader) && !versions.Contains(currentLoader))
+                {
+                    AvailableLoaderVersions.Add(currentLoader);
+                }
+                foreach (var v in versions)
+                {
+                    if (!AvailableLoaderVersions.Contains(v))
+                        AvailableLoaderVersions.Add(v);
+                }
 
-            foreach (var v in versions) AvailableLoaderVersions.Add(v);
-
-            if (AvailableLoaderVersions.Count > 0 && !AvailableLoaderVersions.Contains(LoaderVersion))
-                LoaderVersion = AvailableLoaderVersions[0];
+                if (!string.IsNullOrEmpty(currentLoader) && AvailableLoaderVersions.Contains(currentLoader))
+                {
+                    LoaderVersion = currentLoader;
+                }
+                else if (AvailableLoaderVersions.Count > 0)
+                {
+                    LoaderVersion = AvailableLoaderVersions[0];
+                }
+            }
+            else
+            {
+                if (!string.IsNullOrEmpty(currentLoader) && !AvailableLoaderVersions.Contains(currentLoader))
+                {
+                    AvailableLoaderVersions.Add(currentLoader);
+                    LoaderVersion = currentLoader;
+                }
+            }
         }
         catch { }
     }

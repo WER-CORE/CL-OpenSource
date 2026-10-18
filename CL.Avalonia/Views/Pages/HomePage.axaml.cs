@@ -132,9 +132,11 @@ public partial class HomePage : UserControl
 
         if (ChangelogHeaderPanel != null) ChangelogHeaderPanel.IsVisible = s.EnableMod_Changelog;
         if (VersionMinecraftChangeLog != null) VersionMinecraftChangeLog.IsVisible = s.EnableMod_Changelog;
+        if (VersionMinecraftChangeLogBorder != null) VersionMinecraftChangeLogBorder.IsVisible = s.EnableMod_Changelog;
 
         if (LatestActionsHeaderPanel != null) LatestActionsHeaderPanel.IsVisible = s.EnableMod_LatestActions;
         if (ServerMonitoring != null) ServerMonitoring.IsVisible = s.EnableMod_LatestActions;
+        if (ServerMonitoringBorder != null) ServerMonitoringBorder.IsVisible = s.EnableMod_LatestActions;
 
         if (Loc_MenuOpenFolder != null) Loc_MenuOpenFolder.IsVisible = s.EnableSubFiles;
         if (Loc_MenuBackupsFolder != null) Loc_MenuBackupsFolder.IsVisible = s.EnableSubFiles_Backups;
@@ -160,6 +162,8 @@ public partial class HomePage : UserControl
     {
         if (DevLogMinecraft != null) DevLogMinecraft.Text = LocalizationManager.GetString("MainScreen.Changelog", "Що нового? (Changelog)");
         if (VersionMinecraftChangeLog != null) ToolTip.SetTip(VersionMinecraftChangeLog, LocalizationManager.GetString("MainScreen.ToolTipChangelog", "Натисніть щоб прочитати список змін"));
+        if (Loc_BtnLoadMoreChangelog != null) Loc_BtnLoadMoreChangelog.Text = LocalizationManager.GetString("MainScreen.LoadMore", "Завантажити ще");
+        if (BtnLoadMoreChangelog != null) ToolTip.SetTip(BtnLoadMoreChangelog, LocalizationManager.GetString("MainScreen.ToolTipLoadMore", "Завантажити наступні версії"));
         if (CheckMarkVersionSelect != null) ToolTip.SetTip(CheckMarkVersionSelect, LocalizationManager.GetString("MainScreen.ToolTipVersionSelect", "Натисніть щоб дізнатися які версії доступні"));
 
         if (Loc_SettingsMenu != null) Loc_SettingsMenu.Text = LocalizationManager.GetString("Sidebar.Settings", "Налаштування");

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using Avalonia;
@@ -22,6 +22,7 @@ public partial class CL_Main : Window
     private CL_MainViewModel? _boundVm;
     private readonly AvaloniaThemeService? _themeService;
     private Control? _activeTabBorder;
+    private bool _isProfilesLoaded;
 
     public CL_Main()
     {
@@ -53,7 +54,7 @@ public partial class CL_Main : Window
         SettingsPageViewModel.LanguageConfigurationChanged += OnLanguageChanged;
         ModpacksPageViewModel.ExportProgressChanged += OnExportProgressChanged;
 
-        Opened += async (_, _) =>
+        Opened += (_, _) =>
         {
             _activeTabBorder = PlayBtnBorder;
             ApplyModulesVisibility();
@@ -62,7 +63,10 @@ public partial class CL_Main : Window
 
             MoveSlider(PlayBtnBorder, animate: false);
             NavigationService.NavigateToHome();
-            await RefreshProfilesUIAsync(selectSavedProfile: true);
+            if (!_isProfilesLoaded)
+            {
+                _ = RefreshProfilesUIAsync(selectSavedProfile: true);
+            }
         };
 
         Closed += (_, _) =>
@@ -337,6 +341,7 @@ public partial class CL_Main : Window
     private async Task RefreshProfilesUIAsync(bool selectSavedProfile = false)
     {
         if (_boundVm == null) return;
+        _isProfilesLoaded = true;
 
         var profiles = await _boundVm.LoadProfilesAsync();
 

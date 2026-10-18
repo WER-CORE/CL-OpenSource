@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -69,6 +69,8 @@ public partial class HomePageViewModel : ObservableObject
     [ObservableProperty] private string? _selectedOptifineMinecraftVersion;
     [ObservableProperty] private string? _selectedOptifineModVersion;
     [ObservableProperty] private VersionLogItem? _selectedChangelogItem;
+    [ObservableProperty] private bool _hasMoreChangelogItems = true;
+    [ObservableProperty] private bool _isLoadingMoreChangelog;
 
     [ObservableProperty] private byte _selectedLoaderType;
     [ObservableProperty] private bool _isVersionSelectorOpen;
@@ -136,12 +138,12 @@ public partial class HomePageViewModel : ObservableObject
         if (savedType == 1)
         {
             SelectedLoaderType = 1;
-            await LoadVanillaVersionsAsync();
+            _ = LoadVanillaVersionsAsync();
         }
         else if (savedType == 5)
         {
             SelectedLoaderType = 5;
-            await LoadOptifineVersionsAsync();
+            _ = LoadOptifineVersionsAsync();
         }
     }
 
@@ -220,7 +222,7 @@ public partial class HomePageViewModel : ObservableObject
 
         if (accountService.CurrentSession == null || accountService.CurrentProfile == null)
         {
-            var profiles = accountService.GetProfiles();
+            var profiles = await Task.Run(() => accountService.GetProfiles());
             if (profiles is { Count: > 0 })
             {
                 int savedIndex = SettingsManager.Default.SelectIndexAccount;
@@ -617,7 +619,7 @@ public partial class HomePageViewModel : ObservableObject
 
         try
         {
-            var logs = await _versionService.GetChangeLogAsync().ConfigureAwait(false);
+            var logs = await _versionService.GetChangeLogAsync(skip: 0, take: 10).ConfigureAwait(false);
 
             await Dispatcher.UIThread.InvokeAsync(() =>
             {
@@ -626,6 +628,7 @@ public partial class HomePageViewModel : ObservableObject
                 {
                     SelectedChangelogItem = ChangelogItems[0];
                 }
+                HasMoreChangelogItems = _versionService.HasMoreChangeLogs(ChangelogItems.Count);
             });
         }
         catch (Exception ex)
@@ -641,6 +644,37 @@ public partial class HomePageViewModel : ObservableObject
                         MascotEmotion.Sad);
                 }
             });
+        }
+    }
+
+    [RelayCommand]
+    public async Task LoadMoreChangelogAsync()
+    {
+        if (SettingsManager.Default.OfflineModLauncher || _versionService == null || IsLoadingMoreChangelog || !HasMoreChangelogItems)
+            return;
+
+        try
+        {
+            IsLoadingMoreChangelog = true;
+            int currentCount = ChangelogItems.Count;
+            var moreLogs = await _versionService.GetChangeLogAsync(skip: currentCount, take: 10).ConfigureAwait(false);
+
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                foreach (var item in moreLogs)
+                {
+                    ChangelogItems.Add(item);
+                }
+                HasMoreChangelogItems = _versionService.HasMoreChangeLogs(ChangelogItems.Count);
+            });
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Error loading more changelog items: {ex.Message}");
+        }
+        finally
+        {
+            IsLoadingMoreChangelog = false;
         }
     }
 

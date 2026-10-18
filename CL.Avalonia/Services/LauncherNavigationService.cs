@@ -2,6 +2,8 @@ using System;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Media;
+using Avalonia.Threading;
 using CL_CLegendary_Launcher_.Avalonia;
 using CL_CLegendary_Launcher_.Avalonia.ViewModels.Pages;
 using CL_CLegendary_Launcher_.Avalonia.Views;
@@ -123,7 +125,19 @@ public class LauncherNavigationService
             }
 
             _currentPage = targetPage;
+
+            targetPage.Opacity = 0;
+            if (targetPage.RenderTransform is not TranslateTransform)
+            {
+                targetPage.RenderTransform = new TranslateTransform(0, 35);
+            }
+            else
+            {
+                ((TranslateTransform)targetPage.RenderTransform).Y = 35;
+            }
+
             _main.PageHost.Content = targetPage;
+            AvaloniaAnimationService.AnimatePageTransition(targetPage, 35, 0.35);
 
             if (!string.IsNullOrEmpty(discordStatus))
             {
@@ -135,15 +149,14 @@ public class LauncherNavigationService
             _ = Task.Run(async () =>
             {
                 await Task.Delay(400);
-                await MemoryCleaner.FlushMemoryAsync(trimWorkingSet: OperatingSystem.IsWindows());
+                await MemoryCleaner.FlushMemoryAsync(trimWorkingSet: OperatingSystem.IsWindows() || OperatingSystem.IsLinux());
             });
 
-            await Task.Delay(250);
             _isNavigating = false;
 
             if (loadDataAction != null)
             {
-                await loadDataAction();
+                _ = loadDataAction();
             }
         }
         catch
