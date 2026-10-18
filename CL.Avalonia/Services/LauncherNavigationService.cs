@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
@@ -111,6 +111,17 @@ public class LauncherNavigationService
         try
         {
             _isNavigating = true;
+
+            var previousPage = _currentPage;
+            if (previousPage?.DataContext is ITrimmablePage trimmableVm)
+            {
+                trimmableVm.TrimMemory();
+            }
+            else if (previousPage is ITrimmablePage trimmablePage)
+            {
+                trimmablePage.TrimMemory();
+            }
+
             _currentPage = targetPage;
             _main.PageHost.Content = targetPage;
 
@@ -118,6 +129,14 @@ public class LauncherNavigationService
             {
                 _ = DiscordController.UpdatePresence(discordStatus);
             }
+
+            AvaloniaImageHelper.TrimCache(24);
+
+            _ = Task.Run(async () =>
+            {
+                await Task.Delay(400);
+                await MemoryCleaner.FlushMemoryAsync(trimWorkingSet: OperatingSystem.IsWindows());
+            });
 
             await Task.Delay(250);
             _isNavigating = false;

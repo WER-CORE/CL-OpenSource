@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -36,7 +36,7 @@ public class ModpackFileVersion
     public string LoaderType { get; set; } = string.Empty;
 }
 
-public partial class DownloadModpackDialogViewModel : ObservableObject
+public partial class DownloadModpackDialogViewModel : ObservableObject, IDisposable
 {
     private readonly ModpackService _modpackService;
     private static ApiClient? _cfApiClientInstance;
@@ -875,5 +875,14 @@ public partial class DownloadModpackDialogViewModel : ObservableObject
         modpacks.Add(newPack);
 
         File.WriteAllText(jsonSavePath, JsonConvert.SerializeObject(modpacks, Formatting.Indented));
+    }
+
+    public void Dispose()
+    {
+        _searchCts?.Cancel();
+        CloseAction = null;
+        ScrollToTopRequested = null;
+        Modpacks.Clear();
+        SelectedModpack = null;
     }
 }

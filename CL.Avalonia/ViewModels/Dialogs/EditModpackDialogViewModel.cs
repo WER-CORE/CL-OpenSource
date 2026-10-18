@@ -1,4 +1,4 @@
-﻿using Avalonia.Media.Imaging;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
 using CL.Core.Models;
 using CL.Core.Services;
@@ -24,7 +24,7 @@ using CmlLib.Core;
 
 namespace CL_CLegendary_Launcher_.Avalonia.ViewModels.Dialogs;
 
-public partial class EditModpackDialogViewModel : ObservableObject
+public partial class EditModpackDialogViewModel : ObservableObject, IDisposable
 {
     private readonly IDialogService _dialogService;
     private readonly ModpackService _modpackService;
@@ -582,5 +582,12 @@ public partial class EditModpackDialogViewModel : ObservableObject
                 await RefreshListAsync();
             }
         }
+    }
+
+    public void Dispose()
+    {
+        CloseAction = null;
+        ModpackIcon = null;
+        ItemsList.Clear();
     }
 }

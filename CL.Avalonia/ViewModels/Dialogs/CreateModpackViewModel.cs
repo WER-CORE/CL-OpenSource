@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -27,7 +27,7 @@ using Path = System.IO.Path;
 
 namespace CL_CLegendary_Launcher_.Avalonia.ViewModels.Dialogs;
 
-public partial class CreateModpackViewModel : ObservableObject
+public partial class CreateModpackViewModel : ObservableObject, IDisposable
 {
     private readonly ModDownloadService _modDownloadService;
     private readonly ModpackService _modpackService;
@@ -173,6 +173,8 @@ public partial class CreateModpackViewModel : ObservableObject
     {
         SettingsPageViewModel.LanguageConfigurationChanged -= OnLanguageConfigurationChanged;
     }
+
+    public void Dispose() => Cleanup();
 
     public void ApplyLocalization()
     {

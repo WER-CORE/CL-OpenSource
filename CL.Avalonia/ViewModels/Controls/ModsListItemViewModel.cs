@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using Avalonia.Media.Imaging;
 using CL.Core.Services;
@@ -8,7 +8,7 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace CL_CLegendary_Launcher_.Avalonia.ViewModels.Controls;
 
-public partial class ModsListItemViewModel : ObservableObject
+public partial class ModsListItemViewModel : ObservableObject, IDisposable
 {
     public ModSearchResult? Mod { get; }
 
@@ -21,6 +21,13 @@ public partial class ModsListItemViewModel : ObservableObject
 
     public Action? OnInstall { get; set; }
     public Action? OnDetails { get; set; }
+
+    public void Dispose()
+    {
+        ModImage = null;
+        OnInstall = null;
+        OnDetails = null;
+    }
 
     public ModsListItemViewModel()
     {

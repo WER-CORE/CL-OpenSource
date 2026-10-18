@@ -1,4 +1,4 @@
-﻿using Avalonia.Media.Imaging;
+using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CL.Core.Services;
@@ -33,9 +33,9 @@ public class WorldListItem
     public bool IsVersionVisible => !string.IsNullOrEmpty(Version) && Version != "Unknown" && Version != "?";
 }
 
-public partial class WorldBackupViewModel : ObservableObject
+public partial class WorldBackupViewModel : ObservableObject, IDisposable
 {
-    public Action CloseAction { get; set; }
+    public Action? CloseAction { get; set; }
 
     [ObservableProperty] private ObservableCollection<BackupSource> _sources = new();
 
@@ -402,5 +402,20 @@ public partial class WorldBackupViewModel : ObservableObject
     private void Close()
     {
         CloseAction?.Invoke();
+    }
+
+    public void Dispose()
+    {
+        CloseAction = null;
+        foreach (var world in Worlds)
+        {
+            world.IconBitmap?.Dispose();
+            world.IconBitmap = null!;
+        }
+        Worlds.Clear();
+        Sources.Clear();
+        Backups.Clear();
+        _selectedWorld = null!;
+        _selectedSource = null!;
     }
 }

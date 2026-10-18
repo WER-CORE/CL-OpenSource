@@ -1,9 +1,10 @@
-﻿using System;
+using System;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
+using CL_CLegendary_Launcher_.Avalonia.Services;
 using CL_CLegendary_Launcher_.Avalonia.ViewModels.Dialogs;
 
 namespace CL_CLegendary_Launcher_.Avalonia.Views.Dialogs;
@@ -13,6 +14,7 @@ public partial class CreateModpackDialog : Window
     public CreateModpackDialog()
     {
         InitializeComponent();
+        this.EnableAutoMemoryCleanup();
         DataContextChanged += OnDataContextChanged;
         Closed += OnClosed;
     }

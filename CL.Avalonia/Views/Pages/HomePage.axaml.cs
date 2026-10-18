@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -271,7 +271,7 @@ public partial class HomePage : UserControl
 
     #region Діалоги та Зовнішні Посилання
 
-    public void VersionMinecraftChangeLog_Tapped(object? sender, TappedEventArgs e)
+    public async void VersionMinecraftChangeLog_Tapped(object? sender, TappedEventArgs e)
     {
         AvaloniaSoundService.Click();
 
@@ -280,7 +280,7 @@ public partial class HomePage : UserControl
             var dialog = new ChangelogDialog(selectedItem.VersionId, selectedItem.VersionType);
             if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime { MainWindow: { } owner })
             {
-                dialog.ShowDialog(owner);
+                await dialog.ShowDialog(owner);
             }
         }
     }

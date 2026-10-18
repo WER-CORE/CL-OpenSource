@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using Avalonia.Controls;
 using Avalonia.Input;
+using CL_CLegendary_Launcher_.Avalonia.Services;
 using CL_CLegendary_Launcher_.Avalonia.ViewModels.Dialogs;
 
 namespace CL_CLegendary_Launcher_.Avalonia.Views.Dialogs;
@@ -22,6 +23,7 @@ public partial class GameLogWindow : Window
     {
         ViewModel = viewModel;
         InitializeComponent();
+        this.EnableAutoMemoryCleanup();
         DataContext = viewModel;
 
         viewModel.PropertyChanged += (s, e) =>

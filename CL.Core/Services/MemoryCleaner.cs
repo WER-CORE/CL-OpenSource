@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Runtime;
 using System.Runtime.InteropServices;
@@ -10,6 +10,9 @@ namespace CL.Core.Services
     {
         [DllImport("kernel32.dll", EntryPoint = "SetProcessWorkingSetSize", SetLastError = true, CallingConvention = CallingConvention.StdCall)]
         private static extern bool SetProcessWorkingSetSize(IntPtr proc, int min, int max);
+
+        [DllImport("libc", EntryPoint = "malloc_trim", CallingConvention = CallingConvention.Cdecl)]
+        private static extern int malloc_trim(int pad);
 
         public static async Task FlushMemoryAsync(bool trimWorkingSet = true)
         {
@@ -26,9 +29,20 @@ namespace CL.Core.Services
 
                 GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, true);
 
-                if (trimWorkingSet && OperatingSystem.IsWindows())
+                if (trimWorkingSet)
                 {
-                    SetProcessWorkingSetSize(Process.GetCurrentProcess().Handle, -1, -1);
+                    if (OperatingSystem.IsWindows())
+                    {
+                        SetProcessWorkingSetSize(Process.GetCurrentProcess().Handle, -1, -1);
+                    }
+                    else if (OperatingSystem.IsLinux())
+                    {
+                        try
+                        {
+                            malloc_trim(0);
+                        }
+                        catch { }
+                    }
                 }
             }
             catch (Exception e)

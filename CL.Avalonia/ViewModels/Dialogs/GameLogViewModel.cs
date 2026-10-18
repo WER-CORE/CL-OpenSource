@@ -21,7 +21,7 @@ public enum AiOverlayState
     Result
 }
 
-public partial class GameLogViewModel : ObservableObject
+public partial class GameLogViewModel : ObservableObject, IDisposable
 {
     private readonly AiAssistantService? _aiService;
     private readonly bool _isOfflineMode;
@@ -129,10 +129,12 @@ public partial class GameLogViewModel : ObservableObject
         }
 
         ApplyLocalization();
-        SettingsPageViewModel.LanguageConfigurationChanged += () =>
-        {
-            Dispatcher.UIThread.Post(ApplyLocalization);
-        };
+        SettingsPageViewModel.LanguageConfigurationChanged += OnLanguageChanged;
+    }
+
+    private void OnLanguageChanged()
+    {
+        Dispatcher.UIThread.Post(ApplyLocalization);
     }
 
     public void ApplyLocalization()
@@ -392,5 +394,11 @@ public partial class GameLogViewModel : ObservableObject
                 LocalizationManager.GetString("Dialogs.Error", "Помилка"),
                 MascotEmotion.Sad);
         }
+    }
+
+    public void Dispose()
+    {
+        SettingsPageViewModel.LanguageConfigurationChanged -= OnLanguageChanged;
+        LogText = string.Empty;
     }
 }

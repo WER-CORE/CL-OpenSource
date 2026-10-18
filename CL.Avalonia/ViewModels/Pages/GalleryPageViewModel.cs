@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
@@ -12,10 +12,22 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace CL_CLegendary_Launcher_.Avalonia.ViewModels.Pages;
 
-public partial class GalleryPageViewModel : ObservableObject
+public partial class GalleryPageViewModel : ObservableObject, ITrimmablePage
 {
     private readonly ScreenshotService _screenshotService;
     private bool _isInitialized;
+
+    public void TrimMemory()
+    {
+        foreach (var item in Screenshots)
+        {
+            item.Dispose();
+        }
+        Screenshots.Clear();
+        SelectedScreenshot = null;
+        _isInitialized = false;
+        IsNoScreenshotsVisible = true;
+    }
 
     public ObservableCollection<ScreenshotSourceItem> Sources { get; } = new();
     public ObservableCollection<ScreenshotItem> Screenshots { get; } = new();

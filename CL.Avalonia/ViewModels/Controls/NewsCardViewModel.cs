@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
@@ -9,7 +9,7 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace CL_CLegendary_Launcher_.Avalonia.ViewModels.Controls;
 
-public partial class NewsCardViewModel : ObservableObject
+public partial class NewsCardViewModel : ObservableObject, IDisposable
 {
     private readonly Action<NewsItem>? _onClick;
 
@@ -19,6 +19,11 @@ public partial class NewsCardViewModel : ObservableObject
     [ObservableProperty] private string _description = string.Empty;
     [ObservableProperty] private Bitmap? _image;
     [ObservableProperty] private bool _isLoadingImage;
+
+    public void Dispose()
+    {
+        Image = null;
+    }
 
     public NewsCardViewModel()
     {

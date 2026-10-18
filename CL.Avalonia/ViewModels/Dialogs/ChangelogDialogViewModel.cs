@@ -1,14 +1,15 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CL.Core.Services;
 using CL_CLegendary_Launcher_.Avalonia.Services;
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using CL.Core.Platform;
 
 namespace CL_CLegendary_Launcher_.Avalonia.ViewModels.Dialogs;
 
-public partial class ChangelogDialogViewModel : ObservableObject
+public partial class ChangelogDialogViewModel : ObservableObject, IDisposable
 {
     private readonly string _versionId;
     private readonly string _versionType;
@@ -58,7 +59,7 @@ public partial class ChangelogDialogViewModel : ObservableObject
     private async Task LoadChangelogAsync()
     {
         string currentLang = SettingsManager.Default.LanguageCode;
-        string cacheFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Cache", "Changelogs");
+        string cacheFolder = Path.Combine(PlatformPaths.AppDataDirectory(), "Cache", "Changelogs");
         Directory.CreateDirectory(cacheFolder);
         string cacheFile = Path.Combine(cacheFolder, $"{_versionId}_{currentLang}.md");
 
@@ -143,4 +144,12 @@ public partial class ChangelogDialogViewModel : ObservableObject
 
     [RelayCommand]
     private void CloseWindow() => CloseAction?.Invoke();
+
+    public void Dispose()
+    {
+        CloseAction = null;
+        MarkdownContent = string.Empty;
+        LoadingText = string.Empty;
+        WindowTitle = string.Empty;
+    }
 }

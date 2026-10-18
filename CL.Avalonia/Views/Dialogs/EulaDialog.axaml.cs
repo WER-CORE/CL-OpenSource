@@ -1,6 +1,7 @@
-﻿using Avalonia.Controls;
+using Avalonia.Controls;
 using CL.Core.Models;
 using CL.Core.Services;
+using CL_CLegendary_Launcher_.Avalonia.Services;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -14,11 +15,13 @@ namespace CL_CLegendary_Launcher_.Avalonia.Views.Windows
         public EulaWindow()
         {
             InitializeComponent();
+            this.EnableAutoMemoryCleanup();
         }
 
         public EulaWindow(EulaConfig? config)
         {
             InitializeComponent();
+            this.EnableAutoMemoryCleanup();
             ApplyLocalization();
 
             if (config != null)

@@ -1,4 +1,4 @@
-﻿using Avalonia.Media.Imaging;
+using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using CL.Core.Models;
 using CL.Core.Services;
@@ -24,7 +24,7 @@ using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace CL_CLegendary_Launcher_.Avalonia.ViewModels.Dialogs;
 
-public partial class DownloadEditPackViewModel : ObservableObject
+public partial class DownloadEditPackViewModel : ObservableObject, IDisposable
 {
     private readonly ModDownloadService _modDownloadService;
     private static ApiClient? _cfApiClientInstance;
@@ -92,10 +92,12 @@ public partial class DownloadEditPackViewModel : ObservableObject
     {
         _modDownloadService = new ModDownloadService();
         ApplyLocalization();
-        SettingsPageViewModel.LanguageConfigurationChanged += () =>
-        {
-            Dispatcher.UIThread.Post(ApplyLocalization);
-        };
+        SettingsPageViewModel.LanguageConfigurationChanged += OnLanguageChanged;
+    }
+
+    private void OnLanguageChanged()
+    {
+        Dispatcher.UIThread.Post(ApplyLocalization);
     }
 
     public void Initialize(ModpackInfo modpack, byte selectMod)
@@ -834,5 +836,12 @@ public partial class DownloadEditPackViewModel : ObservableObject
             return true;
         }
         catch { return false; }
+    }
+
+    public void Dispose()
+    {
+        SettingsPageViewModel.LanguageConfigurationChanged -= OnLanguageChanged;
+        CloseAction = null;
+        ScrollToTopRequested = null;
     }
 }

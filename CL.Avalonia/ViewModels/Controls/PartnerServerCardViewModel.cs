@@ -1,4 +1,4 @@
-﻿using Avalonia;
+using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input.Platform;
 using Avalonia.Media.Imaging;
@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace CL_CLegendary_Launcher_.Avalonia.ViewModels.Controls;
 
-public partial class PartnerServerCardViewModel : ObservableObject
+public partial class PartnerServerCardViewModel : ObservableObject, IDisposable
 {
     private readonly Action<string, string, int>? _onPlayClick;
     private readonly Action<PartnerServerCardViewModel, ServerInfo>? _onInfoClick;
@@ -28,6 +28,12 @@ public partial class PartnerServerCardViewModel : ObservableObject
     [ObservableProperty] private string _onlinePlayers = "0/0";
     [ObservableProperty] private Bitmap? _iconBitmap;
     [ObservableProperty] private Bitmap? _backgroundBitmap;
+
+    public void Dispose()
+    {
+        IconBitmap = null;
+        BackgroundBitmap = null;
+    }
 
     [ObservableProperty] private string _infoTooltip = string.Empty;
     [ObservableProperty] private string _visitPageText = string.Empty;

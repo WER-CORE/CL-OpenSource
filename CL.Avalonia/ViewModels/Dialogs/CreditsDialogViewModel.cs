@@ -1,15 +1,14 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using Avalonia.Layout;
 using CL.Core.Services;
 using CL_CLegendary_Launcher_.Avalonia.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Avalonia.Layout;
 
 namespace CL_CLegendary_Launcher_.Avalonia.ViewModels.Dialogs;
 
-public partial class CreditsDialogViewModel : ObservableObject
+public partial class CreditsDialogViewModel : ObservableObject, IDisposable
 {
     [ObservableProperty]
     private string _windowTitle = string.Empty;
@@ -78,5 +77,11 @@ public partial class CreditsDialogViewModel : ObservableObject
     {
         AvaloniaSoundService.Click();
         CloseAction?.Invoke();
+    }
+
+    public void Dispose()
+    {
+        CloseAction = null;
+        CreditsContent = string.Empty;
     }
 }

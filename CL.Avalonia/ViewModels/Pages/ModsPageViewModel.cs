@@ -1,4 +1,4 @@
-﻿using Avalonia;
+using Avalonia;
 using Avalonia.Threading;
 using CL.Core.Helpers;
 using CL.Core.Interfaces;
@@ -23,11 +23,23 @@ using static ExCSS.RadialGradient;
 
 namespace CL_CLegendary_Launcher_.Avalonia.ViewModels.Pages;
 
-public partial class ModsPageViewModel : ObservableObject
+public partial class ModsPageViewModel : ObservableObject, ITrimmablePage
 {
     private readonly ModDownloadService? _modDownloadService;
     private readonly ModpackService? _modpackService;
     private readonly IDialogService? _dialogService;
+
+    public void TrimMemory()
+    {
+        _searchCts?.Cancel();
+        foreach (var card in ModCards)
+        {
+            card.Dispose();
+        }
+        ModCards.Clear();
+        SearchResults.Clear();
+        IsResultsEmpty = false;
+    }
 
     private const int ItemsPerPage = 10;
     private CancellationTokenSource? _searchCts;
@@ -149,8 +161,12 @@ public partial class ModsPageViewModel : ObservableObject
         {
             IsLoading = true;
             IsResultsEmpty = false;
-            SearchResults.Clear();
+            foreach (var card in ModCards)
+            {
+                card.Dispose();
+            }
             ModCards.Clear();
+            SearchResults.Clear();
         });
 
         try

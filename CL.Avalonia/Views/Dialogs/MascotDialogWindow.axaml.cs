@@ -3,6 +3,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using CL.Core.Models;
 using CL.Core.Services;
+using CL_CLegendary_Launcher_.Avalonia.Services;
 using System;
 
 namespace CL_CLegendary_Launcher_.Avalonia.Views.Dialogs
@@ -12,11 +13,13 @@ namespace CL_CLegendary_Launcher_.Avalonia.Views.Dialogs
         public MascotDialogWindow()
         {
             InitializeComponent();
+            this.EnableAutoMemoryCleanup();
         }
 
         public MascotDialogWindow(string message, string title, MascotEmotion emotion, bool isQuestion)
         {
             InitializeComponent();
+            this.EnableAutoMemoryCleanup();
 
             TitleTxt.Text = title;
             MessageTxt.Text = message;

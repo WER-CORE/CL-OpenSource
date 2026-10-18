@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -22,12 +22,20 @@ using Newtonsoft.Json;
 
 namespace CL_CLegendary_Launcher_.Avalonia.ViewModels.Pages;
 
-public partial class ServersPageViewModel : ObservableObject
+public partial class ServersPageViewModel : ObservableObject, ITrimmablePage
 {
     private readonly ServerListService _serverListService;
     private readonly LastActionService? _lastActionService;
     private readonly NewsService? _newsService;
     private readonly GameSessionManager? _sessionManager;
+
+    public void TrimMemory()
+    {
+        SelectedServerBg = null;
+        IsServerInfoPanelVisible = false;
+        IsNewsOverlayVisible = false;
+        IsFundraiserOverlayVisible = false;
+    }
 
     private CancellationTokenSource? _searchCts;
     private bool _isInitialized;
@@ -198,6 +206,7 @@ public partial class ServersPageViewModel : ObservableObject
         TotalPages = Math.Max(1, (int)Math.Ceiling((double)filtered.Count / ItemsPerPage));
         CurrentPage = Math.Clamp(CurrentPage, 1, TotalPages);
         DisplayedServers.Clear();
+        foreach (var card in ServerCards) card.Dispose();
         ServerCards.Clear();
 
         var pageItems = filtered.Skip((CurrentPage - 1) * ItemsPerPage).Take(ItemsPerPage);

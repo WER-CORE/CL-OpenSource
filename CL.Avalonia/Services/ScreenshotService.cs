@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -10,7 +10,7 @@ using Newtonsoft.Json;
 
 namespace CL_CLegendary_Launcher_.Avalonia.Services;
 
-public class ScreenshotItem
+public class ScreenshotItem : IDisposable
 {
     public string FilePath { get; set; } = string.Empty;
     public string FileName { get; set; } = string.Empty;
@@ -18,6 +18,12 @@ public class ScreenshotItem
     public string FileSize { get; set; } = string.Empty;
     public string Resolution { get; set; } = string.Empty;
     public Bitmap? ImagePath { get; set; }
+
+    public void Dispose()
+    {
+        ImagePath?.Dispose();
+        ImagePath = null;
+    }
 }
 
 public class ScreenshotSourceItem

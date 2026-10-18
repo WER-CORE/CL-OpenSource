@@ -1,10 +1,11 @@
-﻿using System;
+using System;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
+using CL_CLegendary_Launcher_.Avalonia.Services;
 using CL_CLegendary_Launcher_.Avalonia.ViewModels.Dialogs;
 
 namespace CL_CLegendary_Launcher_.Avalonia.Views.Dialogs;
@@ -14,6 +15,7 @@ public partial class DownloadModpackDialog : Window
     public DownloadModpackDialog()
     {
         InitializeComponent();
+        this.EnableAutoMemoryCleanup();
         DataContextChanged += OnDataContextChanged;
     }
 

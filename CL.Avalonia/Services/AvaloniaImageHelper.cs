@@ -1,6 +1,7 @@
-﻿using System;
-using System.Collections.Concurrent;
+using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Avalonia.Media.Imaging;
@@ -10,12 +11,64 @@ namespace CL_CLegendary_Launcher_.Avalonia.Services;
 
 public static class AvaloniaImageHelper
 {
-    private static readonly ConcurrentDictionary<string, Bitmap> _bitmapCache = new();
+    private static readonly object _cacheLock = new();
+    private static readonly Dictionary<string, (Bitmap Bitmap, DateTime LastAccess)> _bitmapCache = new();
     private static readonly HttpClient _httpClient = new() { Timeout = TimeSpan.FromSeconds(10) };
+    private const int MaxCacheCapacity = 64;
 
     public static void ClearCache()
     {
-        _bitmapCache.Clear();
+        lock (_cacheLock)
+        {
+            _bitmapCache.Clear();
+        }
+    }
+
+    public static void TrimCache(int keepCount = 20)
+    {
+        lock (_cacheLock)
+        {
+            if (_bitmapCache.Count <= keepCount) return;
+
+            var keysToRemove = _bitmapCache
+                .OrderBy(kv => kv.Value.LastAccess)
+                .Take(_bitmapCache.Count - keepCount)
+                .Select(kv => kv.Key)
+                .ToList();
+
+            foreach (var key in keysToRemove)
+            {
+                _bitmapCache.Remove(key);
+            }
+        }
+    }
+
+    private static void PutInCache(string key, Bitmap bitmap)
+    {
+        lock (_cacheLock)
+        {
+            if (_bitmapCache.Count >= MaxCacheCapacity)
+            {
+                var oldestKey = _bitmapCache.OrderBy(kv => kv.Value.LastAccess).First().Key;
+                _bitmapCache.Remove(oldestKey);
+            }
+            _bitmapCache[key] = (bitmap, DateTime.UtcNow);
+        }
+    }
+
+    private static bool TryGetFromCache(string key, out Bitmap? bitmap)
+    {
+        lock (_cacheLock)
+        {
+            if (_bitmapCache.TryGetValue(key, out var entry))
+            {
+                _bitmapCache[key] = (entry.Bitmap, DateTime.UtcNow);
+                bitmap = entry.Bitmap;
+                return true;
+            }
+            bitmap = null;
+            return false;
+        }
     }
 
     public static async Task<Bitmap?> LoadOptimizedImageAsync(string? path, int decodeWidth = 0)
@@ -23,7 +76,7 @@ public static class AvaloniaImageHelper
         if (string.IsNullOrWhiteSpace(path)) return null;
 
         string cacheKey = $"{path}_{decodeWidth}";
-        if (_bitmapCache.TryGetValue(cacheKey, out var cachedBitmap))
+        if (TryGetFromCache(cacheKey, out var cachedBitmap))
         {
             return cachedBitmap;
         }
@@ -45,7 +98,7 @@ public static class AvaloniaImageHelper
 
             if (bitmap != null)
             {
-                _bitmapCache[cacheKey] = bitmap;
+                PutInCache(cacheKey, bitmap);
             }
 
             return bitmap;
@@ -61,7 +114,7 @@ public static class AvaloniaImageHelper
         if (string.IsNullOrWhiteSpace(path)) return null;
 
         string cacheKey = $"{path}_{decodeWidth}";
-        if (_bitmapCache.TryGetValue(cacheKey, out var cachedBitmap))
+        if (TryGetFromCache(cacheKey, out var cachedBitmap))
         {
             return cachedBitmap;
         }
@@ -76,13 +129,11 @@ public static class AvaloniaImageHelper
                 byte[] data = _httpClient.GetByteArrayAsync(path).GetAwaiter().GetResult();
                 bitmap = LoadFromBytes(data, decodeWidth);
             }
-
             else if (path.StartsWith("pack://", StringComparison.OrdinalIgnoreCase) ||
                      path.StartsWith("avares://", StringComparison.OrdinalIgnoreCase))
             {
                 bitmap = LoadFromResourceUri(path, decodeWidth);
             }
-
             else
             {
                 string localPath = path.Replace('\\', Path.DirectorySeparatorChar).Replace('/', Path.DirectorySeparatorChar);
@@ -108,7 +159,6 @@ public static class AvaloniaImageHelper
                         ? Bitmap.DecodeToWidth(stream, decodeWidth)
                         : new Bitmap(stream);
                 }
-
                 else if (path.StartsWith("/") || path.StartsWith("Assets", StringComparison.OrdinalIgnoreCase) || path.StartsWith("Icon", StringComparison.OrdinalIgnoreCase))
                 {
                     bitmap = LoadFromResourceUri(path, decodeWidth);
@@ -117,7 +167,7 @@ public static class AvaloniaImageHelper
 
             if (bitmap != null)
             {
-                _bitmapCache[cacheKey] = bitmap;
+                PutInCache(cacheKey, bitmap);
             }
 
             return bitmap;
@@ -149,7 +199,6 @@ public static class AvaloniaImageHelper
     {
         try
         {
-
             string relativePath = rawPath;
             if (relativePath.StartsWith("pack://application:,,,/", StringComparison.OrdinalIgnoreCase))
             {

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using Avalonia.Media.Imaging;
@@ -13,11 +13,28 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace CL_CLegendary_Launcher_.Avalonia.ViewModels.Pages;
 
-public partial class NewsPageViewModel : ObservableObject
+public partial class NewsPageViewModel : ObservableObject, ITrimmablePage, IDisposable
 {
     private readonly NewsService _newsService;
     private readonly IDialogService _dialogService;
     private bool _isLoaded;
+
+    public void TrimMemory()
+    {
+        SelectedNewsImage = null;
+        IsArticleOpen = false;
+        foreach (var card in NewsCards)
+        {
+            card.Dispose();
+        }
+        NewsCards.Clear();
+        _isLoaded = false;
+    }
+
+    public void Dispose()
+    {
+        SettingsPageViewModel.LanguageConfigurationChanged -= OnLanguageChanged;
+    }
 
     public ObservableCollection<NewsCardViewModel> NewsCards { get; } = new();
 
