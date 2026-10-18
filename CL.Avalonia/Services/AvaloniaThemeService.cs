@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
@@ -159,7 +159,7 @@ public class AvaloniaThemeService
 
         if (Color.TryParse(NormalizeHex(config.BackgroundColor), out var bgColor))
         {
-            double opacity = SettingsManager.Default.DisableGlassEffect ? 0.95 : 0.6;
+            double opacity = SettingsManager.Default.DisableGlassEffect ? 1.0 : 0.6;
             resources["GlassTintBrush"] = new SolidColorBrush(bgColor, opacity);
         }
 
@@ -244,7 +244,7 @@ public class AvaloniaThemeService
             baseColor = scb.Color;
         }
 
-        double opacity = isGlassDisabled ? 0.95 : 0.6;
+        double opacity = isGlassDisabled ? 1.0 : 0.6;
         resources["GlassTintBrush"] = new SolidColorBrush(baseColor, opacity);
         resources["GlassBlurRadius"] = isGlassDisabled ? 0.0 : 20.0;
         resources["GlassVisibility"] = !isGlassDisabled;

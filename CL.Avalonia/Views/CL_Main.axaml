@@ -337,7 +337,7 @@
                         ClipToBounds="True">
                     <Grid>
 
-                        <Border CornerRadius="12" IsVisible="{DynamicResource GlassVisibility}">
+                        <Border CornerRadius="16" IsVisible="{DynamicResource GlassVisibility}">
                             <Border.Background>
                                 <VisualBrush Visual="{Binding #MainBackgroundContainer}" Stretch="None" />
                             </Border.Background>
@@ -345,11 +345,7 @@
                                 <BlurEffect Radius="{DynamicResource GlassBlurRadius}" />
                             </Border.Effect>
                         </Border>
-                        <Border CornerRadius="12" Background="{DynamicResource GlassTintBrush}" />
-
-                        <Border CornerRadius="16"
-                                Background="{DynamicResource GlassTintBrush}"
-                                Opacity="0.6" />
+                        <Border CornerRadius="16" Background="{DynamicResource GlassTintBrush}" />
                     </Grid>
                 </Border>
 
@@ -424,7 +420,7 @@
 
         </Grid>
     <Grid x:Name="GridFormAccountAdd"
-              Background="{DynamicResource MainBackgroundBrush}"
+              Background="Transparent"
               Cursor="Hand"
               ToolTip.Tip="Натисніть щоб повернутись"
               PointerPressed="GirdFormAccountAdd_MouseDown" IsVisible="False" ZIndex="9">
@@ -439,7 +435,6 @@
                     </Border>
 
                     <Border CornerRadius="12" Background="{DynamicResource GlassTintBrush}" />
-                    <Border Background="{DynamicResource GlassTintBrush}" Opacity="0.6" CornerRadius="12" />
                 </Grid>
 
                 <Border x:Name="GridOfflineMode"

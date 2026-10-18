@@ -328,15 +328,15 @@
 				<Border x:Name="CheckMarkVersionSelect"
                         Background="Transparent"
                         HorizontalAlignment="Right" VerticalAlignment="Top"
-                        Margin="0,35,15,0" Width="22" Height="36">
+                        Margin="0,20,15,0" Width="22" Height="36">
 					<Path Data="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z"
                           Fill="{DynamicResource MainForegroundBrush}"
                           Stretch="Uniform"
-                          Height="28" Width="18"
+                          Height="16" Width="16"
                           HorizontalAlignment="Center" VerticalAlignment="Center"
-                          RenderTransformOrigin="60%,0%">
+                          RenderTransformOrigin="50%,50%">
 						<Path.RenderTransform>
-							<RotateTransform Angle="180" />
+							<RotateTransform Angle="0" />
 						</Path.RenderTransform>
 					</Path>
 				</Border>
@@ -514,10 +514,20 @@
                             CornerRadius="12"
                             Width="155"
                             Height="190"
-                            Background="{DynamicResource MainBackgroundBrush}"
+                            Background="Transparent"
                             BorderBrush="#33FFFFFF"
                             ClipToBounds="True">
-						<Border CornerRadius="12" Background="{DynamicResource GlassTintBrush}" Margin="0,0,0,29" />
+						<Grid>
+							<Border CornerRadius="12" IsVisible="{DynamicResource GlassVisibility}">
+								<Border.Background>
+									<VisualBrush Visual="{Binding #RootPage.BackgroundVisual}" Stretch="None" />
+								</Border.Background>
+								<Border.Effect>
+									<BlurEffect Radius="{DynamicResource GlassBlurRadius}" />
+								</Border.Effect>
+							</Border>
+							<Border CornerRadius="12" Background="{DynamicResource GlassTintBrush}" />
+						</Grid>
 					</Border>
 
 					<StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="2,0,0,0">
@@ -607,8 +617,16 @@
                         Width="270" Height="200"
                         BorderThickness="1" CornerRadius="12" BorderBrush="#33FFFFFF"
                         ClipToBounds="True"
-                        Margin="215,0,0,2" Background="{DynamicResource MainBackgroundBrush}" IsVisible="False">
+                        Margin="215,0,0,2" Background="Transparent" IsVisible="False">
 					<Grid>
+						<Border CornerRadius="12" IsVisible="{DynamicResource GlassVisibility}">
+							<Border.Background>
+								<VisualBrush Visual="{Binding #RootPage.BackgroundVisual}" Stretch="None" />
+							</Border.Background>
+							<Border.Effect>
+								<BlurEffect Radius="{DynamicResource GlassBlurRadius}" />
+							</Border.Effect>
+						</Border>
 						<Border CornerRadius="12" Background="{DynamicResource GlassTintBrush}" />
 						<Grid Margin="5">
 							<Grid.ColumnDefinitions>
@@ -665,8 +683,16 @@
                         Width="270" Height="200"
                         BorderThickness="1" CornerRadius="12" BorderBrush="#33FFFFFF"
                         ClipToBounds="True"
-                        Margin="210,0,0,2" IsVisible="False" Background="{DynamicResource MainBackgroundBrush}">
+                        Margin="210,0,0,2" IsVisible="False" Background="Transparent">
 					<Grid>
+						<Border CornerRadius="12" IsVisible="{DynamicResource GlassVisibility}">
+							<Border.Background>
+								<VisualBrush Visual="{Binding #RootPage.BackgroundVisual}" Stretch="None" />
+							</Border.Background>
+							<Border.Effect>
+								<BlurEffect Radius="{DynamicResource GlassBlurRadius}" />
+							</Border.Effect>
+						</Border>
 						<Border CornerRadius="12" Background="{DynamicResource GlassTintBrush}" />
 						<Grid Margin="5">
 							<Grid.RowDefinitions>

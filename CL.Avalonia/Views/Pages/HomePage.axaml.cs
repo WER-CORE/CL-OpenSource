@@ -494,7 +494,7 @@ public partial class HomePage : UserControl
 
         if (CheckMarkVersionSelect.Child is Path chevronPath)
         {
-            AvaloniaAnimationService.AnimateRotation(chevronPath, 0);
+            AvaloniaAnimationService.AnimateRotation(chevronPath, 180);
         }
 
         AvaloniaAnimationService.AnimatePageTransition(SelectVersionTypeGird);
@@ -512,7 +512,7 @@ public partial class HomePage : UserControl
 
         if (CheckMarkVersionSelect.Child is Path chevronPath)
         {
-            AvaloniaAnimationService.AnimateRotation(chevronPath, 180);
+            AvaloniaAnimationService.AnimateRotation(chevronPath, 0);
         }
 
         if (SelectVersion.IsVisible) AvaloniaAnimationService.AnimatePageTransitionExit(SelectVersion, 20);
