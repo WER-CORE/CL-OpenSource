@@ -1,4 +1,4 @@
-﻿<Window xmlns="https://github.com/avaloniaui"
+<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:fluentIcons="using:FluentIcons.Avalonia"
         x:Class="CL_CLegendary_Launcher_.Avalonia.Views.Windows.UpdaterWindow"
@@ -10,7 +10,8 @@
         ExtendClientAreaTitleBarHeightHint="-1"
         WindowDecorations="None"
         Background="Transparent"
-        TransparencyLevelHint="Mica">
+        TransparencyLevelHint="Transparent"
+        TransparencyBackgroundFallback="Transparent">
 
     <Window.Styles>
         <Style Selector="Button.close-btn:pointerover /template/ ContentPresenter">
@@ -19,7 +20,7 @@
         </Style>
     </Window.Styles>
 
-    <Border Background="{DynamicResource MainBackgroundBrush}" CornerRadius="12" ClipToBounds="True">
+    <Border Background="{DynamicResource MainBackgroundBrush}" CornerRadius="12" BorderThickness="1" BorderBrush="#33808080" ClipToBounds="True">
     <Grid>
         <Grid.Background>
 

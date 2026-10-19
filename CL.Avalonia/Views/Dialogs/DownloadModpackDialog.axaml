@@ -1,4 +1,4 @@
-﻿<Window x:Class="CL_CLegendary_Launcher_.Avalonia.Views.Dialogs.DownloadModpackDialog"
+<Window x:Class="CL_CLegendary_Launcher_.Avalonia.Views.Dialogs.DownloadModpackDialog"
         xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -17,7 +17,8 @@
         ExtendClientAreaToDecorationsHint="True"
         ExtendClientAreaTitleBarHeightHint="-1"
         WindowDecorations="None"
-        TransparencyLevelHint="Mica"
+        TransparencyLevelHint="Transparent"
+        TransparencyBackgroundFallback="Transparent"
         Background="Transparent"
         Foreground="{DynamicResource MainForegroundBrush}"
         FontFamily="Inter">
@@ -26,6 +27,22 @@
         <Style Selector="Button.close-btn:pointerover /template/ ContentPresenter">
             <Setter Property="Background" Value="#C42B1C"/>
             <Setter Property="Foreground" Value="White"/>
+        </Style>
+        <Style Selector="Button.card-action-btn">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Foreground" Value="{DynamicResource MainForegroundBrush}" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="Button.card-action-btn:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#25FFFFFF" />
+            <Setter Property="Foreground" Value="{DynamicResource MainForegroundBrush}" />
+        </Style>
+        <Style Selector="Button.card-action-btn:pressed /template/ ContentPresenter">
+            <Setter Property="Background" Value="#40FFFFFF" />
+            <Setter Property="Foreground" Value="{DynamicResource MainForegroundBrush}" />
         </Style>
     </Window.Styles>
 
@@ -203,8 +220,8 @@
                                             <Grid ColumnDefinitions="Auto,*,Auto">
                                                 <Image Grid.Column="0" Source="{Binding Icon}" Height="24" Width="24" VerticalAlignment="Center" RenderOptions.BitmapInterpolationMode="HighQuality"/>
                                                 <TextBlock Grid.Column="1" Text="{Binding Name}" VerticalAlignment="Center" Margin="10,0" FontSize="12" FontFamily="Inter" Foreground="{DynamicResource MainForegroundBrush}" TextTrimming="CharacterEllipsis"/>
-                                                <Button Grid.Column="2" Padding="0" Background="Transparent" Width="36" Height="36" Cursor="Hand" Command="{Binding OpenDetailsCommand}" ToolTip.Tip="Відкрити сторінку">
-                                                    <fluentIcons:SymbolIcon Symbol="Open" FontSize="18" Foreground="{DynamicResource MainForegroundBrush}" />
+                                                <Button Grid.Column="2" Classes="card-action-btn" Width="32" Height="32" Command="{Binding OpenDetailsCommand}" ToolTip.Tip="Відкрити сторінку">
+                                                    <fluentIcons:SymbolIcon Symbol="Open" FontSize="18" />
                                                 </Button>
                                             </Grid>
                                         </Border>

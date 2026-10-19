@@ -1,4 +1,4 @@
-﻿using CL.Core.Services;
+using CL.Core.Services;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -40,7 +40,7 @@ namespace CL_CLegendary_Launcher_.Windows
         public string CreateBackupBtnText => LocalizationManager.GetString("Backups.CreateBtn", "СТВОРИТИ НОВИЙ БЕКАП");
         public string ZipArchiveText => " • " + LocalizationManager.GetString("Backups.ZipArchiveSuffix", "zip архів");
         public string RestoreBtnText => LocalizationManager.GetString("Backups.RestoreBtn", "Відновити");
-        public string DeleteBtnText => LocalizationManager.GetString("Backups.DeleteBtn", "🗑");
+        public string DeleteBtnText => LocalizationManager.GetString("Backups.DeleteBtn", "Видалити");
         public WorldBackupWindow()
         {
             InitializeComponent();
@@ -61,7 +61,7 @@ namespace CL_CLegendary_Launcher_.Windows
             TxtWorldsList.Text = LocalizationManager.GetString("Backups.ListTitle", "Список світів");
             NoWorldsTxt.Text = LocalizationManager.GetString("Backups.NoWorldsFound", "У цій папці світів немає");
 
-            TxtPlaceholder1.Text = LocalizationManager.GetString("Backups.PlaceholderText", "⬅ Виберіть світ зі списку зліва,");
+            TxtPlaceholder1.Text = LocalizationManager.GetString("Backups.PlaceholderText", "Виберіть світ зі списку ліворуч,\nщоб керувати його копіями");
 
             TxtHistoryTitle.Text = LocalizationManager.GetString("Backups.History", "Історія відновлення");
             NoBackupsTxt.Text = LocalizationManager.GetString("Backups.NoBackupsForWorld", "Для цього світу ще немає копій");
@@ -74,7 +74,7 @@ namespace CL_CLegendary_Launcher_.Windows
 
             sources.Add(new BackupSource
             {
-                Name = LocalizationManager.GetString("Backups.GlobalWorlds", "📂 Глобальні світи (Global)"),
+                Name = LocalizationManager.GetString("Backups.GlobalWorlds", "Глобальні світи (Global)"),
                 Path = Path.Combine(rootPath, "saves")
             });
 
@@ -100,7 +100,7 @@ namespace CL_CLegendary_Launcher_.Windows
                         {
                             sources.Add(new BackupSource
                             {
-                                Name = string.Format(LocalizationManager.GetString("Backups.ModpackWorlds", "📦 Збірка: {0}"), verName),
+                                Name = string.Format(LocalizationManager.GetString("Backups.ModpackWorlds", "Збірка: {0}"), verName),
                                 Path = path
                             });
                             break;
@@ -271,7 +271,7 @@ namespace CL_CLegendary_Launcher_.Windows
             var backup = btn?.Tag as WorldBackupInfo;
             if (backup == null) return;
 
-            string confirmMsg = string.Format(LocalizationManager.GetString("Backups.RestoreConfirm", "Відновити світ '{0}' до стану від {1:dd.MM HH:mm}?\n\n⚠️ Поточний прогрес буде втрачено!"), _currentWorld.Name, backup.CreationTime);
+            string confirmMsg = string.Format(LocalizationManager.GetString("Backups.RestoreConfirm", "Відновити світ '{0}' до стану від {1:dd.MM HH:mm}?\n\nПоточний прогрес буде втрачено."), _currentWorld.Name, backup.CreationTime);
 
             if (MascotMessageBox.Ask(confirmMsg, LocalizationManager.GetString("Backups.RestoreConfirmTitle", "Відновлення"), MascotEmotion.Alert))
             {

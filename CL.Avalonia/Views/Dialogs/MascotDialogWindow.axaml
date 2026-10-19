@@ -1,9 +1,9 @@
-﻿<Window xmlns="https://github.com/avaloniaui"
+<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:fluentIcons="using:FluentIcons.Avalonia"
         x:Class="CL_CLegendary_Launcher_.Avalonia.Views.Dialogs.MascotDialogWindow"
         Title="MascotDialog" Height="250" Width="500"
-        WindowDecorations="None" TransparencyLevelHint="Transparent" Background="Transparent"
+        WindowDecorations="None" TransparencyLevelHint="Transparent" TransparencyBackgroundFallback="Transparent" Background="Transparent"
         CanResize="False" WindowStartupLocation="CenterOwner" Topmost="True" ShowInTaskbar="False">
 
     <Window.Styles>
@@ -38,7 +38,7 @@
     </Window.Styles>
 
     <Grid>
-        <Border x:Name="MainBorder" CornerRadius="15" Background="{DynamicResource MainBackgroundBrushServer}" BorderThickness="1" PointerPressed="MainBorder_PointerPressed">
+        <Border x:Name="MainBorder" CornerRadius="15" Background="{DynamicResource MainBackgroundBrushServer}" BorderThickness="1" BorderBrush="#33FFFFFF" ClipToBounds="True" PointerPressed="MainBorder_PointerPressed">
             <Border.BoxShadow>
                 <BoxShadows>0 5 20 0 #80000000</BoxShadows>
             </Border.BoxShadow>

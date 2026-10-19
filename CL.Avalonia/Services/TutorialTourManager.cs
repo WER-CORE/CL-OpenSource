@@ -105,7 +105,7 @@ public class TutorialTourManager
                 DescriptionKey = "TutorialTour.Step5Desc",
                 DefaultDescription = "Якщо у тебе є завантажений модпак у форматі .mrpack або .zip, просто додай його сюди. Лаунчер сам розпакує файли і підготує все до запуску.",
                 Placement = CardPlacement.Below,
-                VerticalOffset = 20
+                VerticalOffset = 200
             },
             new TourStep
             {

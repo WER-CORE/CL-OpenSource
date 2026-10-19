@@ -1,4 +1,4 @@
-﻿<Window xmlns="https://github.com/avaloniaui"
+<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -10,15 +10,26 @@
         mc:Ignorable="d"
         Title="{Binding WindowTitle}" Height="565" Width="879"
         WindowStartupLocation="CenterScreen"
-        Background="{DynamicResource MainBackgroundBrush}"
+        Background="Transparent"
         Foreground="{DynamicResource MainForegroundBrush}"
         FontFamily="Inter"
         CanResize="True"
+        WindowDecorations="None"
         ExtendClientAreaToDecorationsHint="True"
         ExtendClientAreaTitleBarHeightHint="35"
-        TransparencyLevelHint="Mica">
+        TransparencyLevelHint="Transparent"
+        TransparencyBackgroundFallback="Transparent">
 
     <Window.Styles>
+        <Style Selector="Border#LogRootBorder">
+            <Setter Property="CornerRadius" Value="12" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="BorderBrush" Value="#25FFFFFF" />
+        </Style>
+        <Style Selector="Window[WindowState=Maximized] Border#LogRootBorder, Window[WindowState=FullScreen] Border#LogRootBorder">
+            <Setter Property="CornerRadius" Value="0" />
+            <Setter Property="BorderThickness" Value="0" />
+        </Style>
         <Style Selector="Button.win-control-btn:pointerover /template/ ContentPresenter">
             <Setter Property="Background" Value="#20FFFFFF"/>
         </Style>
@@ -28,6 +39,7 @@
         </Style>
     </Window.Styles>
 
+    <Border Name="LogRootBorder" Background="{DynamicResource MainBackgroundBrush}" CornerRadius="12" ClipToBounds="True">
     <Grid x:Name="GridMain">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -367,4 +379,5 @@
             </Border>
         </Grid>
     </Grid>
+    </Border>
 </Window>

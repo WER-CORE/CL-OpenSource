@@ -14,6 +14,21 @@
              x:CompileBindings="True"
              x:Name="RootPage">
 
+	<UserControl.Styles>
+		<Style Selector="Grid.footer-scale-btn, Border.footer-scale-btn">
+			<Setter Property="RenderTransform" Value="scale(1.0)" />
+			<Setter Property="RenderTransformOrigin" Value="50%,50%" />
+			<Setter Property="Transitions">
+				<Transitions>
+					<TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.15" Easing="QuadraticEaseOut" />
+				</Transitions>
+			</Setter>
+		</Style>
+		<Style Selector="Grid.footer-scale-btn:pointerover, Border.footer-scale-btn:pointerover">
+			<Setter Property="RenderTransform" Value="scale(1.03)" />
+		</Style>
+	</UserControl.Styles>
+
 	<Grid>
 
 		<Grid x:Name="GirdPanelFooter" VerticalAlignment="Bottom">
@@ -147,10 +162,8 @@
 
 						<StackPanel VerticalAlignment="Top">
 
-							<Grid x:Name="SettingPanelGird" Height="40" Margin="5,2" Cursor="Hand"
-                                  PointerPressed="SettingPanel_PointerPressed" Background="Transparent"
-                                  PointerEntered="PanelFooterScalePlus_PointerEntered"
-                                  PointerExited="PanelFooterScaleMinus_PointerExited">
+							<Grid x:Name="SettingPanelGird" Classes="footer-scale-btn" Height="40" Margin="5,2" Cursor="Hand"
+                                  PointerPressed="SettingPanel_PointerPressed" Background="Transparent">
 								<Border x:Name="SettingPanel" CornerRadius="12"
                                         Background="{DynamicResource MainBackgroundButton}" Opacity="0.5" />
 								<StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0">
@@ -163,10 +176,8 @@
 								</StackPanel>
 							</Grid>
 
-							<Grid x:Name="FilesMenuGrid" Height="40" Margin="5,2" Cursor="Hand"
-                                  PointerPressed="FolderPanel_PointerPressed" Background="Transparent"
-                                  PointerEntered="PanelFooterScalePlus_PointerEntered"
-                                  PointerExited="PanelFooterScaleMinus_PointerExited">
+							<Grid x:Name="FilesMenuGrid" Classes="footer-scale-btn" Height="40" Margin="5,2" Cursor="Hand"
+                                  PointerPressed="FolderPanel_PointerPressed" Background="Transparent">
 								<FlyoutBase.AttachedFlyout>
 									<MenuFlyout Placement="Top">
 										<MenuItem x:Name="Loc_MenuOpenFolder" Header="Відкрити папку...">
@@ -229,10 +240,8 @@
 								</StackPanel>
 							</Grid>
 
-							<Grid x:Name="InfoPanel" Height="40" Margin="5,2" Cursor="Hand"
-                                  PointerPressed="InfoPanel_PointerPressed" Background="Transparent"
-                                  PointerEntered="PanelFooterScalePlus_PointerEntered"
-                                  PointerExited="PanelFooterScaleMinus_PointerExited" ZIndex="10">
+							<Grid x:Name="InfoPanel" Classes="footer-scale-btn" Height="40" Margin="5,2" Cursor="Hand"
+                                  PointerPressed="InfoPanel_PointerPressed" Background="Transparent" ZIndex="10">
 								<FlyoutBase.AttachedFlyout>
 									<MenuFlyout Placement="Top">
 										<MenuItem x:Name="Loc_MenuReportBug" Header="Повідомити про баг" Click="BugReport_Click">
@@ -350,9 +359,7 @@
                         HorizontalAlignment="Left" VerticalAlignment="Top"
                         Margin="0,20,0,0" Width="188" Height="36"
                         Cursor="Hand"
-                        PointerPressed="PlayTXT_PointerPressed"
-                        PointerEntered="PanelFooterScalePlus_PointerEntered"
-                        PointerExited="PanelFooterScaleMinus_PointerExited" />
+                        PointerPressed="PlayTXT_PointerPressed" />
 
 				<Border x:Name="HitboxSelect" Background="Transparent"
                         HorizontalAlignment="Right" VerticalAlignment="Top"
@@ -537,13 +544,11 @@
 
 					<StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="2,0,0,0">
 
-						<Border x:Name="SelectVersionVanila"
+						<Border x:Name="SelectVersionVanila" Classes="footer-scale-btn"
                                 BorderThickness="1" CornerRadius="3"
                                 Background="{DynamicResource MainBackgroundBrushServer}"
                                 Width="145" Height="40" Margin="0,0,0,6"
-                                RenderTransformOrigin="50%,50%" Cursor="Hand"
-                                PointerEntered="PanelFooterScalePlus_PointerEntered"
-                                PointerExited="PanelFooterScaleMinus_PointerExited"
+                                Cursor="Hand"
                                 PointerPressed="SelectVersionVanila_PointerPressed">
 							<Grid Margin="0,0,0,1">
 								<Image x:Name="IconSelectVersion_Copy"
@@ -564,13 +569,11 @@
 							</Grid>
 						</Border>
 
-						<Border x:Name="SelectVersionOptifine"
+						<Border x:Name="SelectVersionOptifine" Classes="footer-scale-btn"
                                 BorderThickness="1" CornerRadius="3"
                                 Background="{DynamicResource MainBackgroundBrushServer}"
                                 Width="145" Height="40" Margin="0,0,0,6"
-                                RenderTransformOrigin="50%,50%" Cursor="Hand"
-                                PointerEntered="PanelFooterScalePlus_PointerEntered"
-                                PointerExited="PanelFooterScaleMinus_PointerExited"
+                                Cursor="Hand"
                                 PointerPressed="SelectVersionOptifine_PointerPressed">
 							<Grid>
 								<Image x:Name="IconSelectVersion_Copy2"
@@ -591,14 +594,12 @@
 							</Grid>
 						</Border>
 
-						<Border x:Name="SelectVersionRedirect"
+						<Border x:Name="SelectVersionRedirect" Classes="footer-scale-btn"
                                 BorderThickness="1" CornerRadius="3"
                                 Background="{DynamicResource MainBackgroundBrushServer}"
                                 Width="145" Height="40"
-                                RenderTransformOrigin="50%,50%" Cursor="Hand"
-                                PointerPressed="SelectVersionRedirect_PointerPressed"
-                                PointerEntered="PanelFooterScalePlus_PointerEntered"
-                                PointerExited="PanelFooterScaleMinus_PointerExited">
+                                Cursor="Hand"
+                                PointerPressed="SelectVersionRedirect_PointerPressed">
 							<Grid>
 								<Path Data="M19.43,12.98C19.47,12.66 19.5,12.34 19.5,12C19.5,11.66 19.47,11.34 19.43,11.02L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11.02C4.53,11.34 4.5,11.66 4.5,12C4.5,12.34 4.53,12.66 4.57,12.98L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.04 4.95,18.95L7.44,17.95C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.68 16.04,18.34 16.56,17.95L19.05,18.95C19.27,19.04 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.98M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5Z"
                                       Fill="{DynamicResource MainBackgroundBrush}"

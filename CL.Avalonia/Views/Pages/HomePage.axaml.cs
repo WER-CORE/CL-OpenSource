@@ -314,14 +314,14 @@ public partial class HomePage : UserControl
     public void BugReport_Click(object? sender, RoutedEventArgs e)
     {
         AvaloniaSoundService.Click();
-        WebHelper.OpenUrl("https://discord.com/channels/1195118159187939458/1195494058571866172");
+        WebHelper.OpenUrl("https://github.com/WER-CORE/CL-OpenSource/issues");
     }
 
     public void NewsUpdateLauncher_Click(object? sender, RoutedEventArgs e) =>
         NewsRequested?.Invoke(this, EventArgs.Empty);
 
     public void TutorialYoutube_Click(object? sender, RoutedEventArgs e) =>
-        WebHelper.OpenUrl("https://cl-launcher.app/tutorial.html");
+        WebHelper.OpenUrl("https://wiki.cl-launcher.app/");
 
     public void StartTour_Click(object? sender, RoutedEventArgs e)
     {

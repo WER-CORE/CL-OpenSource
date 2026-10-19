@@ -17,6 +17,7 @@ namespace CL_CLegendary_Launcher_.Avalonia.Services
     public static class AvaloniaAnimationService
     {
         private static readonly Dictionary<Control, CancellationTokenSource> _tabIndicatorCts = new();
+        private static readonly Dictionary<Control, CancellationTokenSource> _scaleCts = new();
 
         public static void AnimateProgressBar(RangeBase progressBar, double targetValue, double durationMs = 250)
         {
@@ -227,13 +228,22 @@ namespace CL_CLegendary_Launcher_.Avalonia.Services
         {
             if (element == null) return;
 
+            if (_scaleCts.TryGetValue(element, out var existingCts))
+            {
+                existingCts.Cancel();
+                existingCts.Dispose();
+                _scaleCts.Remove(element);
+            }
+
             if (element.RenderTransform == null || element.RenderTransform is not ScaleTransform)
             {
                 element.RenderTransformOrigin = new RelativePoint(0.5, 0.5, RelativeUnit.Relative);
                 element.RenderTransform = new ScaleTransform(1, 1);
             }
 
-            var transform = (ScaleTransform)element.RenderTransform;
+            var cts = new CancellationTokenSource();
+            _scaleCts[element] = cts;
+
             var anim = new Animation
             {
                 Duration = TimeSpan.FromSeconds(durationSeconds),
@@ -253,7 +263,7 @@ namespace CL_CLegendary_Launcher_.Avalonia.Services
                 }
             };
 
-            _ = anim.RunAsync(element);
+            _ = anim.RunAsync(element, cts.Token);
         }
 
         public static void AnimatePageTransition(Control element, double startOffset = 40, double durationSeconds = 0.4)

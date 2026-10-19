@@ -1,4 +1,4 @@
-﻿<Window xmlns="https://github.com/avaloniaui"
+<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -11,6 +11,7 @@
         SizeToContent="Height" MinHeight="300"
         Background="Transparent"
         TransparencyLevelHint="Transparent"
+        TransparencyBackgroundFallback="Transparent"
         WindowDecorations="None"
         WindowStartupLocation="CenterScreen"
         FontFamily="Inter">
@@ -57,6 +58,7 @@
             BorderBrush="#33FFFFFF"
             BorderThickness="1"
             Margin="10"
+            ClipToBounds="True"
             BoxShadow="0 2 15 0 #4D000000">
 
         <Grid x:Name="MainGird" Margin="0">

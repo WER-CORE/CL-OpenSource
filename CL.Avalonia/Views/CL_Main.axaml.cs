@@ -366,10 +366,22 @@ public partial class CL_Main : Window
     private void TitleBar_PointerPressed(object? sender, PointerPressedEventArgs e)
     {
         if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
-            BeginMoveDrag(e);
+        {
+            if (e.ClickCount == 2 && CanResize)
+                WindowState = (WindowState == WindowState.Maximized || WindowState == WindowState.FullScreen) ? WindowState.Normal : WindowState.Maximized;
+            else
+                BeginMoveDrag(e);
+        }
     }
 
     private void CloseWindow_Click(object? sender, RoutedEventArgs e) => Close();
+
+    private void MaximizeWindow_Click(object? sender, RoutedEventArgs e)
+    {
+        WindowState = (WindowState == WindowState.Maximized || WindowState == WindowState.FullScreen)
+            ? WindowState.Normal
+            : WindowState.Maximized;
+    }
 
     private async void MinimizeWindow_Click(object? sender, RoutedEventArgs e)
     {

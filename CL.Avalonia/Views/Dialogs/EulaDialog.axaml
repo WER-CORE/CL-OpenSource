@@ -8,7 +8,8 @@
         WindowDecorations="None" CanResize="False"
         ExtendClientAreaToDecorationsHint="True"
         ExtendClientAreaTitleBarHeightHint="-1"
-        TransparencyLevelHint="Mica"
+        TransparencyLevelHint="Transparent"
+        TransparencyBackgroundFallback="Transparent"
         Background="Transparent">
 
     <Window.Styles>

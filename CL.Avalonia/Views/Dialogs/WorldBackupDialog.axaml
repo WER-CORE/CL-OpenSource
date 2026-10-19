@@ -1,4 +1,4 @@
-﻿<Window xmlns="https://github.com/avaloniaui"
+<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -11,7 +11,7 @@
         Title="{Binding WindowTitle}" Height="600" Width="900"
         WindowStartupLocation="CenterScreen" CanResize="False" WindowDecorations="None"
         Background="Transparent" FontFamily="Inter"
-        TransparencyLevelHint="Mica, Transparent" Foreground="{DynamicResource MainForegroundBrush}" Icon="/Icon/IconCL(Common).png"
+        TransparencyLevelHint="Transparent" TransparencyBackgroundFallback="Transparent" Foreground="{DynamicResource MainForegroundBrush}" Icon="/Icon/IconCL(Common).png"
         IsEnabled="{Binding !IsWorking}">
 
     <Window.Styles>
@@ -125,7 +125,7 @@
 
                 <Grid Grid.Column="1" Margin="20" Background="Transparent">
                     <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" IsVisible="{Binding IsPlaceholderVisible}">
-                        <TextBlock Text="{Binding PlaceholderText}" Foreground="{DynamicResource MainForegroundBrush}" FontSize="16"/>
+                        <TextBlock Text="{Binding PlaceholderText}" Foreground="{DynamicResource MainForegroundBrush}" FontSize="16" TextAlignment="Center"/>
                     </StackPanel>
 
                     <Grid IsVisible="{Binding IsContentVisible}">

@@ -112,14 +112,14 @@ public partial class WorldBackupViewModel : ObservableObject, IDisposable
         SourceLabel = LocalizationManager.GetString("Backups.SourceLabel", "Джерело світів:");
         WorldsListTitle = LocalizationManager.GetString("Backups.ListTitle", "Список світів");
         NoWorldsFoundText = LocalizationManager.GetString("Backups.NoWorldsFound", "У цій папці світів немає");
-        PlaceholderText = LocalizationManager.GetString("Backups.PlaceholderText", "⬅ Виберіть світ зі списку зліва,");
+        PlaceholderText = LocalizationManager.GetString("Backups.PlaceholderText", "Виберіть світ зі списку ліворуч,\nщоб керувати його копіями");
         HistoryTitle = LocalizationManager.GetString("Backups.History", "Історія відновлення");
         NoBackupsForWorldText = LocalizationManager.GetString("Backups.NoBackupsForWorld", "Для цього світу ще немає копій");
 
         CreateBackupBtnText = LocalizationManager.GetString("Backups.CreateBtn", "СТВОРИТИ НОВИЙ БЕКАП");
         ZipArchiveText = " • " + LocalizationManager.GetString("Backups.ZipArchiveSuffix", "zip архів");
         RestoreBtnText = LocalizationManager.GetString("Backups.RestoreBtn", "Відновити");
-        DeleteBtnText = LocalizationManager.GetString("Backups.DeleteBtn", "🗑");
+        DeleteBtnText = LocalizationManager.GetString("Backups.DeleteBtn", "Видалити");
     }
 
     private void LoadSources()
@@ -133,7 +133,7 @@ public partial class WorldBackupViewModel : ObservableObject, IDisposable
 
         sources.Add(new BackupSource
         {
-            Name = LocalizationManager.GetString("Backups.GlobalWorlds", "📂 Глобальні світи (Global)"),
+            Name = LocalizationManager.GetString("Backups.GlobalWorlds", "Глобальні світи (Global)"),
             Path = Path.Combine(rootPath, "saves")
         });
 
@@ -159,7 +159,7 @@ public partial class WorldBackupViewModel : ObservableObject, IDisposable
                     {
                         sources.Add(new BackupSource
                         {
-                            Name = string.Format(LocalizationManager.GetString("Backups.ModpackWorlds", "📦 Збірка: {0}"), verName),
+                            Name = string.Format(LocalizationManager.GetString("Backups.ModpackWorlds", "Збірка: {0}"), verName),
                             Path = path
                         });
                         break;
@@ -328,7 +328,7 @@ public partial class WorldBackupViewModel : ObservableObject, IDisposable
 
         AvaloniaSoundService.Click();
 
-        string confirmMsg = string.Format(LocalizationManager.GetString("Backups.RestoreConfirm", "Відновити світ '{0}' до стану від {1:dd.MM HH:mm}?\n\n⚠️ Поточний прогрес буде втрачено!"), SelectedWorld.Name, backup.CreationTime);
+        string confirmMsg = string.Format(LocalizationManager.GetString("Backups.RestoreConfirm", "Відновити світ '{0}' до стану від {1:dd.MM HH:mm}?\n\nПоточний прогрес буде втрачено."), SelectedWorld.Name, backup.CreationTime);
 
         bool confirm = await AvaloniaDialogService.AskAsync(confirmMsg, LocalizationManager.GetString("Backups.RestoreConfirmTitle", "Відновлення"), MascotEmotion.Alert);
 

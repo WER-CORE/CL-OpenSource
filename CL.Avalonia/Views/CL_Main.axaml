@@ -17,10 +17,30 @@
         MinWidth="960" MinHeight="542"
         WindowStartupLocation="CenterScreen"
         WindowState="{Binding WindowState, Mode=TwoWay}"
-        Background="{DynamicResource MainBackgroundBrush}"
+        Background="Transparent"
+        TransparencyLevelHint="Transparent"
+        TransparencyBackgroundFallback="Transparent"
+        WindowDecorations="None"
+        ExtendClientAreaToDecorationsHint="True"
         ExtendClientAreaTitleBarHeightHint="-1">
 
 	<Window.Styles>
+		<Style Selector="Border#MainRootBorder">
+			<Setter Property="CornerRadius" Value="12" />
+			<Setter Property="BorderThickness" Value="1" />
+			<Setter Property="BorderBrush" Value="#25FFFFFF" />
+		</Style>
+		<Style Selector="Window[WindowState=Maximized] Border#MainRootBorder, Window[WindowState=FullScreen] Border#MainRootBorder">
+			<Setter Property="CornerRadius" Value="0" />
+			<Setter Property="BorderThickness" Value="0" />
+		</Style>
+		<Style Selector="Button.win-control-btn:pointerover /template/ ContentPresenter">
+			<Setter Property="Background" Value="#20FFFFFF"/>
+		</Style>
+		<Style Selector="Button.close-btn:pointerover /template/ ContentPresenter">
+			<Setter Property="Background" Value="#C42B1C"/>
+			<Setter Property="Foreground" Value="White"/>
+		</Style>
 		<Style Selector="Button">
 			<Setter Property="Background" Value="{DynamicResource MainBackgroundButton}" />
 			<Setter Property="Foreground" Value="{DynamicResource MainForegroundBrush}" />
@@ -44,6 +64,7 @@
 		<LayoutTransformControl.LayoutTransform>
 			<ScaleTransform ScaleX="{Binding UiScale}" ScaleY="{Binding UiScale}" />
 		</LayoutTransformControl.LayoutTransform>
+    <Border Name="MainRootBorder" Background="{DynamicResource MainBackgroundBrush}" CornerRadius="12" ClipToBounds="True">
     <Grid>
 
         <Grid Name="MainBackgroundContainer"
@@ -77,6 +98,35 @@
                     <RowDefinition Height="80" />
                     <RowDefinition />
                 </Grid.RowDefinitions>
+
+                <Border Name="TitleBarDragRegion" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3"
+                        Height="30" Margin="0,0,130,0" VerticalAlignment="Top" Background="Transparent"
+                        PointerPressed="TitleBar_PointerPressed" />
+
+                <StackPanel Name="WindowControlsPanel" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3"
+                            Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top"
+                            Height="30">
+                    <Button Classes="win-control-btn" Click="MinimizeWindow_Click" ToolTip.Tip="Згорнути"
+                            Background="Transparent" BorderThickness="0"
+                            Foreground="{DynamicResource MainForegroundBrush}"
+                            Width="40" Height="30" Padding="0" Cursor="Hand">
+                        <ic:SymbolIcon Symbol="Subtract" FontSize="14" />
+                    </Button>
+
+                    <Button Classes="win-control-btn" Click="MaximizeWindow_Click" ToolTip.Tip="Розгорнути / Відновити"
+                            Background="Transparent" BorderThickness="0"
+                            Foreground="{DynamicResource MainForegroundBrush}"
+                            Width="40" Height="30" Padding="0" Cursor="Hand">
+                        <ic:SymbolIcon Symbol="Maximize" FontSize="14" />
+                    </Button>
+
+                    <Button Classes="close-btn" Click="CloseWindow_Click" ToolTip.Tip="Закрити"
+                            Background="Transparent" BorderThickness="0"
+                            Foreground="{DynamicResource MainForegroundBrush}"
+                            Width="45" Height="30" Padding="0" Cursor="Hand">
+                        <ic:SymbolIcon Symbol="Dismiss" FontSize="16" />
+                    </Button>
+                </StackPanel>
 
                 <Grid Name="SelectGirdPage" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" VerticalAlignment="Top" Margin="0,30,0,0">
 
@@ -897,5 +947,6 @@
         </Grid>
 
 </Grid>
+</Border>
 </LayoutTransformControl>
 </Window>

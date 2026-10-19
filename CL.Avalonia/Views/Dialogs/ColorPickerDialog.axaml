@@ -1,4 +1,4 @@
-﻿<Window xmlns="https://github.com/avaloniaui"
+<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -12,6 +12,7 @@
         WindowDecorations="None"
         Background="Transparent"
         TransparencyLevelHint="Transparent"
+        TransparencyBackgroundFallback="Transparent"
         FontFamily="Inter">
 
     <Window.Styles>
@@ -67,7 +68,7 @@
 
     <Border Background="{DynamicResource MainBackgroundBrush}"
             CornerRadius="16" BorderThickness="1" BorderBrush="#33FFFFFF"
-            Margin="10" BoxShadow="0 4 20 0 #4D000000">
+            Margin="10" ClipToBounds="True" BoxShadow="0 4 20 0 #4D000000">
 
         <Grid Margin="20,0,20,20">
             <Grid.RowDefinitions>

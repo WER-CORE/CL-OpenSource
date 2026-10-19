@@ -1,4 +1,4 @@
-﻿<Window xmlns="https://github.com/avaloniaui"
+<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -14,7 +14,8 @@
         ExtendClientAreaToDecorationsHint="True"
         ExtendClientAreaTitleBarHeightHint="-1"
         WindowDecorations="None"
-        TransparencyLevelHint="Mica"
+        TransparencyLevelHint="Transparent"
+        TransparencyBackgroundFallback="Transparent"
         Background="Transparent"
         FontFamily="Inter">
 
@@ -23,9 +24,25 @@
             <Setter Property="Background" Value="#C42B1C"/>
             <Setter Property="Foreground" Value="White"/>
         </Style>
+        <Style Selector="Button.card-action-btn">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Foreground" Value="{DynamicResource MainForegroundBrush}" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="Button.card-action-btn:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#25FFFFFF" />
+            <Setter Property="Foreground" Value="{DynamicResource MainForegroundBrush}" />
+        </Style>
+        <Style Selector="Button.card-action-btn:pressed /template/ ContentPresenter">
+            <Setter Property="Background" Value="#40FFFFFF" />
+            <Setter Property="Foreground" Value="{DynamicResource MainForegroundBrush}" />
+        </Style>
     </Window.Styles>
 
-    <Border Background="{DynamicResource MainBackgroundBrush}" CornerRadius="12" ClipToBounds="True">
+    <Border Background="{DynamicResource MainBackgroundBrush}" CornerRadius="12" BorderThickness="1" BorderBrush="#33808080" ClipToBounds="True">
         <Grid>
             <Grid RowDefinitions="35,Auto,*,50">
 
@@ -123,12 +140,12 @@
                                                                Foreground="{DynamicResource MainForegroundBrush}" FontSize="12"
                                                                TextTrimming="CharacterEllipsis" />
 
-                                                    <Button Grid.Column="2" Command="{Binding OpenDetailsCommand}" Background="Transparent" BorderThickness="0" Cursor="Hand" Margin="2,0" Padding="4">
-                                                        <fluentIcons:SymbolIcon Symbol="Info" FontSize="18" Foreground="{DynamicResource MainBackgroundButton}" />
+                                                    <Button Grid.Column="2" Classes="card-action-btn" Command="{Binding OpenDetailsCommand}" Margin="2,0" Width="30" Height="30" ToolTip.Tip="Відкрити сторінку">
+                                                        <fluentIcons:SymbolIcon Symbol="Open" FontSize="16" />
                                                     </Button>
 
-                                                    <Button Grid.Column="3" Command="{Binding AddToQueueCommand}" Background="Transparent" BorderThickness="0" Cursor="Hand" Margin="2,0" Padding="4">
-                                                        <fluentIcons:SymbolIcon Symbol="Add" FontSize="20" Foreground="{DynamicResource MainBackgroundButton}" />
+                                                    <Button Grid.Column="3" Classes="card-action-btn" Command="{Binding AddToQueueCommand}" Margin="2,0" Width="30" Height="30" ToolTip.Tip="Додати до черги">
+                                                        <fluentIcons:SymbolIcon Symbol="Add" FontSize="18" />
                                                     </Button>
                                                 </Grid>
                                             </Border>
@@ -139,7 +156,7 @@
                                 <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsLoadingMods}" Height="3" VerticalAlignment="Top" HorizontalAlignment="Stretch" />
                                 <progRing:ProgressRing Width="40" Height="40" IsActive="{Binding IsLoadingMods}" IsVisible="{Binding IsLoadingMods}"
                                                        HorizontalAlignment="Center" VerticalAlignment="Center"
-                                                       Foreground="{DynamicResource MainBackgroundButton}" />
+                                                       Foreground="{DynamicResource MainBackgroundProgressBar}" />
                             </Grid>
                         </Border>
 
