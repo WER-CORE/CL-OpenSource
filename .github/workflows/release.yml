@@ -28,6 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.calc.outputs.version }}
+      numeric_version: ${{ steps.calc.outputs.numeric_version }}
       is_prerelease: ${{ steps.calc.outputs.is_prerelease }}
       target_repo: ${{ steps.calc.outputs.target_repo }}
     steps:
@@ -44,7 +45,9 @@ jobs:
             IS_PRE="false"
             TARGET="WER-CORE/CL-Win-Edition--Update"
           fi
+          NUM_VER=$(echo "$VER" | cut -d'-' -f1)
           echo "version=$VER" >> $GITHUB_OUTPUT
+          echo "numeric_version=$NUM_VER" >> $GITHUB_OUTPUT
           echo "is_prerelease=$IS_PRE" >> $GITHUB_OUTPUT
           echo "target_repo=$TARGET" >> $GITHUB_OUTPUT
 
@@ -53,6 +56,7 @@ jobs:
     runs-on: windows-latest
     env:
       RELEASE_VERSION: ${{ needs.prepare.outputs.version }}
+      NUMERIC_VERSION: ${{ needs.prepare.outputs.numeric_version }}
       SIGNPATH_API_TOKEN: ${{ secrets.SIGNPATH_API_TOKEN }}
       SIGNPATH_ORGANIZATION_ID: ${{ vars.SIGNPATH_ORGANIZATION_ID || secrets.SIGNPATH_ORGANIZATION_ID || 'ee9101d1-c7a5-4c9b-8415-756078e535be' }}
       SIGNPATH_PROJECT_SLUG: ${{ vars.SIGNPATH_PROJECT_SLUG || secrets.SIGNPATH_PROJECT_SLUG || 'CL-Launcher' }}
@@ -110,7 +114,7 @@ jobs:
         run: dotnet test CL.Crossplatform.sln -c Release --no-restore --verbosity normal
 
       - name: Publish Windows x64
-        run: dotnet publish CL.Avalonia/CL.Avalonia.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=false -p:Version=${{ env.RELEASE_VERSION }} -p:AssemblyVersion=${{ env.RELEASE_VERSION }}.0 -p:FileVersion=${{ env.RELEASE_VERSION }}.0 -o ./publish/win-x64
+        run: dotnet publish CL.Avalonia/CL.Avalonia.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=false -p:Version=${{ env.RELEASE_VERSION }} -p:AssemblyVersion=${{ env.NUMERIC_VERSION }}.0 -p:FileVersion=${{ env.NUMERIC_VERSION }}.0 -p:InformationalVersion=${{ env.RELEASE_VERSION }} -o ./publish/win-x64
 
       - name: Sign launcher via SignPath
         if: env.SIGNPATH_API_TOKEN != ''
@@ -177,6 +181,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       RELEASE_VERSION: ${{ needs.prepare.outputs.version }}
+      NUMERIC_VERSION: ${{ needs.prepare.outputs.numeric_version }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -225,7 +230,7 @@ jobs:
 
       - name: Publish Linux x64
         run: |
-          dotnet publish CL.Avalonia/CL.Avalonia.csproj -c Release -r linux-x64 --self-contained true -p:PublishSingleFile=false -p:Version=${{ env.RELEASE_VERSION }} -p:AssemblyVersion=${{ env.RELEASE_VERSION }}.0 -p:FileVersion=${{ env.RELEASE_VERSION }}.0 -o ./publish/linux-x64
+          dotnet publish CL.Avalonia/CL.Avalonia.csproj -c Release -r linux-x64 --self-contained true -p:PublishSingleFile=false -p:Version=${{ env.RELEASE_VERSION }} -p:AssemblyVersion=${{ env.NUMERIC_VERSION }}.0 -p:FileVersion=${{ env.NUMERIC_VERSION }}.0 -p:InformationalVersion=${{ env.RELEASE_VERSION }} -o ./publish/linux-x64
           cp ./publish/linux-x64/CL.Avalonia "./publish/linux-x64/CL(CLegendary Launcher)" || true
           chmod +x ./publish/linux-x64/CL* || true
           mkdir -p ./linux_artifacts
@@ -276,6 +281,7 @@ jobs:
     runs-on: macos-latest
     env:
       RELEASE_VERSION: ${{ needs.prepare.outputs.version }}
+      NUMERIC_VERSION: ${{ needs.prepare.outputs.numeric_version }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -324,7 +330,7 @@ jobs:
 
       - name: Publish macOS arm64
         run: |
-          dotnet publish CL.Avalonia/CL.Avalonia.csproj -c Release -r osx-arm64 --self-contained true -p:PublishSingleFile=false -p:Version=${{ env.RELEASE_VERSION }} -p:AssemblyVersion=${{ env.RELEASE_VERSION }}.0 -p:FileVersion=${{ env.RELEASE_VERSION }}.0 -o ./publish/osx-arm64
+          dotnet publish CL.Avalonia/CL.Avalonia.csproj -c Release -r osx-arm64 --self-contained true -p:PublishSingleFile=false -p:Version=${{ env.RELEASE_VERSION }} -p:AssemblyVersion=${{ env.NUMERIC_VERSION }}.0 -p:FileVersion=${{ env.NUMERIC_VERSION }}.0 -p:InformationalVersion=${{ env.RELEASE_VERSION }} -o ./publish/osx-arm64
           chmod +x ./publish/osx-arm64/CL* || true
 
       - name: Package macOS DMG

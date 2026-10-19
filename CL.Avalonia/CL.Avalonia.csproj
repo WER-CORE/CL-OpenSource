@@ -17,7 +17,13 @@
 		<InformationalVersion>1.1.0</InformationalVersion>
 		<UserSecretsId>CLegendary-Launcher-Secrets-5f3a9e2d</UserSecretsId>
 		<ApplicationIcon>Icon\IconCL(Halloween).ico</ApplicationIcon>
+		<ServerGarbageCollection>false</ServerGarbageCollection>
+		<ConcurrentGarbageCollection>true</ConcurrentGarbageCollection>
 	</PropertyGroup>
+
+	<ItemGroup>
+		<RuntimeHostConfigurationOption Include="System.GC.TrimCommit" Value="true" />
+	</ItemGroup>
 
 	<Target Name="CreateLegacyLauncherExeAlias" AfterTargets="Build;Publish" Condition="$([MSBuild]::IsOSPlatform('Windows'))">
 		<Copy SourceFiles="$(TargetDir)CL.Avalonia.exe"
