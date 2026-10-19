@@ -24,6 +24,10 @@
 		      DestinationFiles="$(TargetDir)CL(CLegendary Launcher).exe"
 		      Condition="Exists('$(TargetDir)CL.Avalonia.exe')"
 		      SkipUnchangedFiles="true" />
+		<Copy SourceFiles="$(PublishDir)CL.Avalonia.exe"
+		      DestinationFiles="$(PublishDir)CL(CLegendary Launcher).exe"
+		      Condition="'$(PublishDir)' != '' and Exists('$(PublishDir)CL.Avalonia.exe')"
+		      SkipUnchangedFiles="true" />
 	</Target>
 
 	<ItemGroup>

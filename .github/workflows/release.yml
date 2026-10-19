@@ -1,0 +1,168 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g. 1.1.0)'
+        required: true
+        default: '1.1.0'
+      is_prerelease:
+        description: 'Mark as pre-release for preview testing'
+        type: boolean
+        required: true
+        default: true
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    env:
+      SIGNPATH_API_TOKEN: ${{ secrets.SIGNPATH_API_TOKEN }}
+      SIGNPATH_ORGANIZATION_ID: ${{ vars.SIGNPATH_ORGANIZATION_ID || secrets.SIGNPATH_ORGANIZATION_ID || 'ee9101d1-c7a5-4c9b-8415-756078e535be' }}
+      SIGNPATH_PROJECT_SLUG: ${{ vars.SIGNPATH_PROJECT_SLUG || secrets.SIGNPATH_PROJECT_SLUG || 'CL-Launcher' }}
+      SIGNPATH_SIGNING_POLICY_SLUG: ${{ vars.SIGNPATH_SIGNING_POLICY_SLUG || secrets.SIGNPATH_SIGNING_POLICY_SLUG || 'test-signing' }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Determine Version
+        shell: pwsh
+        run: |
+          if ("${{ github.event_name }}" -eq "workflow_dispatch") {
+            $ver = "${{ inputs.version }}"
+            $isPre = "${{ inputs.is_prerelease }}"
+          } else {
+            $ver = "${{ github.ref_name }}".TrimStart('v')
+            $isPre = "false"
+          }
+          "RELEASE_VERSION=$ver" >> $env:GITHUB_ENV
+          "IS_PRERELEASE=$isPre" >> $env:GITHUB_ENV
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+          dotnet-quality: 'preview'
+
+      - name: Generate compiled secrets
+        if: env.APP_SECRETS_JSON != ''
+        shell: pwsh
+        env:
+          APP_SECRETS_JSON: ${{ secrets.APP_SECRETS_JSON }}
+        run: |
+          $json = $env:APP_SECRETS_JSON | ConvertFrom-Json
+          $secrets = $json.Secrets
+          if (-not $secrets) { $secrets = $json }
+          $code = @"
+          namespace CL.Core.Services;
+
+          public static partial class SecretsProvider
+          {
+              static partial void ApplyCompiledDefaults(SecretConfiguration config)
+              {
+                  config.LauncherSecret = "$($secrets.LauncherSecret)";
+                  config.CurseForgeKeyUrl = "$($secrets.CurseForgeKeyUrl)";
+                  config.CurseForgeDirectApiKey = "$($secrets.CurseForgeDirectApiKey)";
+                  config.GeminiApiUrl = "$($secrets.GeminiApiUrl)";
+                  config.GeminiModelUrl = "$($secrets.GeminiModelUrl)";
+                  config.GeminiDirectApiKey = "$($secrets.GeminiDirectApiKey)";
+                  config.SentryDsn = "$($secrets.SentryDsn)";
+                  config.AzureClientId = "$($secrets.AzureClientId)";
+                  config.DiscordClientId = "$($secrets.DiscordClientId)";
+              }
+          }
+          "@
+          $code | Out-File -FilePath "CL.Core/Services/SecretsProvider.Compiled.cs" -Encoding utf8
+
+      - name: Restore dependencies
+        run: dotnet restore CL.Crossplatform.sln
+
+      - name: Run unit tests
+        run: dotnet test CL.Crossplatform.sln -c Release --no-restore --verbosity normal
+
+      - name: Publish Windows x64
+        run: dotnet publish CL.Avalonia/CL.Avalonia.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=false -p:Version=${{ env.RELEASE_VERSION }} -p:AssemblyVersion=${{ env.RELEASE_VERSION }}.0 -p:FileVersion=${{ env.RELEASE_VERSION }}.0 -o ./publish/win-x64
+
+      - name: Upload binary for SignPath
+        if: env.SIGNPATH_API_TOKEN != ''
+        id: upload-binary-signpath
+        uses: actions/upload-artifact@v4
+        with:
+          name: unsigned-launcher
+          path: ./publish/win-x64/CL(CLegendary Launcher).exe
+
+      - name: Sign launcher via SignPath
+        if: env.SIGNPATH_API_TOKEN != ''
+        uses: signpath/github-action-submit-signing-request@v3
+        with:
+          api-token: ${{ env.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ env.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: ${{ env.SIGNPATH_PROJECT_SLUG }}
+          signing-policy-slug: ${{ env.SIGNPATH_SIGNING_POLICY_SLUG }}
+          github-artifact-id: ${{ steps.upload-binary-signpath.outputs.artifact-id }}
+          wait-for-completion: true
+          output-artifact-directory: ./signed-launcher
+
+      - name: Replace launcher with signed binary
+        if: env.SIGNPATH_API_TOKEN != ''
+        shell: pwsh
+        run: |
+          Copy-Item -Path "./signed-launcher/CL(CLegendary Launcher).exe" -Destination "./publish/win-x64/CL(CLegendary Launcher).exe" -Force
+          Copy-Item -Path "./signed-launcher/CL(CLegendary Launcher).exe" -Destination "./publish/win-x64/CL.Avalonia.exe" -Force
+
+      - name: Install Velopack CLI
+        run: dotnet tool install -g vpk
+
+      - name: Package with Velopack
+        shell: pwsh
+        run: |
+          vpk pack --packId "CLegendaryLauncher" `
+                   --packVersion "${{ env.RELEASE_VERSION }}" `
+                   --packDir "./publish/win-x64" `
+                   --mainExe "CL(CLegendary Launcher).exe" `
+                   --icon "CL.Avalonia/Icon/IconCL(Halloween).ico" `
+                   --packTitle "CLegendary Launcher" `
+                   --packAuthors "WER-CORE" `
+                   --outputDir "./release_output"
+
+      - name: Create legacy win-x64 zip
+        shell: pwsh
+        run: |
+          Compress-Archive -Path "./publish/win-x64/*" -DestinationPath "./release_output/win-x64.zip" -Force
+
+      - name: Publish Linux x64
+        shell: pwsh
+        run: |
+          dotnet publish CL.Avalonia/CL.Avalonia.csproj -c Release -r linux-x64 --self-contained true -p:PublishSingleFile=false -p:Version=${{ env.RELEASE_VERSION }} -o ./publish/linux-x64
+          Compress-Archive -Path "./publish/linux-x64/*" -DestinationPath "./release_output/linux-x64.zip" -Force
+
+      - name: Publish macOS arm64
+        shell: pwsh
+        run: |
+          dotnet publish CL.Avalonia/CL.Avalonia.csproj -c Release -r osx-arm64 --self-contained true -p:PublishSingleFile=false -p:Version=${{ env.RELEASE_VERSION }} -o ./publish/osx-arm64
+          Compress-Archive -Path "./publish/osx-arm64/*" -DestinationPath "./release_output/osx-arm64.zip" -Force
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: "v${{ env.RELEASE_VERSION }}"
+          name: "CLegendary Launcher v${{ env.RELEASE_VERSION }}"
+          prerelease: ${{ env.IS_PRERELEASE == 'true' }}
+          draft: false
+          files: |
+            ./release_output/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

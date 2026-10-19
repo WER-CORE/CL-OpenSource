@@ -4,6 +4,7 @@ secrets.local.json
 secrets.*.json
 !secrets.example.json
 appsettings.Development.json
+**/SecretsProvider.Compiled.cs
 
 # Created by https://www.toptal.com/developers/gitignore/api/csharp
 # Edit at https://www.toptal.com/developers/gitignore?templates=csharp

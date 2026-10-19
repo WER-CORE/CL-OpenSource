@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using Newtonsoft.Json.Linq;
 
@@ -17,9 +17,11 @@ public class SecretConfiguration
     public string DiscordClientId { get; set; } = "1210664596289884200";
 }
 
-public static class SecretsProvider
+public static partial class SecretsProvider
 {
     public const string UserSecretsId = "CLegendary-Launcher-Secrets-5f3a9e2d";
+
+    static partial void ApplyCompiledDefaults(SecretConfiguration config);
 
     private static readonly Lazy<SecretConfiguration> _config = new(LoadConfiguration);
 
@@ -41,6 +43,7 @@ public static class SecretsProvider
     private static SecretConfiguration LoadConfiguration()
     {
         var config = new SecretConfiguration();
+        ApplyCompiledDefaults(config);
 
         string userSecretsPath = GetUserSecretsPath(UserSecretsId);
         if (File.Exists(userSecretsPath))

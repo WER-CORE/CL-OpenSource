@@ -57,5 +57,16 @@ namespace CL_CLegendary_Launcher_.PlatformImpl
             }
             return Task.FromResult<string>(null);
         }
+
+        public Task<string> SaveFileDialogAsync(string title, string defaultFileName, string extension)
+        {
+            var sfd = new Microsoft.Win32.SaveFileDialog
+            {
+                Title = title,
+                FileName = defaultFileName,
+                Filter = $"{extension}|*{extension}|All files|*.*"
+            };
+            return Task.FromResult(sfd.ShowDialog() == true ? sfd.FileName : null);
+        }
     }
 }
