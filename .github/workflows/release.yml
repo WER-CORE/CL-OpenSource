@@ -96,32 +96,30 @@ jobs:
       - name: Publish Windows x64
         run: dotnet publish CL.Avalonia/CL.Avalonia.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=false -p:Version=${{ env.RELEASE_VERSION }} -p:AssemblyVersion=${{ env.RELEASE_VERSION }}.0 -p:FileVersion=${{ env.RELEASE_VERSION }}.0 -o ./publish/win-x64
 
-      - name: Upload binary for SignPath
-        if: env.SIGNPATH_API_TOKEN != ''
-        id: upload-binary-signpath
-        uses: actions/upload-artifact@v4
-        with:
-          name: unsigned-launcher
-          path: ./publish/win-x64/CL(CLegendary Launcher).exe
-
       - name: Sign launcher via SignPath
         if: env.SIGNPATH_API_TOKEN != ''
-        uses: signpath/github-action-submit-signing-request@v3
-        with:
-          api-token: ${{ env.SIGNPATH_API_TOKEN }}
-          organization-id: ${{ env.SIGNPATH_ORGANIZATION_ID }}
-          project-slug: ${{ env.SIGNPATH_PROJECT_SLUG }}
-          signing-policy-slug: ${{ env.SIGNPATH_SIGNING_POLICY_SLUG }}
-          github-artifact-id: ${{ steps.upload-binary-signpath.outputs.artifact-id }}
-          wait-for-completion: true
-          output-artifact-directory: ./signed-launcher
+        continue-on-error: true
+        shell: pwsh
+        run: |
+          Install-Module -Name SignPath -Force -Scope CurrentUser
+          New-Item -ItemType Directory -Path "./signed-launcher" -Force | Out-Null
+          Submit-SigningRequest `
+            -InputArtifactPath "./publish/win-x64/CL(CLegendary Launcher).exe" `
+            -OutputArtifactPath "./signed-launcher/CL(CLegendary Launcher).exe" `
+            -ApiToken "${{ env.SIGNPATH_API_TOKEN }}" `
+            -OrganizationId "${{ env.SIGNPATH_ORGANIZATION_ID }}" `
+            -ProjectSlug "${{ env.SIGNPATH_PROJECT_SLUG }}" `
+            -SigningPolicySlug "${{ env.SIGNPATH_SIGNING_POLICY_SLUG }}" `
+            -WaitForCompletion
 
       - name: Replace launcher with signed binary
         if: env.SIGNPATH_API_TOKEN != ''
         shell: pwsh
         run: |
-          Copy-Item -Path "./signed-launcher/CL(CLegendary Launcher).exe" -Destination "./publish/win-x64/CL(CLegendary Launcher).exe" -Force
-          Copy-Item -Path "./signed-launcher/CL(CLegendary Launcher).exe" -Destination "./publish/win-x64/CL.Avalonia.exe" -Force
+          if (Test-Path "./signed-launcher/CL(CLegendary Launcher).exe") {
+            Copy-Item -Path "./signed-launcher/CL(CLegendary Launcher).exe" -Destination "./publish/win-x64/CL(CLegendary Launcher).exe" -Force
+            Copy-Item -Path "./signed-launcher/CL(CLegendary Launcher).exe" -Destination "./publish/win-x64/CL.Avalonia.exe" -Force
+          }
 
       - name: Install Velopack CLI
         run: dotnet tool install -g vpk
