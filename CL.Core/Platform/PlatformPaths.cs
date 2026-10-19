@@ -1,4 +1,4 @@
-﻿using CL.Core.Helpers;
+using CL.Core.Helpers;
 using System;
 using System.IO;
 
@@ -20,7 +20,13 @@ namespace CL.Core.Services
         public static string AppDataDirectory()
         {
             if (OperatingSystem.IsWindows())
-                return AppDomain.CurrentDomain.BaseDirectory;
+            {
+                string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+                if (File.Exists(Path.Combine(baseDir, "portable.mode")))
+                    return baseDir;
+
+                return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".ClMinecraft");
+            }
 
             if (OperatingSystem.IsMacOS())
                 return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Library", "Application Support", "CLLauncher");
@@ -57,6 +63,19 @@ namespace CL.Core.Services
                     catch { }
                 }
             }
+        }
+
+        public static void BackupUserDataForPreBeta()
+        {
+            string dataFolder = DataFolder();
+            if (!Directory.Exists(dataFolder)) return;
+
+            string backupFolder = Path.Combine(AppDataDirectory(), "Data_backup_pre_beta");
+            try
+            {
+                DirectoryHelper.CopyDirectoryParallel(dataFolder, backupFolder);
+            }
+            catch { }
         }
 
         public static bool PathsEqual(string? left, string? right)

@@ -64,6 +64,7 @@ namespace CL.Core.Models
         public bool EnableMod_Statistics { get; set; } = true;
         public bool EnableSound { get; set; } = true;
         public double UIScale { get; set; } = 1.0;
+        public string UpdateChannel { get; set; } = "Stable";
         public object this[string propertyName]
         {
             get

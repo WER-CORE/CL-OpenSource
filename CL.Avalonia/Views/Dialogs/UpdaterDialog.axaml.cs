@@ -1,4 +1,4 @@
-﻿using Avalonia.Controls;
+using Avalonia.Controls;
 using Avalonia.Platform.Storage;
 using CL.Core.Models;
 using CL.Core.Services;
@@ -16,7 +16,9 @@ namespace CL_CLegendary_Launcher_.Avalonia.Views.Windows
         private string targetDownloadUrl = "";
         private string installPath = "";
         private string _downloadedFolderName = "win-x64";
-        private UpdateInfo? _currentUpdateInfo;
+        private CL.Core.Models.UpdateInfo? _currentUpdateInfo;
+        private global::Velopack.UpdateManager? _velopackManager;
+        private global::Velopack.UpdateInfo? _velopackUpdateInfo;
 
         public UpdaterWindow()
         {
@@ -62,6 +64,38 @@ namespace CL_CLegendary_Launcher_.Avalonia.Views.Windows
             try
             {
                 StatusText.Text = LocalizationManager.GetString("Updater.CheckingData", "Перевірка даних...");
+
+                bool isPrerelease = string.Equals(SettingsManager.Default.UpdateChannel, "Preview", StringComparison.OrdinalIgnoreCase);
+                var source = new global::Velopack.Sources.GithubSource("https://github.com/WER-CORE/CL-Win-Edition--Update", null, isPrerelease);
+                var mgr = new global::Velopack.UpdateManager(source);
+
+                if (mgr.IsInstalled)
+                {
+                    var vInfo = await mgr.CheckForUpdatesAsync();
+                    if (vInfo != null && vInfo.TargetFullRelease != null)
+                    {
+                        _velopackManager = mgr;
+                        _velopackUpdateInfo = vInfo;
+                        VersionText.Text = $"Нова версія: {vInfo.TargetFullRelease.Version} (Поточна: {mgr.CurrentVersion})";
+                        StatusText.Text = LocalizationManager.GetString("Updater.Available", "Доступне оновлення!");
+                        if (BtnUpdate != null) BtnUpdate.IsVisible = true;
+                        if (PathSelectionPanel != null) PathSelectionPanel.IsVisible = false;
+                        return;
+                    }
+                    else
+                    {
+                        StatusText.Text = LocalizationManager.GetString("Updater.LatestVersion", "У вас остання версія");
+                        await Task.Delay(2000);
+                        OpenMainLauncher();
+                        return;
+                    }
+                }
+            }
+            catch { }
+
+            try
+            {
+                StatusText.Text = LocalizationManager.GetString("Updater.CheckingData", "Перевірка даних...");
                 var info = await _updateService.CheckForUpdateAsync(Secrets.updateInfoUrl);
 
                 if (info == null || string.IsNullOrEmpty(info.Version))
@@ -101,6 +135,24 @@ namespace CL_CLegendary_Launcher_.Avalonia.Views.Windows
 
             try
             {
+                if (_velopackManager != null && _velopackUpdateInfo != null)
+                {
+                    StatusText.Text = LocalizationManager.GetString("Updater.DownloadingArchive", "Завантаження оновлення...");
+                    await _velopackManager.DownloadUpdatesAsync(_velopackUpdateInfo, p =>
+                    {
+                        global::Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                        {
+                            ProgreesBarDowload.Value = p;
+                            SizeText.Text = $"{p}%";
+                        });
+                    });
+
+                    StatusText.Text = LocalizationManager.GetString("Updater.ReadyToLaunch", "Готово! Перезапуск...");
+                    await Task.Delay(1500);
+                    _velopackManager.ApplyUpdatesAndRestart(_velopackUpdateInfo.TargetFullRelease);
+                    return;
+                }
+
                 StatusText.Text = LocalizationManager.GetString("Updater.DownloadingArchive", "Завантаження архіву...");
                 var progress = new Progress<(double percent, string size)>(p =>
                 {
@@ -130,7 +182,9 @@ namespace CL_CLegendary_Launcher_.Avalonia.Views.Windows
         private void StartNewVersion()
         {
             string expectedPath = Path.Combine(installPath, _downloadedFolderName, "CL(CLegendary Launcher).exe");
+            if (!File.Exists(expectedPath)) expectedPath = Path.Combine(installPath, _downloadedFolderName, "CL.Avalonia.exe");
             if (!File.Exists(expectedPath)) expectedPath = Path.Combine(installPath, "CL(CLegendary Launcher).exe");
+            if (!File.Exists(expectedPath)) expectedPath = Path.Combine(installPath, "CL.Avalonia.exe");
 
             if (File.Exists(expectedPath))
             {

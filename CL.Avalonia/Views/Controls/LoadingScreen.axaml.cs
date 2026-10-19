@@ -1,4 +1,4 @@
-﻿using Avalonia;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using CL.Core.Models;
@@ -130,6 +130,19 @@ namespace CL_CLegendary_Launcher_.Avalonia.Views.Controls
 
         private async Task<bool> CheckForUpdatesAsync()
         {
+            try
+            {
+                bool isPrerelease = string.Equals(SettingsManager.Default.UpdateChannel, "Preview", StringComparison.OrdinalIgnoreCase);
+                var source = new global::Velopack.Sources.GithubSource("https://github.com/WER-CORE/CL-Win-Edition--Update", null, isPrerelease);
+                var mgr = new global::Velopack.UpdateManager(source);
+                if (mgr.IsInstalled)
+                {
+                    var updateInfo = await mgr.CheckForUpdatesAsync();
+                    return updateInfo != null && updateInfo.TargetFullRelease != null;
+                }
+            }
+            catch { }
+
             using var client = new System.Net.Http.HttpClient();
             string json = await client.GetStringAsync(Secrets.UpdateUrlCheckLoadScreen);
 

@@ -49,23 +49,6 @@
             </Grid>
         </Border>
 
-        <Border Grid.Row="0" Background="Transparent" PointerPressed="Header_PointerPressed">
-            <Grid Margin="10,0" ColumnDefinitions="*,Auto">
-                <TextBlock Text="CL - Оновлення"
-                           Foreground="{DynamicResource MainForegroundBrush}"
-                           FontWeight="SemiBold" FontSize="12"
-                           VerticalAlignment="Center"/>
-
-                <Button Grid.Column="1" Classes="close-btn" Click="CloseButton_Click"
-                        Background="Transparent" BorderThickness="0"
-                        Foreground="{DynamicResource MainForegroundBrush}"
-                        Width="35" Height="30" Padding="0" Cursor="Hand"
-                        CornerRadius="6" ToolTip.Tip="Закрити вікно">
-                    <fluentIcons:SymbolIcon Symbol="Dismiss" FontSize="16" />
-                </Button>
-            </Grid>
-        </Border>
-
         <Grid Grid.Row="1" Margin="10,10,10,20" Opacity="0.95">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" MinWidth="20"/>

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -18,10 +18,25 @@ using CL.Core.Platform;
 using CL.Core.Services;
 using CL_CLegendary_Launcher_.Avalonia.Models;
 using CL_CLegendary_Launcher_.Avalonia.Services;
+using CL_CLegendary_Launcher_.Avalonia.Views.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 namespace CL_CLegendary_Launcher_.Avalonia.ViewModels.Pages;
+
+public class UpdateChannelOption
+{
+    public string Key { get; }
+    public string Display { get; }
+
+    public UpdateChannelOption(string key, string display)
+    {
+        Key = key;
+        Display = display;
+    }
+
+    public override string ToString() => Display;
+}
 
 public class UiScaleOption
 {
@@ -96,6 +111,12 @@ public partial class SettingsPageViewModel : ObservableObject
     [ObservableProperty] private string _launcherPath = string.Empty;
 
     [ObservableProperty] private byte _maxAutoBackups = 3;
+
+    public ObservableCollection<UpdateChannelOption> AvailableUpdateChannels { get; } = new();
+    [ObservableProperty] private UpdateChannelOption? _selectedUpdateChannelOption;
+    [ObservableProperty] private string _updateStatusText = string.Empty;
+    [ObservableProperty] private bool _isCheckingUpdates;
+    private bool _suppressChannelChange;
 
     public ObservableCollection<LanguageItem> Languages { get; } = new();
     [ObservableProperty] private LanguageItem? _selectedLanguage;
@@ -239,6 +260,7 @@ public partial class SettingsPageViewModel : ObservableObject
         UpdateLocalizedThemeOptionNames();
         SelectedThemeOption = AvailableThemes.FirstOrDefault(t => t.Key.Equals(SelectedTheme, StringComparison.OrdinalIgnoreCase)) ?? AvailableThemes[0];
         SyncThemePropertiesFromSettings();
+        UpdateLocalizedUpdateChannels();
 
         LoadScreenColor = string.IsNullOrWhiteSpace(SettingsManager.Default.LoadScreenBarColor) ? "#00BEFF" : SettingsManager.Default.LoadScreenBarColor;
         LoadScreenBackground = SettingsManager.Default.LoadScreenBackground ?? string.Empty;
@@ -325,6 +347,18 @@ public partial class SettingsPageViewModel : ObservableObject
     }
 
     #region Property Changed Handlers
+
+    partial void OnSelectedUpdateChannelOptionChanged(UpdateChannelOption? value)
+    {
+        if (value == null || _suppressChannelChange) return;
+        _soundService.PlayClick();
+        if (value.Key.Equals("Preview", StringComparison.OrdinalIgnoreCase) && !string.Equals(SettingsManager.Default.UpdateChannel, "Preview", StringComparison.OrdinalIgnoreCase))
+        {
+            PlatformPaths.BackupUserDataForPreBeta();
+        }
+        SettingsManager.Default.UpdateChannel = value.Key;
+        Save();
+    }
 
     partial void OnEnableLogChanged(bool value)
     {
@@ -895,6 +929,7 @@ public partial class SettingsPageViewModel : ObservableObject
                 {
                     LocalizationManager.LoadLanguage(lang.Code);
                     UpdateLocalizedThemeOptionNames();
+                    UpdateLocalizedUpdateChannels();
                     LanguageConfigurationChanged?.Invoke();
                 });
             }
@@ -914,6 +949,18 @@ public partial class SettingsPageViewModel : ObservableObject
         {
             IsLoadingLanguage = false;
         }
+    }
+
+    private void UpdateLocalizedUpdateChannels()
+    {
+        string currentKey = SelectedUpdateChannelOption?.Key ?? SettingsManager.Default.UpdateChannel;
+        if (string.IsNullOrWhiteSpace(currentKey)) currentKey = "Stable";
+        _suppressChannelChange = true;
+        AvailableUpdateChannels.Clear();
+        AvailableUpdateChannels.Add(new UpdateChannelOption("Stable", LocalizationManager.GetString("Settings.ChannelStable", "Стабільний (Release)")));
+        AvailableUpdateChannels.Add(new UpdateChannelOption("Preview", LocalizationManager.GetString("Settings.ChannelPreview", "Тестовий (Pre-release / Beta)")));
+        SelectedUpdateChannelOption = AvailableUpdateChannels.FirstOrDefault(c => c.Key.Equals(currentKey, StringComparison.OrdinalIgnoreCase)) ?? AvailableUpdateChannels[0];
+        _suppressChannelChange = false;
     }
 
     private void UpdateLocalizedThemeOptionNames()
@@ -1256,6 +1303,65 @@ public partial class SettingsPageViewModel : ObservableObject
             _themeService.ImportLoadScreen(code.Trim());
             LoadScreenColor = string.IsNullOrEmpty(SettingsManager.Default.LoadScreenBarColor) ? "#00BEFF" : SettingsManager.Default.LoadScreenBarColor;
             LoadScreenBackground = SettingsManager.Default.LoadScreenBackground ?? string.Empty;
+        }
+    }
+
+    #endregion
+
+    #region Update Commands
+
+    [RelayCommand]
+    public async Task CheckUpdatesManualAsync()
+    {
+        if (IsCheckingUpdates) return;
+        IsCheckingUpdates = true;
+        UpdateStatusText = LocalizationManager.GetString("Settings.CheckingUpdates", "Перевірка оновлень...");
+        try
+        {
+            bool isPrerelease = string.Equals(SettingsManager.Default.UpdateChannel, "Preview", StringComparison.OrdinalIgnoreCase);
+            var source = new global::Velopack.Sources.GithubSource("https://github.com/WER-CORE/CL-Win-Edition--Update", null, isPrerelease);
+            var mgr = new global::Velopack.UpdateManager(source);
+
+            if (mgr.IsInstalled)
+            {
+                var info = await mgr.CheckForUpdatesAsync();
+                if (info != null && info.TargetFullRelease != null)
+                {
+                    UpdateStatusText = string.Format(LocalizationManager.GetString("Settings.UpdateFound", "Доступно: v{0}"), info.TargetFullRelease.Version);
+                    var updater = new UpdaterWindow();
+                    updater.Show();
+                    return;
+                }
+                else
+                {
+                    UpdateStatusText = LocalizationManager.GetString("Settings.LatestVersionInstalled", "У вас найновіша версія");
+                }
+            }
+            else
+            {
+                var updateService = new UpdateService();
+                var info = await updateService.CheckForUpdateAsync(Secrets.updateInfoUrl);
+                string localVer = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "0.0.0";
+                if (info != null && updateService.IsUpdateAvailable(info.Version, localVer))
+                {
+                    UpdateStatusText = string.Format(LocalizationManager.GetString("Settings.UpdateFound", "Доступно: v{0}"), info.Version);
+                    var updater = new UpdaterWindow();
+                    updater.Show();
+                    return;
+                }
+                else
+                {
+                    UpdateStatusText = LocalizationManager.GetString("Settings.LatestVersionInstalled", "У вас найновіша версія");
+                }
+            }
+        }
+        catch (Exception)
+        {
+            UpdateStatusText = LocalizationManager.GetString("Settings.UpdateCheckError", "Помилка перевірки оновлень");
+        }
+        finally
+        {
+            IsCheckingUpdates = false;
         }
     }
 

@@ -54,6 +54,11 @@ public partial class SettingsPage : UserControl
         LanguageTitleTXT.Text = LocalizationManager.GetString("Settings.LanguageTitle", "Мова інтерфейсу (Language)");
         LanguageDescTXT.Text = LocalizationManager.GetString("Settings.LanguageDesc", "Оберіть мову для лаунчера. Оновлюється миттєво.");
         HelpTranslateTXT.Content = LocalizationManager.GetString("Settings.HelpTranslate", "Як допомогти з перекладом?");
+        if (Loc_Settings_UpdateChannelTitle != null) Loc_Settings_UpdateChannelTitle.Text = LocalizationManager.GetString("Settings.UpdateChannelTitle", "Канал оновлень");
+        if (Loc_Settings_UpdateChannelDesc != null) Loc_Settings_UpdateChannelDesc.Text = LocalizationManager.GetString("Settings.UpdateChannelDesc", "Вибір стабільної версії або тестової (Beta) з раннім доступом до нових функцій");
+        if (Loc_Settings_UpdateCheckTitle != null) Loc_Settings_UpdateCheckTitle.Text = LocalizationManager.GetString("Settings.UpdateCheckTitle", "Оновлення лаунчера");
+        if (Loc_Settings_UpdateCheckDesc != null) Loc_Settings_UpdateCheckDesc.Text = string.Format(LocalizationManager.GetString("Settings.UpdateCheckDesc", "Поточна версія: {0}"), System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "1.1.0");
+        if (Loc_Settings_BtnCheckUpdates != null) Loc_Settings_BtnCheckUpdates.Content = LocalizationManager.GetString("Settings.BtnCheckUpdates", "Перевірити оновлення");
         Loc_Settings_SoundTitle.Text = LocalizationManager.GetString("Settings.SoundTitle", "Звуки інтерфейсу");
         Loc_Settings_SoundDesc.Text = LocalizationManager.GetString("Settings.SoundDesc", "Озвучка кліків та натискань кнопок");
         Loc_Settings_ScaleTitle.Text = LocalizationManager.GetString("Settings.ScaleTitle", "Масштаб інтерфейсу");

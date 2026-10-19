@@ -1,4 +1,5 @@
 using Avalonia;
+using Velopack;
 
 namespace CL_CLegendary_Launcher_.Avalonia
 {
@@ -12,6 +13,9 @@ namespace CL_CLegendary_Launcher_.Avalonia
 
         [System.STAThread]
         public static int Main(string[] args)
-            => BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
+        {
+            VelopackApp.Build().Run();
+            return BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
+        }
     }
 }

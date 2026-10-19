@@ -1,4 +1,4 @@
-﻿using CL.Core.Models;
+using CL.Core.Models;
 using Newtonsoft.Json;
 using System;
 using System.IO;
@@ -7,8 +7,8 @@ namespace CL.Core.Services
 {
     public static class SettingsManager
     {
-        private static readonly string FolderPath = PlatformPaths.DataFolder();
-        private static readonly string FilePath = Path.Combine(FolderPath, "UserSaves.json");
+        public static string FolderPath => PlatformPaths.DataFolder();
+        public static string FilePath => Path.Combine(FolderPath, "UserSaves.json");
         public static AppSettings Default { get; set; } = new AppSettings();
         public static void Load()
         {
