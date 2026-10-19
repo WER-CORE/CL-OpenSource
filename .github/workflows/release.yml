@@ -226,6 +226,7 @@ jobs:
       - name: Publish Linux x64
         run: |
           dotnet publish CL.Avalonia/CL.Avalonia.csproj -c Release -r linux-x64 --self-contained true -p:PublishSingleFile=false -p:Version=${{ env.RELEASE_VERSION }} -p:AssemblyVersion=${{ env.RELEASE_VERSION }}.0 -p:FileVersion=${{ env.RELEASE_VERSION }}.0 -o ./publish/linux-x64
+          cp ./publish/linux-x64/CL.Avalonia "./publish/linux-x64/CL(CLegendary Launcher)" || true
           chmod +x ./publish/linux-x64/CL* || true
           mkdir -p ./linux_artifacts
 
@@ -244,7 +245,11 @@ jobs:
           cat << 'EOF' > AppDir/AppRun
           #!/bin/sh
           HERE="$(dirname "$(readlink -f "${0}")")"
-          exec "$HERE/usr/bin/CL(CLegendary Launcher)" "$@"
+          if [ -f "$HERE/usr/bin/CL.Avalonia" ]; then
+            exec "$HERE/usr/bin/CL.Avalonia" "$@"
+          else
+            exec "$HERE/usr/bin/CL(CLegendary Launcher)" "$@"
+          fi
           EOF
           chmod +x AppDir/AppRun
           cat << 'EOF' > AppDir/clegendarylauncher.desktop
@@ -327,14 +332,15 @@ jobs:
           mkdir -p "dmg_folder/CLegendary Launcher.app/Contents/MacOS"
           mkdir -p "dmg_folder/CLegendary Launcher.app/Contents/Resources"
           cp -r ./publish/osx-arm64/* "dmg_folder/CLegendary Launcher.app/Contents/MacOS/"
-          chmod +x "dmg_folder/CLegendary Launcher.app/Contents/MacOS/CL(CLegendary Launcher)"
+          cp "dmg_folder/CLegendary Launcher.app/Contents/MacOS/CL.Avalonia" "dmg_folder/CLegendary Launcher.app/Contents/MacOS/CL(CLegendary Launcher)" || true
+          chmod +x "dmg_folder/CLegendary Launcher.app/Contents/MacOS/CL"* || true
           cat << 'EOF' > "dmg_folder/CLegendary Launcher.app/Contents/Info.plist"
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
           <plist version="1.0">
           <dict>
               <key>CFBundleExecutable</key>
-              <string>CL(CLegendary Launcher)</string>
+              <string>CL.Avalonia</string>
               <key>CFBundleIdentifier</key>
               <string>app.clegendary.launcher</string>
               <key>CFBundleName</key>
