@@ -12,6 +12,10 @@ on:
         type: boolean
         required: true
         default: true
+      target_repo:
+        description: 'Target repository for release'
+        required: true
+        default: 'WER-CORE/CL-Win-Edition--Update'
   push:
     tags:
       - 'v*'
@@ -20,31 +24,43 @@ permissions:
   contents: write
 
 jobs:
-  release:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.calc.outputs.version }}
+      is_prerelease: ${{ steps.calc.outputs.is_prerelease }}
+      target_repo: ${{ steps.calc.outputs.target_repo }}
+    steps:
+      - id: calc
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VER="${{ inputs.version }}"
+            IS_PRE="${{ inputs.is_prerelease }}"
+            TARGET="${{ inputs.target_repo }}"
+          else
+            REF="${{ github.ref_name }}"
+            VER="${REF#v}"
+            IS_PRE="false"
+            TARGET="WER-CORE/CL-Win-Edition--Update"
+          fi
+          echo "version=$VER" >> $GITHUB_OUTPUT
+          echo "is_prerelease=$IS_PRE" >> $GITHUB_OUTPUT
+          echo "target_repo=$TARGET" >> $GITHUB_OUTPUT
+
+  build-windows:
+    needs: prepare
     runs-on: windows-latest
     env:
+      RELEASE_VERSION: ${{ needs.prepare.outputs.version }}
       SIGNPATH_API_TOKEN: ${{ secrets.SIGNPATH_API_TOKEN }}
       SIGNPATH_ORGANIZATION_ID: ${{ vars.SIGNPATH_ORGANIZATION_ID || secrets.SIGNPATH_ORGANIZATION_ID || 'ee9101d1-c7a5-4c9b-8415-756078e535be' }}
       SIGNPATH_PROJECT_SLUG: ${{ vars.SIGNPATH_PROJECT_SLUG || secrets.SIGNPATH_PROJECT_SLUG || 'CL-Launcher' }}
       SIGNPATH_SIGNING_POLICY_SLUG: ${{ vars.SIGNPATH_SIGNING_POLICY_SLUG || secrets.SIGNPATH_SIGNING_POLICY_SLUG || 'test-signing' }}
-
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
-
-      - name: Determine Version
-        shell: pwsh
-        run: |
-          if ("${{ github.event_name }}" -eq "workflow_dispatch") {
-            $ver = "${{ inputs.version }}"
-            $isPre = "${{ inputs.is_prerelease }}"
-          } else {
-            $ver = "${{ github.ref_name }}".TrimStart('v')
-            $isPre = "false"
-          }
-          "RELEASE_VERSION=$ver" >> $env:GITHUB_ENV
-          "IS_PRERELEASE=$isPre" >> $env:GITHUB_ENV
 
       - name: Setup .NET 8
         uses: actions/setup-dotnet@v4
@@ -136,31 +152,263 @@ jobs:
                    --packAuthors "WER-CORE" `
                    --outputDir "./release_output"
 
-      - name: Create legacy win-x64 zip
+      - name: Organize Windows release artifacts
         shell: pwsh
         run: |
-          Compress-Archive -Path "./publish/win-x64/*" -DestinationPath "./release_output/win-x64.zip" -Force
+          New-Item -ItemType Directory -Path "./windows_artifacts" -Force | Out-Null
+          Get-ChildItem -Path "./release_output" -Filter "*.nupkg" | Move-Item -Destination "./windows_artifacts/"
+          Get-ChildItem -Path "./release_output" -Filter "*.json" | Move-Item -Destination "./windows_artifacts/"
+          if (Test-Path "./release_output/RELEASES") { Move-Item -Path "./release_output/RELEASES" -Destination "./windows_artifacts/" }
+          if (Test-Path "./release_output/CLegendaryLauncher-win-Setup.exe") {
+            Copy-Item -Path "./release_output/CLegendaryLauncher-win-Setup.exe" -Destination "./windows_artifacts/CLegendaryLauncher-Windows-Setup.exe"
+          }
+          if (Test-Path "./release_output/CLegendaryLauncher-win-Portable.zip") {
+            Copy-Item -Path "./release_output/CLegendaryLauncher-win-Portable.zip" -Destination "./windows_artifacts/CLegendaryLauncher-Windows-Portable.zip"
+          }
+
+      - name: Upload Windows Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-assets
+          path: ./windows_artifacts/*
+
+  build-linux:
+    needs: prepare
+    runs-on: ubuntu-latest
+    env:
+      RELEASE_VERSION: ${{ needs.prepare.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+          dotnet-quality: 'preview'
+
+      - name: Generate compiled secrets
+        if: env.APP_SECRETS_JSON != ''
+        shell: pwsh
+        env:
+          APP_SECRETS_JSON: ${{ secrets.APP_SECRETS_JSON }}
+        run: |
+          $json = $env:APP_SECRETS_JSON | ConvertFrom-Json
+          $secrets = $json.Secrets
+          if (-not $secrets) { $secrets = $json }
+          $code = @"
+          namespace CL.Core.Services;
+
+          public static partial class SecretsProvider
+          {
+              static partial void ApplyCompiledDefaults(SecretConfiguration config)
+              {
+                  config.LauncherSecret = "$($secrets.LauncherSecret)";
+                  config.CurseForgeKeyUrl = "$($secrets.CurseForgeKeyUrl)";
+                  config.CurseForgeDirectApiKey = "$($secrets.CurseForgeDirectApiKey)";
+                  config.GeminiApiUrl = "$($secrets.GeminiApiUrl)";
+                  config.GeminiModelUrl = "$($secrets.GeminiModelUrl)";
+                  config.GeminiDirectApiKey = "$($secrets.GeminiDirectApiKey)";
+                  config.SentryDsn = "$($secrets.SentryDsn)";
+                  config.AzureClientId = "$($secrets.AzureClientId)";
+                  config.DiscordClientId = "$($secrets.DiscordClientId)";
+              }
+          }
+          "@
+          $code | Out-File -FilePath "CL.Core/Services/SecretsProvider.Compiled.cs" -Encoding utf8
 
       - name: Publish Linux x64
-        shell: pwsh
         run: |
-          dotnet publish CL.Avalonia/CL.Avalonia.csproj -c Release -r linux-x64 --self-contained true -p:PublishSingleFile=false -p:Version=${{ env.RELEASE_VERSION }} -o ./publish/linux-x64
-          Compress-Archive -Path "./publish/linux-x64/*" -DestinationPath "./release_output/linux-x64.zip" -Force
+          dotnet publish CL.Avalonia/CL.Avalonia.csproj -c Release -r linux-x64 --self-contained true -p:PublishSingleFile=false -p:Version=${{ env.RELEASE_VERSION }} -p:AssemblyVersion=${{ env.RELEASE_VERSION }}.0 -p:FileVersion=${{ env.RELEASE_VERSION }}.0 -o ./publish/linux-x64
+          chmod +x ./publish/linux-x64/CL* || true
+          mkdir -p ./linux_artifacts
+
+      - name: Create Linux tar.gz
+        run: |
+          tar -czvf ./linux_artifacts/CLegendaryLauncher-Linux-x64.tar.gz -C ./publish/linux-x64 .
+
+      - name: Build Linux AppImage
+        run: |
+          mkdir -p AppDir/usr/bin
+          mkdir -p AppDir/usr/share/icons/hicolor/256x256/apps
+          cp -r ./publish/linux-x64/* AppDir/usr/bin/
+          chmod +x AppDir/usr/bin/*
+          cp "CL.Avalonia/Icon/IconCL(Common).png" AppDir/clegendarylauncher.png || cp "CL.Avalonia/Icon/IconCL(Common).png" AppDir/icon.png || true
+          cp "CL.Avalonia/Icon/IconCL(Common).png" AppDir/usr/share/icons/hicolor/256x256/apps/clegendarylauncher.png || true
+          cat << 'EOF' > AppDir/AppRun
+          #!/bin/sh
+          HERE="$(dirname "$(readlink -f "${0}")")"
+          exec "$HERE/usr/bin/CL(CLegendary Launcher)" "$@"
+          EOF
+          chmod +x AppDir/AppRun
+          cat << 'EOF' > AppDir/clegendarylauncher.desktop
+          [Desktop Entry]
+          Name=CLegendary Launcher
+          Exec=AppRun
+          Icon=clegendarylauncher
+          Type=Application
+          Categories=Game;
+          Terminal=false
+          EOF
+          wget -q https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage -O appimagetool
+          chmod +x appimagetool
+          ARCH=x86_64 ./appimagetool --appimage-extract-and-run AppDir ./linux_artifacts/CLegendaryLauncher-Linux-x64.AppImage
+
+      - name: Upload Linux Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-assets
+          path: ./linux_artifacts/*
+
+  build-macos:
+    needs: prepare
+    runs-on: macos-latest
+    env:
+      RELEASE_VERSION: ${{ needs.prepare.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+          dotnet-quality: 'preview'
+
+      - name: Generate compiled secrets
+        if: env.APP_SECRETS_JSON != ''
+        shell: pwsh
+        env:
+          APP_SECRETS_JSON: ${{ secrets.APP_SECRETS_JSON }}
+        run: |
+          $json = $env:APP_SECRETS_JSON | ConvertFrom-Json
+          $secrets = $json.Secrets
+          if (-not $secrets) { $secrets = $json }
+          $code = @"
+          namespace CL.Core.Services;
+
+          public static partial class SecretsProvider
+          {
+              static partial void ApplyCompiledDefaults(SecretConfiguration config)
+              {
+                  config.LauncherSecret = "$($secrets.LauncherSecret)";
+                  config.CurseForgeKeyUrl = "$($secrets.CurseForgeKeyUrl)";
+                  config.CurseForgeDirectApiKey = "$($secrets.CurseForgeDirectApiKey)";
+                  config.GeminiApiUrl = "$($secrets.GeminiApiUrl)";
+                  config.GeminiModelUrl = "$($secrets.GeminiModelUrl)";
+                  config.GeminiDirectApiKey = "$($secrets.GeminiDirectApiKey)";
+                  config.SentryDsn = "$($secrets.SentryDsn)";
+                  config.AzureClientId = "$($secrets.AzureClientId)";
+                  config.DiscordClientId = "$($secrets.DiscordClientId)";
+              }
+          }
+          "@
+          $code | Out-File -FilePath "CL.Core/Services/SecretsProvider.Compiled.cs" -Encoding utf8
 
       - name: Publish macOS arm64
-        shell: pwsh
         run: |
-          dotnet publish CL.Avalonia/CL.Avalonia.csproj -c Release -r osx-arm64 --self-contained true -p:PublishSingleFile=false -p:Version=${{ env.RELEASE_VERSION }} -o ./publish/osx-arm64
-          Compress-Archive -Path "./publish/osx-arm64/*" -DestinationPath "./release_output/osx-arm64.zip" -Force
+          dotnet publish CL.Avalonia/CL.Avalonia.csproj -c Release -r osx-arm64 --self-contained true -p:PublishSingleFile=false -p:Version=${{ env.RELEASE_VERSION }} -p:AssemblyVersion=${{ env.RELEASE_VERSION }}.0 -p:FileVersion=${{ env.RELEASE_VERSION }}.0 -o ./publish/osx-arm64
+          chmod +x ./publish/osx-arm64/CL* || true
+
+      - name: Package macOS DMG
+        run: |
+          mkdir -p "dmg_folder/CLegendary Launcher.app/Contents/MacOS"
+          mkdir -p "dmg_folder/CLegendary Launcher.app/Contents/Resources"
+          cp -r ./publish/osx-arm64/* "dmg_folder/CLegendary Launcher.app/Contents/MacOS/"
+          chmod +x "dmg_folder/CLegendary Launcher.app/Contents/MacOS/CL(CLegendary Launcher)"
+          cat << 'EOF' > "dmg_folder/CLegendary Launcher.app/Contents/Info.plist"
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>CFBundleExecutable</key>
+              <string>CL(CLegendary Launcher)</string>
+              <key>CFBundleIdentifier</key>
+              <string>app.clegendary.launcher</string>
+              <key>CFBundleName</key>
+              <string>CLegendary Launcher</string>
+              <key>CFBundlePackageType</key>
+              <string>APPL</string>
+              <key>CFBundleShortVersionString</key>
+              <string>${{ env.RELEASE_VERSION }}</string>
+              <key>NSHighResolutionCapable</key>
+              <true/>
+          </dict>
+          </plist>
+          EOF
+          ln -s /Applications dmg_folder/Applications
+          mkdir -p macos_artifacts
+          hdiutil create -volname "CLegendary Launcher" -srcfolder dmg_folder -ov -format UDZO "./macos_artifacts/CLegendaryLauncher-macOS.dmg"
+
+      - name: Upload macOS Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-assets
+          path: ./macos_artifacts/*
+
+  publish-release:
+    needs: [prepare, build-windows, build-linux, build-macos]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: ./downloaded_artifacts
+
+      - name: Flatten release assets
+        run: |
+          mkdir -p ./release_final
+          find ./downloaded_artifacts -type f -exec mv {} ./release_final/ \;
+          ls -la ./release_final
+
+      - name: Generate Release Body
+        run: |
+          VER="${{ needs.prepare.outputs.version }}"
+          cat << 'EOF' > body.md
+          ### 📦 CLegendary Launcher v${VER}
+
+          #### 🚀 Downloads:
+          | Platform | File | Description |
+          |:---|:---|:---|
+          | 🪟 **Windows** | `CLegendaryLauncher-Windows-Setup.exe` | Recommended Installer with auto-updates |
+          | 🪟 **Windows Portable** | `CLegendaryLauncher-Windows-Portable.zip` | Portable standalone package |
+          | 🐧 **Linux (AppImage)** | `CLegendaryLauncher-Linux-x64.AppImage` | Universal one-click executable |
+          | 🐧 **Linux (Tarball)** | `CLegendaryLauncher-Linux-x64.tar.gz` | Standard archive with executable permissions |
+          | 🍎 **macOS** | `CLegendaryLauncher-macOS.dmg` | Disk Image for Apple Silicon (arm64) |
+
+          <details>
+          <summary>🔍 Velopack & Automated Update Feeds (Internal)</summary>
+
+          - `CLegendaryLauncher-*.nupkg`
+          - `releases.win.json`
+          - `assets.win.json`
+          </details>
+
+          ---
+          *Verified and built with GitHub Actions CI/CD.*
+          EOF
+          sed -i "s/\${VER}/$VER/g" body.md
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: "v${{ env.RELEASE_VERSION }}"
-          name: "CLegendary Launcher v${{ env.RELEASE_VERSION }}"
-          prerelease: ${{ env.IS_PRERELEASE == 'true' }}
+          repository: ${{ needs.prepare.outputs.target_repo }}
+          token: ${{ secrets.RELEASE_PAT || secrets.GITHUB_TOKEN }}
+          tag_name: "v${{ needs.prepare.outputs.version }}"
+          name: "CLegendary Launcher v${{ needs.prepare.outputs.version }}"
+          body_path: body.md
+          prerelease: ${{ needs.prepare.outputs.is_prerelease == 'true' }}
           draft: false
           files: |
-            ./release_output/*
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            ./release_final/*
