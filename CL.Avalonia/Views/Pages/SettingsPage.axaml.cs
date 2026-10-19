@@ -1,4 +1,4 @@
-﻿using Avalonia;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
@@ -66,6 +66,9 @@ public partial class SettingsPage : UserControl
         Loc_Settings_AutoDepDesc.Text = LocalizationManager.GetString("Settings.AutoDepDesc", "Автоматично додає потрібні бібліотеки (API) до модів");
         Loc_Settings_GlassTitle.Text = LocalizationManager.GetString("Settings.GlassTitle", "Ефект прозорості (Скло)");
         Loc_Settings_GlassDesc.Text = LocalizationManager.GetString("Settings.GlassDesc", "Напівпрозорий фон вікна (Mica). Вимкніть, якщо лагає");
+        if (Loc_Settings_TourTitle != null) Loc_Settings_TourTitle.Text = LocalizationManager.GetString("Settings.TourTitle", "Ознайомчий тур");
+        if (Loc_Settings_TourDesc != null) Loc_Settings_TourDesc.Text = LocalizationManager.GetString("Settings.TourDesc", "Швидкий гід основними можливостями та розділами лаунчера");
+        if (StartTourButton != null) StartTourButton.Content = LocalizationManager.GetString("Settings.StartTourBtn", "Пройти тур");
 
         Loc_Settings_ModulesTitle.Text = LocalizationManager.GetString("Settings.ModulesTitle", "Модульність (Кастомізація)");
         Loc_Settings_ModulesDesc.Text = LocalizationManager.GetString("Settings.ModulesDesc", "Оберіть готовий шаблон або вимкніть непотрібні функції власноруч:");
@@ -131,5 +134,13 @@ public partial class SettingsPage : UserControl
         if (Loc_Settings_LoadScreenCodeTitle != null) Loc_Settings_LoadScreenCodeTitle.Text = LocalizationManager.GetString("Settings.LoadScreenCodeTitle", "Код теми (Завантажувального екрану)");
         if (Loc_BtnCopyLoadScreen != null) Loc_BtnCopyLoadScreen.Content = LocalizationManager.GetString("Settings.CopyBtn", "Копіювати");
         if (Loc_BtnPasteLoadScreen != null) Loc_BtnPasteLoadScreen.Content = LocalizationManager.GetString("Settings.PasteBtn", "Вставити");
+    }
+
+    public void StartTourButton_Click(object? sender, RoutedEventArgs e)
+    {
+        if (TopLevel.GetTopLevel(this) is CL_Main mainWin)
+        {
+            mainWin.StartOnboardingTour();
+        }
     }
 }

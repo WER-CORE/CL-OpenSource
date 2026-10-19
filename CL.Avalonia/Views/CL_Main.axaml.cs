@@ -20,9 +20,11 @@ namespace CL_CLegendary_Launcher_.Avalonia.Views;
 public partial class CL_Main : Window
 {
     public LauncherNavigationService NavigationService { get; }
+    public TutorialTourManager TourManager => _tourManager;
     private CL_MainViewModel? _boundVm;
     private readonly AvaloniaThemeService? _themeService;
     private readonly TutorialOverlayService _tutorialService;
+    private readonly TutorialTourManager _tourManager;
     private Control? _activeTabBorder;
     private bool _isProfilesLoaded;
 
@@ -44,8 +46,16 @@ public partial class CL_Main : Window
             TutorialOverlayPath,
             TutorialMessageParams,
             TutorialTitleText,
-            TutorialBodyText
+            TutorialBodyText,
+            TutorialStepCounter,
+            TutorialTourButtonsPanel,
+            TutorialBackBtn,
+            TutorialNextBtn,
+            TutorialFinishBtn,
+            TutorialSkipBtn,
+            Loc_BtnUnderstood
         );
+        _tourManager = new TutorialTourManager(this, _tutorialService);
 
         if (_themeService != null)
         {
@@ -209,13 +219,17 @@ public partial class CL_Main : Window
         if (Loc_TxtFundTitle != null) Loc_TxtFundTitle.Text = LocalizationManager.GetString("Fundraisers.Title", "АКТУАЛЬНІ ЗБОРИ");
         if (NoActiveFundsTXT != null) NoActiveFundsTXT.Text = LocalizationManager.GetString("Fundraisers.NoActive", "Наразі немає активних зборів.");
 
-        if (TutorialHelloText != null) TutorialHelloText.Text = LocalizationManager.GetString("Tutorial.Hello", "Привіт, я Сіель!");
-        if (QuestionTXT != null) QuestionTXT.Text = LocalizationManager.GetString("Tutorial.Question", "Я підготувала для тебе детальну документацію лаунчера. Хочеш поглянути?");
+        if (TutorialHelloText != null) TutorialHelloText.Text = LocalizationManager.GetString("Tutorial.Hello", "Привіт, я Сіель");
+        if (QuestionTXT != null) QuestionTXT.Text = LocalizationManager.GetString("Tutorial.Question", "Я підготувала короткий посібник по лаунчеру. Пройдемося разом?");
         if (NoQuestionTutorialButton != null) NoQuestionTutorialButton.Content = LocalizationManager.GetString("Tutorial.NoThanks", "Ні, дякую");
-        if (YesQuestionTutorialButton != null) YesQuestionTutorialButton.Content = LocalizationManager.GetString("Tutorial.YesPlease", "Так, давай!");
-        if (TutorialTitleText != null) TutorialTitleText.Text = LocalizationManager.GetString("Tutorial.OverlayTitle", "Довідка тут!");
-        if (TutorialBodyText != null) TutorialBodyText.Text = LocalizationManager.GetString("Tutorial.OverlayBody", "Якщо що, я (документація) завжди поряд з вами! Звертайтесь, якщо потрібно, натиснувши на цю кнопку. \"Інформація\" > \"Документація\"");
-        if (Loc_BtnUnderstood != null) Loc_BtnUnderstood.Content = LocalizationManager.GetString("Tutorial.UnderstoodBtn", "Зрозуміло, далі");
+        if (YesQuestionTutorialButton != null) YesQuestionTutorialButton.Content = LocalizationManager.GetString("Tutorial.YesPlease", "Давай");
+        if (TutorialTitleText != null) TutorialTitleText.Text = LocalizationManager.GetString("Tutorial.OverlayTitle", "Довідка тут");
+        if (TutorialBodyText != null) TutorialBodyText.Text = LocalizationManager.GetString("Tutorial.OverlayBody", "Документація завжди під рукою. Знайти її можна у будь-який момент через меню «Інформація» > «Документація».");
+        if (Loc_BtnUnderstood != null) Loc_BtnUnderstood.Content = LocalizationManager.GetString("Tutorial.UnderstoodBtn", "Зрозуміло");
+        if (TutorialBackBtn != null) TutorialBackBtn.Content = LocalizationManager.GetString("TutorialTour.BtnBack", "Назад");
+        if (TutorialNextBtn != null) TutorialNextBtn.Content = LocalizationManager.GetString("TutorialTour.BtnNext", "Далі");
+        if (TutorialFinishBtn != null) TutorialFinishBtn.Content = LocalizationManager.GetString("TutorialTour.BtnFinish", "Завершити");
+        if (TutorialSkipBtn != null) TutorialSkipBtn.Content = LocalizationManager.GetString("TutorialTour.BtnSkip", "Пропустити");
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -596,7 +610,7 @@ public partial class CL_Main : Window
         SettingsManager.Default.IsDocsTutorialShown = true;
         SettingsManager.Save();
         TutorialGrid.IsVisible = false;
-        WebHelper.OpenUrl("https://cl-launcher.app/tutorial.html");
+        _tourManager.StartTour();
     }
 
     public void CloseTutorial_Click(object? sender, RoutedEventArgs e)
@@ -610,8 +624,27 @@ public partial class CL_Main : Window
 
     public void TutorialOverlay_PointerPressed(object? sender, PointerPressedEventArgs e)
     {
+        if (_tourManager.IsTourActive)
+        {
+            return;
+        }
         CloseTutorial_Click(sender, e);
     }
+
+    public void TutorialBackBtn_Click(object? sender, RoutedEventArgs e) =>
+        _tourManager.PreviousStep();
+
+    public void TutorialNextBtn_Click(object? sender, RoutedEventArgs e) =>
+        _tourManager.NextStep();
+
+    public void TutorialFinishBtn_Click(object? sender, RoutedEventArgs e) =>
+        _tourManager.FinishTour();
+
+    public void TutorialSkipBtn_Click(object? sender, RoutedEventArgs e) =>
+        _tourManager.SkipTour();
+
+    public void StartOnboardingTour() =>
+        _tourManager.StartTour();
 
     public void ShowDocsTutorial()
     {
@@ -624,8 +657,8 @@ public partial class CL_Main : Window
                 {
                     _tutorialService.ShowTutorial(
                         target,
-                        LocalizationManager.GetString("Tutorial.OverlayTitle", "Довідка тут!"),
-                        LocalizationManager.GetString("Tutorial.OverlayBody", "Якщо що, я (документація) завжди поряд з вами! Звертайтесь, якщо потрібно, натиснувши на цю кнопку. \"Інформація\" > \"Документація\""),
+                        LocalizationManager.GetString("Tutorial.OverlayTitle", "Довідка тут"),
+                        LocalizationManager.GetString("Tutorial.OverlayBody", "Документація завжди під рукою. Знайти її можна у будь-який момент через меню «Інформація» > «Документація»."),
                         -120
                     );
                 }
@@ -645,8 +678,8 @@ public partial class CL_Main : Window
                 {
                     _tutorialService.ShowTutorial(
                         target,
-                        LocalizationManager.GetString("Mods.WhereIsForgeTitle", "Де Forge? Та інші лоудери."),
-                        LocalizationManager.GetString("Mods.WhereIsForgeDesc", "Ми використовуємо професійну систему!\n\nМодифіковані версії (Forge, Fabric, ...) створюються як окремі 'Збірки'. Це захищає ваші моди від конфліктів і крашів.\n\nНатисніть кнопку 'Створити', щоб встановити Forge або Fabric та інші."),
+                        LocalizationManager.GetString("Mods.WhereIsForgeTitle", "Де знайти Forge та інші ядра"),
+                        LocalizationManager.GetString("Mods.WhereIsForgeDesc", "Модифіковані версії (Forge, Fabric та інші) створюються як окремі збірки. Це захищає клієнт від збоїв і конфліктів між модами.\n\nНатисни кнопку «Створити», щоб додати потрібну збірку."),
                         -120
                     );
                 }

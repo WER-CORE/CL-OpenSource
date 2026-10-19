@@ -250,6 +250,11 @@
 												<ic:SymbolIcon Symbol="Book" />
 											</MenuItem.Icon>
 										</MenuItem>
+										<MenuItem x:Name="Loc_MenuStartTour" Header="Пройти тур" Click="StartTour_Click">
+											<MenuItem.Icon>
+												<ic:SymbolIcon Symbol="Lightbulb" />
+											</MenuItem.Icon>
+										</MenuItem>
 										<Separator x:Name="InfoSep1" />
 										<MenuItem x:Name="Loc_MenuGithub" Header="GitHub (Код)" Click="GitHub_Click">
 											<MenuItem.Icon>

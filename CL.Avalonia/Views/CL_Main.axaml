@@ -728,14 +728,14 @@
                         </Grid.RowDefinitions>
 
                         <StackPanel>
-                            <TextBlock x:Name="TutorialHelloText" Text="Привіт, я Сіель!"
+                            <TextBlock x:Name="TutorialHelloText" Text="Привіт, я Сіель"
                                        FontSize="24" FontWeight="Bold"
                                        Foreground="{DynamicResource MainForegroundBrush}"
                                        FontFamily="Inter 18pt 18pt"
                                        HorizontalAlignment="Left" />
 
                             <TextBlock x:Name="QuestionTXT"
-                                       Text="Я підготувала для тебе детальну документацію по лаунчеру. Хочеш поглянути?"
+                                       Text="Я підготувала короткий посібник по лаунчеру. Пройдемося разом?"
                                        TextWrapping="Wrap"
                                        FontSize="18"
                                        Foreground="{DynamicResource MainForegroundBrush}"
@@ -763,7 +763,7 @@
                                     HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
                                 <StackPanel Orientation="Horizontal" Spacing="8">
                                     <ic:SymbolIcon Symbol="BookOpen" FontSize="20" />
-                                    <TextBlock Text="Так, давай!" VerticalAlignment="Center" />
+                                    <TextBlock Text="Давай" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Button>
                         </StackPanel>
@@ -790,22 +790,80 @@
 
             <Border x:Name="TutorialMessageParams"
                     HorizontalAlignment="Left" VerticalAlignment="Top"
-                    Background="White" CornerRadius="8" Padding="15"
-                    Width="300"
-                    BoxShadow="0 5 15 0 #66000000">
-                <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0" Padding="0,0,5,0">
-                    <StackPanel>
-                        <TextBlock x:Name="TutorialTitleText" Text="Довідка тут!" FontWeight="Bold" FontSize="16"
-                                   Foreground="Black" Margin="0,0,0,5" />
-                        <TextBlock x:Name="TutorialBodyText"
-                                   Text="Якщо що, я (документація) завжди поряд з вами! Звертайтесь, якщо потрібно, натиснувши на цю кнопку. &quot;Інформація&quot;&gt;&quot;Документація&quot;"
-                                   TextWrapping="Wrap" Foreground="#555" Margin="0,0,0,15" />
+                    Background="{DynamicResource MainBackgroundBrushServer}"
+                    BorderBrush="#33FFFFFF" BorderThickness="1"
+                    CornerRadius="14" Padding="16"
+                    Width="340"
+                    BoxShadow="0 8 24 0 #99000000">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0" Padding="0,0,4,0">
+                    <StackPanel Spacing="6">
+                        <TextBlock x:Name="TutorialStepCounter"
+                                   Text="Крок 1 з 9"
+                                   FontSize="11" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource MainForegroundBrush}"
+                                   Opacity="0.6"
+                                   IsVisible="False" />
 
-                        <Button x:Name="Loc_BtnUnderstood" Content="Зрозуміло, далі" Click="CloseTutorial_Click"
-                                HorizontalAlignment="Right" Padding="15,5"
+                        <TextBlock x:Name="TutorialTitleText"
+                                   Text="Довідка тут"
+                                   FontWeight="Bold" FontSize="15"
+                                   Foreground="{DynamicResource MainForegroundBrush}" />
+
+                        <TextBlock x:Name="TutorialBodyText"
+                                   Text="Документація завжди під рукою. Знайти її можна у будь-який момент через меню «Інформація» &gt; «Документація»."
+                                   TextWrapping="Wrap"
+                                   FontSize="13" LineHeight="18"
+                                   Foreground="{DynamicResource MainForegroundBrush}"
+                                   Opacity="0.85"
+                                   Margin="0,2,0,10" />
+
+                        <Grid x:Name="TutorialTourButtonsPanel" IsVisible="False">
+                            <Button x:Name="TutorialSkipBtn"
+                                    Content="Пропустити"
+                                    Click="TutorialSkipBtn_Click"
+                                    HorizontalAlignment="Left"
+                                    Background="Transparent"
+                                    Foreground="{DynamicResource MainForegroundBrush}"
+                                    Opacity="0.7"
+                                    FontSize="12" Padding="6,4"
+                                    Cursor="Hand" />
+
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="6">
+                                <Button x:Name="TutorialBackBtn"
+                                        Content="Назад"
+                                        Click="TutorialBackBtn_Click"
+                                        Background="{DynamicResource MainBackgroundButton}"
+                                        Foreground="{DynamicResource MainForegroundBrush}"
+                                        CornerRadius="8" Height="32" Padding="10,0"
+                                        FontSize="12" Cursor="Hand" />
+
+                                <Button x:Name="TutorialNextBtn"
+                                        Content="Далі"
+                                        Click="TutorialNextBtn_Click"
+                                        Background="{DynamicResource MainBackgroundProgressBar}"
+                                        Foreground="{DynamicResource MainForegroundBrush}"
+                                        CornerRadius="8" Height="32" Padding="12,0"
+                                        FontSize="12" FontWeight="SemiBold" Cursor="Hand" />
+
+                                <Button x:Name="TutorialFinishBtn"
+                                        Content="Завершити"
+                                        Click="TutorialFinishBtn_Click"
+                                        Background="{DynamicResource MainBackgroundProgressBar}"
+                                        Foreground="{DynamicResource MainForegroundBrush}"
+                                        CornerRadius="8" Height="32" Padding="12,0"
+                                        FontSize="12" FontWeight="SemiBold" Cursor="Hand"
+                                        IsVisible="False" />
+                            </StackPanel>
+                        </Grid>
+
+                        <Button x:Name="Loc_BtnUnderstood"
+                                Content="Зрозуміло"
+                                Click="CloseTutorial_Click"
+                                HorizontalAlignment="Right"
                                 Background="{DynamicResource MainBackgroundButton}"
-                                Foreground="{DynamicResource MainForegroundBrush}" BorderThickness="0"
-                                HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
+                                Foreground="{DynamicResource MainForegroundBrush}"
+                                CornerRadius="8" Height="32" Padding="14,0"
+                                FontSize="12" Cursor="Hand" />
                     </StackPanel>
                 </ScrollViewer>
             </Border>

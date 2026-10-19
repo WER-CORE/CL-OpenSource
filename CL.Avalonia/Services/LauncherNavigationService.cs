@@ -110,7 +110,10 @@ public class LauncherNavigationService
     {
         if (_currentPage == targetPage) return;
 
-        _main.CloseTutorial();
+        if (_main.TourManager == null || !_main.TourManager.IsTourActive)
+        {
+            _main.CloseTutorial();
+        }
 
         int currentToken = unchecked(++_navigationToken);
 

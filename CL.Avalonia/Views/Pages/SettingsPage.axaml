@@ -499,6 +499,32 @@
                                          IsChecked="{Binding EnableGlassEffect}" Height="36"
                                          Cursor="Hand" />
                             </Grid>
+                            <Grid Height="55" Margin="0,5">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition />
+                                    <ColumnDefinition Width="Auto" MinWidth="63.2" />
+                                </Grid.ColumnDefinitions>
+                                <Border Grid.ColumnSpan="2" BorderThickness="1" CornerRadius="15"
+                                Background="{DynamicResource MainBackgroundBrushServer}" />
+
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="15,0,0,0">
+                                    <TextBlock x:Name="Loc_Settings_TourTitle" Text="Ознайомчий тур"
+                                       Foreground="{DynamicResource MainForegroundBrush}" FontSize="20"
+                                       FontFamily="Inter" />
+                                    <TextBlock x:Name="Loc_Settings_TourDesc"
+                                       Text="Швидкий гід основними можливостями та розділами лаунчера"
+                                       Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6" FontSize="12"
+                                       FontFamily="Inter" Margin="0,2,0,0" />
+                                </StackPanel>
+
+                                <Button x:Name="StartTourButton" Grid.Column="1"
+                                        Content="Пройти тур"
+                                        Click="StartTourButton_Click"
+                                        Background="{DynamicResource MainBackgroundButton}"
+                                        Foreground="{DynamicResource MainForegroundBrush}"
+                                        CornerRadius="8" Height="34" Padding="14,0"
+                                        VerticalAlignment="Center" Margin="0,0,20,0" Cursor="Hand" />
+                            </Grid>
                             <Border x:Name="ModulesBorder"
                             BorderThickness="1" CornerRadius="15"
                             Background="{DynamicResource MainBackgroundBrushServer}"

@@ -187,6 +187,7 @@ public partial class HomePage : UserControl
         if (Loc_MenuReportBug != null) Loc_MenuReportBug.Header = LocalizationManager.GetString("Context.ReportBug", "Повідомити про баг");
         if (Loc_MenuLauncherNews != null) Loc_MenuLauncherNews.Header = LocalizationManager.GetString("Context.LauncherNews", "Новини запускача");
         if (Loc_MenuWiki != null) Loc_MenuWiki.Header = LocalizationManager.GetString("Context.Wiki", "Документація (Wiki)");
+        if (Loc_MenuStartTour != null) Loc_MenuStartTour.Header = LocalizationManager.GetString("TutorialTour.StartTourBtn", "Пройти тур");
         if (Loc_MenuGithub != null) Loc_MenuGithub.Header = LocalizationManager.GetString("Context.Github", "GitHub (Код)");
         if (Loc_MenuCredits != null) Loc_MenuCredits.Header = LocalizationManager.GetString("Context.Credits", "Подяки (Автори та Перекладачі)");
         if (Loc_MenuSupportProject != null) Loc_MenuSupportProject.Header = LocalizationManager.GetString("Context.SupportProject", "Підтримати проект");
@@ -321,6 +322,14 @@ public partial class HomePage : UserControl
 
     public void TutorialYoutube_Click(object? sender, RoutedEventArgs e) =>
         WebHelper.OpenUrl("https://cl-launcher.app/tutorial.html");
+
+    public void StartTour_Click(object? sender, RoutedEventArgs e)
+    {
+        if (TopLevel.GetTopLevel(this) is CL_Main mainWin)
+        {
+            mainWin.StartOnboardingTour();
+        }
+    }
 
     public void GitHub_Click(object? sender, RoutedEventArgs e) =>
         WebHelper.OpenUrl("https://github.com/WER-CORE/CL-OpenSource");
