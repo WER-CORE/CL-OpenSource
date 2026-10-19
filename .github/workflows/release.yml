@@ -16,6 +16,11 @@ on:
         description: 'Target repository for release'
         required: true
         default: 'WER-CORE/CL-Win-Edition--Update'
+      changelog:
+        description: 'Release changelog / description (Markdown and images supported)'
+        type: string
+        required: false
+        default: ''
   push:
     tags:
       - 'v*'
@@ -31,6 +36,7 @@ jobs:
       numeric_version: ${{ steps.calc.outputs.numeric_version }}
       is_prerelease: ${{ steps.calc.outputs.is_prerelease }}
       target_repo: ${{ steps.calc.outputs.target_repo }}
+      changelog: ${{ steps.calc.outputs.changelog }}
     steps:
       - id: calc
         shell: bash
@@ -50,6 +56,9 @@ jobs:
           echo "numeric_version=$NUM_VER" >> $GITHUB_OUTPUT
           echo "is_prerelease=$IS_PRE" >> $GITHUB_OUTPUT
           echo "target_repo=$TARGET" >> $GITHUB_OUTPUT
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          echo "${{ inputs.changelog }}" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
   build-windows:
     needs: prepare
@@ -385,32 +394,37 @@ jobs:
           ls -la ./release_final
 
       - name: Generate Release Body
+        env:
+          CHANGELOG_TEXT: ${{ needs.prepare.outputs.changelog }}
         run: |
           VER="${{ needs.prepare.outputs.version }}"
-          cat << 'EOF' > body.md
+          > body.md
+          if [ -n "$CHANGELOG_TEXT" ]; then
+            echo "### 📝 Що нового / Changelog:" >> body.md
+            echo "$CHANGELOG_TEXT" >> body.md
+            echo "" >> body.md
+            echo "---" >> body.md
+          fi
+          cat << EOF >> body.md
           ### 📦 CLegendary Launcher v${VER}
 
           #### 🚀 Downloads:
           | Platform | File | Description |
           |:---|:---|:---|
-          | 🪟 **Windows** | `CLegendaryLauncher-Windows-Setup.exe` | Recommended Installer with auto-updates |
-          | 🪟 **Windows Portable** | `CLegendaryLauncher-Windows-Portable.zip` | Portable standalone package |
-          | 🐧 **Linux (AppImage)** | `CLegendaryLauncher-Linux-x64.AppImage` | Universal one-click executable |
-          | 🐧 **Linux (Tarball)** | `CLegendaryLauncher-Linux-x64.tar.gz` | Standard archive with executable permissions |
-          | 🍎 **macOS** | `CLegendaryLauncher-macOS.dmg` | Disk Image for Apple Silicon (arm64) |
+          | 🪟 **Windows** | \`CLegendaryLauncher-Windows-Setup.exe\` | Recommended Installer with auto-updates |
+          | 🪟 **Windows Portable** | \`CLegendaryLauncher-Windows-Portable.zip\` | Portable standalone package |
+          | 🐧 **Linux (AppImage)** | \`CLegendaryLauncher-Linux-x64.AppImage\` | Universal one-click executable |
+          | 🐧 **Linux (Tarball)** | \`CLegendaryLauncher-Linux-x64.tar.gz\` | Standard archive with executable permissions |
+          | 🍎 **macOS** | \`CLegendaryLauncher-macOS.dmg\` | Disk Image for Apple Silicon (arm64) |
 
           <details>
           <summary>🔍 Velopack & Automated Update Feeds (Internal)</summary>
 
-          - `CLegendaryLauncher-*.nupkg`
-          - `releases.win.json`
-          - `assets.win.json`
+          - \`CLegendaryLauncher-*.nupkg\`
+          - \`releases.win.json\`
+          - \`assets.win.json\`
           </details>
-
-          ---
-          *Verified and built with GitHub Actions CI/CD.*
           EOF
-          sed -i "s/\${VER}/$VER/g" body.md
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
