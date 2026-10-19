@@ -15,9 +15,10 @@
 
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/WER-CORE/CL-Win-Edition--Update?style=for-the-badge&color=blue)
 ![Platform](https://img.shields.io/badge/Platform-Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)
-![Downloads](https://img.shields.io/github/downloads/WER-CORE/CL-Win-Edition--Update/total?style=for-the-badge&color=green)
 ![Made in Ukraine](https://img.shields.io/badge/MADE_IN-UKRAINE-ffd700?style=for-the-badge&labelColor=0057b7)
 [![Discord](https://img.shields.io/discord/1234567890?style=for-the-badge&label=Discord&logo=discord&color=5865F2)](https://discord.gg/RhyZjACs2U)
+[![SignPath.io](https://img.shields.io/badge/Code%20Signing-SignPath.io-blue?style=for-the-badge&logo=windows)](https://signpath.org)
+![Downloads](https://img.shields.io/github/downloads/WER-CORE/CL-Win-Edition--Update/total?style=for-the-badge&color=green)
 
 [📥 Завантажити лаунчер](https://github.com/WER-CORE/CL-Win-Edition--Update/releases/latest) • [🐛 Повідомити про баг](https://github.com/WER-CORE/CL-Win-Edition--Update/issues) • [💬 Discord](https://discord.gg/RhyZjACs2U)
 
@@ -89,6 +90,7 @@ This project uses assets and libraries from various sources. We are grateful to 
 * **Icons:** Google Fonts, Material Icons, Fluent System Icons.
 * **Services:** CurseForge, Modrinth, LittleSkin.
 * **Loaders:** NeoForge, Fabric, Quilt, Forge, OptiFine, LiteLoader.
+* **Code Signing:** Free code signing provided by [SignPath.io](https://signpath.io), certificate by [SignPath Foundation](https://signpath.org).
 
 *Detailed credits and licenses are available in the application and in the `LICENSE` and `CREDITS` file.*
 
