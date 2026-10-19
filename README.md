@@ -19,7 +19,7 @@
 ![Made in Ukraine](https://img.shields.io/badge/MADE_IN-UKRAINE-ffd700?style=for-the-badge&labelColor=0057b7)
 [![Discord](https://img.shields.io/discord/1234567890?style=for-the-badge&label=Discord&logo=discord&color=5865F2)](https://discord.gg/RhyZjACs2U)
 
-[📥 Завантажити лаунчер](https://github.com/WER-CORE/CL-Win-Edition--Update/releases/latest) • [🐛 Повідомити про баг](https://github.com/WER-CORE/CL-Win-Edition--Update/issues) • [💬 Discord](https://discord.gg/RhyZjACs2U)
+[📥 Завантажити лаунчер](https://github.com/WER-CORE/CL-Win-Edition--Update/releases/latest) • [🐛 Повідомити про баг](https://github.com/WER-CORE/CL-OpenSource/issues) • [💬 Discord](https://discord.gg/RhyZjACs2U)
 
 </div>
 
