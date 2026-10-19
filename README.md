@@ -92,7 +92,7 @@ This project uses assets and libraries from various sources. We are grateful to 
 * **Loaders:** NeoForge, Fabric, Quilt, Forge, OptiFine, LiteLoader.
 * **Code Signing:** Free code signing provided by [SignPath.io](https://signpath.io), certificate by [SignPath Foundation](https://signpath.org).
 
-*Detailed credits and licenses are available in the application and in the `LICENSE` and `CREDITS` file.*
+*Detailed credits and licenses are available in the application and in the `LICENSE`, [PRIVACY.md](PRIVACY.md) and `CREDITS` files.*
 
 ---
 
