@@ -75,7 +75,7 @@
                                FontFamily="Inter"/>
 
                     <TextBlock Grid.Column="1"
-                               Text="v.1.0.0 Avalonia"
+                               Text="{Binding VersionText}"
                                Foreground="#66FFFFFF"
                                FontSize="12"
                                FontWeight="Regular"

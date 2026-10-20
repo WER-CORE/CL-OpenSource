@@ -293,7 +293,9 @@ namespace CL.Core.Services
 
                 if (config.AccountType == AccountType.LittleSkin)
                 {
-                    activeJvmArgs.Add($@"-javaagent:{AppContext.BaseDirectory}authlib-injector-1.2.8.jar=https://littleskin.cn/api/yggdrasil");
+                    AuthlibInjectorHelper.EnsureDownloaded();
+                    string jarPath = AuthlibInjectorHelper.GetJarPath();
+                    activeJvmArgs.Add($@"-javaagent:{jarPath}=https://littleskin.cn/api/yggdrasil");
                 }
 
                 if (activeJvmArgs.Count > 0)
