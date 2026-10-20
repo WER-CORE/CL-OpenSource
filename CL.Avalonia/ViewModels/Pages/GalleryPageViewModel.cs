@@ -2,6 +2,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Threading;
 using CL.Core.Models;
@@ -60,6 +61,7 @@ public partial class GalleryPageViewModel : ObservableObject, ITrimmablePage
     {
         try
         {
+            string? previouslySelectedName = SelectedSource?.Name;
             string launcherPath = SettingsManager.Default.PathLacunher ?? string.Empty;
             var sources = await Task.Run(() => _screenshotService.GetScreenshotSources(launcherPath)).ConfigureAwait(false);
 
@@ -70,7 +72,15 @@ public partial class GalleryPageViewModel : ObservableObject, ITrimmablePage
 
                 if (Sources.Count > 0)
                 {
-                    SelectedSource = Sources[0];
+                    var match = !string.IsNullOrEmpty(previouslySelectedName)
+                        ? Sources.FirstOrDefault(s => s.Name == previouslySelectedName)
+                        : null;
+
+                    SelectedSource = match ?? Sources[0];
+                }
+                else
+                {
+                    SelectedSource = null;
                 }
             });
         }
@@ -78,6 +88,13 @@ public partial class GalleryPageViewModel : ObservableObject, ITrimmablePage
         {
             Debug.WriteLine($"[GalleryPageViewModel] Initialize error: {ex.Message}");
         }
+    }
+
+    [RelayCommand]
+    public async Task RefreshAllAsync()
+    {
+        await InitializeGalleryAsync();
+        await LoadScreenshotsAsync();
     }
 
     partial void OnSelectedSourceChanged(ScreenshotSourceItem? value)

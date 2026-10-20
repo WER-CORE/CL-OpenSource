@@ -803,7 +803,12 @@ public partial class SettingsPageViewModel : ObservableObject
 
     private static void UpdateModpacksJson(string oldBasePath, string newBasePath)
     {
-        string jsonPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "installed_modpacks.json");
+        string jsonPath = ModpackPaths.InstalledModpacksJson;
+        if (!File.Exists(jsonPath))
+        {
+            string legacyPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "installed_modpacks.json");
+            if (File.Exists(legacyPath)) jsonPath = legacyPath;
+        }
         if (!File.Exists(jsonPath)) return;
 
         try

@@ -156,7 +156,12 @@ public partial class DownloadEditPackViewModel : ObservableObject, IDisposable
     {
         try
         {
-            string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "installed_modpacks.json");
+            string path = ModpackPaths.InstalledModpacksJson;
+            if (!File.Exists(path))
+            {
+                string legacyPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "installed_modpacks.json");
+                if (File.Exists(legacyPath)) path = legacyPath;
+            }
             if (!File.Exists(path)) return;
 
             string json = File.ReadAllText(path);

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using Avalonia;
 using Avalonia.Controls;
@@ -62,7 +62,7 @@ public partial class GalleryPage : UserControl
         ApplyLocalization();
         if (_boundVm != null)
         {
-            _ = _boundVm.EnsureInitializedAsync();
+            _ = _boundVm.InitializeGalleryAsync();
         }
     }
 
@@ -125,7 +125,7 @@ public partial class GalleryPage : UserControl
     {
         AvaloniaSoundService.Click();
         if (_boundVm != null)
-            _ = _boundVm.LoadScreenshotsAsync();
+            _ = _boundVm.RefreshAllAsync();
     }
 
     public void ScreenshotsList_SelectionChanged(object? sender, SelectionChangedEventArgs e)

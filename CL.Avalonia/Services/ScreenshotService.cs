@@ -40,7 +40,7 @@ public class ScreenshotService
 
         string defaultScreenshots = !string.IsNullOrWhiteSpace(launcherPath)
             ? Path.Combine(launcherPath, "screenshots")
-            : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".ClMinecraft", "screenshots");
+            : Path.Combine(PlatformPaths.DefaultLauncherPath(), "screenshots");
 
         sources.Add(new ScreenshotSourceItem
         {
@@ -48,7 +48,19 @@ public class ScreenshotService
             FullScreenshotsPath = defaultScreenshots
         });
 
-        string jsonPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "installed_modpacks.json");
+        string jsonPath = ModpackPaths.InstalledModpacksJson;
+        if (!File.Exists(jsonPath))
+        {
+            string legacyPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "installed_modpacks.json");
+            if (File.Exists(legacyPath))
+                jsonPath = legacyPath;
+            else if (!string.IsNullOrWhiteSpace(launcherPath))
+            {
+                string customPath = Path.Combine(launcherPath, "Data", "installed_modpacks.json");
+                if (File.Exists(customPath))
+                    jsonPath = customPath;
+            }
+        }
 
         if (File.Exists(jsonPath))
         {
@@ -59,34 +71,24 @@ public class ScreenshotService
 
                 if (modpacks != null)
                 {
-                    foreach (var pack in modpacks.Where(p => !string.IsNullOrWhiteSpace(p.Path)))
+                    foreach (var pack in modpacks.Where(p => !string.IsNullOrWhiteSpace(p.Name)))
                     {
-                        string overridePath = Path.Combine(pack.Path, "override", "screenshots");
-                        string overridesPath = Path.Combine(pack.Path, "overrides", "screenshots");
-                        string directPath = Path.Combine(pack.Path, "screenshots");
+                        string fallbackBase = !string.IsNullOrWhiteSpace(launcherPath) ? launcherPath : PlatformPaths.DefaultLauncherPath();
+                        string packPath = !string.IsNullOrWhiteSpace(pack.Path) ? pack.Path : Path.Combine(fallbackBase, "CLModpack", pack.Name);
+                        string overridePath = Path.Combine(packPath, "override", "screenshots");
+                        string overridesPath = Path.Combine(packPath, "overrides", "screenshots");
+                        string directPath = Path.Combine(packPath, "screenshots");
 
-                        string? finalPath = Directory.Exists(overridePath) ? overridePath :
+                        string finalPath = Directory.Exists(overridePath) ? overridePath :
                                            Directory.Exists(overridesPath) ? overridesPath :
-                                           Directory.Exists(directPath) ? directPath : null;
+                                           directPath;
 
-                        if (finalPath == null)
-                        {
-                            if (Directory.Exists(Path.Combine(pack.Path, "override")))
-                                finalPath = overridePath;
-                            else if (Directory.Exists(Path.Combine(pack.Path, "overrides")))
-                                finalPath = overridesPath;
-                            else if (Directory.Exists(pack.Path))
-                                finalPath = directPath;
-                        }
 
-                        if (finalPath != null)
+                        sources.Add(new ScreenshotSourceItem
                         {
-                            sources.Add(new ScreenshotSourceItem
-                            {
-                                Name = string.Format(LocalizationManager.GetString("Modpacks.ModpackFolder", "{0} (Збірка)"), pack.Name),
-                                FullScreenshotsPath = finalPath
-                            });
-                        }
+                            Name = string.Format(LocalizationManager.GetString("Modpacks.ModpackFolder", "{0} (Збірка)"), pack.Name),
+                            FullScreenshotsPath = finalPath
+                        });
                     }
                 }
             }

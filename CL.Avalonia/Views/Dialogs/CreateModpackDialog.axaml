@@ -245,7 +245,7 @@
                     <Border BorderBrush="Black" BorderThickness="1" CornerRadius="14"/>
 
                     <Border BorderThickness="1" Height="30" Margin="0,15,0,0" VerticalAlignment="Top" Width="235" CornerRadius="8" Background="{DynamicResource MainBackgroundBrush}">
-                        <TextBlock Text="{Binding SelectedModName}" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource MainForegroundBrush}" FontSize="12" TextTrimming="CharacterEllipsis" Padding="5,0"/>
+                        <TextBlock Text="{Binding SelectedModName}" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource MainForegroundBrush}" FontSize="12" TextTrimming="CharacterEllipsis" Padding="35,0"/>
                     </Border>
 
                     <Border BorderBrush="Black" BorderThickness="1" Height="83" Margin="0,55,0,0" VerticalAlignment="Top" Width="235" CornerRadius="8" Background="{DynamicResource MainBackgroundBrush}">
@@ -256,7 +256,9 @@
 
                     <Button Content="{Binding AddButtonText}" Command="{Binding AddModCommand}" Background="{DynamicResource MainBackgroundButton}" Foreground="{DynamicResource MainForegroundBrush}" FontWeight="Bold" FontSize="18" Width="234" Height="35" CornerRadius="8" Margin="0,155,0,0" VerticalAlignment="Top" HorizontalAlignment="Center" Cursor="Hand"/>
 
-                    <Button Content="✕" Command="{Binding CloseMenuInstallerCommand}" Background="Transparent" Foreground="{DynamicResource MainForegroundBrush}" FontSize="14" Width="30" Height="30" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,5,5,0" Cursor="Hand" BorderThickness="0"/>
+                    <Button Classes="close-btn" Command="{Binding CloseMenuInstallerCommand}" Background="Transparent" BorderThickness="0" Foreground="{DynamicResource MainForegroundBrush}" Width="30" Height="30" Padding="0" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,15,10,0" Cursor="Hand" CornerRadius="6">
+                        <ic:SymbolIcon Symbol="Dismiss" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Button>
                 </Grid>
             </Border>
         </Grid>
