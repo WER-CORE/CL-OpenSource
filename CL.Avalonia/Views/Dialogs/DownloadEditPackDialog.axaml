@@ -226,7 +226,19 @@
                         CornerRadius="15" VerticalAlignment="Center" HorizontalAlignment="Center"
                         BorderBrush="#33FFFFFF" BorderThickness="1">
                     <Grid Margin="20" RowDefinitions="Auto,*,Auto">
-                        <TextBlock Grid.Row="0" Text="{Binding InstallModTitle}" FontSize="18" FontWeight="Bold" Margin="0,0,0,15" Foreground="{DynamicResource MainForegroundBrush}"/>
+                        <Grid Grid.Row="0" Margin="0,0,0,15" ColumnDefinitions="*,Auto">
+                            <TextBlock Grid.Column="0" Text="{Binding InstallModTitle}" FontSize="18" FontWeight="Bold"
+                                       VerticalAlignment="Center" Foreground="{DynamicResource MainForegroundBrush}"
+                                       TextTrimming="CharacterEllipsis" Margin="0,0,10,0"/>
+
+                            <Button Grid.Column="1" Classes="close-btn" Command="{Binding CloseVersionSelectionCommand}"
+                                    Background="Transparent" BorderThickness="0"
+                                    Foreground="{DynamicResource MainForegroundBrush}"
+                                    Width="30" Height="30" Padding="0" Cursor="Hand"
+                                    CornerRadius="6" VerticalAlignment="Center" HorizontalAlignment="Right">
+                                <fluentIcons:SymbolIcon Symbol="Dismiss" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Button>
+                        </Grid>
 
                         <ListBox Grid.Row="1" ItemsSource="{Binding ModVersions}" SelectedIndex="{Binding SelectedModVersionIndex}"
                                  Background="{DynamicResource MainBackgroundBrush}" Margin="0,0,0,15" Foreground="{DynamicResource MainForegroundBrush}" Cursor="Hand" CornerRadius="8" />
