@@ -90,7 +90,7 @@
 
                                 <Button x:Name="BtnRefresh"
                                    Click="BtnRefresh_Click"
-                                   Height="38" Width="38" CornerRadius="10"
+                                   Height="38" Width="48" CornerRadius="10"
                                    ToolTip.Tip="Оновити список"
                                    Background="{DynamicResource MainBackgroundButton}"
                                    Foreground="{DynamicResource MainForegroundBrush}"

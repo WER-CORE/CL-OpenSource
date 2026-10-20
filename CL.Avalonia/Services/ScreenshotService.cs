@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Media.Imaging;
 using CL.Core.Models;
@@ -26,10 +27,21 @@ public class ScreenshotItem : IDisposable
     }
 }
 
-public class ScreenshotSourceItem
+public class ScreenshotSourceItem : IEquatable<ScreenshotSourceItem>
 {
     public string Name { get; set; } = string.Empty;
     public string FullScreenshotsPath { get; set; } = string.Empty;
+
+    public bool Equals(ScreenshotSourceItem? other)
+    {
+        if (other is null) return false;
+        if (ReferenceEquals(this, other)) return true;
+        return Name == other.Name && FullScreenshotsPath == other.FullScreenshotsPath;
+    }
+
+    public override bool Equals(object? obj) => Equals(obj as ScreenshotSourceItem);
+
+    public override int GetHashCode() => HashCode.Combine(Name, FullScreenshotsPath);
 }
 
 public class ScreenshotService
@@ -101,7 +113,7 @@ public class ScreenshotService
         return sources;
     }
 
-    public async Task<List<ScreenshotItem>> LoadScreenshotsAsync(string folderPath)
+    public async Task<List<ScreenshotItem>> LoadScreenshotsAsync(string folderPath, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrEmpty(folderPath) || !Directory.Exists(folderPath))
             return new List<ScreenshotItem>();
@@ -119,6 +131,12 @@ public class ScreenshotService
 
                 foreach (var fileInfo in files)
                 {
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        foreach (var item in list) item.Dispose();
+                        list.Clear();
+                        cancellationToken.ThrowIfCancellationRequested();
+                    }
                     string resolution = LocalizationManager.GetString("Generic.Unknown", "Unknown");
 
                     try
@@ -145,6 +163,13 @@ public class ScreenshotService
                     {
                     }
 
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        foreach (var item in list) item.Dispose();
+                        list.Clear();
+                        cancellationToken.ThrowIfCancellationRequested();
+                    }
+
                     var bitmap = AvaloniaImageHelper.LoadOptimizedImage(fileInfo.FullName, 300);
 
                     if (bitmap != null)
@@ -166,13 +191,17 @@ public class ScreenshotService
                     }
                 }
             }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[ScreenshotService] Error loading screenshots: {ex.Message}");
             }
 
             return list;
-        });
+        }, cancellationToken);
     }
 
     public bool DeleteScreenshot(string filePath)

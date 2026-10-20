@@ -24,6 +24,7 @@ public partial class GalleryPage : UserControl
     }
 
     private GalleryPageViewModel? _boundVm;
+    private bool _isUpdatingSelectionProgrammatically;
 
     public GalleryPage()
     {
@@ -101,16 +102,27 @@ public partial class GalleryPage : UserControl
                 break;
 
             case nameof(GalleryPageViewModel.SelectedSource):
-                SourceSelector.SelectedItem = _boundVm.SelectedSource;
+                _isUpdatingSelectionProgrammatically = true;
+                try
+                {
+                    SourceSelector.SelectedItem = _boundVm.SelectedSource;
+                }
+                finally
+                {
+                    _isUpdatingSelectionProgrammatically = false;
+                }
                 break;
         }
     }
 
     public void SourceSelector_SelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
-        AvaloniaSoundService.Click();
-        if (_boundVm != null && SourceSelector.SelectedItem is ScreenshotSourceItem selectedSource)
+        if (_isUpdatingSelectionProgrammatically || _boundVm == null) return;
+
+        if (SourceSelector.SelectedItem is ScreenshotSourceItem selectedSource &&
+            !Equals(_boundVm.SelectedSource, selectedSource))
         {
+            AvaloniaSoundService.Click();
             _boundVm.SelectedSource = selectedSource;
         }
     }
