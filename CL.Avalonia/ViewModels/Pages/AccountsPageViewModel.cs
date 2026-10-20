@@ -175,13 +175,20 @@ public partial class AccountsPageViewModel : ObservableObject
             string.IsNullOrWhiteSpace(LittleSkinPassword))
             return;
 
-        var newProfile = await _accountService.AddLittleSkinAccountAsync(LittleSkinUsername.Trim(), LittleSkinPassword);
-        if (newProfile != null)
+        try
         {
-            LittleSkinUsername = string.Empty;
-            LittleSkinPassword = string.Empty;
-            IsAddAccountDialogVisible = false;
-            await LoadProfilesAsync();
+            var newProfile = await _accountService.AddLittleSkinAccountAsync(LittleSkinUsername.Trim(), LittleSkinPassword);
+            if (newProfile != null)
+            {
+                LittleSkinUsername = string.Empty;
+                LittleSkinPassword = string.Empty;
+                IsAddAccountDialogVisible = false;
+                await LoadProfilesAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"[AddLittleSkinAccountAsync] Error: {ex.Message}");
         }
     }
 

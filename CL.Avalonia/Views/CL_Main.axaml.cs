@@ -540,14 +540,21 @@ public partial class CL_Main : Window
         var passwordSkin = this.FindControl<TextBox>("PasswordLittleSkin");
         if (loginSkin == null || passwordSkin == null) return;
 
-        var newProfile = await _boundVm.AddLittleSkinAccountAsync(loginSkin.Text, passwordSkin.Text);
-        if (newProfile != null)
+        try
         {
-            loginSkin.Text = null;
-            passwordSkin.Text = null;
-            CloseAccountSelectionUI();
-            await _boundVm.SelectProfileAsync(newProfile);
-            await RefreshProfilesUIAsync();
+            var newProfile = await _boundVm.AddLittleSkinAccountAsync(loginSkin.Text, passwordSkin.Text);
+            if (newProfile != null)
+            {
+                loginSkin.Text = null;
+                passwordSkin.Text = null;
+                CloseAccountSelectionUI();
+                await _boundVm.SelectProfileAsync(newProfile);
+                await RefreshProfilesUIAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[LoginAccountLittleSkin_Click] Error: {ex.Message}");
         }
     }
 

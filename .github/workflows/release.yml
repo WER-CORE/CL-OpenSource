@@ -248,36 +248,29 @@ jobs:
         run: |
           tar -czvf ./linux_artifacts/CLegendaryLauncher-Linux-x64.tar.gz -C ./publish/linux-x64 .
 
-      - name: Build Linux AppImage
+      - name: Install libfuse2
         run: |
-          mkdir -p AppDir/usr/bin
-          mkdir -p AppDir/usr/share/icons/hicolor/256x256/apps
-          cp -r ./publish/linux-x64/* AppDir/usr/bin/
-          chmod +x AppDir/usr/bin/*
-          cp "CL.Avalonia/Icon/IconCL(Common).png" AppDir/clegendarylauncher.png || cp "CL.Avalonia/Icon/IconCL(Common).png" AppDir/icon.png || true
-          cp "CL.Avalonia/Icon/IconCL(Common).png" AppDir/usr/share/icons/hicolor/256x256/apps/clegendarylauncher.png || true
-          cat << 'EOF' > AppDir/AppRun
-          #!/bin/sh
-          HERE="$(dirname "$(readlink -f "${0}")")"
-          if [ -f "$HERE/usr/bin/CL.Avalonia" ]; then
-            exec "$HERE/usr/bin/CL.Avalonia" "$@"
-          else
-            exec "$HERE/usr/bin/CL(CLegendary Launcher)" "$@"
-          fi
-          EOF
-          chmod +x AppDir/AppRun
-          cat << 'EOF' > AppDir/clegendarylauncher.desktop
-          [Desktop Entry]
-          Name=CLegendary Launcher
-          Exec=AppRun
-          Icon=clegendarylauncher
-          Type=Application
-          Categories=Game;
-          Terminal=false
-          EOF
-          wget -q https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage -O appimagetool
-          chmod +x appimagetool
-          ARCH=x86_64 ./appimagetool --appimage-extract-and-run AppDir ./linux_artifacts/CLegendaryLauncher-Linux-x64.AppImage
+          sudo apt-get update
+          sudo apt-get install -y libfuse2 || sudo apt-get install -y libfuse2t64 || true
+
+      - name: Install Velopack CLI
+        run: dotnet tool install -g vpk
+
+      - name: Package with Velopack Linux
+        run: |
+          vpk pack --packId "CLegendaryLauncher" \
+                   --packVersion "${{ env.RELEASE_VERSION }}" \
+                   --packDir "./publish/linux-x64" \
+                   --mainExe "CL.Avalonia" \
+                   --icon "CL.Avalonia/Icon/IconCL(Halloween).png" \
+                   --packTitle "CLegendary Launcher" \
+                   --packAuthors "WER-CORE" \
+                   --outputDir "./linux_artifacts"
+          for appimage in ./linux_artifacts/*.AppImage; do
+            if [ -f "$appimage" ] && [ "$appimage" != "./linux_artifacts/CLegendaryLauncher-Linux-x64.AppImage" ]; then
+              cp "$appimage" ./linux_artifacts/CLegendaryLauncher-Linux-x64.AppImage
+            fi
+          done
 
       - name: Upload Linux Artifacts
         uses: actions/upload-artifact@v4
@@ -342,12 +335,28 @@ jobs:
           dotnet publish CL.Avalonia/CL.Avalonia.csproj -c Release -r osx-arm64 --self-contained true -p:PublishSingleFile=false -p:Version=${{ env.RELEASE_VERSION }} -p:AssemblyVersion=${{ env.NUMERIC_VERSION }}.0 -p:FileVersion=${{ env.NUMERIC_VERSION }}.0 -p:InformationalVersion=${{ env.RELEASE_VERSION }} -o ./publish/osx-arm64
           chmod +x ./publish/osx-arm64/CL* || true
 
+      - name: Generate macOS ICNS icon
+        run: |
+          mkdir -p icon.iconset
+          sips -z 16 16     "CL.Avalonia/Icon/IconCL(Halloween).png" --out icon.iconset/icon_16x16.png
+          sips -z 32 32     "CL.Avalonia/Icon/IconCL(Halloween).png" --out icon.iconset/icon_16x16@2x.png
+          sips -z 32 32     "CL.Avalonia/Icon/IconCL(Halloween).png" --out icon.iconset/icon_32x32.png
+          sips -z 64 64     "CL.Avalonia/Icon/IconCL(Halloween).png" --out icon.iconset/icon_32x32@2x.png
+          sips -z 128 128   "CL.Avalonia/Icon/IconCL(Halloween).png" --out icon.iconset/icon_128x128.png
+          sips -z 256 256   "CL.Avalonia/Icon/IconCL(Halloween).png" --out icon.iconset/icon_128x128@2x.png
+          sips -z 256 256   "CL.Avalonia/Icon/IconCL(Halloween).png" --out icon.iconset/icon_256x256.png
+          sips -z 512 512   "CL.Avalonia/Icon/IconCL(Halloween).png" --out icon.iconset/icon_256x256@2x.png
+          sips -z 512 512   "CL.Avalonia/Icon/IconCL(Halloween).png" --out icon.iconset/icon_512x512.png
+          sips -z 1024 1024 "CL.Avalonia/Icon/IconCL(Halloween).png" --out icon.iconset/icon_512x512@2x.png
+          iconutil -c icns icon.iconset -o icon.icns
+
       - name: Package macOS DMG
         run: |
           mkdir -p "dmg_folder/CLegendary Launcher.app/Contents/MacOS"
           mkdir -p "dmg_folder/CLegendary Launcher.app/Contents/Resources"
           cp -r ./publish/osx-arm64/* "dmg_folder/CLegendary Launcher.app/Contents/MacOS/"
           cp "dmg_folder/CLegendary Launcher.app/Contents/MacOS/CL.Avalonia" "dmg_folder/CLegendary Launcher.app/Contents/MacOS/CL(CLegendary Launcher)" || true
+          cp icon.icns "dmg_folder/CLegendary Launcher.app/Contents/Resources/icon.icns" || true
           chmod +x "dmg_folder/CLegendary Launcher.app/Contents/MacOS/CL"* || true
           cat << 'EOF' > "dmg_folder/CLegendary Launcher.app/Contents/Info.plist"
           <?xml version="1.0" encoding="UTF-8"?>
@@ -356,6 +365,8 @@ jobs:
           <dict>
               <key>CFBundleExecutable</key>
               <string>CL.Avalonia</string>
+              <key>CFBundleIconFile</key>
+              <string>icon.icns</string>
               <key>CFBundleIdentifier</key>
               <string>app.clegendary.launcher</string>
               <key>CFBundleName</key>
@@ -372,6 +383,20 @@ jobs:
           ln -s /Applications dmg_folder/Applications
           mkdir -p macos_artifacts
           hdiutil create -volname "CLegendary Launcher" -srcfolder dmg_folder -ov -format UDZO "./macos_artifacts/CLegendaryLauncher-macOS.dmg"
+
+      - name: Install Velopack CLI
+        run: dotnet tool install -g vpk
+
+      - name: Package with Velopack macOS
+        run: |
+          vpk pack --packId "CLegendaryLauncher" \
+                   --packVersion "${{ env.RELEASE_VERSION }}" \
+                   --packDir "./publish/osx-arm64" \
+                   --mainExe "CL.Avalonia" \
+                   --icon "icon.icns" \
+                   --packTitle "CLegendary Launcher" \
+                   --packAuthors "WER-CORE" \
+                   --outputDir "./macos_artifacts"
 
       - name: Upload macOS Artifacts
         uses: actions/upload-artifact@v4
@@ -413,16 +438,17 @@ jobs:
           |:---|:---|:---|
           | 🪟 **Windows** | \`CLegendaryLauncher-Windows-Setup.exe\` | Recommended Installer with auto-updates |
           | 🪟 **Windows Portable** | \`CLegendaryLauncher-Windows-Portable.zip\` | Portable standalone package |
-          | 🐧 **Linux (AppImage)** | \`CLegendaryLauncher-Linux-x64.AppImage\` | Universal one-click executable |
-          | 🐧 **Linux (Tarball)** | \`CLegendaryLauncher-Linux-x64.tar.gz\` | Standard archive with executable permissions |
+          | 🐧 **Linux (AppImage)** | \`CLegendaryLauncher.AppImage\` / \`CLegendaryLauncher-Linux-x64.AppImage\` | Universal executable with auto-updates |
+          | 🐧 **Linux (Tarball)** | \`CLegendaryLauncher-Linux-x64.tar.gz\` | Portable tarball archive |
           | 🍎 **macOS** | \`CLegendaryLauncher-macOS.dmg\` | Disk Image for Apple Silicon (arm64) |
 
           <details>
           <summary>🔍 Velopack & Automated Update Feeds (Internal)</summary>
 
-          - \`CLegendaryLauncher-*.nupkg\`
-          - \`releases.win.json\`
-          - \`assets.win.json\`
+          - \`*.nupkg\` (Windows, Linux, macOS full & delta feeds)
+          - \`releases.*.json\`
+          - \`assets.*.json\`
+          - \`RELEASES*\`
           </details>
           EOF
 

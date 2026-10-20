@@ -302,21 +302,30 @@ namespace CL.Core.Services
             }
         }
 
-        public async Task<ProfileItem> AddLittleSkinAccountAsync(string login, string password)
+        public async Task<ProfileItem?> AddLittleSkinAccountAsync(string login, string password)
         {
-            var session = await _profileManager.LoginLittleSkinAsync(login, password);
-
-            var profile = new ProfileItem
+            try
             {
-                NameAccount = session.Username,
-                UUID = session.UUID,
-                AccessToken = session.AccessToken,
-                ImageUrl = $"{CL.Core.Platform.UIConfig.AssetScheme}/Assets/LittleSkinAccount.png",
-                TypeAccount = AccountType.LittleSkin
-            };
+                var session = await _profileManager.LoginLittleSkinAsync(login, password);
+                if (session == null) return null;
 
-            _profileManager.SaveProfile(profile);
-            return profile;
+                var profile = new ProfileItem
+                {
+                    NameAccount = session.Username,
+                    UUID = session.UUID,
+                    AccessToken = session.AccessToken,
+                    ImageUrl = $"{CL.Core.Platform.UIConfig.AssetScheme}/Assets/LittleSkinAccount.png",
+                    TypeAccount = AccountType.LittleSkin
+                };
+
+                _profileManager.SaveProfile(profile);
+                return profile;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[AccountService] LittleSkin error: {ex.Message}");
+                return null;
+            }
         }
     }
 }

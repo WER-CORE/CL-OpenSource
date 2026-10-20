@@ -217,20 +217,43 @@ namespace CL.Core.Services
 
             if (!response.IsSuccessStatusCode)
             {
-                ServiceLocator.Current.GetService<IDialogService>().ShowMessage(
-                    string.Format(LocalizationManager.GetString("Accounts.LoginLittleSkinErrorDesc", "Сервер LittleSkin відмовив у доступі.\nПеревір логін та пароль.\n\nВідповідь сервера: {0}"), body),
+                string errorMsg = body;
+                try
+                {
+                    var errObj = JObject.Parse(body);
+                    errorMsg = errObj["errorMessage"]?.ToString() ?? errObj["error"]?.ToString() ?? body;
+                }
+                catch { }
+
+                ServiceLocator.Current.GetService<IDialogService>()?.ShowMessage(
+                    string.Format(LocalizationManager.GetString("Accounts.LoginLittleSkinErrorDesc", "Сервер LittleSkin відмовив у доступі.\nПеревір логін та пароль.\n\nВідповідь сервера: {0}"), errorMsg),
                     LocalizationManager.GetString("Accounts.LoginLittleSkinErrorTitle", "Помилка входу"),
                     MascotEmotion.Sad);
-                throw new Exception(LocalizationManager.GetString("Accounts.LittleSkinAuthFailed", "Помилка авторизації"));
+                return null;
             }
 
-            var json = JObject.Parse(body);
+            JObject json;
+            try
+            {
+                json = JObject.Parse(body);
+            }
+            catch
+            {
+                return null;
+            }
+
             string username = json["selectedProfile"]?["name"]?.ToString() ?? email.Split('@')[0];
             string uuid = json["selectedProfile"]?["id"]?.ToString();
             string token = json["accessToken"]?.ToString();
 
             if (username == null || uuid == null || token == null)
-                throw new Exception(LocalizationManager.GetString("Accounts.LittleSkinIncomplete", "Відповідь від LittleSkin неповна"));
+            {
+                ServiceLocator.Current.GetService<IDialogService>()?.ShowMessage(
+                    LocalizationManager.GetString("Accounts.LittleSkinIncomplete", "Відповідь від LittleSkin неповна"),
+                    LocalizationManager.GetString("Accounts.LoginLittleSkinErrorTitle", "Помилка входу"),
+                    MascotEmotion.Sad);
+                return null;
+            }
 
             return new MSession
             {
