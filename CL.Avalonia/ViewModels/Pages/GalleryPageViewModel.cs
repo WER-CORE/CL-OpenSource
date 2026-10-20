@@ -18,18 +18,9 @@ public partial class GalleryPageViewModel : ObservableObject, ITrimmablePage
 {
     private readonly ScreenshotService _screenshotService;
     private bool _isInitialized;
-    private CancellationTokenSource? _loadCts;
 
     public void TrimMemory()
     {
-        _loadCts?.Cancel();
-        _loadCts?.Dispose();
-        _loadCts = null;
-
-        foreach (var item in Screenshots)
-        {
-            item.Dispose();
-        }
         Screenshots.Clear();
         SelectedScreenshot = null;
         _isInitialized = false;
@@ -63,20 +54,13 @@ public partial class GalleryPageViewModel : ObservableObject, ITrimmablePage
     }
 
     [RelayCommand]
-    public Task InitializeGalleryAsync() => InitializeGalleryInternalAsync(forceReloadScreenshots: false);
-
-    [RelayCommand]
-    public Task RefreshAllAsync() => InitializeGalleryInternalAsync(forceReloadScreenshots: true);
-
-    private async Task InitializeGalleryInternalAsync(bool forceReloadScreenshots)
+    public async Task InitializeGalleryAsync()
     {
         try
         {
             string? previouslySelectedName = SelectedSource?.Name;
             string launcherPath = SettingsManager.Default.PathLacunher ?? string.Empty;
-            var sources = await Task.Run(() => _screenshotService.GetScreenshotSources(launcherPath)).ConfigureAwait(false);
-
-            bool sourceChanged = false;
+            var sources = await Task.Run(() => _screenshotService.GetScreenshotSources(launcherPath));
 
             await Dispatcher.UIThread.InvokeAsync(() =>
             {
@@ -92,22 +76,19 @@ public partial class GalleryPageViewModel : ObservableObject, ITrimmablePage
                     var targetSource = match ?? Sources.FirstOrDefault();
                     if (!Equals(SelectedSource, targetSource))
                     {
-                        sourceChanged = true;
                         SelectedSource = targetSource;
                     }
                 }
             });
-
-            if (forceReloadScreenshots && !sourceChanged)
-            {
-                await LoadScreenshotsAsync();
-            }
         }
         catch (Exception ex)
         {
             Debug.WriteLine($"[GalleryPageViewModel] Initialize error: {ex.Message}");
         }
     }
+
+    [RelayCommand]
+    public Task RefreshAllAsync() => LoadScreenshotsAsync();
 
     partial void OnSelectedSourceChanged(ScreenshotSourceItem? value)
     {
@@ -131,85 +112,46 @@ public partial class GalleryPageViewModel : ObservableObject, ITrimmablePage
     [RelayCommand]
     public async Task LoadScreenshotsAsync()
     {
-        _loadCts?.Cancel();
-        _loadCts?.Dispose();
-        var cts = new CancellationTokenSource();
-        _loadCts = cts;
-        var token = cts.Token;
-
-        await Dispatcher.UIThread.InvokeAsync(() =>
-        {
-            IsLoading = true;
-            SelectedScreenshot = null;
-        });
+        if (IsLoading) return;
+        IsLoading = true;
 
         try
         {
             string? path = SelectedSource?.FullScreenshotsPath;
-            if (string.IsNullOrEmpty(path))
+            if (string.IsNullOrEmpty(path) || !Directory.Exists(path))
             {
-                if (!token.IsCancellationRequested)
-                {
-                    await Dispatcher.UIThread.InvokeAsync(() =>
-                    {
-                        foreach (var item in Screenshots) item.Dispose();
-                        Screenshots.Clear();
-                        IsNoScreenshotsVisible = true;
-                    });
-                }
-                return;
-            }
-
-            var items = await _screenshotService.LoadScreenshotsAsync(path, token).ConfigureAwait(false);
-
-            if (token.IsCancellationRequested)
-            {
-                foreach (var item in items) item.Dispose();
-                return;
-            }
-
-            await Dispatcher.UIThread.InvokeAsync(() =>
-            {
-                if (token.IsCancellationRequested)
-                {
-                    foreach (var item in items) item.Dispose();
-                    return;
-                }
-
-                foreach (var oldItem in Screenshots)
-                {
-                    oldItem.Dispose();
-                }
                 Screenshots.Clear();
+                SelectedScreenshot = null;
+                IsNoScreenshotsVisible = true;
+                return;
+            }
 
-                if (items.Count > 0)
+            var items = await _screenshotService.LoadScreenshotsAsync(path);
+
+            Screenshots.Clear();
+            SelectedScreenshot = null;
+
+            if (items.Count > 0)
+            {
+                foreach (var item in items)
                 {
-                    foreach (var item in items) Screenshots.Add(item);
-                    IsNoScreenshotsVisible = false;
+                    Screenshots.Add(item);
                 }
-                else
-                {
-                    IsNoScreenshotsVisible = true;
-                }
-            });
-        }
-        catch (OperationCanceledException)
-        {
+                IsNoScreenshotsVisible = false;
+            }
+            else
+            {
+                IsNoScreenshotsVisible = true;
+            }
         }
         catch (Exception ex)
         {
             Debug.WriteLine($"[GalleryPageViewModel] LoadScreenshots error: {ex.Message}");
-            if (!token.IsCancellationRequested)
-            {
-                await Dispatcher.UIThread.InvokeAsync(() => IsNoScreenshotsVisible = true);
-            }
+            IsNoScreenshotsVisible = Screenshots.Count == 0;
         }
         finally
         {
-            if (_loadCts == cts)
-            {
-                await Dispatcher.UIThread.InvokeAsync(() => IsLoading = false);
-            }
+            IsLoading = false;
         }
     }
 
@@ -250,7 +192,6 @@ public partial class GalleryPageViewModel : ObservableObject, ITrimmablePage
         if (_screenshotService.DeleteScreenshot(target.FilePath))
         {
             Screenshots.Remove(target);
-            target.Dispose();
             SelectedScreenshot = null;
             if (Screenshots.Count == 0) IsNoScreenshotsVisible = true;
             return true;

@@ -137,7 +137,7 @@ public partial class GalleryPage : UserControl
     {
         AvaloniaSoundService.Click();
         if (_boundVm != null)
-            _ = _boundVm.RefreshAllAsync();
+            _ = _boundVm.LoadScreenshotsAsync();
     }
 
     public void ScreenshotsList_SelectionChanged(object? sender, SelectionChangedEventArgs e)

@@ -12,7 +12,7 @@
              x:CompileBindings="False">
 
     <Grid>
-        <Grid x:Name="GirdModsDowload" Margin="0,0,1,0" Cursor="Hand" ToolTip.Tip="Натисніть щоб повернутись"
+        <Grid x:Name="GirdModsDowload" Margin="0,0,1,0" Cursor="Hand"
               PointerPressed="GirdModsDowload_MouseDown" IsVisible="False" ZIndex="9">
             <Border IsVisible="{DynamicResource GlassVisibility}">
                 <Border.Background>
@@ -23,14 +23,6 @@
                 </Border.Effect>
             </Border>
             <Border CornerRadius="16" Background="{DynamicResource GlassTintBrush}" />
-            <Border HorizontalAlignment="Right" VerticalAlignment="Bottom"
-                    Margin="0,0,165,95" CornerRadius="8"
-                    Background="#E01A241B" BorderBrush="#30FFFFFF" BorderThickness="1"
-                    Padding="14,9">
-                <TextBlock Text="Натисніть щоб повернутись"
-                           Foreground="{DynamicResource MainForegroundBrush}"
-                           FontSize="13" FontFamily="Inter" FontWeight="Medium"/>
-            </Border>
         </Grid>
                 <Grid x:Name="MenuInstaller" HorizontalAlignment="Center" Height="206" VerticalAlignment="Center" Width="256"
               IsVisible="False" ZIndex="10">
@@ -101,8 +93,17 @@
                         <TextBlock x:Name="TitleModsDowload" Text="Вибір версії моду"
                            Foreground="{DynamicResource MainForegroundBrush}"
                            HorizontalAlignment="Center" VerticalAlignment="Center"
-                           FontSize="14" FontFamily="Inter" />
+                           FontSize="14" FontFamily="Inter" Padding="30,0" TextTrimming="CharacterEllipsis"/>
                     </Border>
+
+                    <Button Classes="close-btn" Click="BtnCloseInstaller_Click"
+                            Background="Transparent" BorderThickness="0"
+                            Foreground="{DynamicResource MainForegroundBrush}"
+                            Width="28" Height="28" Padding="0"
+                            VerticalAlignment="Top" HorizontalAlignment="Right"
+                            Margin="0,7,14,0" Cursor="Hand" CornerRadius="6">
+                        <ic:SymbolIcon Symbol="Dismiss" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Button>
 
                     <Button x:Name="DowloadMod" BorderThickness="1"
                        HorizontalAlignment="Center" Height="29" Margin="0,169,0,0" VerticalAlignment="Top" Width="234"

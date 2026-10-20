@@ -221,6 +221,12 @@ public partial class ModsPage : UserControl
         AvaloniaAnimationService.AnimatePageTransitionExit(MenuInstaller);
     }
 
+    public void BtnCloseInstaller_Click(object? sender, RoutedEventArgs e)
+    {
+        AvaloniaSoundService.Click();
+        CloseInstallerMenu();
+    }
+
     public void GirdModsDowload_MouseDown(object? sender, PointerPressedEventArgs e)
     {
         AvaloniaSoundService.Click();
