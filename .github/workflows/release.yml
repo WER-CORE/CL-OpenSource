@@ -321,10 +321,15 @@ jobs:
           "@
           $code | Out-File -FilePath "CL.Core/Services/SecretsProvider.Compiled.cs" -Encoding utf8
 
-      - name: Publish macOS arm64
+      - name: Publish macOS arm64 (Apple Silicon)
         run: |
           dotnet publish CL.Avalonia/CL.Avalonia.csproj -c Release -r osx-arm64 --self-contained true -p:PublishSingleFile=false -p:Version=${{ env.RELEASE_VERSION }} -p:AssemblyVersion=${{ env.NUMERIC_VERSION }}.0 -p:FileVersion=${{ env.NUMERIC_VERSION }}.0 -p:InformationalVersion=${{ env.RELEASE_VERSION }} -o ./publish/osx-arm64
           chmod +x ./publish/osx-arm64/CL* || true
+
+      - name: Publish macOS x64 (Intel)
+        run: |
+          dotnet publish CL.Avalonia/CL.Avalonia.csproj -c Release -r osx-x64 --self-contained true -p:PublishSingleFile=false -p:Version=${{ env.RELEASE_VERSION }} -p:AssemblyVersion=${{ env.NUMERIC_VERSION }}.0 -p:FileVersion=${{ env.NUMERIC_VERSION }}.0 -p:InformationalVersion=${{ env.RELEASE_VERSION }} -o ./publish/osx-x64
+          chmod +x ./publish/osx-x64/CL* || true
 
       - name: Generate macOS ICNS icon
         run: |
@@ -344,7 +349,7 @@ jobs:
       - name: Install Velopack CLI
         run: dotnet tool install -g vpk
 
-      - name: Package with Velopack macOS
+      - name: Package with Velopack macOS (Apple Silicon arm64)
         run: |
           vpk pack --packId "CLegendaryLauncher" \
                    --packVersion "${{ env.RELEASE_VERSION }}" \
@@ -353,6 +358,23 @@ jobs:
                    --icon "icon.icns" \
                    --packTitle "CLegendary Launcher" \
                    --packAuthors "WER-CORE" \
+                   --channel "osx-arm64" \
+                   --outputDir "./macos_artifacts"
+          cp ./macos_artifacts/CLegendaryLauncher-osx-arm64-Setup.pkg ./macos_artifacts/CLegendaryLauncher-osx-Setup.pkg || true
+          cp ./macos_artifacts/CLegendaryLauncher-osx-arm64-Portable.zip ./macos_artifacts/CLegendaryLauncher-osx-Portable.zip || true
+          cp ./macos_artifacts/releases.osx-arm64.json ./macos_artifacts/releases.osx.json || true
+          cp ./macos_artifacts/assets.osx-arm64.json ./macos_artifacts/assets.osx.json || true
+
+      - name: Package with Velopack macOS (Intel x64)
+        run: |
+          vpk pack --packId "CLegendaryLauncher" \
+                   --packVersion "${{ env.RELEASE_VERSION }}" \
+                   --packDir "./publish/osx-x64" \
+                   --mainExe "CL.Avalonia" \
+                   --icon "icon.icns" \
+                   --packTitle "CLegendary Launcher" \
+                   --packAuthors "WER-CORE" \
+                   --channel "osx-x64" \
                    --outputDir "./macos_artifacts"
 
       - name: Upload macOS Artifacts
@@ -396,8 +418,10 @@ jobs:
           | 🪟 **Windows (Installer)** | \`CLegendaryLauncher-Windows-Setup.exe\` | Recommended Installer with auto-updates |
           | 🪟 **Windows (Portable)** | \`CLegendaryLauncher-Windows-Portable.zip\` | Portable standalone package with auto-updates |
           | 🐧 **Linux** | \`CLegendaryLauncher.AppImage\` | Universal portable package with auto-updates |
-          | 🍎 **macOS (Installer)** | \`CLegendaryLauncher-osx-Setup.pkg\` | Package Installer with auto-updates |
-          | 🍎 **macOS (Portable)** | \`CLegendaryLauncher-osx-Portable.zip\` | Portable standalone package with auto-updates |
+          | 🍎 **macOS Apple Silicon (Installer)** | \`CLegendaryLauncher-osx-arm64-Setup.pkg\` | Package Installer for Apple Silicon (M1/M2/M3/M4) |
+          | 🍎 **macOS Apple Silicon (Portable)** | \`CLegendaryLauncher-osx-arm64-Portable.zip\` | Portable package for Apple Silicon (M1/M2/M3/M4) |
+          | 🍏 **macOS Intel (Installer)** | \`CLegendaryLauncher-osx-x64-Setup.pkg\` | Package Installer for Intel Macs |
+          | 🍏 **macOS Intel (Portable)** | \`CLegendaryLauncher-osx-x64-Portable.zip\` | Portable package for Intel Macs |
 
           <details>
           <summary>🔍 Velopack & Automated Update Feeds (Internal)</summary>
