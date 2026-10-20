@@ -28,6 +28,24 @@ modules:
       - install -Dm644 app.clegendary.launcher.metainfo.xml /app/share/metainfo/app.clegendary.launcher.metainfo.xml
       - install -Dm644 app.clegendary.launcher.png /app/share/icons/hicolor/512x512/apps/app.clegendary.launcher.png
     sources:
+      - type: archive
+        only-arches: [x86_64]
+        url: https://github.com/WER-CORE/CL-Win-Edition--Update/releases/download/v1.1.0/CLegendaryLauncher-linux-x64.tar.gz
+        sha256: 0000000000000000000000000000000000000000000000000000000000000000
+        x-checker-data:
+          type: json
+          url: https://api.github.com/repos/WER-CORE/CL-Win-Edition--Update/releases/latest
+          version-query: .tag_name | sub("^v"; "")
+          url-query: '"https://github.com/WER-CORE/CL-Win-Edition--Update/releases/download/" + $tag + "/CLegendaryLauncher-linux-x64.tar.gz"'
+      - type: archive
+        only-arches: [aarch64]
+        url: https://github.com/WER-CORE/CL-Win-Edition--Update/releases/download/v1.1.0/CLegendaryLauncher-linux-arm64.tar.gz
+        sha256: 0000000000000000000000000000000000000000000000000000000000000000
+        x-checker-data:
+          type: json
+          url: https://api.github.com/repos/WER-CORE/CL-Win-Edition--Update/releases/latest
+          version-query: .tag_name | sub("^v"; "")
+          url-query: '"https://github.com/WER-CORE/CL-Win-Edition--Update/releases/download/" + $tag + "/CLegendaryLauncher-linux-arm64.tar.gz"'
       - type: file
         path: app.clegendary.launcher.desktop
       - type: file

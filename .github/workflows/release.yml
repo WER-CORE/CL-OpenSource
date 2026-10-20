@@ -300,6 +300,8 @@ jobs:
               cp "$f" ./linux_artifacts/CLegendaryLauncher-arm64.AppImage || true
             fi
           done
+          tar -czf ./linux_artifacts/CLegendaryLauncher-linux-x64.tar.gz -C ./publish/linux-x64 .
+          tar -czf ./linux_artifacts/CLegendaryLauncher-linux-arm64.tar.gz -C ./publish/linux-arm64 .
           ls -la ./linux_artifacts
 
       - name: Upload Linux Artifacts
@@ -456,8 +458,10 @@ jobs:
           |:---|:---|:---|
           | 🪟 **Windows (Installer)** | \`CLegendaryLauncher-Windows-Setup.exe\` | Recommended Installer with auto-updates |
           | 🪟 **Windows (Portable)** | \`CLegendaryLauncher-Windows-Portable.zip\` | Portable standalone package with auto-updates |
-          | 🐧 **Linux (x64)** | \`CLegendaryLauncher.AppImage\` | Universal AppImage for Intel/AMD 64-bit with auto-updates |
-          | 🐧 **Linux (ARM64)** | \`CLegendaryLauncher-arm64.AppImage\` | AppImage for Raspberry Pi 4/5, Orange Pi, ARM64 |
+          | 🐧 **Linux (x64 AppImage)** | \`CLegendaryLauncher.AppImage\` | Universal AppImage for Intel/AMD 64-bit with auto-updates |
+          | 🐧 **Linux (ARM64 AppImage)** | \`CLegendaryLauncher-arm64.AppImage\` | AppImage for Raspberry Pi 4/5, Orange Pi, ARM64 |
+          | 🐧 **Linux (x64 Tarball)** | \`CLegendaryLauncher-linux-x64.tar.gz\` | Binaries archive (Flathub & generic Linux) |
+          | 🐧 **Linux (ARM64 Tarball)** | \`CLegendaryLauncher-linux-arm64.tar.gz\` | Binaries archive for ARM64 |
           | 🍎 **macOS Apple Silicon (Installer)** | \`CLegendaryLauncher-osx-arm64-Setup.pkg\` | Package Installer for Apple Silicon (M1/M2/M3/M4) |
           | 🍎 **macOS Apple Silicon (Portable)** | \`CLegendaryLauncher-osx-arm64-Portable.zip\` | Portable package for Apple Silicon (M1/M2/M3/M4) |
           | 🍏 **macOS Intel (Installer)** | \`CLegendaryLauncher-osx-x64-Setup.pkg\` | Package Installer for Intel Macs |
