@@ -244,10 +244,6 @@ jobs:
           chmod +x ./publish/linux-x64/CL* || true
           mkdir -p ./linux_artifacts
 
-      - name: Create Linux tar.gz
-        run: |
-          tar -czvf ./linux_artifacts/CLegendaryLauncher-Linux-x64.tar.gz -C ./publish/linux-x64 .
-
       - name: Install libfuse2
         run: |
           sudo apt-get update
@@ -345,40 +341,6 @@ jobs:
           sips -z 1024 1024 "CL.Avalonia/Icon/IconCL(Halloween).png" --out icon.iconset/icon_512x512@2x.png
           iconutil -c icns icon.iconset -o icon.icns
 
-      - name: Package macOS DMG
-        run: |
-          mkdir -p "dmg_folder/CLegendary Launcher.app/Contents/MacOS"
-          mkdir -p "dmg_folder/CLegendary Launcher.app/Contents/Resources"
-          cp -r ./publish/osx-arm64/* "dmg_folder/CLegendary Launcher.app/Contents/MacOS/"
-          cp "dmg_folder/CLegendary Launcher.app/Contents/MacOS/CL.Avalonia" "dmg_folder/CLegendary Launcher.app/Contents/MacOS/CL(CLegendary Launcher)" || true
-          cp icon.icns "dmg_folder/CLegendary Launcher.app/Contents/Resources/icon.icns" || true
-          chmod +x "dmg_folder/CLegendary Launcher.app/Contents/MacOS/CL"* || true
-          cat << 'EOF' > "dmg_folder/CLegendary Launcher.app/Contents/Info.plist"
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-              <key>CFBundleExecutable</key>
-              <string>CL.Avalonia</string>
-              <key>CFBundleIconFile</key>
-              <string>icon.icns</string>
-              <key>CFBundleIdentifier</key>
-              <string>app.clegendary.launcher</string>
-              <key>CFBundleName</key>
-              <string>CLegendary Launcher</string>
-              <key>CFBundlePackageType</key>
-              <string>APPL</string>
-              <key>CFBundleShortVersionString</key>
-              <string>${{ env.RELEASE_VERSION }}</string>
-              <key>NSHighResolutionCapable</key>
-              <true/>
-          </dict>
-          </plist>
-          EOF
-          ln -s /Applications dmg_folder/Applications
-          mkdir -p macos_artifacts
-          hdiutil create -volname "CLegendary Launcher" -srcfolder dmg_folder -ov -format UDZO "./macos_artifacts/CLegendaryLauncher-macOS.dmg"
-
       - name: Install Velopack CLI
         run: dotnet tool install -g vpk
 
@@ -431,11 +393,11 @@ jobs:
           #### 🚀 Downloads:
           | Platform | File | Description |
           |:---|:---|:---|
-          | 🪟 **Windows** | \`CLegendaryLauncher-Windows-Setup.exe\` | Recommended Installer with auto-updates |
-          | 🪟 **Windows Portable** | \`CLegendaryLauncher-Windows-Portable.zip\` | Portable standalone package |
-          | 🐧 **Linux (AppImage)** | \`CLegendaryLauncher.AppImage\` | Universal executable with auto-updates |
-          | 🐧 **Linux (Tarball)** | \`CLegendaryLauncher-Linux-x64.tar.gz\` | Portable tarball archive |
-          | 🍎 **macOS** | \`CLegendaryLauncher-macOS.dmg\` | Disk Image for Apple Silicon (arm64) |
+          | 🪟 **Windows (Installer)** | \`CLegendaryLauncher-Windows-Setup.exe\` | Recommended Installer with auto-updates |
+          | 🪟 **Windows (Portable)** | \`CLegendaryLauncher-Windows-Portable.zip\` | Portable standalone package with auto-updates |
+          | 🐧 **Linux** | \`CLegendaryLauncher.AppImage\` | Universal portable package with auto-updates |
+          | 🍎 **macOS (Installer)** | \`CLegendaryLauncher-osx-Setup.pkg\` | Package Installer with auto-updates |
+          | 🍎 **macOS (Portable)** | \`CLegendaryLauncher-osx-Portable.zip\` | Portable standalone package with auto-updates |
 
           <details>
           <summary>🔍 Velopack & Automated Update Feeds (Internal)</summary>
