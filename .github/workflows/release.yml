@@ -266,11 +266,6 @@ jobs:
                    --packTitle "CLegendary Launcher" \
                    --packAuthors "WER-CORE" \
                    --outputDir "./linux_artifacts"
-          for appimage in ./linux_artifacts/*.AppImage; do
-            if [ -f "$appimage" ] && [ "$appimage" != "./linux_artifacts/CLegendaryLauncher-Linux-x64.AppImage" ]; then
-              cp "$appimage" ./linux_artifacts/CLegendaryLauncher-Linux-x64.AppImage
-            fi
-          done
 
       - name: Upload Linux Artifacts
         uses: actions/upload-artifact@v4
@@ -438,7 +433,7 @@ jobs:
           |:---|:---|:---|
           | 🪟 **Windows** | \`CLegendaryLauncher-Windows-Setup.exe\` | Recommended Installer with auto-updates |
           | 🪟 **Windows Portable** | \`CLegendaryLauncher-Windows-Portable.zip\` | Portable standalone package |
-          | 🐧 **Linux (AppImage)** | \`CLegendaryLauncher.AppImage\` / \`CLegendaryLauncher-Linux-x64.AppImage\` | Universal executable with auto-updates |
+          | 🐧 **Linux (AppImage)** | \`CLegendaryLauncher.AppImage\` | Universal executable with auto-updates |
           | 🐧 **Linux (Tarball)** | \`CLegendaryLauncher-Linux-x64.tar.gz\` | Portable tarball archive |
           | 🍎 **macOS** | \`CLegendaryLauncher-macOS.dmg\` | Disk Image for Apple Silicon (arm64) |
 
