@@ -1,4 +1,4 @@
-﻿<Window xmlns="https://github.com/avaloniaui"
+<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:CL_CLegendary_Launcher_.Avalonia.ViewModels"
         x:Class="CL_CLegendary_Launcher_.Avalonia.Views.Controls.LoadScreenWindow"
@@ -14,7 +14,7 @@
     <Border CornerRadius="15" Background="#151515" ClipToBounds="True" BorderBrush="#33FFFFFF" BorderThickness="1">
         <Grid>
 
-            <Image Source="avares://CL.Avalonia/Assets/Backgrounds/DarkThemBG.png"
+            <Image Source="{Binding BackgroundImage}"
                    Stretch="UniformToFill"
                    Opacity="0.7"/>
 
@@ -92,7 +92,7 @@
                                  Value="{Binding ProgressValue}"
                                  Height="4"
                                  Background="Transparent"
-                                 Foreground="#FF00BEFF"/>
+                                 Foreground="{Binding ProgressBarBrush}"/>
                 </Border>
             </Grid>
         </Grid>

@@ -352,15 +352,35 @@ public class AvaloniaThemeService
 
     public void HandleEditPhrasesClick()
     {
-        string dataDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data");
+        string dataDir = PlatformPaths.DataFolder();
         string phrasesPath = Path.Combine(dataDir, "loading_phrases.txt");
 
         if (!Directory.Exists(dataDir)) Directory.CreateDirectory(dataDir);
 
         if (!File.Exists(phrasesPath))
         {
-            string rawPhrases = "Перша зелена травичка пробивається крізь землю...\nЗаварюємо свіжий фруктовий чай...\nHomka саджає перші весняні квіти...\nDeeplay фотографує цвітіння сакур на камеру...\nТеплий весняний дощик стукає по вікнах...";
-            File.WriteAllText(phrasesPath, rawPhrases);
+            string legacyPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "loading_phrases.txt");
+            if (File.Exists(legacyPath))
+            {
+                try { File.Copy(legacyPath, phrasesPath, true); } catch { }
+            }
+            else
+            {
+                string rawPhrases = string.Join("\n", new[]
+                {
+                    "// Кастомні фрази для екрану завантаження (по одній у кожному рядку):",
+                    "Осінній дощ тихенько стукає у вікно, а в кімнаті пахне гарячим чаєм...",
+                    "Золоте листя кружляє за вікном, немов магічні частинки в грі...",
+                    "Homka збирає врожай гарбузів для найзатишнішої ферми у світі...",
+                    "Deeplay фотографує туманний світанок та золоті крони осінньої тайги...",
+                    "Заварюємо ароматне какао з маршмелоу та загортаємося в теплий плед...",
+                    "Данило запалює камін у затишному дерев'яному будиночку...",
+                    "WER_Clegendary тестує нові збірки під шум жовтневої зливи...",
+                    "кабанчік збирає солодкі ягідки в лісі та пригощає рудих лисичок...",
+                    "Осінь на вулиці, тепло в чашці, безмежний затишок на душі..."
+                });
+                File.WriteAllText(phrasesPath, rawPhrases, Encoding.UTF8);
+            }
         }
 
         try

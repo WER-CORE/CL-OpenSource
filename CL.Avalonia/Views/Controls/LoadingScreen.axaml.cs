@@ -1,13 +1,16 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Media;
+using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 using CL.Core.Models;
 using CL.Core.Services;
 using CL_CLegendary_Launcher_.Avalonia.ViewModels;
 using CL_CLegendary_Launcher_.Avalonia.Views.Dialogs;
+using CL_CLegendary_Launcher_.Avalonia.Views.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using CL_CLegendary_Launcher_.Avalonia.Views.Windows;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -62,8 +65,59 @@ namespace CL_CLegendary_Launcher_.Avalonia.Views.Controls
             LocalizationManager.LoadLanguage(SettingsManager.Default.LanguageCode);
             ViewModel.StatusText = LocalizationManager.GetString("LoadScreen.LoadingText", "Завантаження ресурсів...");
 
+            ApplyCustomSettings();
+
             SettingsManager.Default.OfflineModLauncher = false;
             SettingsManager.Save();
+        }
+
+        private void ApplyCustomSettings()
+        {
+            try
+            {
+                string bgPath = SettingsManager.Default.LoadScreenBackground;
+                if (!string.IsNullOrWhiteSpace(bgPath) && File.Exists(bgPath))
+                {
+                    using var stream = File.OpenRead(bgPath);
+                    ViewModel.BackgroundImage = new Bitmap(stream);
+                }
+                else
+                {
+                    LoadDefaultBackground();
+                }
+            }
+            catch
+            {
+                LoadDefaultBackground();
+            }
+
+            try
+            {
+                string colorHex = SettingsManager.Default.LoadScreenBarColor;
+                if (!string.IsNullOrWhiteSpace(colorHex))
+                {
+                    if (!colorHex.StartsWith("#")) colorHex = "#" + colorHex;
+                    if (Color.TryParse(colorHex, out var parsedColor))
+                    {
+                        ViewModel.ProgressBarBrush = new SolidColorBrush(parsedColor);
+                    }
+                }
+            }
+            catch { }
+        }
+
+        private void LoadDefaultBackground()
+        {
+            try
+            {
+                var uri = new Uri("avares://CL.Avalonia/Assets/Backgrounds/DarkThemBG.png");
+                if (AssetLoader.Exists(uri))
+                {
+                    using var stream = AssetLoader.Open(uri);
+                    ViewModel.BackgroundImage = new Bitmap(stream);
+                }
+            }
+            catch { }
         }
 
         protected override async void OnOpened(EventArgs e)
@@ -87,7 +141,6 @@ namespace CL_CLegendary_Launcher_.Avalonia.Views.Controls
             }
             catch (Exception)
             {
-
                 SettingsManager.Default.OfflineModLauncher = true;
                 SettingsManager.Save();
             }
@@ -178,25 +231,95 @@ namespace CL_CLegendary_Launcher_.Avalonia.Views.Controls
             ViewModel.RandomPhrases.Clear();
             for (int i = 1; i <= 30; i++)
             {
-                string phrase = LocalizationManager.GetString($"LoadScreen.RandomPhrases.Phrase{i}", "");
+                string phrase = LocalizationManager.GetString($"RandomPhrases.Phrase{i}", "");
+                if (string.IsNullOrWhiteSpace(phrase))
+                {
+                    phrase = LocalizationManager.GetString($"LoadScreen.RandomPhrases.Phrase{i}", "");
+                }
                 if (!string.IsNullOrWhiteSpace(phrase)) ViewModel.RandomPhrases.Add(phrase);
             }
 
             if (ViewModel.RandomPhrases.Count == 0)
             {
-                ViewModel.RandomPhrases = new List<string> { "Сонце пече так, що навіть кулери ПК просять про холодний лимонад...", "Літо на вулиці, спека в грі, затишок на душі..." };
+                ViewModel.RandomPhrases = GetAutumnFallbackPhrases();
             }
 
+            LoadCustomPhrases();
+        }
+
+        private void LoadCustomPhrases()
+        {
             try
             {
-                string phrasesPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "loading_phrases.txt");
-                if (File.Exists(phrasesPath))
+                string dataFolder = PlatformPaths.DataFolder();
+                string primaryPath = Path.Combine(dataFolder, "loading_phrases.txt");
+                string legacyPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "loading_phrases.txt");
+
+                string? targetPath = null;
+                if (File.Exists(primaryPath))
                 {
-                    var lines = File.ReadAllLines(phrasesPath).Where(x => !string.IsNullOrWhiteSpace(x) && !x.Trim().StartsWith("//")).ToList();
-                    if (lines.Count > 0) ViewModel.RandomPhrases = lines;
+                    targetPath = primaryPath;
+                }
+                else if (File.Exists(legacyPath))
+                {
+                    targetPath = legacyPath;
+                }
+
+                if (targetPath != null)
+                {
+                    var rawLines = File.ReadAllLines(targetPath, System.Text.Encoding.UTF8);
+                    var validLines = new List<string>();
+
+                    foreach (var rawLine in rawLines)
+                    {
+                        string line = rawLine.Trim();
+                        if (string.IsNullOrWhiteSpace(line)) continue;
+                        if (line.StartsWith("//") || line.StartsWith("#")) continue;
+
+                        if (line.StartsWith("Текст:", StringComparison.OrdinalIgnoreCase))
+                        {
+                            line = line.Substring(6).Trim();
+                        }
+                        else if (line.StartsWith("Текст :", StringComparison.OrdinalIgnoreCase))
+                        {
+                            line = line.Substring(7).Trim();
+                        }
+
+                        if (!string.IsNullOrWhiteSpace(line))
+                        {
+                            validLines.Add(line);
+                        }
+                    }
+
+                    if (validLines.Count > 0)
+                    {
+                        ViewModel.RandomPhrases = validLines;
+                    }
                 }
             }
             catch { }
+        }
+
+        private static List<string> GetAutumnFallbackPhrases()
+        {
+            return new List<string>
+            {
+                "Осінній дощ тихенько стукає у вікно, а в кімнаті пахне гарячим чаєм...",
+                "Золоте листя кружляє за вікном, немов магічні частинки в грі...",
+                "Homka збирає врожай гарбузів для найзатишнішої ферми у світі...",
+                "Deeplay фотографує туманний світанок та золоті крони осінньої тайги...",
+                "Заварюємо ароматне какао з маршмелоу та загортаємося в теплий плед...",
+                "Данило запалює камін у затишному дерев'яному будиночку...",
+                "WER_Clegendary тестує нові збірки під шум жовтневої зливи...",
+                "кабанчік збирає солодкі ягідки в лісі та пригощає рудих лисичок...",
+                "Вирізаємо сяючі ліхтарі Джека для святкового гелловінського настрою...",
+                "Шурхіт пожовклого листя під лапками прирученого вовчика...",
+                "Краплі дощу падають на дах, поки редстоун-механізми працюють як годинник...",
+                "Шукаємо грибний біом та варимо теплий грибний супчик біля багаття...",
+                "Час діставати теплі в'язані светри, зручні навушники та йти в шахту...",
+                "Котик затишно муркоче на теплій печі, поки за вікном лютує вітер...",
+                "Осінь на вулиці, тепло в чашці, безмежний затишок на душі..."
+            };
         }
 
         private async Task SimulateLoadingAnimationAsync()
@@ -209,12 +332,18 @@ namespace CL_CLegendary_Launcher_.Avalonia.Views.Controls
             {
                 if (this.Opacity == 0) return;
 
-                await Task.Delay(_random.Next(15, 40));
+                await Task.Delay(_random.Next(25, 45));
                 ViewModel.ProgressValue = i;
 
                 if (i % 20 == 0 && i > 0 && ViewModel.RandomPhrases.Count > 0)
                 {
-                    ViewModel.RandomPhraseText = ViewModel.RandomPhrases[_random.Next(ViewModel.RandomPhrases.Count)];
+                    string nextPhrase = ViewModel.RandomPhrases[_random.Next(ViewModel.RandomPhrases.Count)];
+                    if (ViewModel.RandomPhrases.Count > 1 && nextPhrase == ViewModel.RandomPhraseText)
+                    {
+                        int nextIndex = (_random.Next(ViewModel.RandomPhrases.Count - 1) + 1 + ViewModel.RandomPhrases.IndexOf(ViewModel.RandomPhraseText)) % ViewModel.RandomPhrases.Count;
+                        nextPhrase = ViewModel.RandomPhrases[nextIndex];
+                    }
+                    ViewModel.RandomPhraseText = nextPhrase;
                 }
             }
         }
