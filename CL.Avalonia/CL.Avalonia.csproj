@@ -1,7 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(IsPreviewBuild)' == 'true' or '$(Configuration)' == 'Debug'">
 		<OutputType>Exe</OutputType>
+	</PropertyGroup>
+
+	<PropertyGroup>
 		<TargetFramework>net10.0</TargetFramework>
 		<RootNamespace>CL_CLegendary_Launcher_.Avalonia</RootNamespace>
 		<AssemblyName>CL.Avalonia</AssemblyName>

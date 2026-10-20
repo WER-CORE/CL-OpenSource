@@ -1,0 +1,36 @@
+app-id: app.clegendary.launcher
+runtime: org.freedesktop.Platform
+runtime-version: '24.08'
+sdk: org.freedesktop.Sdk
+command: CL.Avalonia
+
+finish-args:
+  - --share=network
+  - --share=ipc
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --socket=pulseaudio
+  - --device=dri
+  - --filesystem=xdg-data/cl-launcher:create
+  - --filesystem=xdg-data/CLMinecraft:create
+  - --filesystem=~/.minecraft:ro
+  - --filesystem=xdg-run/discord-ipc-0
+  - --talk-name=org.freedesktop.Notifications
+
+modules:
+  - name: clegendary-launcher
+    buildsystem: simple
+    build-commands:
+      - install -d /app/bin /app/share/applications /app/share/metainfo /app/share/icons/hicolor/512x512/apps
+      - cp -r * /app/bin/
+      - chmod +x /app/bin/CL.Avalonia
+      - install -Dm644 app.clegendary.launcher.desktop /app/share/applications/app.clegendary.launcher.desktop
+      - install -Dm644 app.clegendary.launcher.metainfo.xml /app/share/metainfo/app.clegendary.launcher.metainfo.xml
+      - install -Dm644 app.clegendary.launcher.png /app/share/icons/hicolor/512x512/apps/app.clegendary.launcher.png
+    sources:
+      - type: file
+        path: app.clegendary.launcher.desktop
+      - type: file
+        path: app.clegendary.launcher.metainfo.xml
+      - type: file
+        path: app.clegendary.launcher.png

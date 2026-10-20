@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>app.clegendary.launcher</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+  <name>CLegendary Launcher</name>
+  <summary>Modern, fast and modular Minecraft launcher with multi-account and modpack management</summary>
+  <description>
+    <p>
+      CLegendary Launcher is a modern, cross-platform Minecraft launcher crafted with Avalonia UI. It provides seamless management of vanilla and modded Minecraft instances, custom skins, modpacks, server monitoring, and automated backups.
+    </p>
+    <p>Key Features:</p>
+    <ul>
+      <li>Full support for Vanilla, Fabric, Forge, NeoForge, and Quilt loaders</li>
+      <li>Integrated Modpack manager supporting CurseForge and local archives</li>
+      <li>Multi-account system: Microsoft OAuth login, LittleSkin custom auth, and offline profiles</li>
+      <li>Automated world backup system with instant restore capabilities</li>
+      <li>Built-in crash analysis and diagnosis powered by AI assistant</li>
+      <li>Rich Discord Presence integration</li>
+      <li>Fluid, responsive interface optimized for desktop and handheld gaming devices like Steam Deck</li>
+    </ul>
+  </description>
+  <launchable type="desktop-id">app.clegendary.launcher.desktop</launchable>
+  <url type="homepage">https://github.com/WER-CORE/CL-OpenSource</url>
+  <url type="bugtracker">https://github.com/WER-CORE/CL-OpenSource/issues</url>
+  <url type="vcs-browser">https://github.com/WER-CORE/CL-OpenSource</url>
+  <developer_name>WER-CORE</developer_name>
+  <screenshots>
+    <screenshot type="default">
+      <image>https://raw.githubusercontent.com/WER-CORE/CL-OpenSource/dev/CL.Avalonia/Assets/Backgrounds/DarkThemBG.png</image>
+      <caption>CLegendary Launcher Main Screen</caption>
+    </screenshot>
+  </screenshots>
+  <releases>
+    <release version="1.1.0" date="2026-10-20">
+      <description>
+        <p>Release 1.1.0: Cross-platform support, Velopack automated updates, and modern Avalonia interface.</p>
+      </description>
+    </release>
+  </releases>
+  <content_rating type="oars-1.1" />
+</component>

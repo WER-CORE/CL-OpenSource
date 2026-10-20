@@ -66,6 +66,7 @@ jobs:
     env:
       RELEASE_VERSION: ${{ needs.prepare.outputs.version }}
       NUMERIC_VERSION: ${{ needs.prepare.outputs.numeric_version }}
+      IS_PRERELEASE: ${{ needs.prepare.outputs.is_prerelease }}
       SIGNPATH_API_TOKEN: ${{ secrets.SIGNPATH_API_TOKEN }}
       SIGNPATH_ORGANIZATION_ID: ${{ vars.SIGNPATH_ORGANIZATION_ID || secrets.SIGNPATH_ORGANIZATION_ID || 'ee9101d1-c7a5-4c9b-8415-756078e535be' }}
       SIGNPATH_PROJECT_SLUG: ${{ vars.SIGNPATH_PROJECT_SLUG || secrets.SIGNPATH_PROJECT_SLUG || 'CL-Launcher' }}
@@ -123,7 +124,7 @@ jobs:
         run: dotnet test CL.Crossplatform.sln -c Release --no-restore --verbosity normal
 
       - name: Publish Windows x64
-        run: dotnet publish CL.Avalonia/CL.Avalonia.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=false -p:Version=${{ env.RELEASE_VERSION }} -p:AssemblyVersion=${{ env.NUMERIC_VERSION }}.0 -p:FileVersion=${{ env.NUMERIC_VERSION }}.0 -p:InformationalVersion=${{ env.RELEASE_VERSION }} -o ./publish/win-x64
+        run: dotnet publish CL.Avalonia/CL.Avalonia.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=false -p:IsPreviewBuild=${{ env.IS_PRERELEASE }} -p:Version=${{ env.RELEASE_VERSION }} -p:AssemblyVersion=${{ env.NUMERIC_VERSION }}.0 -p:FileVersion=${{ env.NUMERIC_VERSION }}.0 -p:InformationalVersion=${{ env.RELEASE_VERSION }} -o ./publish/win-x64
 
       - name: Sign launcher via SignPath
         if: env.SIGNPATH_API_TOKEN != ''
@@ -242,7 +243,12 @@ jobs:
           dotnet publish CL.Avalonia/CL.Avalonia.csproj -c Release -r linux-x64 --self-contained true -p:PublishSingleFile=false -p:Version=${{ env.RELEASE_VERSION }} -p:AssemblyVersion=${{ env.NUMERIC_VERSION }}.0 -p:FileVersion=${{ env.NUMERIC_VERSION }}.0 -p:InformationalVersion=${{ env.RELEASE_VERSION }} -o ./publish/linux-x64
           cp ./publish/linux-x64/CL.Avalonia "./publish/linux-x64/CL(CLegendary Launcher)" || true
           chmod +x ./publish/linux-x64/CL* || true
-          mkdir -p ./linux_artifacts
+
+      - name: Publish Linux arm64
+        run: |
+          dotnet publish CL.Avalonia/CL.Avalonia.csproj -c Release -r linux-arm64 --self-contained true -p:PublishSingleFile=false -p:Version=${{ env.RELEASE_VERSION }} -p:AssemblyVersion=${{ env.NUMERIC_VERSION }}.0 -p:FileVersion=${{ env.NUMERIC_VERSION }}.0 -p:InformationalVersion=${{ env.RELEASE_VERSION }} -o ./publish/linux-arm64
+          cp ./publish/linux-arm64/CL.Avalonia "./publish/linux-arm64/CL(CLegendary Launcher)" || true
+          chmod +x ./publish/linux-arm64/CL* || true
 
       - name: Install libfuse2
         run: |
@@ -252,8 +258,9 @@ jobs:
       - name: Install Velopack CLI
         run: dotnet tool install -g vpk
 
-      - name: Package with Velopack Linux
+      - name: Package with Velopack Linux x64
         run: |
+          mkdir -p ./linux_artifacts_x64
           vpk pack --packId "CLegendaryLauncher" \
                    --packVersion "${{ env.RELEASE_VERSION }}" \
                    --packDir "./publish/linux-x64" \
@@ -261,7 +268,39 @@ jobs:
                    --icon "CL.Avalonia/Icon/IconCL(Halloween).png" \
                    --packTitle "CLegendary Launcher" \
                    --packAuthors "WER-CORE" \
-                   --outputDir "./linux_artifacts"
+                   --channel "linux" \
+                   --runtime "linux-x64" \
+                   --outputDir "./linux_artifacts_x64"
+
+      - name: Package with Velopack Linux arm64
+        run: |
+          mkdir -p ./linux_artifacts_arm64
+          vpk pack --packId "CLegendaryLauncher" \
+                   --packVersion "${{ env.RELEASE_VERSION }}" \
+                   --packDir "./publish/linux-arm64" \
+                   --mainExe "CL.Avalonia" \
+                   --icon "CL.Avalonia/Icon/IconCL(Halloween).png" \
+                   --packTitle "CLegendary Launcher" \
+                   --packAuthors "WER-CORE" \
+                   --channel "linux-arm64" \
+                   --runtime "linux-arm64" \
+                   --outputDir "./linux_artifacts_arm64"
+
+      - name: Organize Linux release artifacts
+        run: |
+          mkdir -p ./linux_artifacts
+          cp -r ./linux_artifacts_x64/* ./linux_artifacts/
+          if [ -f ./linux_artifacts/CLegendaryLauncher.AppImage ]; then
+            cp ./linux_artifacts/CLegendaryLauncher.AppImage ./linux_artifacts/CLegendaryLauncher-x64.AppImage || true
+          fi
+          cp ./linux_artifacts_arm64/*.nupkg ./linux_artifacts/ 2>/dev/null || true
+          cp ./linux_artifacts_arm64/*.json ./linux_artifacts/ 2>/dev/null || true
+          for f in ./linux_artifacts_arm64/*.AppImage; do
+            if [ -f "$f" ]; then
+              cp "$f" ./linux_artifacts/CLegendaryLauncher-arm64.AppImage || true
+            fi
+          done
+          ls -la ./linux_artifacts
 
       - name: Upload Linux Artifacts
         uses: actions/upload-artifact@v4
@@ -417,7 +456,8 @@ jobs:
           |:---|:---|:---|
           | 🪟 **Windows (Installer)** | \`CLegendaryLauncher-Windows-Setup.exe\` | Recommended Installer with auto-updates |
           | 🪟 **Windows (Portable)** | \`CLegendaryLauncher-Windows-Portable.zip\` | Portable standalone package with auto-updates |
-          | 🐧 **Linux** | \`CLegendaryLauncher.AppImage\` | Universal portable package with auto-updates |
+          | 🐧 **Linux (x64)** | \`CLegendaryLauncher.AppImage\` | Universal AppImage for Intel/AMD 64-bit with auto-updates |
+          | 🐧 **Linux (ARM64)** | \`CLegendaryLauncher-arm64.AppImage\` | AppImage for Raspberry Pi 4/5, Orange Pi, ARM64 |
           | 🍎 **macOS Apple Silicon (Installer)** | \`CLegendaryLauncher-osx-arm64-Setup.pkg\` | Package Installer for Apple Silicon (M1/M2/M3/M4) |
           | 🍎 **macOS Apple Silicon (Portable)** | \`CLegendaryLauncher-osx-arm64-Portable.zip\` | Portable package for Apple Silicon (M1/M2/M3/M4) |
           | 🍏 **macOS Intel (Installer)** | \`CLegendaryLauncher-osx-x64-Setup.pkg\` | Package Installer for Intel Macs |
