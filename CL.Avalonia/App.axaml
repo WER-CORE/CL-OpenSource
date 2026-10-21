@@ -18,7 +18,7 @@
             <Setter Property="IsVisible" Value="False" />
         </Style>
         <Style Selector="Window">
-            <Setter Property="Icon" Value="avares://CL.Avalonia/Icon/IconCL(Halloween).png" />
+            <Setter Property="Icon" Value="avares://CL.Avalonia/Icon/IconCL(Halloween).webp" />
             <Setter Property="TransparencyBackgroundFallback" Value="Transparent" />
         </Style>
         <Style Selector="ToggleSwitch">

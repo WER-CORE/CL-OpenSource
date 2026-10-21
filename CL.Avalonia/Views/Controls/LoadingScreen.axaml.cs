@@ -110,7 +110,7 @@ namespace CL_CLegendary_Launcher_.Avalonia.Views.Controls
         {
             try
             {
-                var uri = new Uri("avares://CL.Avalonia/Assets/Backgrounds/DarkThemBG.png");
+                var uri = new Uri("avares://CL.Avalonia/Assets/Backgrounds/DarkThemBG.webp");
                 if (AssetLoader.Exists(uri))
                 {
                     using var stream = AssetLoader.Open(uri);

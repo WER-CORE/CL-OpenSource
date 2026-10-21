@@ -43,7 +43,7 @@ public partial class ModSearchCardViewModel : ObservableObject
         }
         if (Icon == null)
         {
-            Icon = await AvaloniaImageHelper.LoadOptimizedImageAsync("avares://CL.Avalonia/Assets/IconCL(Common).png", 32);
+            Icon = await AvaloniaImageHelper.LoadOptimizedImageAsync("avares://CL.Avalonia/Assets/IconCL(Common).webp", 32);
         }
     }
 

@@ -109,7 +109,7 @@ public class AvaloniaThemeService
                 ButtonColor = "#FF1C3056",
                 TextColor = "#FFFFFFFF",
                 AdditionalColor = "#FF00D2FF",
-                BackgroundImage = "avares://CL.Avalonia/Assets/Backgrounds/OceanBG.png"
+                BackgroundImage = "avares://CL.Avalonia/Assets/Backgrounds/OceanBG.webp"
             },
             "Forest" => new MainThemeConfig
             {
@@ -118,7 +118,7 @@ public class AvaloniaThemeService
                 ButtonColor = "#FF1E3B27",
                 TextColor = "#FFFFFFFF",
                 AdditionalColor = "#FF44D62C",
-                BackgroundImage = "avares://CL.Avalonia/Assets/Backgrounds/ForestBG.png"
+                BackgroundImage = "avares://CL.Avalonia/Assets/Backgrounds/ForestBG.webp"
             },
             "Sunset" => new MainThemeConfig
             {
@@ -127,7 +127,7 @@ public class AvaloniaThemeService
                 ButtonColor = "#FF4A2616",
                 TextColor = "#FFFFFFFF",
                 AdditionalColor = "#FFFF6A00",
-                BackgroundImage = "avares://CL.Avalonia/Assets/Backgrounds/SunSetBG.png"
+                BackgroundImage = "avares://CL.Avalonia/Assets/Backgrounds/SunSetBG.webp"
             },
             "Light" => new MainThemeConfig
             {
@@ -136,7 +136,7 @@ public class AvaloniaThemeService
                 ButtonColor = "#FFE8E8E8",
                 TextColor = "#FF0A0A0A",
                 AdditionalColor = "#FF1863C9",
-                BackgroundImage = "avares://CL.Avalonia/Assets/Backgrounds/LightThemBG.png"
+                BackgroundImage = "avares://CL.Avalonia/Assets/Backgrounds/LightThemBG.webp"
             },
             _ => new MainThemeConfig
             {
@@ -145,7 +145,7 @@ public class AvaloniaThemeService
                 ButtonColor = "#FF202020",
                 TextColor = "#FFFFFFFF",
                 AdditionalColor = "#FF1863C9",
-                BackgroundImage = "avares://CL.Avalonia/Assets/Backgrounds/DarkThemBG.png"
+                BackgroundImage = "avares://CL.Avalonia/Assets/Backgrounds/DarkThemBG.webp"
             }
         };
 
@@ -222,7 +222,7 @@ public class AvaloniaThemeService
         }
 
         string targetPath = string.IsNullOrWhiteSpace(bgPath)
-            ? "avares://CL.Avalonia/Assets/Backgrounds/DarkThemBG.png"
+            ? "avares://CL.Avalonia/Assets/Backgrounds/DarkThemBG.webp"
             : bgPath;
 
         Bitmap? bmp = null;

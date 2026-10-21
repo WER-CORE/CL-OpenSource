@@ -89,7 +89,7 @@ public static class AvaloniaImageHelper
         if (path.Contains("Flag_of_Belarus", StringComparison.OrdinalIgnoreCase) ||
             path.Contains("bchb", StringComparison.OrdinalIgnoreCase))
         {
-            path = "avares://CL.Avalonia/Assets/Flags/bchb.png";
+            path = "avares://CL.Avalonia/Assets/Flags/bchb.webp";
         }
 
         string cacheKey = $"{path}_{decodeWidth}";
@@ -133,7 +133,7 @@ public static class AvaloniaImageHelper
         if (path.Contains("Flag_of_Belarus", StringComparison.OrdinalIgnoreCase) ||
             path.Contains("bchb", StringComparison.OrdinalIgnoreCase))
         {
-            path = "avares://CL.Avalonia/Assets/Flags/bchb.png";
+            path = "avares://CL.Avalonia/Assets/Flags/bchb.webp";
         }
 
         string cacheKey = $"{path}_{decodeWidth}";
@@ -235,8 +235,24 @@ public static class AvaloniaImageHelper
             relativePath = relativePath.TrimStart('/');
             string fileName = Path.GetFileName(relativePath);
 
+            string webpRaw = rawPath.EndsWith(".png", StringComparison.OrdinalIgnoreCase)
+                ? rawPath.Substring(0, rawPath.Length - 4) + ".webp"
+                : rawPath;
+            string webpRelative = relativePath.EndsWith(".png", StringComparison.OrdinalIgnoreCase)
+                ? relativePath.Substring(0, relativePath.Length - 4) + ".webp"
+                : relativePath;
+            string webpFileName = fileName.EndsWith(".png", StringComparison.OrdinalIgnoreCase)
+                ? fileName.Substring(0, fileName.Length - 4) + ".webp"
+                : fileName;
+
             string[] candidates =
             {
+                webpRaw.StartsWith("avares://") ? webpRaw : $"avares://CL.Avalonia/{webpRelative}",
+                $"avares://CL.Avalonia/Icon/{webpRelative}",
+                $"avares://CL.Avalonia/Icon/{webpFileName}",
+                $"avares://CL.Avalonia/Assets/{webpRelative}",
+                $"avares://CL.Avalonia/Assets/{webpFileName}",
+                $"avares://CL.Avalonia/Assets/Backgrounds/{webpRelative}",
                 rawPath.StartsWith("avares://") ? rawPath : $"avares://CL.Avalonia/{relativePath}",
                 $"avares://CL.Avalonia/Icon/{relativePath}",
                 $"avares://CL.Avalonia/Icon/{fileName}",
@@ -280,6 +296,11 @@ public static class AvaloniaImageHelper
             {
                 var files = Directory.GetFiles(dir);
                 var found = Array.Find(files, f => string.Equals(Path.GetFileName(f), fileName, StringComparison.OrdinalIgnoreCase));
+                if (found == null && fileName.EndsWith(".png", StringComparison.OrdinalIgnoreCase))
+                {
+                    string webpName = Path.GetFileNameWithoutExtension(fileName) + ".webp";
+                    found = Array.Find(files, f => string.Equals(Path.GetFileName(f), webpName, StringComparison.OrdinalIgnoreCase));
+                }
                 if (found != null)
                 {
                     matchedPath = found;

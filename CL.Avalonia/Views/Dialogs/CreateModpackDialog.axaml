@@ -15,7 +15,7 @@
         Foreground="{DynamicResource MainForegroundBrush}"
         FontFamily="Inter"
         WindowStartupLocation="CenterScreen"
-        Icon="/Icon/IconCL(Common).png"
+        Icon="/Icon/IconCL(Common).webp"
         ExtendClientAreaToDecorationsHint="True"
         ExtendClientAreaTitleBarHeightHint="-1"
         WindowDecorations="None"
@@ -146,10 +146,10 @@
 
             <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center" Spacing="10">
                 <Button Background="Transparent" Padding="0" Cursor="Hand" Command="{Binding SelectProviderCommand}" CommandParameter="Modrinth">
-                    <Image Source="avares://CL.Avalonia/Assets/1200-818013157 1.png" Width="24" Height="24" Opacity="{Binding ModrinthOpacity}" />
+                    <Image Source="avares://CL.Avalonia/Assets/1200-818013157 1.webp" Width="24" Height="24" Opacity="{Binding ModrinthOpacity}" />
                 </Button>
                 <Button Background="Transparent" Padding="0" Cursor="Hand" Command="{Binding SelectProviderCommand}" CommandParameter="CurseForge">
-                    <Image Source="avares://CL.Avalonia/Assets/curseforge-logo-3499974474.png" Width="24" Height="24" Opacity="{Binding CurseForgeOpacity}" />
+                    <Image Source="avares://CL.Avalonia/Assets/curseforge-logo-3499974474.webp" Width="24" Height="24" Opacity="{Binding CurseForgeOpacity}" />
                 </Button>
             </StackPanel>
         </Grid>

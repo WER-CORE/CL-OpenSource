@@ -723,7 +723,7 @@ public partial class DownloadModpackDialogViewModel : ObservableObject, IDisposa
 
         string iconPath = Path.Combine(extractPath, "icon.png");
         if (!File.Exists(iconPath))
-            iconPath = "avares://CL.Avalonia/Icon/IconCL(Common).png";
+            iconPath = "avares://CL.Avalonia/Icon/IconCL(Common).webp";
 
         var importedPack = new InstalledModpack
         {
@@ -837,7 +837,7 @@ public partial class DownloadModpackDialogViewModel : ObservableObject, IDisposa
 
     private static async Task<string> DownloadPackIconAsync(string? iconUrl, string extractPath)
     {
-        const string defaultIcon = "avares://CL.Avalonia/Icon/IconCL(Common).png";
+        const string defaultIcon = "avares://CL.Avalonia/Icon/IconCL(Common).webp";
         if (string.IsNullOrEmpty(iconUrl)) return defaultIcon;
 
         try

@@ -182,13 +182,13 @@
                                     <StackPanel VerticalAlignment="Top" Margin="0,4,0,0">
                                         <StackPanel Tag="Modrinth" Classes="MenuItemPanel"
                                             PointerPressed="OnModProviderClicked">
-                                            <Image Source="avares://CL.Avalonia/Assets/1200-818013157 1.png" Classes="MenuIcon" />
+                                            <Image Source="avares://CL.Avalonia/Assets/1200-818013157 1.webp" Classes="MenuIcon" />
                                             <TextBlock x:Name="Loc_TxtModrinth" Text="Modrinth"
                                                Classes="MenuText" />
                                         </StackPanel>
                                         <StackPanel Tag="CurseForge" Classes="MenuItemPanel"
                                             PointerPressed="OnModProviderClicked">
-                                            <Image Source="avares://CL.Avalonia/Assets/curseforge-logo-3499974474.png"
+                                            <Image Source="avares://CL.Avalonia/Assets/curseforge-logo-3499974474.webp"
                                            Classes="MenuIcon" />
                                             <TextBlock x:Name="Loc_TxtCurseForge" Text="CurseForge"
                                                Classes="MenuText" />
@@ -216,7 +216,7 @@
                                     <StackPanel VerticalAlignment="Top" Margin="0,4,0,0">
                                         <StackPanel Tag="Fabric" Classes="MenuItemPanel"
                                             PointerPressed="OnLoaderTypeClicked">
-                                            <Image Source="avares://CL.Avalonia/Assets/fabric.png" Classes="MenuIcon" />
+                                            <Image Source="avares://CL.Avalonia/Assets/fabric.webp" Classes="MenuIcon" />
                                             <TextBlock x:Name="Loc_TxtFabric" Text="Fabric" Classes="MenuText" />
                                         </StackPanel>
                                         <StackPanel Tag="Forge" Classes="MenuItemPanel"
@@ -226,12 +226,12 @@
                                         </StackPanel>
                                         <StackPanel Tag="Quilt" Classes="MenuItemPanel"
                                             PointerPressed="OnLoaderTypeClicked">
-                                            <Image Source="avares://CL.Avalonia/Assets/images.png" Classes="MenuIcon" />
+                                            <Image Source="avares://CL.Avalonia/Assets/images.webp" Classes="MenuIcon" />
                                             <TextBlock x:Name="Loc_TxtQuilt" Text="Quilt" Classes="MenuText" />
                                         </StackPanel>
                                         <StackPanel Tag="NeoForge" Classes="MenuItemPanel"
                                             PointerPressed="OnLoaderTypeClicked">
-                                            <Image Source="avares://CL.Avalonia/Assets/IconNeoForge.png" Classes="MenuIcon" />
+                                            <Image Source="avares://CL.Avalonia/Assets/IconNeoForge.webp" Classes="MenuIcon" />
                                             <TextBlock x:Name="Loc_TxtNeoForge" Text="NeoForge"
                                                Classes="MenuText" />
                                         </StackPanel>

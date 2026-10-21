@@ -24,7 +24,7 @@
     <Grid>
         <Grid.Background>
 
-            <ImageBrush Source="avares://CL.Avalonia/Assets/Backgrounds/LightThemBG.png" Stretch="UniformToFill"/>
+            <ImageBrush Source="avares://CL.Avalonia/Assets/Backgrounds/LightThemBG.webp" Stretch="UniformToFill"/>
         </Grid.Background>
 
         <Grid.RowDefinitions>

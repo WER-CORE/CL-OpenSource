@@ -211,7 +211,7 @@ public partial class WorldBackupViewModel : ObservableObject, IDisposable
                     {
                         try
                         {
-                            var uri = new Uri("avares://CL.Avalonia/Icon/IconCL(Common).png");
+                            var uri = new Uri("avares://CL.Avalonia/Icon/IconCL(Common).webp");
                             using var asset = AssetLoader.Open(uri);
                             bmp = new Bitmap(asset);
                         }

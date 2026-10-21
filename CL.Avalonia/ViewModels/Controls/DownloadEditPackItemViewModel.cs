@@ -39,7 +39,7 @@ public partial class DownloadEditPackItemViewModel : ObservableObject
         {
             IconBitmap = await AvaloniaImageHelper.LoadOptimizedImageAsync(url, 32);
         }
-        IconBitmap ??= await AvaloniaImageHelper.LoadOptimizedImageAsync("avares://CL.Avalonia/Assets/IconCL(Common).png", 32);
+        IconBitmap ??= await AvaloniaImageHelper.LoadOptimizedImageAsync("avares://CL.Avalonia/Assets/IconCL(Common).webp", 32);
     }
 
     [RelayCommand]

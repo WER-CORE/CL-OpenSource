@@ -12,7 +12,7 @@
         x:Class="CL_CLegendary_Launcher_.Avalonia.Views.CL_Main"
         x:DataType="vm:CL_MainViewModel"
         Title="CLegendary Launcher"
-        Icon="avares://CL.Avalonia/Icon/IconCL(Halloween).png"
+        Icon="avares://CL.Avalonia/Icon/IconCL(Halloween).webp"
         Width="960" Height="542"
         MinWidth="960" MinHeight="542"
         WindowStartupLocation="CenterScreen"
@@ -614,7 +614,7 @@
                                         <Setter Property="Background" Value="#33FFFFFF" />
                                     </Style>
                                 </Border.Styles>
-                                <Image x:Name="MicrosoftAccount" Source="/Assets/microsoft logo.png" Width="32" Height="32"
+                                <Image x:Name="MicrosoftAccount" Source="/Assets/microsoft logo.webp" Width="32" Height="32"
                                RenderOptions.BitmapInterpolationMode="HighQuality" />
                             </Border>
 
@@ -625,7 +625,7 @@
                                         <Setter Property="Background" Value="#33FFFFFF" />
                                     </Style>
                                 </Border.Styles>
-                                <Image x:Name="OfflineAccount" Source="/Assets/default_steve.png" Width="32"
+                                <Image x:Name="OfflineAccount" Source="/Assets/default_steve.webp" Width="32"
                                Height="32" RenderOptions.BitmapInterpolationMode="HighQuality" />
                             </Border>
 
@@ -636,7 +636,7 @@
                                         <Setter Property="Background" Value="#33FFFFFF" />
                                     </Style>
                                 </Border.Styles>
-                                <Image x:Name="LittleSkinAccount" Source="/Assets/LittleSkinAccount.png" Width="32" Height="32"
+                                <Image x:Name="LittleSkinAccount" Source="/Assets/LittleSkinAccount.webp" Width="32" Height="32"
                                RenderOptions.BitmapInterpolationMode="HighQuality" />
                             </Border>
 

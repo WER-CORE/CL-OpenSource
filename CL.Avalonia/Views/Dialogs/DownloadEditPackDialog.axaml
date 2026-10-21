@@ -94,11 +94,11 @@
                     <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center" Margin="5,0" Spacing="10">
                         <Button Command="{Binding SelectModrinthCommand}" Background="Transparent" BorderThickness="0" Padding="0" Cursor="Hand"
                                 IsVisible="{Binding IsModrinthVisible}">
-                            <Image Source="avares://CL.Avalonia/Assets/1200-818013157 1.png" Width="24" Height="24"
+                            <Image Source="avares://CL.Avalonia/Assets/1200-818013157 1.webp" Width="24" Height="24"
                                    Opacity="{Binding ModrinthOpacity}" />
                         </Button>
                         <Button Command="{Binding SelectCurseForgeCommand}" Background="Transparent" BorderThickness="0" Padding="0" Cursor="Hand">
-                            <Image Source="avares://CL.Avalonia/Assets/curseforge-logo-3499974474.png" Width="24" Height="24"
+                            <Image Source="avares://CL.Avalonia/Assets/curseforge-logo-3499974474.webp" Width="24" Height="24"
                                    Opacity="{Binding CurseForgeOpacity}" />
                         </Button>
                     </StackPanel>

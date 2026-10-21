@@ -138,10 +138,10 @@
                         IsEnabled="{Binding CanInteract}">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Spacing="8">
                         <Button Background="Transparent" Padding="0" Command="{Binding SelectSiteCommand}" CommandParameter="Modrinth" Cursor="Hand" ToolTip.Tip="Шукати на Modrinth">
-                            <Image Source="avares://CL.Avalonia/Assets/1200-818013157 1.png" Width="20" Height="20" Opacity="{Binding SelectedSite, Converter={StaticResource SiteOpacityConverter}, ConverterParameter=Modrinth}" />
+                            <Image Source="avares://CL.Avalonia/Assets/1200-818013157 1.webp" Width="20" Height="20" Opacity="{Binding SelectedSite, Converter={StaticResource SiteOpacityConverter}, ConverterParameter=Modrinth}" />
                         </Button>
                         <Button Background="Transparent" Padding="0" Command="{Binding SelectSiteCommand}" CommandParameter="CurseForge" Cursor="Hand" ToolTip.Tip="Шукати на CurseForge">
-                            <Image Source="avares://CL.Avalonia/Assets/curseforge-logo-3499974474.png" Width="20" Height="20" Opacity="{Binding SelectedSite, Converter={StaticResource SiteOpacityConverter}, ConverterParameter=CurseForge}" />
+                            <Image Source="avares://CL.Avalonia/Assets/curseforge-logo-3499974474.webp" Width="20" Height="20" Opacity="{Binding SelectedSite, Converter={StaticResource SiteOpacityConverter}, ConverterParameter=CurseForge}" />
                         </Button>
                     </StackPanel>
                 </Border>

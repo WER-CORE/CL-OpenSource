@@ -71,8 +71,8 @@ public partial class ModpackCardViewModel : ObservableObject
             }
         }
 
-        iconBitmap ??= await AvaloniaImageHelper.LoadOptimizedImageAsync("avares://CL.Avalonia/Assets/IconCL(Common).png", 90)
-                    ?? await AvaloniaImageHelper.LoadOptimizedImageAsync("avares://CL.Avalonia/Icon/IconCL(Common).png", 90);
+        iconBitmap ??= await AvaloniaImageHelper.LoadOptimizedImageAsync("avares://CL.Avalonia/Assets/IconCL(Common).webp", 90)
+                    ?? await AvaloniaImageHelper.LoadOptimizedImageAsync("avares://CL.Avalonia/Icon/IconCL(Common).webp", 90);
 
         Icon = iconBitmap;
     }

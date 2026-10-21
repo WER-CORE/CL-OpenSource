@@ -723,12 +723,12 @@ public partial class CreateModpackViewModel : ObservableObject, IDisposable
                 }
                 catch
                 {
-                    imageUrl = "avares://CL.Avalonia/Icon/IconCL(Common).png";
+                    imageUrl = "avares://CL.Avalonia/Icon/IconCL(Common).webp";
                 }
             }
             else
             {
-                imageUrl = "avares://CL.Avalonia/Icon/IconCL(Common).png";
+                imageUrl = "avares://CL.Avalonia/Icon/IconCL(Common).webp";
             }
 
             var modpack = new InstalledModpack

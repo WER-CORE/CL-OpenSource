@@ -11,7 +11,7 @@
         Title="{Binding WindowTitle}" Height="600" Width="900"
         WindowStartupLocation="CenterScreen" CanResize="False" WindowDecorations="None"
         Background="Transparent" FontFamily="Inter"
-        TransparencyLevelHint="Transparent" TransparencyBackgroundFallback="Transparent" Foreground="{DynamicResource MainForegroundBrush}" Icon="/Icon/IconCL(Common).png"
+        TransparencyLevelHint="Transparent" TransparencyBackgroundFallback="Transparent" Foreground="{DynamicResource MainForegroundBrush}" Icon="/Icon/IconCL(Common).webp"
         IsEnabled="{Binding !IsWorking}">
 
     <Window.Styles>
