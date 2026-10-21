@@ -134,8 +134,8 @@ jobs:
           Install-Module -Name SignPath -Force -Scope CurrentUser
           New-Item -ItemType Directory -Path "./signed-launcher" -Force | Out-Null
           Submit-SigningRequest `
-            -InputArtifactPath "./publish/win-x64/CL(CLegendary Launcher).exe" `
-            -OutputArtifactPath "./signed-launcher/CL(CLegendary Launcher).exe" `
+            -InputArtifactPath "./publish/win-x64/CL.Avalonia.exe" `
+            -OutputArtifactPath "./signed-launcher/CL.Avalonia.exe" `
             -ApiToken "${{ env.SIGNPATH_API_TOKEN }}" `
             -OrganizationId "${{ env.SIGNPATH_ORGANIZATION_ID }}" `
             -ProjectSlug "${{ env.SIGNPATH_PROJECT_SLUG }}" `
@@ -146,9 +146,8 @@ jobs:
         if: env.SIGNPATH_API_TOKEN != ''
         shell: pwsh
         run: |
-          if (Test-Path "./signed-launcher/CL(CLegendary Launcher).exe") {
-            Copy-Item -Path "./signed-launcher/CL(CLegendary Launcher).exe" -Destination "./publish/win-x64/CL(CLegendary Launcher).exe" -Force
-            Copy-Item -Path "./signed-launcher/CL(CLegendary Launcher).exe" -Destination "./publish/win-x64/CL.Avalonia.exe" -Force
+          if (Test-Path "./signed-launcher/CL.Avalonia.exe") {
+            Copy-Item -Path "./signed-launcher/CL.Avalonia.exe" -Destination "./publish/win-x64/CL.Avalonia.exe" -Force
           }
 
       - name: Install Velopack CLI
@@ -160,7 +159,7 @@ jobs:
           vpk pack --packId "CLegendaryLauncher" `
                    --packVersion "${{ env.RELEASE_VERSION }}" `
                    --packDir "./publish/win-x64" `
-                   --mainExe "CL(CLegendary Launcher).exe" `
+                   --mainExe "CL.Avalonia.exe" `
                    --icon "CL.Avalonia/Icon/IconCL(Halloween).ico" `
                    --packTitle "CLegendary Launcher" `
                    --packAuthors "WER-CORE" `
@@ -190,30 +189,48 @@ jobs:
             if (Test-Path $portableTemp) { Remove-Item -Path $portableTemp -Recurse -Force }
             Expand-Archive -Path "./release_output/CLegendaryLauncher-win-Portable.zip" -DestinationPath $portableTemp -Force
 
-            if (-not (Test-Path "$portableTemp/CL(CLegendary Launcher).exe")) {
-              if (Test-Path "$portableTemp/current/CL(CLegendary Launcher).exe") {
-                Copy-Item -Path "$portableTemp/current/CL(CLegendary Launcher).exe" -Destination "$portableTemp/CL(CLegendary Launcher).exe" -Force
-              } elseif (Test-Path "./publish/win-x64/CL(CLegendary Launcher).exe") {
-                Copy-Item -Path "./publish/win-x64/CL(CLegendary Launcher).exe" -Destination "$portableTemp/CL(CLegendary Launcher).exe" -Force
-              }
-            }
-
-            if (Test-Path "$portableTemp/CLegendaryLauncher.exe") {
+            $portableExes = Get-ChildItem -Path $portableTemp -Filter "*.exe" -File
+            foreach ($exe in $portableExes) {
+              $signedFile = "./signed-launcher/portable-$($exe.Name)"
               Submit-SigningRequest `
-                -InputArtifactPath "$portableTemp/CLegendaryLauncher.exe" `
-                -OutputArtifactPath "./signed-launcher/CLegendaryLauncher.exe" `
+                -InputArtifactPath $exe.FullName `
+                -OutputArtifactPath $signedFile `
                 -ApiToken "${{ env.SIGNPATH_API_TOKEN }}" `
                 -OrganizationId "${{ env.SIGNPATH_ORGANIZATION_ID }}" `
                 -ProjectSlug "${{ env.SIGNPATH_PROJECT_SLUG }}" `
                 -SigningPolicySlug "${{ env.SIGNPATH_SIGNING_POLICY_SLUG }}" `
                 -WaitForCompletion
-              if (Test-Path "./signed-launcher/CLegendaryLauncher.exe") {
-                Copy-Item -Path "./signed-launcher/CLegendaryLauncher.exe" -Destination "$portableTemp/CLegendaryLauncher.exe" -Force
+              if (Test-Path $signedFile) {
+                Copy-Item -Path $signedFile -Destination $exe.FullName -Force
+              }
+            }
+
+            $currentExe = Join-Path $portableTemp "current\CL.Avalonia.exe"
+            if (Test-Path $currentExe) {
+              $sig = Get-AuthenticodeSignature $currentExe
+              if ($sig.Status -ne 'Valid') {
+                if (Test-Path "./signed-launcher/CL.Avalonia.exe") {
+                  Copy-Item -Path "./signed-launcher/CL.Avalonia.exe" -Destination $currentExe -Force
+                } else {
+                  $signedCurrent = "./signed-launcher/current-CL.Avalonia.exe"
+                  Submit-SigningRequest `
+                    -InputArtifactPath $currentExe `
+                    -OutputArtifactPath $signedCurrent `
+                    -ApiToken "${{ env.SIGNPATH_API_TOKEN }}" `
+                    -OrganizationId "${{ env.SIGNPATH_ORGANIZATION_ID }}" `
+                    -ProjectSlug "${{ env.SIGNPATH_PROJECT_SLUG }}" `
+                    -SigningPolicySlug "${{ env.SIGNPATH_SIGNING_POLICY_SLUG }}" `
+                    -WaitForCompletion
+                  if (Test-Path $signedCurrent) {
+                    Copy-Item -Path $signedCurrent -Destination $currentExe -Force
+                  }
+                }
               }
             }
 
             Remove-Item -Path "./release_output/CLegendaryLauncher-win-Portable.zip" -Force
-            Compress-Archive -Path "$portableTemp/*" -DestinationPath "./release_output/CLegendaryLauncher-win-Portable.zip" -Force
+            Add-Type -AssemblyName System.IO.Compression.FileSystem
+            [System.IO.Compression.ZipFile]::CreateFromDirectory((Convert-Path $portableTemp), [System.IO.Path]::GetFullPath("./release_output/CLegendaryLauncher-win-Portable.zip"))
             Remove-Item -Path $portableTemp -Recurse -Force
           }
 
@@ -292,13 +309,11 @@ jobs:
       - name: Publish Linux x64
         run: |
           dotnet publish CL.Avalonia/CL.Avalonia.csproj -c Release -r linux-x64 --self-contained true -p:PublishSingleFile=false -p:Version=${{ env.RELEASE_VERSION }} -p:AssemblyVersion=${{ env.NUMERIC_VERSION }}.0 -p:FileVersion=${{ env.NUMERIC_VERSION }}.0 -p:InformationalVersion=${{ env.RELEASE_VERSION }} -o ./publish/linux-x64
-          cp ./publish/linux-x64/CL.Avalonia "./publish/linux-x64/CL(CLegendary Launcher)" || true
           chmod +x ./publish/linux-x64/CL* || true
 
       - name: Publish Linux arm64
         run: |
           dotnet publish CL.Avalonia/CL.Avalonia.csproj -c Release -r linux-arm64 --self-contained true -p:PublishSingleFile=false -p:Version=${{ env.RELEASE_VERSION }} -p:AssemblyVersion=${{ env.NUMERIC_VERSION }}.0 -p:FileVersion=${{ env.NUMERIC_VERSION }}.0 -p:InformationalVersion=${{ env.RELEASE_VERSION }} -o ./publish/linux-arm64
-          cp ./publish/linux-arm64/CL.Avalonia "./publish/linux-arm64/CL(CLegendary Launcher)" || true
           chmod +x ./publish/linux-arm64/CL* || true
 
       - name: Install libfuse2
