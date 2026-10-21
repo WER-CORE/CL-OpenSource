@@ -1,6 +1,8 @@
 using CL.Core.Helpers;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace CL.Core.Services
 {
@@ -17,16 +19,37 @@ namespace CL.Core.Services
             return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".clminecraft");
         }
 
+        public static bool IsPortableRoot(string baseDir, out string portableRoot)
+        {
+            if (File.Exists(Path.Combine(baseDir, ".portable")) || File.Exists(Path.Combine(baseDir, "portable.mode")))
+            {
+                portableRoot = baseDir;
+                return true;
+            }
+
+            try
+            {
+                string parent = Path.GetFullPath(Path.Combine(baseDir, ".."));
+                if (File.Exists(Path.Combine(parent, ".portable")) || File.Exists(Path.Combine(parent, "portable.mode")))
+                {
+                    portableRoot = parent;
+                    return true;
+                }
+            }
+            catch { }
+
+            portableRoot = string.Empty;
+            return false;
+        }
+
         public static string AppDataDirectory()
         {
-            if (OperatingSystem.IsWindows())
-            {
-                string baseDir = AppDomain.CurrentDomain.BaseDirectory;
-                if (File.Exists(Path.Combine(baseDir, "portable.mode")))
-                    return baseDir;
+            string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+            if (IsPortableRoot(baseDir, out string portableRoot))
+                return portableRoot;
 
+            if (OperatingSystem.IsWindows())
                 return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".ClMinecraft");
-            }
 
             if (OperatingSystem.IsMacOS())
                 return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Library", "Application Support", "CLLauncher");
@@ -42,7 +65,74 @@ namespace CL.Core.Services
 
         public static string LocalesFolder() => Path.Combine(AppDataDirectory(), "Locales");
 
-        public static void MigrateLegacyAppData() => MigrateLegacyAppData(AppDomain.CurrentDomain.BaseDirectory, AppDataDirectory());
+        public static void MigrateLegacyAppData()
+        {
+            try
+            {
+                string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+                string appDataRoot = AppDataDirectory();
+
+                var candidates = new List<string> { baseDir };
+                try
+                {
+                    string parent = Path.GetFullPath(Path.Combine(baseDir, ".."));
+                    if (!candidates.Any(c => PathsEqual(c, parent)))
+                        candidates.Add(parent);
+                }
+                catch { }
+
+                string targetData = DataFolder();
+                string markerFile = Path.Combine(targetData, ".legacy_migrated");
+
+                if (File.Exists(markerFile))
+                    return;
+
+                string targetProfiles = Path.Combine(targetData, "ProfilesManeger.json");
+                if (File.Exists(targetProfiles) && new FileInfo(targetProfiles).Length > 0)
+                {
+                    try
+                    {
+                        File.WriteAllText(markerFile, DateTime.UtcNow.ToString("o"));
+                    }
+                    catch { }
+                    return;
+                }
+
+                foreach (var candidate in candidates)
+                {
+                    if (PathsEqual(candidate, appDataRoot))
+                        continue;
+
+                    string candidateData = Path.Combine(candidate, "Data");
+                    if (Directory.Exists(candidateData) && !PathsEqual(candidateData, targetData))
+                    {
+                        bool hasLegacyFiles = File.Exists(Path.Combine(candidateData, "ProfilesManeger.json"))
+                                           || File.Exists(Path.Combine(candidateData, "UserSaves.json"))
+                                           || File.Exists(Path.Combine(candidateData, "installed_modpacks.json"));
+
+                        if (hasLegacyFiles)
+                        {
+                            var result = LegacyMigrationService.ImportFromFolder(candidateData);
+                            if (result.Success)
+                            {
+                                try
+                                {
+                                    if (!Directory.Exists(targetData))
+                                        Directory.CreateDirectory(targetData);
+                                    File.WriteAllText(markerFile, DateTime.UtcNow.ToString("o"));
+                                }
+                                catch { }
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[MigrateLegacyAppData] Error: {ex.Message}");
+            }
+        }
 
         public static void MigrateLegacyAppData(string legacyRoot, string appDataRoot)
         {

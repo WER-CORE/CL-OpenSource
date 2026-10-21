@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using CL.Core.Models;
 using Newtonsoft.Json;
 
@@ -56,48 +58,39 @@ namespace CL.Core.Services
 
             var result = new LegacyMigrationResult { Success = true };
 
-            List<ProfileItem>? existingProfiles = null;
-            try
+            List<ProfileItem>? importedProfiles = null;
+            string sourceProfiles = Path.Combine(dataDir, "ProfilesManeger.json");
+            if (File.Exists(sourceProfiles))
             {
-                var profileService = new ProfileManagerService();
-                existingProfiles = profileService.LoadProfiles();
+                try
+                {
+                    byte[] bytes = File.ReadAllBytes(sourceProfiles);
+                    importedProfiles = TryDecodeProfiles(bytes);
+                }
+                catch { }
             }
-            catch { }
 
             result.FilesImported = CopyDirectoryContents(dataDir, targetDataDir);
 
             string targetProfiles = Path.Combine(targetDataDir, "ProfilesManeger.json");
-            if (File.Exists(targetProfiles))
+            try
             {
-                try
+                var profileService = new ProfileManagerService();
+
+                if (importedProfiles != null && importedProfiles.Count > 0)
                 {
-                    var profileService = new ProfileManagerService();
-                    var loadedProfiles = profileService.LoadProfiles();
-
-                    if (existingProfiles != null && existingProfiles.Count > 0)
-                    {
-                        bool addedAny = false;
-                        foreach (var p in existingProfiles)
-                        {
-                            if (!loadedProfiles.Any(x => x.NameAccount == p.NameAccount && x.TypeAccount == p.TypeAccount))
-                            {
-                                loadedProfiles.Add(p);
-                                addedAny = true;
-                            }
-                        }
-
-                        if (addedAny)
-                        {
-                            profileService.SaveProfiles(loadedProfiles);
-                        }
-                    }
-
-                    result.ProfilesImported = loadedProfiles.Count;
+                    profileService.SaveProfiles(importedProfiles);
+                    result.ProfilesImported = importedProfiles.Count;
                 }
-                catch (Exception ex)
+                else if (File.Exists(targetProfiles))
                 {
-                    System.Diagnostics.Debug.WriteLine($"Profile refresh error: {ex.Message}");
+                    var loaded = profileService.LoadProfiles();
+                    result.ProfilesImported = loaded.Count;
                 }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Profile refresh error: {ex.Message}");
             }
 
             string targetSettings = Path.Combine(targetDataDir, "UserSaves.json");
@@ -132,6 +125,41 @@ namespace CL.Core.Services
             return result;
         }
 
+        private static List<ProfileItem>? TryDecodeProfiles(byte[] bytes)
+        {
+            if (bytes == null || bytes.Length == 0) return null;
+
+            if (bytes.Length >= 6 && bytes[0] == (byte)'C' && bytes[1] == (byte)'L' && bytes[2] == (byte)'E' && bytes[3] == (byte)'N' && bytes[4] == (byte)'C')
+            {
+                return null;
+            }
+
+            if (OperatingSystem.IsWindows())
+            {
+                try
+                {
+                    byte[] decrypted = ProtectedData.Unprotect(bytes, null, DataProtectionScope.CurrentUser);
+                    string json = Encoding.UTF8.GetString(decrypted);
+                    var list = JsonConvert.DeserializeObject<List<ProfileItem>>(json);
+                    if (list != null && list.Count > 0) return list;
+                }
+                catch { }
+            }
+
+            try
+            {
+                string text = Encoding.UTF8.GetString(bytes);
+                if (text.TrimStart().StartsWith("["))
+                {
+                    var list = JsonConvert.DeserializeObject<List<ProfileItem>>(text);
+                    if (list != null && list.Count > 0) return list;
+                }
+            }
+            catch { }
+
+            return null;
+        }
+
         private static int CopyDirectoryContents(string sourceDir, string targetDir)
         {
             int count = 0;
@@ -143,6 +171,16 @@ namespace CL.Core.Services
                 {
                     string fileName = Path.GetFileName(file);
                     string destFile = Path.Combine(targetDir, fileName);
+
+                    if (File.Exists(destFile))
+                    {
+                        var attrs = File.GetAttributes(destFile);
+                        if ((attrs & FileAttributes.ReadOnly) != 0)
+                        {
+                            File.SetAttributes(destFile, attrs & ~FileAttributes.ReadOnly);
+                        }
+                    }
+
                     File.Copy(file, destFile, true);
                     count++;
                 }

@@ -51,22 +51,26 @@ namespace CL.Core.Tests
         [Fact]
         public void ImportFromFolder_CopiesAllFilesAndSubdirectories()
         {
-            string tempDir = Path.Combine(Path.GetTempPath(), "cl_test_data_" + Guid.NewGuid());
-            string subDir = Path.Combine(tempDir, "sub");
+            string runId = Guid.NewGuid().ToString("N");
+            string fileName1 = $"custom1_{runId}.txt";
+            string fileName2 = $"custom2_{runId}.txt";
+
+            string tempDir = Path.Combine(Path.GetTempPath(), "cl_test_data_" + runId);
+            string subDir = Path.Combine(tempDir, "sub_" + runId);
             Directory.CreateDirectory(subDir);
 
             try
             {
-                File.WriteAllText(Path.Combine(tempDir, "custom1.txt"), "hello");
-                File.WriteAllText(Path.Combine(subDir, "custom2.txt"), "world");
+                File.WriteAllText(Path.Combine(tempDir, fileName1), "hello");
+                File.WriteAllText(Path.Combine(subDir, fileName2), "world");
 
                 var result = LegacyMigrationService.ImportFromFolder(tempDir);
                 Assert.True(result.Success);
                 Assert.True(result.FilesImported >= 2);
 
                 string targetData = PlatformPaths.DataFolder();
-                Assert.True(File.Exists(Path.Combine(targetData, "custom1.txt")));
-                Assert.True(File.Exists(Path.Combine(targetData, "sub", "custom2.txt")));
+                Assert.True(File.Exists(Path.Combine(targetData, fileName1)));
+                Assert.True(File.Exists(Path.Combine(targetData, "sub_" + runId, fileName2)));
             }
             finally
             {
@@ -74,11 +78,11 @@ namespace CL.Core.Tests
                     Directory.Delete(tempDir, true);
 
                 string targetData = PlatformPaths.DataFolder();
-                string testFile1 = Path.Combine(targetData, "custom1.txt");
-                string testFile2 = Path.Combine(targetData, "sub", "custom2.txt");
+                string testFile1 = Path.Combine(targetData, fileName1);
+                string testFile2 = Path.Combine(targetData, "sub_" + runId, fileName2);
                 if (File.Exists(testFile1)) File.Delete(testFile1);
                 if (File.Exists(testFile2)) File.Delete(testFile2);
-                string testSub = Path.Combine(targetData, "sub");
+                string testSub = Path.Combine(targetData, "sub_" + runId);
                 if (Directory.Exists(testSub)) Directory.Delete(testSub, true);
             }
         }

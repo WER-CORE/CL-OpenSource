@@ -1,4 +1,6 @@
 using System;
+using CL.Core.Platform;
+using CL_CLegendary_Launcher_.Avalonia.ViewModels;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -343,17 +345,28 @@ public partial class HomePage : UserControl
 
             dialogService.ShowMessage(msg, LocalizationManager.GetString("Settings.ImportLegacyTitle", "Імпорт даних"), MascotEmotion.Happy);
 
-            var accountService = (DataContext as HomePageViewModel)?.AccountService;
-            if (accountService != null && accountService.CurrentProfile == null)
+            var homeVm = DataContext as HomePageViewModel;
+            if (homeVm?.AccountService != null)
             {
-                var profiles = accountService.GetProfiles();
+                var profiles = homeVm.AccountService.GetProfiles();
                 int idx = SettingsManager.Default.SelectIndexAccount;
                 var match = (idx >= 0 && idx < profiles.Count) ? profiles[idx] : profiles.FirstOrDefault();
                 if (match != null)
                 {
-                    await accountService.SelectProfileAsync(match);
+                    await homeVm.AccountService.SelectProfileAsync(match);
                 }
             }
+
+            if (TopLevel.GetTopLevel(this) is CL_Main mainWin && mainWin.DataContext is CL_MainViewModel mainVm)
+            {
+                await mainVm.LoadProfilesAsync();
+            }
+
+            try
+            {
+                ServiceLocator.Current.GetService<AvaloniaThemeService>()?.InitializeSavedTheme();
+            }
+            catch { }
         }
         else
         {
