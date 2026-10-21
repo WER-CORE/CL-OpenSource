@@ -93,6 +93,7 @@
 	  <AvaloniaResource Include="Icon\IconCL(Halloween).png" />
 	  <AvaloniaResource Include="Icon\IconCL(Winter).ico" />
 	  <AvaloniaResource Include="Assets\Sounds\click.wav" />
+	  <AvaloniaResource Include="Assets\Flags\bchb.png" />
 	</ItemGroup>
 
 	<ItemGroup>

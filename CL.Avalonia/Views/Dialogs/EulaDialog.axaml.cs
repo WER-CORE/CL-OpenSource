@@ -153,12 +153,7 @@ namespace CL_CLegendary_Launcher_.Avalonia.Views.Windows
 
         private void PlayClickSound()
         {
-            try
-            {
-                var soundService = ((App)global::Avalonia.Application.Current).ServiceProvider?.GetService(typeof(CL.Core.Interfaces.ISoundService)) as CL.Core.Interfaces.ISoundService;
-                soundService?.PlaySound("click");
-            }
-            catch { }
+            AvaloniaSoundService.Click();
         }
 
         private void Header_PointerPressed(object? sender, global::Avalonia.Input.PointerPressedEventArgs e)

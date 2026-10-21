@@ -215,11 +215,15 @@ public partial class HomePage : UserControl
 
     #region Навігація та Меню Файлів
 
-    public void SettingPanel_PointerPressed(object? sender, PointerPressedEventArgs e) =>
+    public void SettingPanel_PointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        AvaloniaSoundService.Click();
         SettingsRequested?.Invoke(this, EventArgs.Empty);
+    }
 
     public void FolderPanel_PointerPressed(object? sender, PointerPressedEventArgs e)
     {
+        AvaloniaSoundService.Click();
         if (FilesMenuGrid != null)
         {
             FlyoutBase.ShowAttachedFlyout(FilesMenuGrid);
@@ -229,6 +233,7 @@ public partial class HomePage : UserControl
 
     public void InfoPanel_PointerPressed(object? sender, PointerPressedEventArgs e)
     {
+        AvaloniaSoundService.Click();
         if (InfoPanel != null)
         {
             FlyoutBase.ShowAttachedFlyout(InfoPanel);

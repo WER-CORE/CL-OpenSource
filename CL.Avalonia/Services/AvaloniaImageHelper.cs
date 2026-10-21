@@ -16,6 +16,17 @@ public static class AvaloniaImageHelper
     private static readonly HttpClient _httpClient = new() { Timeout = TimeSpan.FromSeconds(10) };
     private const int MaxCacheCapacity = 64;
 
+    static AvaloniaImageHelper()
+    {
+        try
+        {
+            _httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) CLegendaryLauncher/1.0");
+        }
+        catch
+        {
+        }
+    }
+
     public static void ClearCache()
     {
         lock (_cacheLock)
@@ -75,6 +86,12 @@ public static class AvaloniaImageHelper
     {
         if (string.IsNullOrWhiteSpace(path)) return null;
 
+        if (path.Contains("Flag_of_Belarus", StringComparison.OrdinalIgnoreCase) ||
+            path.Contains("bchb", StringComparison.OrdinalIgnoreCase))
+        {
+            path = "avares://CL.Avalonia/Assets/Flags/bchb.png";
+        }
+
         string cacheKey = $"{path}_{decodeWidth}";
         if (TryGetFromCache(cacheKey, out var cachedBitmap))
         {
@@ -112,6 +129,12 @@ public static class AvaloniaImageHelper
     public static Bitmap? LoadOptimizedImage(string? path, int decodeWidth = 0)
     {
         if (string.IsNullOrWhiteSpace(path)) return null;
+
+        if (path.Contains("Flag_of_Belarus", StringComparison.OrdinalIgnoreCase) ||
+            path.Contains("bchb", StringComparison.OrdinalIgnoreCase))
+        {
+            path = "avares://CL.Avalonia/Assets/Flags/bchb.png";
+        }
 
         string cacheKey = $"{path}_{decodeWidth}";
         if (TryGetFromCache(cacheKey, out var cachedBitmap))

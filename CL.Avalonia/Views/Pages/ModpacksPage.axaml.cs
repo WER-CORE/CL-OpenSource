@@ -5,6 +5,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Threading;
 using CL.Core.Services;
+using CL_CLegendary_Launcher_.Avalonia.Services;
 using CL_CLegendary_Launcher_.Avalonia.ViewModels.Dialogs;
 using CL_CLegendary_Launcher_.Avalonia.ViewModels.Pages;
 using CL_CLegendary_Launcher_.Avalonia.Views.Dialogs;
@@ -63,11 +64,17 @@ public partial class ModPacksPage : UserControl
 
     public void SearchSystemModsTXT1_PreviewMouseDown(object? sender, PointerPressedEventArgs e) { }
 
-    public async void ImportTXT_MouseDown(object? sender, PointerPressedEventArgs e) =>
+    public async void ImportTXT_MouseDown(object? sender, PointerPressedEventArgs e)
+    {
+        AvaloniaSoundService.Click();
         await OpenModpackDialogAsync<DownloadModpackDialog, DownloadModpackDialogViewModel>();
+    }
 
-    public async void DowloadModPacks_MouseDown(object? sender, PointerPressedEventArgs e) =>
+    public async void DowloadModPacks_MouseDown(object? sender, PointerPressedEventArgs e)
+    {
+        AvaloniaSoundService.Click();
         await OpenModpackDialogAsync<CreateModpackDialog, CreateModpackViewModel>();
+    }
 
     private async System.Threading.Tasks.Task OpenModpackDialogAsync<TDialog, TViewModel>()
         where TDialog : Window, new()

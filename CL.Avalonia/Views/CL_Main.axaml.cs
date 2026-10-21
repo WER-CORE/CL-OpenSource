@@ -601,8 +601,11 @@ public partial class CL_Main : Window
     public void FundraiserCard_MouseDown(object? sender, PointerPressedEventArgs e) =>
         e.Handled = true;
 
-    public void CloseFundraiser_Click(object? sender, RoutedEventArgs e) =>
+    public void CloseFundraiser_Click(object? sender, RoutedEventArgs e)
+    {
+        AvaloniaSoundService.Click();
         FundraiserOverlay.IsVisible = false;
+    }
 
     public void BtnFund_Click(object? sender, RoutedEventArgs e) => OpenButtonTagUrl(sender);
     public void BtnDetails_Click(object? sender, RoutedEventArgs e) => OpenButtonTagUrl(sender);

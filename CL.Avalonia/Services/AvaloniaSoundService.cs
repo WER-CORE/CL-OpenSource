@@ -232,8 +232,14 @@ public class AvaloniaSoundService : ISoundService
 
     #region Static Facades
 
+    private static long _lastClickTimestamp;
+
     public static void Click()
     {
+        long now = Environment.TickCount64;
+        if (now - _lastClickTimestamp < 60) return;
+        _lastClickTimestamp = now;
+
         if (Current != null)
         {
             Current.PlaySound("click");

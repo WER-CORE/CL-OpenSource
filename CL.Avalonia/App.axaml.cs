@@ -1,3 +1,4 @@
+using Avalonia.Input;
 ﻿using System;
 using System.IO;
 using Avalonia;
@@ -51,6 +52,8 @@ public partial class App : Application
 
         ServiceLocator.Current.Initialize(ServiceProvider);
 
+        RegisterGlobalSoundHandlers();
+
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             desktop.ShutdownMode = ShutdownMode.OnMainWindowClose;
@@ -62,6 +65,45 @@ public partial class App : Application
         }
 
         base.OnFrameworkInitializationCompleted();
+    }
+
+    private void RegisterGlobalSoundHandlers()
+    {
+        try
+        {
+            Button.ClickEvent.AddClassHandler<Button>((btn, e) => AvaloniaSoundService.Click(), handledEventsToo: true);
+            ToggleSwitch.IsCheckedChangedEvent.AddClassHandler<ToggleSwitch>((ts, e) => AvaloniaSoundService.Click(), handledEventsToo: true);
+            CheckBox.IsCheckedChangedEvent.AddClassHandler<CheckBox>((cb, e) => AvaloniaSoundService.Click(), handledEventsToo: true);
+            MenuItem.ClickEvent.AddClassHandler<MenuItem>((mi, e) => AvaloniaSoundService.Click(), handledEventsToo: true);
+            ListBoxItem.PointerPressedEvent.AddClassHandler<ListBoxItem>((lbi, e) =>
+            {
+                if (e.GetCurrentPoint(lbi).Properties.IsLeftButtonPressed)
+                {
+                    AvaloniaSoundService.Click();
+                }
+            }, handledEventsToo: true);
+            ComboBoxItem.PointerPressedEvent.AddClassHandler<ComboBoxItem>((cbi, e) =>
+            {
+                if (e.GetCurrentPoint(cbi).Properties.IsLeftButtonPressed)
+                {
+                    AvaloniaSoundService.Click();
+                }
+            }, handledEventsToo: true);
+            InputElement.PointerPressedEvent.AddClassHandler<Control>((ctrl, e) =>
+            {
+                if (e.GetCurrentPoint(ctrl).Properties.IsLeftButtonPressed &&
+                    ctrl is not Button &&
+                    ctrl is not ListBoxItem &&
+                    ctrl is not ComboBoxItem &&
+                    ctrl.Cursor != null)
+                {
+                    AvaloniaSoundService.Click();
+                }
+            }, handledEventsToo: true);
+        }
+        catch
+        {
+        }
     }
 
     private static IServiceProvider ConfigureServices()

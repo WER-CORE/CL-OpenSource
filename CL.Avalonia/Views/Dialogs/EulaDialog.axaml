@@ -2,6 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:models="clr-namespace:CL.Core.Models;assembly=CL.Core"
         xmlns:fluentIcons="using:FluentIcons.Avalonia"
+        xmlns:converters="using:CL_CLegendary_Launcher_.Avalonia.Converters"
         x:Class="CL_CLegendary_Launcher_.Avalonia.Views.Windows.EulaWindow"
         Title="CL - Agreement" Height="600" Width="900"
         WindowStartupLocation="CenterScreen"
@@ -11,6 +12,10 @@
         TransparencyLevelHint="Transparent"
         TransparencyBackgroundFallback="Transparent"
         Background="Transparent">
+
+        <Window.Resources>
+        <converters:BitmapAssetValueConverter x:Key="BitmapConverter" />
+    </Window.Resources>
 
     <Window.Styles>
         <Style Selector="Button.close-btn:pointerover /template/ ContentPresenter">
@@ -94,7 +99,7 @@
                                     <StackPanel Orientation="Horizontal" Margin="2" Background="Transparent">
                                         <Border CornerRadius="3" ClipToBounds="True" Width="24" Height="16" Margin="0,0,10,0" VerticalAlignment="Center">
 
-                                            <Image Source="{Binding FlagUrl}" Stretch="UniformToFill" />
+                                            <Image Source="{Binding FlagUrl, Converter={StaticResource BitmapConverter}}" Stretch="UniformToFill" />
                                         </Border>
                                         <TextBlock Text="{Binding Name}" FontWeight="Medium" VerticalAlignment="Center" Foreground="White"/>
                                     </StackPanel>
