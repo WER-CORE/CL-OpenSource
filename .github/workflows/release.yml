@@ -166,6 +166,57 @@ jobs:
                    --packAuthors "WER-CORE" `
                    --outputDir "./release_output"
 
+      - name: Sign installer and portable binaries via SignPath
+        if: env.SIGNPATH_API_TOKEN != ''
+        continue-on-error: true
+        shell: pwsh
+        run: |
+          if (Test-Path "./release_output/CLegendaryLauncher-win-Setup.exe") {
+            Submit-SigningRequest `
+              -InputArtifactPath "./release_output/CLegendaryLauncher-win-Setup.exe" `
+              -OutputArtifactPath "./signed-launcher/CLegendaryLauncher-win-Setup.exe" `
+              -ApiToken "${{ env.SIGNPATH_API_TOKEN }}" `
+              -OrganizationId "${{ env.SIGNPATH_ORGANIZATION_ID }}" `
+              -ProjectSlug "${{ env.SIGNPATH_PROJECT_SLUG }}" `
+              -SigningPolicySlug "${{ env.SIGNPATH_SIGNING_POLICY_SLUG }}" `
+              -WaitForCompletion
+            if (Test-Path "./signed-launcher/CLegendaryLauncher-win-Setup.exe") {
+              Copy-Item -Path "./signed-launcher/CLegendaryLauncher-win-Setup.exe" -Destination "./release_output/CLegendaryLauncher-win-Setup.exe" -Force
+            }
+          }
+
+          if (Test-Path "./release_output/CLegendaryLauncher-win-Portable.zip") {
+            $portableTemp = "./portable-temp"
+            if (Test-Path $portableTemp) { Remove-Item -Path $portableTemp -Recurse -Force }
+            Expand-Archive -Path "./release_output/CLegendaryLauncher-win-Portable.zip" -DestinationPath $portableTemp -Force
+
+            if (-not (Test-Path "$portableTemp/CL(CLegendary Launcher).exe")) {
+              if (Test-Path "$portableTemp/current/CL(CLegendary Launcher).exe") {
+                Copy-Item -Path "$portableTemp/current/CL(CLegendary Launcher).exe" -Destination "$portableTemp/CL(CLegendary Launcher).exe" -Force
+              } elseif (Test-Path "./publish/win-x64/CL(CLegendary Launcher).exe") {
+                Copy-Item -Path "./publish/win-x64/CL(CLegendary Launcher).exe" -Destination "$portableTemp/CL(CLegendary Launcher).exe" -Force
+              }
+            }
+
+            if (Test-Path "$portableTemp/CLegendaryLauncher.exe") {
+              Submit-SigningRequest `
+                -InputArtifactPath "$portableTemp/CLegendaryLauncher.exe" `
+                -OutputArtifactPath "./signed-launcher/CLegendaryLauncher.exe" `
+                -ApiToken "${{ env.SIGNPATH_API_TOKEN }}" `
+                -OrganizationId "${{ env.SIGNPATH_ORGANIZATION_ID }}" `
+                -ProjectSlug "${{ env.SIGNPATH_PROJECT_SLUG }}" `
+                -SigningPolicySlug "${{ env.SIGNPATH_SIGNING_POLICY_SLUG }}" `
+                -WaitForCompletion
+              if (Test-Path "./signed-launcher/CLegendaryLauncher.exe") {
+                Copy-Item -Path "./signed-launcher/CLegendaryLauncher.exe" -Destination "$portableTemp/CLegendaryLauncher.exe" -Force
+              }
+            }
+
+            Remove-Item -Path "./release_output/CLegendaryLauncher-win-Portable.zip" -Force
+            Compress-Archive -Path "$portableTemp/*" -DestinationPath "./release_output/CLegendaryLauncher-win-Portable.zip" -Force
+            Remove-Item -Path $portableTemp -Recurse -Force
+          }
+
       - name: Organize Windows release artifacts
         shell: pwsh
         run: |

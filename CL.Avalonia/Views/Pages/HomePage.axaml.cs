@@ -183,6 +183,7 @@ public partial class HomePage : UserControl
         if (Loc_MenuShadersFolder != null) Loc_MenuShadersFolder.Header = LocalizationManager.GetString("Context.ShadersFolder", "Шейдери (shaderpacks)");
         if (Loc_MenuModpacksFolder != null) Loc_MenuModpacksFolder.Header = LocalizationManager.GetString("Context.ModpacksFolder", "Збірки (CLModpack)");
         if (Loc_MenuBackupsFolder != null) Loc_MenuBackupsFolder.Header = LocalizationManager.GetString("Context.BackupsFolder", "Менеджер світів (Backups)");
+        if (Loc_MenuImportLegacy != null) Loc_MenuImportLegacy.Header = LocalizationManager.GetString("Context.ImportLegacy", "Імпорт даних з папки CL");
 
         if (Loc_MenuReportBug != null) Loc_MenuReportBug.Header = LocalizationManager.GetString("Context.ReportBug", "Повідомити про баг");
         if (Loc_MenuLauncherNews != null) Loc_MenuLauncherNews.Header = LocalizationManager.GetString("Context.LauncherNews", "Новини запускача");
@@ -308,6 +309,56 @@ public partial class HomePage : UserControl
                 false);
 
             await dialog.ShowDialog(mainWindow);
+        }
+    }
+
+    public async void ImportLegacyData_Click(object? sender, RoutedEventArgs e)
+    {
+        AvaloniaSoundService.Click();
+        var dialogService = AvaloniaDialogService.Current;
+        if (dialogService == null) return;
+
+        var selectedFolder = await dialogService.OpenFolderDialogAsync(
+            LocalizationManager.GetString("Settings.ImportLegacyDialogTitle", "Виберіть папку зі старою версією лаунчера (WPF 1.0.0.6)"));
+
+        if (string.IsNullOrWhiteSpace(selectedFolder)) return;
+
+        var result = LegacyMigrationService.ImportFromFolder(selectedFolder);
+        if (result.Success)
+        {
+            var parts = new List<string>();
+            if (result.ProfilesImported > 0)
+                parts.Add(string.Format(LocalizationManager.GetString("Settings.ImportLegacyProfilesCount", "Профілів/акаунтів: {0}"), result.ProfilesImported));
+            if (result.SettingsImported)
+                parts.Add(LocalizationManager.GetString("Settings.ImportLegacySettingsDone", "Налаштування оновлено"));
+            if (result.CustomPhrasesImported)
+                parts.Add(LocalizationManager.GetString("Settings.ImportLegacyPhrasesDone", "Кастомні фрази перенесено"));
+
+            string detail = parts.Count > 0 ? string.Join("\n", parts) : "";
+            string msg = LocalizationManager.GetString("Settings.ImportLegacySuccess", "Дані успішно імпортовано з папки CL!");
+            if (!string.IsNullOrEmpty(detail))
+                msg += "\n\n" + detail;
+
+            dialogService.ShowMessage(msg, LocalizationManager.GetString("Settings.ImportLegacyTitle", "Імпорт даних"), MascotEmotion.Happy);
+
+            var accountService = (DataContext as HomePageViewModel)?.AccountService;
+            if (accountService != null && accountService.CurrentProfile == null)
+            {
+                var profiles = accountService.GetProfiles();
+                int idx = SettingsManager.Default.SelectIndexAccount;
+                var match = (idx >= 0 && idx < profiles.Count) ? profiles[idx] : profiles.FirstOrDefault();
+                if (match != null)
+                {
+                    await accountService.SelectProfileAsync(match);
+                }
+            }
+        }
+        else
+        {
+            dialogService.ShowMessage(
+                result.ErrorMessage ?? LocalizationManager.GetString("Settings.ImportLegacyNotFound", "У вибраній папці не знайдено даних старої версії."), 
+                LocalizationManager.GetString("Settings.ImportLegacyTitle", "Імпорт даних"), 
+                MascotEmotion.Sad);
         }
     }
 

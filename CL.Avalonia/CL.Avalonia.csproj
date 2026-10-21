@@ -36,9 +36,17 @@
 		      DestinationFiles="$(TargetDir)CL(CLegendary Launcher).exe"
 		      Condition="Exists('$(TargetDir)CL.Avalonia.exe')"
 		      SkipUnchangedFiles="true" />
+		<Copy SourceFiles="$(TargetDir)CL.Avalonia.runtimeconfig.json"
+		      DestinationFiles="$(TargetDir)CL(CLegendary Launcher).runtimeconfig.json"
+		      Condition="Exists('$(TargetDir)CL.Avalonia.runtimeconfig.json')"
+		      SkipUnchangedFiles="true" />
 		<Copy SourceFiles="$(PublishDir)CL.Avalonia.exe"
 		      DestinationFiles="$(PublishDir)CL(CLegendary Launcher).exe"
 		      Condition="'$(PublishDir)' != '' and Exists('$(PublishDir)CL.Avalonia.exe')"
+		      SkipUnchangedFiles="true" />
+		<Copy SourceFiles="$(PublishDir)CL.Avalonia.runtimeconfig.json"
+		      DestinationFiles="$(PublishDir)CL(CLegendary Launcher).runtimeconfig.json"
+		      Condition="'$(PublishDir)' != '' and Exists('$(PublishDir)CL.Avalonia.runtimeconfig.json')"
 		      SkipUnchangedFiles="true" />
 	</Target>
 
