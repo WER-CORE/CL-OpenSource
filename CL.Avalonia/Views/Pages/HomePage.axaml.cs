@@ -345,26 +345,44 @@ public partial class HomePage : UserControl
 
             dialogService.ShowMessage(msg, LocalizationManager.GetString("Settings.ImportLegacyTitle", "Імпорт даних"), MascotEmotion.Happy);
 
+            ApplyModulesVisibility();
+
             var homeVm = DataContext as HomePageViewModel;
-            if (homeVm?.AccountService != null)
+            if (homeVm != null)
             {
-                var profiles = homeVm.AccountService.GetProfiles();
-                int idx = SettingsManager.Default.SelectIndexAccount;
-                var match = (idx >= 0 && idx < profiles.Count) ? profiles[idx] : profiles.FirstOrDefault();
-                if (match != null)
+                homeVm.RestoreSavedVersionState();
+
+                if (homeVm.AccountService != null)
                 {
-                    await homeVm.AccountService.SelectProfileAsync(match);
+                    var profiles = homeVm.AccountService.GetProfiles();
+                    int idx = SettingsManager.Default.SelectIndexAccount;
+                    var match = (idx >= 0 && idx < profiles.Count) ? profiles[idx] : profiles.FirstOrDefault();
+                    if (match != null)
+                    {
+                        await homeVm.AccountService.SelectProfileAsync(match);
+                    }
                 }
             }
 
-            if (TopLevel.GetTopLevel(this) is CL_Main mainWin && mainWin.DataContext is CL_MainViewModel mainVm)
+            if (TopLevel.GetTopLevel(this) is CL_Main mainWin)
             {
-                await mainVm.LoadProfilesAsync();
+                mainWin.ApplyModulesVisibility();
+                mainWin.ApplyCurrentUiScale();
+
+                if (mainWin.DataContext is CL_MainViewModel mainVm)
+                {
+                    await mainVm.LoadProfilesAsync();
+                }
             }
 
             try
             {
-                ServiceLocator.Current.GetService<AvaloniaThemeService>()?.InitializeSavedTheme();
+                var themeService = ServiceLocator.Current.GetService<AvaloniaThemeService>();
+                if (themeService != null)
+                {
+                    themeService.InitializeSavedTheme();
+                    themeService.ToggleGlassEffect(SettingsManager.Default.DisableGlassEffect);
+                }
             }
             catch { }
         }

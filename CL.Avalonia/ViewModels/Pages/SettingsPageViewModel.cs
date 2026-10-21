@@ -204,6 +204,13 @@ public partial class SettingsPageViewModel : ObservableObject
         DetectSystemMemory();
         LoadSettings();
         _ = LoadLanguagesAsync();
+
+        SettingsManager.SettingsReloaded += OnSettingsReloaded;
+    }
+
+    private void OnSettingsReloaded()
+    {
+        Dispatcher.UIThread.Post(() => LoadSettings());
     }
 
     private void DetectSystemMemory()
@@ -223,7 +230,7 @@ public partial class SettingsPageViewModel : ObservableObject
         MaxRamAllocation = 8192;
     }
 
-    private void LoadSettings()
+    public void LoadSettings()
     {
         _suppressThemeChange = true;
         _suppressScaleChange = true;

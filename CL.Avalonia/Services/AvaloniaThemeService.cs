@@ -35,17 +35,34 @@ public class AvaloniaThemeService
     {
         _dialogService = dialogService;
         _windowController = windowController;
+
+        SettingsManager.SettingsReloaded += () =>
+        {
+            global::Avalonia.Threading.Dispatcher.UIThread.Post(InitializeSavedTheme);
+        };
     }
 
     public void InitializeSavedTheme()
     {
+        if (!global::Avalonia.Threading.Dispatcher.UIThread.CheckAccess())
+        {
+            global::Avalonia.Threading.Dispatcher.UIThread.Post(InitializeSavedTheme);
+            return;
+        }
+
         string savedTheme = string.IsNullOrWhiteSpace(SettingsManager.Default.Them)
             ? "Dark"
             : SettingsManager.Default.Them;
 
         ToggleGlassEffect(SettingsManager.Default.DisableGlassEffect);
 
-        if (savedTheme.Equals("Custom", StringComparison.OrdinalIgnoreCase))
+        bool isPredefined = savedTheme.Equals("Dark", StringComparison.OrdinalIgnoreCase)
+                         || savedTheme.Equals("Light", StringComparison.OrdinalIgnoreCase)
+                         || savedTheme.Equals("Ocean", StringComparison.OrdinalIgnoreCase)
+                         || savedTheme.Equals("Forest", StringComparison.OrdinalIgnoreCase)
+                         || savedTheme.Equals("Sunset", StringComparison.OrdinalIgnoreCase);
+
+        if (!isPredefined || savedTheme.Equals("Custom", StringComparison.OrdinalIgnoreCase))
         {
             CurrentTheme = "Custom";
             var customConfig = new MainThemeConfig
@@ -70,6 +87,12 @@ public class AvaloniaThemeService
 
     public void ApplyPredefinedTheme(string themeName)
     {
+        if (!global::Avalonia.Threading.Dispatcher.UIThread.CheckAccess())
+        {
+            global::Avalonia.Threading.Dispatcher.UIThread.Post(() => ApplyPredefinedTheme(themeName));
+            return;
+        }
+
         CurrentTheme = themeName;
         SettingsManager.Default.Them = themeName;
         SettingsManager.Save();
@@ -140,6 +163,12 @@ public class AvaloniaThemeService
 
     public void ApplyCustomTheme(MainThemeConfig config)
     {
+        if (!global::Avalonia.Threading.Dispatcher.UIThread.CheckAccess())
+        {
+            global::Avalonia.Threading.Dispatcher.UIThread.Post(() => ApplyCustomTheme(config));
+            return;
+        }
+
         CurrentConfig = config;
         var resources = Application.Current?.Resources;
         if (resources == null) return;
@@ -160,6 +189,11 @@ public class AvaloniaThemeService
         if (Color.TryParse(NormalizeHex(config.BackgroundColor), out var bgColor))
         {
             double opacity = SettingsManager.Default.DisableGlassEffect ? 1.0 : 0.6;
+            if (resources.TryGetResource("GlassTintBrush", null, out var glassObj) && glassObj is SolidColorBrush glassBrush)
+            {
+                glassBrush.Color = bgColor;
+                glassBrush.Opacity = opacity;
+            }
             resources["GlassTintBrush"] = new SolidColorBrush(bgColor, opacity);
         }
 
@@ -212,6 +246,18 @@ public class AvaloniaThemeService
                     return new Bitmap(fs);
                 });
             }
+            else
+            {
+                string inData = Path.Combine(PlatformPaths.DataFolder(), Path.GetFileName(targetPath));
+                if (File.Exists(inData))
+                {
+                    bmp = await Task.Run(() =>
+                    {
+                        using var fs = new FileStream(inData, FileMode.Open, FileAccess.Read, FileShare.Read);
+                        return new Bitmap(fs);
+                    });
+                }
+            }
 
             if (bmp == null)
             {
@@ -232,6 +278,12 @@ public class AvaloniaThemeService
 
     public void ToggleGlassEffect(bool isGlassDisabled)
     {
+        if (!global::Avalonia.Threading.Dispatcher.UIThread.CheckAccess())
+        {
+            global::Avalonia.Threading.Dispatcher.UIThread.Post(() => ToggleGlassEffect(isGlassDisabled));
+            return;
+        }
+
         SettingsManager.Default.DisableGlassEffect = isGlassDisabled;
         SettingsManager.Save();
 
@@ -245,6 +297,11 @@ public class AvaloniaThemeService
         }
 
         double opacity = isGlassDisabled ? 1.0 : 0.6;
+        if (resources.TryGetResource("GlassTintBrush", null, out var glassObj) && glassObj is SolidColorBrush glassBrush)
+        {
+            glassBrush.Color = baseColor;
+            glassBrush.Opacity = opacity;
+        }
         resources["GlassTintBrush"] = new SolidColorBrush(baseColor, opacity);
         resources["GlassBlurRadius"] = isGlassDisabled ? 0.0 : 20.0;
         resources["GlassVisibility"] = !isGlassDisabled;
@@ -420,6 +477,10 @@ public class AvaloniaThemeService
         {
             if (Color.TryParse(NormalizeHex(hexColor), out var color))
             {
+                if (resources.TryGetResource(key, null, out var existing) && existing is SolidColorBrush scb)
+                {
+                    scb.Color = color;
+                }
                 resources[key] = new SolidColorBrush(color);
             }
         }

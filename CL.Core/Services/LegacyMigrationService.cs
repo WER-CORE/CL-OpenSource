@@ -21,7 +21,7 @@ namespace CL.Core.Services
 
     public static class LegacyMigrationService
     {
-        public static LegacyMigrationResult ImportFromFolder(string folderPath)
+        public static LegacyMigrationResult ImportFromFolder(string folderPath, string? targetDataDir = null)
         {
             if (string.IsNullOrWhiteSpace(folderPath) || !Directory.Exists(folderPath))
             {
@@ -32,7 +32,7 @@ namespace CL.Core.Services
                 ? Path.Combine(folderPath, "Data")
                 : folderPath;
 
-            string targetDataDir = PlatformPaths.DataFolder();
+            targetDataDir ??= SettingsManager.FolderPath;
             if (string.Equals(Path.GetFullPath(dataDir).TrimEnd('\\', '/'), Path.GetFullPath(targetDataDir).TrimEnd('\\', '/'), StringComparison.OrdinalIgnoreCase))
             {
                 return new LegacyMigrationResult
@@ -70,12 +70,72 @@ namespace CL.Core.Services
                 catch { }
             }
 
+            string sourceSettings = Path.Combine(dataDir, "UserSaves.json");
+            AppSettings? importedSettings = null;
+            if (File.Exists(sourceSettings))
+            {
+                try
+                {
+                    string json = File.ReadAllText(sourceSettings);
+                    importedSettings = JsonConvert.DeserializeObject<AppSettings>(json);
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Failed to parse source UserSaves.json: {ex.Message}");
+                }
+            }
+
             result.FilesImported = CopyDirectoryContents(dataDir, targetDataDir);
+
+            string targetSettings = Path.Combine(targetDataDir, "UserSaves.json");
+            if (importedSettings != null)
+            {
+                if (string.IsNullOrWhiteSpace(importedSettings.EncryptKey))
+                {
+                    if (!string.IsNullOrWhiteSpace(SettingsManager.Default.EncryptKey))
+                    {
+                        importedSettings.EncryptKey = SettingsManager.Default.EncryptKey;
+                    }
+                    else
+                    {
+                        byte[] randomBytes = new byte[32];
+                        RandomNumberGenerator.Fill(randomBytes);
+                        importedSettings.EncryptKey = Convert.ToBase64String(randomBytes);
+                    }
+                }
+
+                if (!string.IsNullOrWhiteSpace(SettingsManager.Default.UpdateChannel))
+                {
+                    importedSettings.UpdateChannel = SettingsManager.Default.UpdateChannel;
+                }
+
+                if (importedSettings.TutorialComplete)
+                {
+                    importedSettings.OnboardingTourCompleted = true;
+                }
+
+                SettingsManager.Default = importedSettings;
+                SettingsManager.Save();
+                result.SettingsImported = true;
+                SettingsManager.NotifySettingsReloaded();
+            }
+            else if (File.Exists(targetSettings))
+            {
+                try
+                {
+                    SettingsManager.Load();
+                    result.SettingsImported = true;
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Settings reload error: {ex.Message}");
+                }
+            }
 
             string targetProfiles = Path.Combine(targetDataDir, "ProfilesManeger.json");
             try
             {
-                var profileService = new ProfileManagerService();
+                var profileService = new ProfileManagerService(targetDataDir);
 
                 if (importedProfiles != null && importedProfiles.Count > 0)
                 {
@@ -91,20 +151,6 @@ namespace CL.Core.Services
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Profile refresh error: {ex.Message}");
-            }
-
-            string targetSettings = Path.Combine(targetDataDir, "UserSaves.json");
-            if (File.Exists(targetSettings))
-            {
-                try
-                {
-                    SettingsManager.Load();
-                    result.SettingsImported = true;
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Settings reload error: {ex.Message}");
-                }
             }
 
             string targetModpacks = Path.Combine(targetDataDir, "installed_modpacks.json");

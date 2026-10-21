@@ -1,4 +1,4 @@
-﻿using CL.Core.Interfaces;
+using CL.Core.Interfaces;
 using CL.Core.Platform;
 using CL.Core.Models;
 using CL.Core.Models;
@@ -21,9 +21,9 @@ namespace CL.Core.Services
     {
         private readonly string _profilesManegerPath;
 
-        public ProfileManagerService()
+        public ProfileManagerService(string? directoryPath = null)
         {
-            string directoryPath = PlatformPaths.DataFolder();
+            directoryPath ??= SettingsManager.FolderPath;
             _profilesManegerPath = Path.Combine(directoryPath, "ProfilesManeger.json");
 
             if (!Directory.Exists(directoryPath))
@@ -279,11 +279,20 @@ namespace CL.Core.Services
             string base64Key = SettingsManager.Default.EncryptKey;
             if (string.IsNullOrWhiteSpace(base64Key))
             {
-                byte[] randomBytes = new byte[32];
-                RandomNumberGenerator.Fill(randomBytes);
-                base64Key = Convert.ToBase64String(randomBytes);
-                SettingsManager.Default.EncryptKey = base64Key;
-                SettingsManager.Save();
+                if (File.Exists(SettingsManager.FilePath))
+                {
+                    SettingsManager.Load();
+                    base64Key = SettingsManager.Default.EncryptKey;
+                }
+
+                if (string.IsNullOrWhiteSpace(base64Key))
+                {
+                    byte[] randomBytes = new byte[32];
+                    RandomNumberGenerator.Fill(randomBytes);
+                    base64Key = Convert.ToBase64String(randomBytes);
+                    SettingsManager.Default.EncryptKey = base64Key;
+                    SettingsManager.Save();
+                }
             }
 
             string salt = Environment.UserName + "@" + PlatformPaths.OsName();

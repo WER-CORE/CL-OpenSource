@@ -7,9 +7,23 @@ namespace CL.Core.Services
 {
     public static class SettingsManager
     {
-        public static string FolderPath => PlatformPaths.DataFolder();
+        public static event Action? SettingsReloaded;
+
+        private static string? _customFolderPath;
+        public static string FolderPath
+        {
+            get => _customFolderPath ?? PlatformPaths.DataFolder();
+            set => _customFolderPath = value;
+        }
+
         public static string FilePath => Path.Combine(FolderPath, "UserSaves.json");
         public static AppSettings Default { get; set; } = new AppSettings();
+
+        public static void NotifySettingsReloaded()
+        {
+            SettingsReloaded?.Invoke();
+        }
+
         public static void Load()
         {
             if (File.Exists(FilePath))
@@ -22,15 +36,20 @@ namespace CL.Core.Services
                     if (loadedSettings != null)
                     {
                         Default = loadedSettings;
+                        SettingsReloaded?.Invoke();
                     }
                 }
                 catch (Exception ex)
                 {
                     System.Diagnostics.Debug.WriteLine($"Помилка читання налаштувань: {ex.Message}");
-                    Default = new AppSettings();
+                    if (Default == null)
+                    {
+                        Default = new AppSettings();
+                    }
                 }
             }
         }
+
         public static void Save()
         {
             try
