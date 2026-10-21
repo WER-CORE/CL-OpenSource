@@ -183,7 +183,7 @@ public partial class HomePage : UserControl
         if (Loc_MenuShadersFolder != null) Loc_MenuShadersFolder.Header = LocalizationManager.GetString("Context.ShadersFolder", "Шейдери (shaderpacks)");
         if (Loc_MenuModpacksFolder != null) Loc_MenuModpacksFolder.Header = LocalizationManager.GetString("Context.ModpacksFolder", "Збірки (CLModpack)");
         if (Loc_MenuBackupsFolder != null) Loc_MenuBackupsFolder.Header = LocalizationManager.GetString("Context.BackupsFolder", "Менеджер світів (Backups)");
-        if (Loc_MenuImportLegacy != null) Loc_MenuImportLegacy.Header = LocalizationManager.GetString("Context.ImportLegacy", "Імпорт даних з папки CL");
+        if (Loc_MenuImportLegacy != null) Loc_MenuImportLegacy.Header = LocalizationManager.GetString("Context.ImportLegacy", "Імпорт папки Data...");
 
         if (Loc_MenuReportBug != null) Loc_MenuReportBug.Header = LocalizationManager.GetString("Context.ReportBug", "Повідомити про баг");
         if (Loc_MenuLauncherNews != null) Loc_MenuLauncherNews.Header = LocalizationManager.GetString("Context.LauncherNews", "Новини запускача");
@@ -331,11 +331,13 @@ public partial class HomePage : UserControl
                 parts.Add(string.Format(LocalizationManager.GetString("Settings.ImportLegacyProfilesCount", "Профілів/акаунтів: {0}"), result.ProfilesImported));
             if (result.SettingsImported)
                 parts.Add(LocalizationManager.GetString("Settings.ImportLegacySettingsDone", "Налаштування оновлено"));
-            if (result.CustomPhrasesImported)
-                parts.Add(LocalizationManager.GetString("Settings.ImportLegacyPhrasesDone", "Кастомні фрази перенесено"));
+            if (result.ModpacksImported > 0)
+                parts.Add(string.Format(LocalizationManager.GetString("Settings.ImportLegacyModpacksCount", "Збірок перенесено: {0}"), result.ModpacksImported));
+            if (result.FilesImported > 0)
+                parts.Add(string.Format(LocalizationManager.GetString("Settings.ImportLegacyFilesCount", "Файлів із папки Data: {0}"), result.FilesImported));
 
             string detail = parts.Count > 0 ? string.Join("\n", parts) : "";
-            string msg = LocalizationManager.GetString("Settings.ImportLegacySuccess", "Дані успішно імпортовано з папки CL!");
+            string msg = LocalizationManager.GetString("Settings.ImportLegacySuccess", "Папку Data успішно імпортовано!");
             if (!string.IsNullOrEmpty(detail))
                 msg += "\n\n" + detail;
 

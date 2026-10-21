@@ -224,7 +224,7 @@
 											</MenuItem.Icon>
 										</MenuItem>
 										<Separator />
-										<MenuItem x:Name="Loc_MenuImportLegacy" Header="Імпорт даних з папки CL" Click="ImportLegacyData_Click">
+										<MenuItem x:Name="Loc_MenuImportLegacy" Header="Імпорт папки Data..." Click="ImportLegacyData_Click">
 											<MenuItem.Icon>
 												<ic:SymbolIcon Symbol="ArrowDownload" />
 											</MenuItem.Icon>

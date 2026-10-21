@@ -14,7 +14,8 @@ namespace CL.Core.Services
         public bool Success { get; set; }
         public int ProfilesImported { get; set; }
         public bool SettingsImported { get; set; }
-        public bool CustomPhrasesImported { get; set; }
+        public int ModpacksImported { get; set; }
+        public int FilesImported { get; set; }
         public string? ErrorMessage { get; set; }
     }
 
@@ -31,16 +32,12 @@ namespace CL.Core.Services
                 ? Path.Combine(folderPath, "Data")
                 : folderPath;
 
-            string legacyProfiles = Path.Combine(dataDir, "ProfilesManeger.json");
-            string legacySettings = Path.Combine(dataDir, "UserSaves.json");
-            string legacyPhrases = Path.Combine(dataDir, "loading_phrases.txt");
-
-            if (!File.Exists(legacyProfiles) && !File.Exists(legacySettings))
+            if (!Directory.Exists(dataDir) || !Directory.EnumerateFileSystemEntries(dataDir).Any())
             {
                 return new LegacyMigrationResult
                 {
                     Success = false,
-                    ErrorMessage = "Не знайдено файлів ProfilesManeger.json або UserSaves.json."
+                    ErrorMessage = "У вибраній папці не знайдено даних для імпорту."
                 };
             }
 
@@ -50,6 +47,10 @@ namespace CL.Core.Services
             {
                 Directory.CreateDirectory(targetDataDir);
             }
+
+            string legacyProfiles = Path.Combine(dataDir, "ProfilesManeger.json");
+            string legacySettings = Path.Combine(dataDir, "UserSaves.json");
+            string legacyModpacks = Path.Combine(dataDir, "installed_modpacks.json");
 
             if (File.Exists(legacyProfiles))
             {
@@ -148,21 +149,90 @@ namespace CL.Core.Services
                 }
             }
 
-            if (File.Exists(legacyPhrases))
+            if (File.Exists(legacyModpacks))
             {
                 try
                 {
-                    string targetPhrases = Path.Combine(targetDataDir, "loading_phrases.txt");
-                    if (!File.Exists(targetPhrases))
+                    string targetModpacksPath = Path.Combine(targetDataDir, "installed_modpacks.json");
+                    if (!File.Exists(targetModpacksPath))
                     {
-                        File.Copy(legacyPhrases, targetPhrases, true);
-                        result.CustomPhrasesImported = true;
+                        File.Copy(legacyModpacks, targetModpacksPath, true);
+                        result.ModpacksImported = 1;
+                    }
+                    else
+                    {
+                        string oldJson = File.ReadAllText(legacyModpacks);
+                        var oldPacks = JsonConvert.DeserializeObject<List<InstalledModpack>>(oldJson);
+                        string currJson = File.ReadAllText(targetModpacksPath);
+                        var currPacks = JsonConvert.DeserializeObject<List<InstalledModpack>>(currJson) ?? new List<InstalledModpack>();
+
+                        if (oldPacks != null && oldPacks.Count > 0)
+                        {
+                            int added = 0;
+                            foreach (var p in oldPacks)
+                            {
+                                if (!currPacks.Any(x => string.Equals(x.Name, p.Name, StringComparison.OrdinalIgnoreCase)))
+                                {
+                                    currPacks.Add(p);
+                                    added++;
+                                }
+                            }
+                            if (added > 0)
+                            {
+                                File.WriteAllText(targetModpacksPath, JsonConvert.SerializeObject(currPacks, Formatting.Indented));
+                                result.ModpacksImported = added;
+                            }
+                        }
                     }
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Modpacks migration error: {ex.Message}");
+                }
+            }
+
+            try
+            {
+                var skip = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    "ProfilesManeger.json",
+                    "UserSaves.json",
+                    "installed_modpacks.json"
+                };
+                result.FilesImported = CopyDirectoryContents(dataDir, targetDataDir, skip);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Data directory copy error: {ex.Message}");
             }
 
             return result;
+        }
+
+        private static int CopyDirectoryContents(string sourceDir, string targetDir, HashSet<string> skipFiles)
+        {
+            int count = 0;
+            Directory.CreateDirectory(targetDir);
+
+            foreach (string file in Directory.GetFiles(sourceDir))
+            {
+                string fileName = Path.GetFileName(file);
+                if (skipFiles.Contains(fileName))
+                    continue;
+
+                string destFile = Path.Combine(targetDir, fileName);
+                File.Copy(file, destFile, true);
+                count++;
+            }
+
+            foreach (string subDir in Directory.GetDirectories(sourceDir))
+            {
+                string dirName = Path.GetFileName(subDir);
+                string destSubDir = Path.Combine(targetDir, dirName);
+                count += CopyDirectoryContents(subDir, destSubDir, new HashSet<string>());
+            }
+
+            return count;
         }
     }
 }
