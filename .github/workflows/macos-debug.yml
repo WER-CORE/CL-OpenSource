@@ -71,7 +71,10 @@ jobs:
         run: |
           KICKSTART="/System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart"
 
-          # 1. Записуємо зашифрований VNC пароль у налаштування macOS
+          # 1. Встановлюємо пароль для системного користувача runner (як root)
+          echo -e "$VNC_PASSWORD\n$VNC_PASSWORD" | sudo passwd runner || true
+
+          # 2. Записуємо зашифрований VNC пароль у налаштування macOS
           echo "$VNC_PASSWORD" | perl -we '
             @k = unpack "C*", pack "H*", "1734516E8BA8C5E2FF1C39567390ADCA";
             $_ = <>; chomp; s/^(.{8}).*/$1/;
@@ -80,12 +83,12 @@ jobs:
             print "\n"
           ' | sudo tee /Library/Preferences/com.apple.VNCSettings.txt
 
-          # 2. Надаємо повні права для всіх користувачів та вмикаємо VNC legacy з паролем
+          # 3. Надаємо повні права для всіх користувачів та вмикаємо VNC legacy з паролем
           sudo $KICKSTART -configure -allowAccessFor -allUsers -privs -all
           sudo $KICKSTART -configure -clientopts -setvnclegacy -vnclegacy yes
           sudo $KICKSTART -configure -clientopts -setvncpw -vncpw "$VNC_PASSWORD" || true
 
-          # 3. Активуємо та перезапускаємо службу екрана
+          # 4. Активуємо та перезапускаємо службу екрана
           sudo $KICKSTART -activate
           sudo $KICKSTART -restart -agent -console
 
@@ -105,11 +108,14 @@ jobs:
           echo "✅ noVNC Web Server запущено на порту 6080!"
 
           # 3. Встановлюємо bore для надійного прямого TCP/Web тунелю (без блокувань провайдерів)
-          brew install bore-cli || true
-          if ! command -v bore &> /dev/null; then
-            curl -fsSL https://github.com/ekzhang/bore/releases/download/v0.5.2/bore-v0.5.2-aarch64-apple-darwin.tar.gz | tar -xz -C /tmp/
-            sudo cp /tmp/bore /usr/local/bin/ || true
+          ARCH=$(uname -m)
+          if [ "$ARCH" = "arm64" ]; then
+            curl -fsSL https://github.com/ekzhang/bore/releases/download/v0.6.0/bore-v0.6.0-aarch64-apple-darwin.tar.gz | tar -xz -C /tmp/
+          else
+            curl -fsSL https://github.com/ekzhang/bore/releases/download/v0.6.0/bore-v0.6.0-x86_64-apple-darwin.tar.gz | tar -xz -C /tmp/
           fi
+          sudo cp /tmp/bore /usr/local/bin/ || true
+          chmod +x /usr/local/bin/bore || true
 
           # Піднімаємо прямі порти через bore
           nohup bore local 5900 --to bore.pub > /tmp/bore_vnc.log 2>&1 &
