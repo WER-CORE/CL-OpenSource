@@ -91,54 +91,64 @@ jobs:
 
           echo "✅ macOS Screen Sharing (VNC на порту 5900) успішно активовано та запаролено!"
 
-      - name: Setup noVNC (Web Browser Access)
+      - name: Setup noVNC and Remote Access Tunnels
         run: |
-          pip3 install websockify || true
+          # 1. Встановлюємо залежності
+          brew install tmate cloudflare/cloudflare/cloudflared || true
+          pip3 install --break-system-packages websockify || true
           git clone --depth 1 https://github.com/novnc/noVNC.git /tmp/novnc || true
-          # Запускаємо веб-сервер noVNC на порту 6080 у фоновому режимі
+
+          # 2. Запускаємо веб-сервер noVNC на порту 6080
           nohup python3 -m websockify --web /tmp/novnc 6080 localhost:5900 > /tmp/novnc.log 2>&1 &
           sleep 2
           echo "✅ noVNC Web Server запущено на порту 6080!"
 
-      - name: Setup Ngrok Tunnel (Optional)
-        if: ${{ github.event.inputs.ngrok_token != '' }}
-        env:
-          NGROK_TOKEN: ${{ github.event.inputs.ngrok_token }}
-        run: |
-          brew install ngrok/ngrok/ngrok || true
-          ngrok config add-authtoken "$NGROK_TOKEN"
-          ngrok tcp 5900 --log=stdout > ngrok.log 2>&1 &
-          sleep 3
-          NGROK_URL=$(curl -s http://127.0.0.1:4040/api/tunnels | grep -o 'tcp://[^"]*' || true)
-          echo "================================================================"
-          echo "🌐 ПРЯМА АДРЕСА VNC ЧЕРЕЗ NGROK: $NGROK_URL"
-          echo "Введіть цю адресу у VNC Viewer та введіть свій пароль."
-          echo "================================================================"
+          # 3. Запускаємо прямий Cloudflare HTTPS веб-тунель для браузера (безкоштовно, без реєстрації)
+          nohup cloudflared tunnel --url http://127.0.0.1:6080 > /tmp/cloudflared.log 2>&1 &
+          sleep 6
+          CF_URL=$(grep -o 'https://[-a-zA-Z0-9@:%._\+~#=]\+\.trycloudflare\.com' /tmp/cloudflared.log | head -n 1 || true)
 
-      - name: Print Connection Instructions
-        run: |
+          # 4. Запускаємо tmate сесію для SSH
+          tmate -S /tmp/tmate.sock new-session -d
+          tmate -S /tmp/tmate.sock wait tmate-ready
+          TMATE_SSH=$(tmate -S /tmp/tmate.sock display -p '#{tmate_ssh}')
+          TMATE_WEB=$(tmate -S /tmp/tmate.sock display -p '#{tmate_web}')
+
           echo "================================================================================"
-          echo "🖥️  ІНСТРУКЦІЯ ПІДКЛЮЧЕННЯ ДО РОБОЧОГО СТОЛУ MACOS:"
-          echo "--------------------------------------------------------------------------------"
-          echo "1. Нижче в кроці 'Start Tmate Session' скопіюйте SSH рядок підключення."
-          echo "   Наприклад: ssh -X abc123def@nyc1.tmate.io"
+          echo "🎉 СЕСІЮ РОБОЧОГО СТОЛУ MACOS УСПІШНО ЗАПУЩЕНО!"
+          echo "================================================================================"
+          if [ -n "$CF_URL" ]; then
+            echo ""
+            echo "🌐 ВАРІАНТ 1: ПРЯМИЙ ВХІД З БРАУЗЕРА (БЕЗ SSH ТА ВСТАНОВЛЕННЯ ПРОГРАМ):"
+            echo "👉 ПЕРЕЙДІТЬ ЗА ПОСИЛАННЯМ: $CF_URL/vnc.html"
+            echo "   (Введіть свій VNC пароль, і Mac відкриється просто у вкладці браузера!)"
+            echo ""
+          fi
+          echo "💻 ВАРІАНТ 2: ЧЕРЕЗ SSH-ТУНЕЛЬ НА ВАШОМУ КОМП'ЮТЕРІ (noVNC):"
+          echo "   У терміналі Windows (PowerShell) виконайте:"
+          echo "   ssh -L 6080:127.0.0.1:6080 $TMATE_SSH"
+          echo "   Після цього відкрийте у браузері: http://localhost:6080/vnc.html"
           echo ""
-          echo "🌐 ВАРІАНТ А (ЧЕРЕЗ БРАУЗЕР - noVNC, без встановлення жодних програм!):"
-          echo "   У терміналі Windows запустіть тунель для веб-порту 6080:"
-          echo "   ssh -L 6080:127.0.0.1:6080 <ваша_команда_з_tmate>"
-          echo "   Після цього відкрийте у браузері Chrome/Edge/Firefox:"
-          echo "   👉 http://localhost:6080/vnc.html"
-          echo "   Введіть пароль VNC — і робочий стіл Mac відкриється прямо у вкладці браузера!"
+          echo "🖥️ ВАРІАНТ 3: ЧЕРЕЗ VNC VIEWER (TigerVNC / RealVNC):"
+          echo "   ssh -L 5900:127.0.0.1:5900 $TMATE_SSH"
+          echo "   Підключіться до 127.0.0.1:5900 та введіть свій пароль."
           echo ""
-          echo "💻 ВАРІАНТ Б (ЧЕРЕЗ VNC VIEWER):"
-          echo "   ssh -L 5900:127.0.0.1:5900 <ваша_команда_з_tmate>"
-          echo "   Відкрийте VNC Viewer, адреса 127.0.0.1:5900 та введіть свій пароль."
+          echo "⌨️  ВАРІАНТ 4: ВЕБ-ТЕРМІНАЛ MACOS:"
+          echo "   👉 $TMATE_WEB"
           echo ""
-          echo "🚀 Шлях до готового лаунчера на Mac:"
+          echo "🚀 Шлях до скомпільованого CL.Avalonia:"
           echo "   $PWD/CL.Avalonia/bin/Release/net10.0/CL.Avalonia"
           echo "================================================================================"
 
-      - name: Start Tmate Session (SSH Tunnel & Console)
-        uses: mxschmitt/action-tmate@v3
-        with:
-          detached: false
+          # Записуємо посилання у Summary воркфлоу на GitHub
+          echo "### 🖥️ Підключення до macOS Desktop" >> $GITHUB_STEP_SUMMARY
+          if [ -n "$CF_URL" ]; then
+            echo "- 🌐 **[Прямий вхід через браузер (noVNC)]($CF_URL/vnc.html)** (пароль той, що ввели при запуску)" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "- 💻 **SSH Команда:** \`$TMATE_SSH\`" >> $GITHUB_STEP_SUMMARY
+          echo "- ⌨️ **[Веб-термінал]($TMATE_WEB)**" >> $GITHUB_STEP_SUMMARY
+
+          # Утримуємо сесію живою
+          while [ -S /tmp/tmate.sock ]; do
+            sleep 10
+          done
