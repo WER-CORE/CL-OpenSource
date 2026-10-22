@@ -1,27 +1,42 @@
-name: macOS Interactive Debug (SSH / Web)
+name: macOS Interactive Debug (GUI Desktop + VNC + SSH)
 
 on:
   workflow_dispatch:
     inputs:
+      vnc_password:
+        description: 'Пароль для захисту VNC (ваш секретний пароль для входу)'
+        required: true
+        default: 'CL2026Secure!'
+        type: string
       os_runner:
-        description: 'Оберіть версію macOS раннера'
+        description: 'Версія macOS'
         required: true
         default: 'macos-latest'
         type: choice
         options:
-          - 'macos-latest' # Apple Silicon M1 (macOS 14)
-          - 'macos-15'     # Apple Silicon M-series (macOS 15 Sequoia)
+          - 'macos-latest' # Apple Silicon M1 (macOS 14 Sonoma)
+          - 'macos-15'     # Apple Silicon (macOS 15 Sequoia)
           - 'macos-14'     # Apple Silicon M1 (macOS 14 Sonoma)
           - 'macos-13'     # Intel x86_64 (macOS 13 Ventura)
-      setup_java:
-        description: 'Встановити Java 21 для тестів запуску Minecraft'
+      build_launcher:
+        description: 'Автоматично зібрати CL.Avalonia перед стартом'
         required: false
         type: boolean
         default: true
+      setup_java:
+        description: 'Встановити Java 21 для Minecraft'
+        required: false
+        type: boolean
+        default: true
+      ngrok_token:
+        description: 'Ngrok Auth Token (необов’язково, для прямого VNC без SSH)'
+        required: false
+        default: ''
+        type: string
 
 jobs:
-  macos-ssh-session:
-    name: Interactive macOS Session
+  macos-gui-session:
+    name: Interactive macOS Desktop
     runs-on: ${{ github.event.inputs.os_runner || 'macos-latest' }}
     timeout-minutes: 360 # До 6 годин сесії
 
@@ -43,20 +58,63 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
-      - name: Display System Info & Environment
+      - name: Build CL.Avalonia
+        if: ${{ github.event.inputs.build_launcher == 'true' }}
         run: |
-          echo "=== macOS Hardware & OS Info ==="
-          sw_vers
-          uname -a
-          sysctl -n machdep.cpu.brand_string || true
-          echo ""
-          echo "=== .NET Info ==="
-          dotnet --info
-          echo ""
-          echo "=== Java Info ==="
-          java -version || true
+          dotnet build CL.Avalonia/CL.Avalonia.csproj -c Release
+          chmod +x CL.Avalonia/bin/Release/net10.0/CL.Avalonia || true
+          echo "Збірка CL.Avalonia успішно завершена!"
 
-      - name: Start Tmate Interactive Session (SSH & Web Shell)
+      - name: Configure Secure macOS VNC (Screen Sharing)
+        env:
+          VNC_PASSWORD: ${{ github.event.inputs.vnc_password }}
+        run: |
+          # Встановлюємо пароль для користувача runner
+          echo "$VNC_PASSWORD" | sudo dscl . -passwd /Users/runner "$VNC_PASSWORD"
+
+          # Активуємо Apple Remote Management (VNC) із захистом паролем
+          sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart \
+            -activate -configure -access -on \
+            -clientopts -setvnclegacy -vnclegacy yes \
+            -clientopts -setvncpw -vncpw "$VNC_PASSWORD" \
+            -restart -agent -privs -all
+
+          echo "✅ macOS Screen Sharing (VNC на порту 5900) успішно активовано та запаролено!"
+
+      - name: Setup Ngrok Tunnel (Optional)
+        if: ${{ github.event.inputs.ngrok_token != '' }}
+        env:
+          NGROK_TOKEN: ${{ github.event.inputs.ngrok_token }}
+        run: |
+          brew install ngrok/ngrok/ngrok || true
+          ngrok config add-authtoken "$NGROK_TOKEN"
+          ngrok tcp 5900 --log=stdout > ngrok.log 2>&1 &
+          sleep 3
+          NGROK_URL=$(curl -s http://127.0.0.1:4040/api/tunnels | grep -o 'tcp://[^"]*' || true)
+          echo "================================================================"
+          echo "🌐 ПРЯМА АДРЕСА VNC ЧЕРЕЗ NGROK: $NGROK_URL"
+          echo "Введіть цю адресу у VNC Viewer та введіть свій пароль."
+          echo "================================================================"
+
+      - name: Print Connection Instructions
+        run: |
+          echo "================================================================================"
+          echo "🖥️  ІНСТРУКЦІЯ ПІДКЛЮЧЕННЯ ДО РОБОЧОГО СТОЛУ MACOS:"
+          echo "--------------------------------------------------------------------------------"
+          echo "1. Нижче в кроці 'Start Tmate Session' скопіюйте SSH рядок підключення."
+          echo "2. Додайте до нього прапорець прокидання порту -L 5900:127.0.0.1:5900"
+          echo "   Наприклад:"
+          echo "   ssh -L 5900:127.0.0.1:5900 <ваша_команда_з_tmate>"
+          echo ""
+          echo "3. Відкрийте будь-який VNC Viewer на Windows (RealVNC Viewer / TightVNC / TigerVNC)"
+          echo "4. Підключіться до адреси: 127.0.0.1:5900 (або localhost:5900)"
+          echo "5. Введіть пароль, який ви вказали при запуску воркфлоу!"
+          echo ""
+          echo "🚀 Шлях до готового лаунчера на Mac:"
+          echo "   $PWD/CL.Avalonia/bin/Release/net10.0/CL.Avalonia"
+          echo "================================================================================"
+
+      - name: Start Tmate Session (SSH Tunnel & Console)
         uses: mxschmitt/action-tmate@v3
         with:
           detached: false
