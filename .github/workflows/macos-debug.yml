@@ -93,8 +93,8 @@ jobs:
 
       - name: Setup noVNC and Remote Access Tunnels
         run: |
-          # 1. Встановлюємо залежності
-          brew install tmate cloudflare/cloudflare/cloudflared || true
+          # 1. Швидке встановлення утиліт
+          brew install cloudflared || true
           pip3 install --break-system-packages websockify || true
           git clone --depth 1 https://github.com/novnc/noVNC.git /tmp/novnc || true
 
@@ -103,52 +103,53 @@ jobs:
           sleep 2
           echo "✅ noVNC Web Server запущено на порту 6080!"
 
-          # 3. Запускаємо прямий Cloudflare HTTPS веб-тунель для браузера (безкоштовно, без реєстрації)
+          # 3. Запускаємо прямий Cloudflare HTTPS веб-тунель для браузера
           nohup cloudflared tunnel --url http://127.0.0.1:6080 > /tmp/cloudflared.log 2>&1 &
-          sleep 6
-          CF_URL=$(grep -o 'https://[-a-zA-Z0-9@:%._\+~#=]\+\.trycloudflare\.com' /tmp/cloudflared.log | head -n 1 || true)
-
-          # 4. Запускаємо tmate сесію для SSH
-          tmate -S /tmp/tmate.sock new-session -d
-          tmate -S /tmp/tmate.sock wait tmate-ready
-          TMATE_SSH=$(tmate -S /tmp/tmate.sock display -p '#{tmate_ssh}')
-          TMATE_WEB=$(tmate -S /tmp/tmate.sock display -p '#{tmate_web}')
+          
+          # Очікуємо отримання посилання Cloudflare (максимум 15 секунд)
+          CF_URL=""
+          for i in {1..15}; do
+            CF_URL=$(grep -o 'https://[-a-zA-Z0-9@:%._\+~#=]\+\.trycloudflare\.com' /tmp/cloudflared.log | head -n 1 || true)
+            if [ -n "$CF_URL" ]; then
+              break
+            fi
+            sleep 1
+          done
 
           echo "================================================================================"
           echo "🎉 СЕСІЮ РОБОЧОГО СТОЛУ MACOS УСПІШНО ЗАПУЩЕНО!"
           echo "================================================================================"
           if [ -n "$CF_URL" ]; then
             echo ""
-            echo "🌐 ВАРІАНТ 1: ПРЯМИЙ ВХІД З БРАУЗЕРА (БЕЗ SSH ТА ВСТАНОВЛЕННЯ ПРОГРАМ):"
-            echo "👉 ПЕРЕЙДІТЬ ЗА ПОСИЛАННЯМ: $CF_URL/vnc.html"
-            echo "   (Введіть свій VNC пароль, і Mac відкриється просто у вкладці браузера!)"
+            echo "🌐 ПРЯМИЙ ВХІД З БРАУЗЕРА (БЕЗ ЖОДНИХ КОМАНД І ПРОГРАМ):"
+            echo "👉 ВІДКРИЙТЕ ЦЕ ПОСИЛАННЯ: $CF_URL/vnc.html"
             echo ""
+            echo "Введіть свій VNC пароль — і робочий стіл Mac з'явиться прямо у браузері!"
+            echo "================================================================================"
+
+            # Записуємо посилання у Summary воркфлоу на GitHub
+            echo "### 🖥️ Підключення до macOS Desktop" >> $GITHUB_STEP_SUMMARY
+            echo "### 🌐 👉 [ВХІД ДО MACOS ЧЕРЕЗ БРАУЗЕР]($CF_URL/vnc.html)" >> $GITHUB_STEP_SUMMARY
+            echo "Пароль: той, що ввели при запуску воркфлоу." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ Cloudflare URL ще генерується, перевірте лог /tmp/cloudflared.log"
           fi
-          echo "💻 ВАРІАНТ 2: ЧЕРЕЗ SSH-ТУНЕЛЬ НА ВАШОМУ КОМП'ЮТЕРІ (noVNC):"
-          echo "   У терміналі Windows (PowerShell) виконайте:"
-          echo "   ssh -L 6080:127.0.0.1:6080 $TMATE_SSH"
-          echo "   Після цього відкрийте у браузері: http://localhost:6080/vnc.html"
-          echo ""
-          echo "🖥️ ВАРІАНТ 3: ЧЕРЕЗ VNC VIEWER (TigerVNC / RealVNC):"
-          echo "   ssh -L 5900:127.0.0.1:5900 $TMATE_SSH"
-          echo "   Підключіться до 127.0.0.1:5900 та введіть свій пароль."
-          echo ""
-          echo "⌨️  ВАРІАНТ 4: ВЕБ-ТЕРМІНАЛ MACOS:"
-          echo "   👉 $TMATE_WEB"
-          echo ""
-          echo "🚀 Шлях до скомпільованого CL.Avalonia:"
+
+          # 4. Додатково запускаємо Pinggy тунель для VNC клієнтів (порт 5900)
+          ssh -o StrictHostKeyChecking=no -p 443 -R0:localhost:5900 -N a.pinggy.io > /tmp/pinggy.log 2>&1 &
+          sleep 3
+          PINGGY_TCP=$(grep -o '[a-z0-9\.]*\.a\.pinggy\.io:[0-9]*' /tmp/pinggy.log | head -n 1 || true)
+          if [ -n "$PINGGY_TCP" ]; then
+            echo "🖥️ Адреса для прямого підключення через VNC Viewer: $PINGGY_TCP"
+            echo "- 🖥️ **VNC Viewer:** \`$PINGGY_TCP\`" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "🚀 Шлях до скомпільованого CL.Avalonia на Mac:"
           echo "   $PWD/CL.Avalonia/bin/Release/net10.0/CL.Avalonia"
           echo "================================================================================"
 
-          # Записуємо посилання у Summary воркфлоу на GitHub
-          echo "### 🖥️ Підключення до macOS Desktop" >> $GITHUB_STEP_SUMMARY
-          if [ -n "$CF_URL" ]; then
-            echo "- 🌐 **[Прямий вхід через браузер (noVNC)]($CF_URL/vnc.html)** (пароль той, що ввели при запуску)" >> $GITHUB_STEP_SUMMARY
-          fi
-          echo "- 💻 **SSH Команда:** \`$TMATE_SSH\`" >> $GITHUB_STEP_SUMMARY
-          echo "- ⌨️ **[Веб-термінал]($TMATE_WEB)**" >> $GITHUB_STEP_SUMMARY
-
-          # Утримуємо сесію живою
-          while [ -S /tmp/tmate.sock ]; do
-            sleep 10
+          # Утримуємо сесію живою (6 годин)
+          echo "Сесія активна. Не закривайте цей запуск."
+          while true; do
+            sleep 60
           done
