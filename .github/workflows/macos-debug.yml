@@ -92,9 +92,10 @@ jobs:
           echo "✅ macOS Screen Sharing (VNC на порту 5900) успішно активовано та запаролено!"
 
       - name: Setup noVNC and Remote Access Tunnels
+        env:
+          NGROK_TOKEN: ${{ github.event.inputs.ngrok_token }}
         run: |
-          # 1. Швидке встановлення утиліт
-          brew install cloudflared || true
+          # 1. Встановлюємо noVNC та websockify
           pip3 install --break-system-packages websockify || true
           git clone --depth 1 https://github.com/novnc/noVNC.git /tmp/novnc || true
 
@@ -103,53 +104,77 @@ jobs:
           sleep 2
           echo "✅ noVNC Web Server запущено на порту 6080!"
 
-          # 3. Запускаємо прямий Cloudflare HTTPS веб-тунель для браузера
-          nohup cloudflared tunnel --url http://127.0.0.1:6080 > /tmp/cloudflared.log 2>&1 &
-          
-          # Очікуємо отримання посилання Cloudflare (максимум 15 секунд)
-          CF_URL=""
-          for i in {1..15}; do
-            CF_URL=$(grep -o 'https://[-a-zA-Z0-9@:%._\+~#=]\+\.trycloudflare\.com' /tmp/cloudflared.log | head -n 1 || true)
-            if [ -n "$CF_URL" ]; then
-              break
-            fi
-            sleep 1
-          done
+          # 3. Встановлюємо bore для надійного прямого TCP/Web тунелю (без блокувань провайдерів)
+          brew install bore-cli || true
+          if ! command -v bore &> /dev/null; then
+            curl -fsSL https://github.com/ekzhang/bore/releases/download/v0.5.2/bore-v0.5.2-aarch64-apple-darwin.tar.gz | tar -xz -C /tmp/
+            sudo cp /tmp/bore /usr/local/bin/ || true
+          fi
+
+          # Піднімаємо прямі порти через bore
+          nohup bore local 5900 --to bore.pub > /tmp/bore_vnc.log 2>&1 &
+          nohup bore local 6080 --to bore.pub > /tmp/bore_web.log 2>&1 &
+          sleep 4
+
+          BORE_PORT_VNC=$(grep -o 'bore.pub:[0-9]*' /tmp/bore_vnc.log | head -n 1 || true)
+          BORE_PORT_WEB=$(grep -o 'bore.pub:[0-9]*' /tmp/bore_web.log | head -n 1 || true)
+
+          # 4. Запускаємо localtunnel як альтернативний веб-вхід
+          nohup npx --yes localtunnel --port 6080 > /tmp/lt.log 2>&1 &
+          sleep 5
+          LT_URL=$(grep -o 'https://[-a-zA-Z0-9@:%._\+~#=]\+\.loca\.lt' /tmp/lt.log | head -n 1 || true)
+
+          # 5. Якщо вказано токен Ngrok - запускаємо і його
+          NGROK_TCP=""
+          if [ -n "$NGROK_TOKEN" ]; then
+            brew install ngrok/ngrok/ngrok || true
+            ngrok config add-authtoken "$NGROK_TOKEN"
+            nohup ngrok tcp 5900 > /tmp/ngrok.log 2>&1 &
+            sleep 4
+            NGROK_TCP=$(curl -s http://127.0.0.1:4040/api/tunnels | grep -o 'tcp://[^"]*' || true)
+          fi
 
           echo "================================================================================"
           echo "🎉 СЕСІЮ РОБОЧОГО СТОЛУ MACOS УСПІШНО ЗАПУЩЕНО!"
           echo "================================================================================"
-          if [ -n "$CF_URL" ]; then
+          echo ""
+          if [ -n "$BORE_PORT_WEB" ]; then
+            echo "🌐 ВАРІАНТ 1 (БРАУЗЕР ЧЕРЕЗ BORE - ПРЯМИЙ ВХІД):"
+            echo "👉 ВІДКРИЙТЕ: http://$BORE_PORT_WEB/vnc.html"
             echo ""
-            echo "🌐 ПРЯМИЙ ВХІД З БРАУЗЕРА (БЕЗ ЖОДНИХ КОМАНД І ПРОГРАМ):"
-            echo "👉 ВІДКРИЙТЕ ЦЕ ПОСИЛАННЯ: $CF_URL/vnc.html"
+          fi
+          if [ -n "$LT_URL" ]; then
+            echo "🌐 ВАРІАНТ 2 (БРАУЗЕР ЧЕРЕЗ LOCALTUNNEL):"
+            echo "👉 ВІДКРИЙТЕ: $LT_URL/vnc.html"
             echo ""
-            echo "Введіть свій VNC пароль — і робочий стіл Mac з'явиться прямо у браузері!"
-            echo "================================================================================"
-
-            # Записуємо посилання у Summary воркфлоу на GitHub
-            echo "### 🖥️ Підключення до macOS Desktop" >> $GITHUB_STEP_SUMMARY
-            echo "### 🌐 👉 [ВХІД ДО MACOS ЧЕРЕЗ БРАУЗЕР]($CF_URL/vnc.html)" >> $GITHUB_STEP_SUMMARY
-            echo "Пароль: той, що ввели при запуску воркфлоу." >> $GITHUB_STEP_SUMMARY
-          else
-            echo "⚠️ Cloudflare URL ще генерується, перевірте лог /tmp/cloudflared.log"
           fi
-
-          # 4. Додатково запускаємо Pinggy тунель для VNC клієнтів (порт 5900)
-          ssh -o StrictHostKeyChecking=no -p 443 -R0:localhost:5900 -N a.pinggy.io > /tmp/pinggy.log 2>&1 &
-          sleep 3
-          PINGGY_TCP=$(grep -o '[a-z0-9\.]*\.a\.pinggy\.io:[0-9]*' /tmp/pinggy.log | head -n 1 || true)
-          if [ -n "$PINGGY_TCP" ]; then
-            echo "🖥️ Адреса для прямого підключення через VNC Viewer: $PINGGY_TCP"
-            echo "- 🖥️ **VNC Viewer:** \`$PINGGY_TCP\`" >> $GITHUB_STEP_SUMMARY
+          if [ -n "$BORE_PORT_VNC" ]; then
+            echo "🖥️ ВАРІАНТ 3 (VNC VIEWER ЧЕРЕЗ BORE - НАЙВИЩА ШВИДКІСТЬ ТА FPS):"
+            echo "👉 АДРЕСА ПІДКЛЮЧЕННЯ: $BORE_PORT_VNC"
+            echo "   Введіть цю адресу у VNC Viewer (TigerVNC / RealVNC) та свій пароль!"
+            echo ""
           fi
-
+          if [ -n "$NGROK_TCP" ]; then
+            echo "🚀 ВАРІАНТ 4 (NGROK VNC): $NGROK_TCP"
+            echo ""
+          fi
           echo "🚀 Шлях до скомпільованого CL.Avalonia на Mac:"
           echo "   $PWD/CL.Avalonia/bin/Release/net10.0/CL.Avalonia"
           echo "================================================================================"
 
-          # Утримуємо сесію живою (6 годин)
-          echo "Сесія активна. Не закривайте цей запуск."
+          # Записуємо у Summary на GitHub
+          echo "### 🖥️ Підключення до macOS Desktop" >> $GITHUB_STEP_SUMMARY
+          if [ -n "$BORE_PORT_WEB" ]; then
+            echo "- 🌐 **[Вхід через браузер (Bore)] (http://$BORE_PORT_WEB/vnc.html)**" >> $GITHUB_STEP_SUMMARY
+          fi
+          if [ -n "$LT_URL" ]; then
+            echo "- 🌐 **[Вхід через браузер (LocalTunnel)] ($LT_URL/vnc.html)**" >> $GITHUB_STEP_SUMMARY
+          fi
+          if [ -n "$BORE_PORT_VNC" ]; then
+            echo "- 🖥️ **VNC Viewer Адреса:** \`$BORE_PORT_VNC\`" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # Утримуємо сесію живою
           while true; do
             sleep 60
           done
