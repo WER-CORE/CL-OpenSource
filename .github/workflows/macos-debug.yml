@@ -1,0 +1,62 @@
+name: macOS Interactive Debug (SSH / Web)
+
+on:
+  workflow_dispatch:
+    inputs:
+      os_runner:
+        description: 'Оберіть версію macOS раннера'
+        required: true
+        default: 'macos-latest'
+        type: choice
+        options:
+          - 'macos-latest' # Apple Silicon M1 (macOS 14)
+          - 'macos-15'     # Apple Silicon M-series (macOS 15 Sequoia)
+          - 'macos-14'     # Apple Silicon M1 (macOS 14 Sonoma)
+          - 'macos-13'     # Intel x86_64 (macOS 13 Ventura)
+      setup_java:
+        description: 'Встановити Java 21 для тестів запуску Minecraft'
+        required: false
+        type: boolean
+        default: true
+
+jobs:
+  macos-ssh-session:
+    name: Interactive macOS Session
+    runs-on: ${{ github.event.inputs.os_runner || 'macos-latest' }}
+    timeout-minutes: 360 # До 6 годин сесії
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+
+      - name: Setup Java (Temurin 21)
+        if: ${{ github.event.inputs.setup_java == 'true' }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Display System Info & Environment
+        run: |
+          echo "=== macOS Hardware & OS Info ==="
+          sw_vers
+          uname -a
+          sysctl -n machdep.cpu.brand_string || true
+          echo ""
+          echo "=== .NET Info ==="
+          dotnet --info
+          echo ""
+          echo "=== Java Info ==="
+          java -version || true
+
+      - name: Start Tmate Interactive Session (SSH & Web Shell)
+        uses: mxschmitt/action-tmate@v3
+        with:
+          detached: false
