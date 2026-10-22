@@ -69,17 +69,36 @@ jobs:
         env:
           VNC_PASSWORD: ${{ github.event.inputs.vnc_password }}
         run: |
-          # Встановлюємо пароль для користувача runner
-          echo "$VNC_PASSWORD" | sudo dscl . -passwd /Users/runner "$VNC_PASSWORD"
+          KICKSTART="/System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart"
 
-          # Активуємо Apple Remote Management (VNC) із захистом паролем
-          sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart \
-            -activate -configure -access -on \
-            -clientopts -setvnclegacy -vnclegacy yes \
-            -clientopts -setvncpw -vncpw "$VNC_PASSWORD" \
-            -restart -agent -privs -all
+          # 1. Записуємо зашифрований VNC пароль у налаштування macOS
+          echo "$VNC_PASSWORD" | perl -we '
+            @k = unpack "C*", pack "H*", "1734516E8BA8C5E2FF1C39567390ADCA";
+            $_ = <>; chomp; s/^(.{8}).*/$1/;
+            @p = unpack "C*", $_;
+            foreach (@k) { printf "%02X", $_ ^ (shift @p || 0) }
+            print "\n"
+          ' | sudo tee /Library/Preferences/com.apple.VNCSettings.txt
+
+          # 2. Надаємо повні права для всіх користувачів та вмикаємо VNC legacy з паролем
+          sudo $KICKSTART -configure -allowAccessFor -allUsers -privs -all
+          sudo $KICKSTART -configure -clientopts -setvnclegacy -vnclegacy yes
+          sudo $KICKSTART -configure -clientopts -setvncpw -vncpw "$VNC_PASSWORD" || true
+
+          # 3. Активуємо та перезапускаємо службу екрана
+          sudo $KICKSTART -activate
+          sudo $KICKSTART -restart -agent -console
 
           echo "✅ macOS Screen Sharing (VNC на порту 5900) успішно активовано та запаролено!"
+
+      - name: Setup noVNC (Web Browser Access)
+        run: |
+          pip3 install websockify || true
+          git clone --depth 1 https://github.com/novnc/noVNC.git /tmp/novnc || true
+          # Запускаємо веб-сервер noVNC на порту 6080 у фоновому режимі
+          nohup python3 -m websockify --web /tmp/novnc 6080 localhost:5900 > /tmp/novnc.log 2>&1 &
+          sleep 2
+          echo "✅ noVNC Web Server запущено на порту 6080!"
 
       - name: Setup Ngrok Tunnel (Optional)
         if: ${{ github.event.inputs.ngrok_token != '' }}
@@ -102,13 +121,18 @@ jobs:
           echo "🖥️  ІНСТРУКЦІЯ ПІДКЛЮЧЕННЯ ДО РОБОЧОГО СТОЛУ MACOS:"
           echo "--------------------------------------------------------------------------------"
           echo "1. Нижче в кроці 'Start Tmate Session' скопіюйте SSH рядок підключення."
-          echo "2. Додайте до нього прапорець прокидання порту -L 5900:127.0.0.1:5900"
-          echo "   Наприклад:"
-          echo "   ssh -L 5900:127.0.0.1:5900 <ваша_команда_з_tmate>"
+          echo "   Наприклад: ssh -X abc123def@nyc1.tmate.io"
           echo ""
-          echo "3. Відкрийте будь-який VNC Viewer на Windows (RealVNC Viewer / TightVNC / TigerVNC)"
-          echo "4. Підключіться до адреси: 127.0.0.1:5900 (або localhost:5900)"
-          echo "5. Введіть пароль, який ви вказали при запуску воркфлоу!"
+          echo "🌐 ВАРІАНТ А (ЧЕРЕЗ БРАУЗЕР - noVNC, без встановлення жодних програм!):"
+          echo "   У терміналі Windows запустіть тунель для веб-порту 6080:"
+          echo "   ssh -L 6080:127.0.0.1:6080 <ваша_команда_з_tmate>"
+          echo "   Після цього відкрийте у браузері Chrome/Edge/Firefox:"
+          echo "   👉 http://localhost:6080/vnc.html"
+          echo "   Введіть пароль VNC — і робочий стіл Mac відкриється прямо у вкладці браузера!"
+          echo ""
+          echo "💻 ВАРІАНТ Б (ЧЕРЕЗ VNC VIEWER):"
+          echo "   ssh -L 5900:127.0.0.1:5900 <ваша_команда_з_tmate>"
+          echo "   Відкрийте VNC Viewer, адреса 127.0.0.1:5900 та введіть свій пароль."
           echo ""
           echo "🚀 Шлях до готового лаунчера на Mac:"
           echo "   $PWD/CL.Avalonia/bin/Release/net10.0/CL.Avalonia"
