@@ -39,9 +39,11 @@ If you create your own modification or fork of the launcher, you must:
 
 ## PART II. PRIVACY AND DATA PROTECTION POLICY (GDPR)
 
-### 6. Data Controller and Contact Information
+### 6. Data Controller, Complete Anonymity, and Contacts
 6.1. The Data Controller within the meaning of Regulation (EU) 2016/679 (GDPR) and Ukrainian data protection legislation is the CL Open Source Community.
-6.2. Official contacts for exercising data subject rights (inquiries, log deletion, consent withdrawal):
+6.2. **Complete Anonymity of Technical Data (Article 11 and Recital 26 GDPR):**
+Crash and error reports are **strictly anonymous** and contain no personal identifiers, user credentials, or IP addresses. Because developers deliberately do not collect information that would permit the identification of an individual user among technical reports, these logs are exempt from individual identification or selective deletion under Article 11 of the GDPR. All technical error reports are automatically and permanently deleted by the server upon expiration of the retention period (up to 90 days).
+6.3. Official contact channels for inquiries and feedback:
 - **Official Email:** [clsup125@gmail.com](mailto:clsup125@gmail.com)
 - **GitHub Issues:** [https://github.com/WER-CORE/CL-OpenSource/issues](https://github.com/WER-CORE/CL-OpenSource/issues)
 - **Discord:** clegendary
