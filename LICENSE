@@ -673,39 +673,21 @@ the library.  If this is what you want to do, use the GNU Lesser General
 Public License instead of this License.  But first, please read
 <https://www.gnu.org/licenses/why-not-lgpl.html>.
 
-
 ====================================================================
-ДОДАТКОВІ УМОВИ ТА ПОЛОЖЕННЯ
-(Відповідно до Розділу 7 ліцензії GNU GPLv3)
+ADDITIONAL PERMISSIONS AND TERMS UNDER GNU GPLv3 SECTION 7
 ====================================================================
 
-1. ТОРГОВІ МАРКИ ТА БРЕНДИНГ
-Назви "CL Launcher", "Clegendary Launcher", "CL" та логотипи 
-проекту є торговими марками авторів проекту. Ця Ліцензія НЕ надає жодних 
-прав на використання цих торгових марок у зв'язку з поширенням Програми 
-або будь-яких похідних творів.
+1. Trademarks and Branding
+The names "CL", "CL Launcher", "Clegendary Launcher", "CL:Cross", and associated project logos, icons, banners, and distinctive brand features are trademarks and intellectual property of the project authors. This License does not grant any rights to use these trademarks for promotional or commercial purposes, or in connection with any derivative works, without prior written permission.
 
-Якщо ви поширюєте змінену версію цієї Програми ("Форк"), ви ЗОБОВ'ЯЗАНІ:
-- Перейменувати програмне забезпечення на назву, яка не є оманливо схожою на оригінальну.
-- Видалити всі оригінальні логотипи, іконки та матеріали брендингу.
+In accordance with Section 7(e) of the GNU GPLv3, any distribution of modified versions ("forks") must:
+- Remove all original CL logos, branding icons, and distinctive visual trademarks.
+- Be distributed under a distinct name that does not cause confusion regarding the origin or endorsement of the software.
 
-2. ВЛАСНІ АСЕТИ ТА ДИЗАЙН ІНТЕРФЕЙСУ (UI)
-Хоча логіка вихідного коду надається згідно з GPLv3, візуальні асети, 
-розташовані у визначених теках ресурсів (включаючи, але не обмежуючись: 
-іконки, фонові зображення, унікальні текстури інтерфейсу та банери), 
-є ПРОПРІЄТАРНИМИ (власними) і становлять "Trade Dress" (Візуальну Ідентичність) 
-програмного забезпечення.
+2. API Credentials and Service Keys
+Binary distributions of forks or modified versions must not use the original Client IDs, API Keys, or access secrets issued to the CL project for third-party services (including, without limitation, Microsoft OAuth and CurseForge Core API). Developers of derivative works must register and provide their own service credentials.
 
-Ці асети НЕ підпадають під дію ліцензії GPLv3 і залишаються виключною 
-інтелектуальною власністю авторів. Вам дозволено компілювати код для 
-особистого використання з цими асетами, але вам СУВОРО ЗАБОРОНЕНО:
-- Поширювати бінарні файли (збірки), що містять ці власні візуальні асети.
-- Повторно використовувати ці асети в інших проектах без прямого письмового дозволу.
-
-3. ВИМОГИ ДО ФОРКІВ
-Будь-який публічний форк або повторне поширення цього коду повинні замінити 
-захищені Візуальні Асети та елементи стилізації UI вашою власною оригінальною 
-роботою, щоб гарантувати, що похідний твір візуально відрізняється від 
-офіційного "CL Launcher".
+3. Third-Party Game Assets and Trademarks
+"Minecraft" is a registered trademark of Mojang Synergies AB. This project is not affiliated with, endorsed by, or sponsored by Mojang Studios or Microsoft Corporation. This software does not distribute game files or circumvent DRM mechanisms.
 
 ====================================================================
