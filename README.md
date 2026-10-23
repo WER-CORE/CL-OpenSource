@@ -11,8 +11,6 @@
 <div align="center">
 
 # CL-Launcher | CL (Clegendary Launcher) Code
-### Windows Edition
-
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/WER-CORE/CL-Win-Edition--Update?style=for-the-badge&color=blue)
 ![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-blue?style=for-the-badge)
 ![Made in Ukraine](https://img.shields.io/badge/MADE_IN-UKRAINE-ffd700?style=for-the-badge&labelColor=0057b7)
