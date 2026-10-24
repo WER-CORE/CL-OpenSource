@@ -29,6 +29,16 @@ public class AvaloniaSoundService : ISoundService
     {
         if (string.IsNullOrWhiteSpace(resourceName)) return;
 
+        if (resourceName.Equals("click", StringComparison.OrdinalIgnoreCase))
+        {
+            if (!ShouldPlayClick()) return;
+        }
+
+        PlaySoundInternal(resourceName);
+    }
+
+    private void PlaySoundInternal(string resourceName)
+    {
         try
         {
             if (!SettingsManager.Default.EnableSound) return;
@@ -232,17 +242,28 @@ public class AvaloniaSoundService : ISoundService
 
     #region Static Facades
 
+    private static readonly object _clickLock = new();
     private static long _lastClickTimestamp;
+    public const int ClickDebounceMs = 150;
+
+    public static bool ShouldPlayClick()
+    {
+        lock (_clickLock)
+        {
+            long now = Environment.TickCount64;
+            if (now - _lastClickTimestamp < ClickDebounceMs) return false;
+            _lastClickTimestamp = now;
+            return true;
+        }
+    }
 
     public static void Click()
     {
-        long now = Environment.TickCount64;
-        if (now - _lastClickTimestamp < 60) return;
-        _lastClickTimestamp = now;
+        if (!ShouldPlayClick()) return;
 
         if (Current != null)
         {
-            Current.PlaySound("click");
+            Current.PlaySoundInternal("click");
             return;
         }
 

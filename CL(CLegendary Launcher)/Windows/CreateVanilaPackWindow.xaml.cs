@@ -153,7 +153,8 @@ namespace CL_CLegendary_Launcher_.Windows
                     SiteDowload,
                     "Vanilla",
                     SelectMod,
-                    offset
+                    offset,
+                    VersionVanilBox.SelectedItem?.ToString()
                 );
 
                 if (token.IsCancellationRequested) return;
@@ -236,10 +237,10 @@ namespace CL_CLegendary_Launcher_.Windows
 
             try
             {
-                var allVersions = await _modDownloadService.GetVersionsAsync(mod);
+                var allVersions = await _modDownloadService.GetVersionsAsync(mod, selectedGameVersion);
 
                 _currentAvailableVersions = allVersions
-                    .Where(v => v.GameVersions.Contains(selectedGameVersion))
+                    .Where(v => v.GameVersions.Contains(selectedGameVersion) || v.GameVersions.Count == 0)
                     .ToList();
 
                 if (_currentAvailableVersions.Any())

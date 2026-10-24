@@ -1,3 +1,4 @@
+using Avalonia.VisualTree;
 using Avalonia.Input;
 ﻿using System;
 using System.IO;
@@ -95,7 +96,10 @@ public partial class App : Application
                     ctrl is not Button &&
                     ctrl is not ListBoxItem &&
                     ctrl is not ComboBoxItem &&
-                    ctrl.Cursor != null)
+                    ctrl.Cursor != null &&
+                    ctrl.FindAncestorOfType<Button>() == null &&
+                    ctrl.FindAncestorOfType<ListBoxItem>() == null &&
+                    ctrl.FindAncestorOfType<ComboBoxItem>() == null)
                 {
                     AvaloniaSoundService.Click();
                 }

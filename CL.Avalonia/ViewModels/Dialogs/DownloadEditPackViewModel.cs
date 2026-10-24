@@ -220,77 +220,37 @@ public partial class DownloadEditPackViewModel : ObservableObject, IDisposable
 
         try
         {
-            if (SiteDownload == "Modrinth")
+            int serviceModType = SelectMod switch
             {
-                int offset = CurrentPage * PageSize;
-                string query = Uri.EscapeDataString(SearchQuery);
-                string loader = LoaderNow.ToLower();
-                var urls = new[] {
-                    $"https://api.modrinth.com/v2/search?query={query}&facets=[[\"categories:{loader}\"],[\"project_type:mod\"]]&limit={PageSize}&offset={offset}",
-                    $"https://api.modrinth.com/v2/search?query={query}&facets=[[\"project_type:resourcepack\"]]&limit={PageSize}&offset={offset}",
-                    $"https://api.modrinth.com/v2/search?query={query}&facets=[[\"project_type:shader\"]]&limit={PageSize}&offset={offset}",
-                    $"https://api.modrinth.com/v2/search?query={query}&facets=[[\"project_type:modpack\"]]&limit={PageSize}&offset={offset}",
-                };
+                0 => 0, // Mods
+                1 => 2, // ResourcePacks
+                2 => 1, // Shaders
+                3 => 3, // Maps
+                _ => 0
+            };
 
-                var response = await WebHelper.Client.GetStringAsync(urls[SelectMod]);
-                dynamic? result = JsonConvert.DeserializeObject(response);
+            var results = await _modDownloadService.SearchModsAsync(
+                SearchQuery ?? string.Empty,
+                SiteDownload,
+                LoaderNow,
+                serviceModType,
+                CurrentPage * PageSize,
+                SelectedVersion
+            );
 
-                if (result != null)
+            if (results != null && results.Count > 0)
+            {
+                IsNextPageEnabled = results.Count >= PageSize;
+                foreach (var mod in results)
                 {
-                    IsNextPageEnabled = result["hits"].Count >= PageSize;
-                    foreach (var mod in result["hits"])
-                    {
-                        string loaderType = SelectMod switch { 0 => "mod", 1 => "resourcepack", 2 => "shader", 3 => "map", _ => "mod" };
-                        var item = CreateItemFromModrinth(mod, loaderType);
-                        ModsList.Add(item);
-                        _ = LoadItemImageAsync(item, item.IconUrl);
-                    }
+                    var item = CreateItemFromSearchResult(mod);
+                    ModsList.Add(item);
+                    _ = LoadItemImageAsync(item, item.IconUrl);
                 }
             }
-            else if (SiteDownload == "CurseForge")
+            else
             {
-                int classId = SelectMod switch { 0 => 6, 1 => 12, 2 => 6552, 3 => 17, _ => 6 };
-                ModLoaderType? modLoaderType = null;
-
-                if (CurrentModpack.LoaderType != "Vanila" && SelectMod == 0)
-                {
-                    modLoaderType = LoaderNow switch
-                    {
-                        "Forge" => ModLoaderType.Forge,
-                        "Fabric" => ModLoaderType.Fabric,
-                        "Quilt" => ModLoaderType.Quilt,
-                        "NeoForge" => ModLoaderType.NeoForge,
-                        "LiteLoader" => ModLoaderType.LiteLoader,
-                        "Optifine" => ModLoaderType.Any,
-                        _ => null
-                    };
-                }
-
-                var cfApi = await GetCfClientAsync();
-                if (cfApi == null) return;
-
-                int index = CurrentPage * PageSize;
-                var searchResponse = await cfApi.SearchModsAsync(
-                    gameId: 432,
-                    classId: classId,
-                    modLoaderType: modLoaderType,
-                    gameVersion: SelectedVersion,
-                    pageSize: PageSize,
-                    searchFilter: SearchQuery,
-                    index: index,
-                    sortField: ModsSearchSortField.Popularity
-                );
-
-                if (searchResponse?.Data != null)
-                {
-                    IsNextPageEnabled = searchResponse.Data.Count >= PageSize;
-                    foreach (var mod in searchResponse.Data)
-                    {
-                        var item = CreateItemFromCurseForge(mod, SelectMod);
-                        ModsList.Add(item);
-                        _ = LoadItemImageAsync(item, item.IconUrl);
-                    }
-                }
+                IsNextPageEnabled = false;
             }
         }
         catch (Exception ex)
@@ -306,34 +266,29 @@ public partial class DownloadEditPackViewModel : ObservableObject, IDisposable
         }
     }
 
-    private DownloadEditPackItemViewModel CreateItemFromCurseForge(Mod mod, int type)
+    private DownloadEditPackItemViewModel CreateItemFromSearchResult(ModSearchResult mod)
     {
-        string detailsUrl = mod.Links?.WebsiteUrl ?? $"https://www.curseforge.com/minecraft/modpacks/{mod.Slug}";
-        var item = new DownloadEditPackItemViewModel(detailsUrl, OnModAddClicked)
+        string detailsUrl;
+        if (mod.Site == "Modrinth")
         {
-            Name = mod.Name ?? "",
-            ProjectId = mod.Id.ToString(),
-            Slug = mod.Slug ?? "",
-            Type = type,
-            Loader = LoaderNow,
-            GameVersion = SelectedVersion ?? "",
-            IconUrl = mod.Logo?.Url ?? ""
-        };
-        return item;
-    }
+            string loaderType = SelectMod switch { 0 => "mod", 1 => "resourcepack", 2 => "shader", 3 => "map", _ => "mod" };
+            detailsUrl = $"https://modrinth.com/{loaderType}/{mod.Slug}";
+        }
+        else
+        {
+            string categoryPath = SelectMod switch { 0 => "mc-mods", 1 => "texture-packs", 2 => "shaders", 3 => "worlds", _ => "mc-mods" };
+            detailsUrl = $"https://www.curseforge.com/minecraft/{categoryPath}/{mod.Slug}";
+        }
 
-    private DownloadEditPackItemViewModel CreateItemFromModrinth(dynamic mod, string loaderType)
-    {
-        string detailsUrl = $"https://modrinth.com/{loaderType}/{mod["slug"]}";
         var item = new DownloadEditPackItemViewModel(detailsUrl, OnModAddClicked)
         {
-            Name = mod["title"]?.ToString() ?? "",
-            ProjectId = mod["project_id"]?.ToString() ?? "",
-            Slug = mod["slug"]?.ToString() ?? "",
+            Name = mod.Title ?? "",
+            ProjectId = mod.ModId,
+            Slug = mod.Slug ?? "",
             Type = SelectMod,
             Loader = LoaderNow,
             GameVersion = SelectedVersion ?? "",
-            IconUrl = mod["icon_url"]?.ToString() ?? ""
+            IconUrl = mod.IconUrl ?? ""
         };
         return item;
     }
@@ -352,36 +307,9 @@ public partial class DownloadEditPackViewModel : ObservableObject, IDisposable
         catch { }
     }
 
-    private void OnModAddClicked(DownloadEditPackItemViewModel item)
+    private async void OnModAddClicked(DownloadEditPackItemViewModel item)
     {
         CurrentlySelectingMod = item;
-        IsVersionSelectionOpen = true;
-
-        var info = new ModInfo
-        {
-            Name = item.Name,
-            ProjectId = item.ProjectId,
-            Type = SelectMod == 0 ? "mod" : SelectMod == 1 ? "resourcepack" : SelectMod == 2 ? "shader" : SelectMod == 3 ? "map" : "mod",
-            ImageURL = item.IconUrl,
-            Slug = item.Slug,
-            Loader = LoaderNow,
-            LoaderType = SelectMod == 0 ? "mod" : "other",
-            Version = SelectedVersion
-        };
-
-        if (SiteDownload == "Modrinth")
-        {
-            info.Url = $"https://api.modrinth.com/v2/project/{info.ProjectId}/version";
-            _ = GetCompatibleVersionsModrinthAsync(info);
-        }
-        else
-        {
-            _ = GetLatestCompatibleModVersionsCurseForgeAsync(info);
-        }
-    }
-
-    private async Task GetCompatibleVersionsModrinthAsync(ModInfo mod)
-    {
         ModVersions.Clear();
         _fileUrlDownload.Clear();
         _versionIds.Clear();
@@ -391,94 +319,72 @@ public partial class DownloadEditPackViewModel : ObservableObject, IDisposable
 
         try
         {
-            var response = await WebHelper.Client.GetAsync(mod.Url);
-            response.EnsureSuccessStatusCode();
-
-            string responseBody = await response.Content.ReadAsStringAsync();
-            var versionsArray = JArray.Parse(responseBody);
-
-            if (versionsArray != null && versionsArray.Count > 0)
+            var searchResult = new ModSearchResult
             {
-                foreach (var version in versionsArray)
-                {
-                    var gameVersions = version["game_versions"]?.ToObject<List<string>>();
-                    var loaders = version["loaders"]?.ToObject<List<string>>();
+                ModId = item.ProjectId,
+                Slug = item.Slug,
+                Site = SiteDownload
+            };
 
-                    bool isCompatible = mod.Type == "mod"
-                        ? gameVersions != null && gameVersions.Contains(SelectedVersion) && loaders != null && loaders.Any(l => l.Equals(mod.Loader, StringComparison.OrdinalIgnoreCase))
-                        : gameVersions != null && gameVersions.Contains(SelectedVersion);
+            var versions = await _modDownloadService.GetVersionsAsync(
+                searchResult,
+                SelectedVersion,
+                SelectMod == 0 ? LoaderNow : null
+            );
 
-                    if (isCompatible)
-                    {
-                        ModVersions.Add(version["version_number"]?.ToString() ?? "Unknown");
-                        _versionIds.Add(version["id"]?.ToString() ?? "");
-
-                        var files = version["files"] as JArray;
-                        string? fileUrl = files?[0]?["url"]?.ToString();
-                        _fileUrlDownload.Add(fileUrl ?? "");
-                    }
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            Debug.WriteLine($"Error processing Modrinth versions: {ex.Message}");
-        }
-    }
-
-    private async Task GetLatestCompatibleModVersionsCurseForgeAsync(ModInfo mod)
-    {
-        ModVersions.Clear();
-        _fileUrlDownload.Clear();
-        _versionIds.Clear();
-        SelectedModVersionIndex = -1;
-
-        if (string.IsNullOrEmpty(SelectedVersion)) return;
-
-        var cfApi = await GetCfClientAsync();
-        if (cfApi == null) return;
-
-        try
-        {
-            if (!int.TryParse(mod.ProjectId, out int modId)) return;
-
-            ModLoaderType? modLoaderType = null;
-            if (SelectMod == 0)
-            {
-                modLoaderType = LoaderNow switch
-                {
-                    "Fabric" => ModLoaderType.Fabric,
-                    "Quilt" => ModLoaderType.Quilt,
-                    "NeoForge" => ModLoaderType.NeoForge,
-                    _ => ModLoaderType.Forge
-                };
-            }
-
-            var response = await cfApi.GetModFilesAsync(modId, null, modLoaderType);
-            if (response?.Data == null) return;
-
-            var compatibleFiles = response.Data.Where(file =>
-                file.GameVersions.Any(v => v.Equals(SelectedVersion, StringComparison.OrdinalIgnoreCase))
+            var compatible = versions.Where(v =>
+                (v.GameVersions.Contains(SelectedVersion) || v.GameVersions.Count == 0) &&
+                (SelectMod != 0 || IsLoaderCompatible(v.Loaders, LoaderNow))
             ).ToList();
 
-            foreach (var file in compatibleFiles)
+            if (compatible.Count > 0)
             {
-                ModVersions.Add($"{file.DisplayName}");
-                _versionIds.Add(file.Id.ToString());
-
-                string url = file.DownloadUrl;
-                if (string.IsNullOrEmpty(url))
+                foreach (var v in compatible)
                 {
-                    string typePath = mod.Type switch { "shader" => "shaders", "resourcepack" => "texture-packs", "map" => "worlds", _ => "mc-mods" };
-                    url = $"https://www.curseforge.com/minecraft/{typePath}/{mod.Slug}/download/{file.Id}";
+                    ModVersions.Add(v.VersionName);
+                    _versionIds.Add(v.VersionId);
+                    _fileUrlDownload.Add(v.DownloadUrl ?? "");
                 }
-                _fileUrlDownload.Add(url);
+                SelectedModVersionIndex = 0;
+                IsVersionSelectionOpen = true;
+            }
+            else
+            {
+                var dialog = Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<CL.Core.Interfaces.IDialogService>(
+                    ((App)global::Avalonia.Application.Current!).ServiceProvider!);
+                dialog.ShowMessage(
+                    LocalizationManager.GetString("Modpacks.NoVersionsForModpack", "Не знайдено версій для вашої збірки."),
+                    LocalizationManager.GetString("Dialogs.EmptyTitle", "Пусто"));
+                IsVersionSelectionOpen = false;
             }
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"CurseForge Version Fetch Error: {ex.Message}");
+            Debug.WriteLine($"Error loading mod versions: {ex.Message}");
+            var dialog = Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<CL.Core.Interfaces.IDialogService>(
+                ((App)global::Avalonia.Application.Current!).ServiceProvider!);
+            dialog.ShowMessage(ex.Message, LocalizationManager.GetString("Dialogs.Error", "Помилка"));
+            IsVersionSelectionOpen = false;
         }
+    }
+
+    private static bool IsLoaderCompatible(List<string>? versionLoaders, string? targetLoader)
+    {
+        if (string.IsNullOrEmpty(targetLoader)) return true;
+        if (versionLoaders == null || versionLoaders.Count == 0) return true;
+
+        if (versionLoaders.Any(l => l.Equals(targetLoader, StringComparison.OrdinalIgnoreCase)))
+            return true;
+
+        if (targetLoader.Equals("Quilt", StringComparison.OrdinalIgnoreCase) &&
+            versionLoaders.Any(l => l.Equals("Fabric", StringComparison.OrdinalIgnoreCase)))
+            return true;
+
+        if (targetLoader.Equals("NeoForge", StringComparison.OrdinalIgnoreCase) &&
+            versionLoaders.Any(l => l.Equals("Forge", StringComparison.OrdinalIgnoreCase)))
+            return true;
+
+        return false;
     }
 
     [RelayCommand]

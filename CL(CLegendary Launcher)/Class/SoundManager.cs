@@ -12,6 +12,10 @@ namespace CL_CLegendary_Launcher_.Class
     public static class SoundManager
     {
         private static SoundPlayer _clickPlayer;
+        private static readonly object _clickLock = new object();
+        private static long _lastClickTimestamp;
+        public const int ClickDebounceMs = 150;
+
         public static void Initialize()
         {
             try
@@ -31,6 +35,14 @@ namespace CL_CLegendary_Launcher_.Class
         public static void Click()
         {
             if (!SettingsManager.Default.EnableSound) return;
+
+            lock (_clickLock)
+            {
+                long now = Environment.TickCount64;
+                if (now - _lastClickTimestamp < ClickDebounceMs) return;
+                _lastClickTimestamp = now;
+            }
+
             try
             {
                 _clickPlayer?.Play();

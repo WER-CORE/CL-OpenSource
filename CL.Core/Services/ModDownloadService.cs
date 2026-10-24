@@ -1,4 +1,4 @@
-﻿using CurseForge.APIClient;
+using CurseForge.APIClient;
 using CL.Core.Platform;
 using CL.Core.Models;
 using CL.Core.Interfaces;
@@ -77,16 +77,16 @@ namespace CL.Core.Services
             return Path.Combine(pack.Path, folderName);
         }
         private async Task<ApiClient> GetCfClientAsync() => await CurseForgeClientProvider.GetClientAsync();
-        public async Task<List<ModSearchResult>> SearchModsAsync(string query, string site, string loader, int modType, int offset = 0)
+        public async Task<List<ModSearchResult>> SearchModsAsync(string query, string site, string loader, int modType, int offset = 0, string? gameVersion = null)
         {
-            if (site == "Modrinth") return await SearchModrinthAsync(query, loader, modType, offset);
-            else return await SearchCurseForgeAsync(query, loader, modType, offset);
+            if (site == "Modrinth") return await SearchModrinthAsync(query, loader, modType, offset, gameVersion);
+            else return await SearchCurseForgeAsync(query, loader, modType, offset, gameVersion);
         }
 
-        public async Task<List<ModVersionInfo>> GetVersionsAsync(ModSearchResult mod)
+        public async Task<List<ModVersionInfo>> GetVersionsAsync(ModSearchResult mod, string? gameVersion = null, string? loader = null)
         {
-            if (mod.Site == "Modrinth") return await GetModrinthVersionsAsync(mod.ModId);
-            else return await GetCurseForgeVersionsAsync(int.Parse(mod.ModId));
+            if (mod.Site == "Modrinth") return await GetModrinthVersionsAsync(mod.ModId, gameVersion, loader);
+            else return await GetCurseForgeVersionsAsync(int.Parse(mod.ModId), gameVersion, loader);
         }
 
         public async Task DownloadModWithDependenciesAsync(
@@ -275,7 +275,7 @@ namespace CL.Core.Services
         }
 
         #region Modrinth Logic
-        private async Task<List<ModSearchResult>> SearchModrinthAsync(string query, string loader, int modType, int offset = 0)
+        private async Task<List<ModSearchResult>> SearchModrinthAsync(string query, string loader, int modType, int offset = 0, string? gameVersion = null)
         {
             string projectType = modType switch
             {
@@ -288,12 +288,14 @@ namespace CL.Core.Services
 
             var facets = new List<string>();
 
-            if (!string.IsNullOrEmpty(projectType))
+            if (!string.IsNullOrEmpty(projectType) && projectType != "no")
             {
                 facets.Add($"[\"project_type:{projectType}\"]");
             }
 
-            if (projectType == "mod" && !string.IsNullOrEmpty(loader) && modType != 4)
+            if (projectType == "mod" && !string.IsNullOrEmpty(loader) && modType != 4 &&
+                !loader.Equals("vanilla", StringComparison.OrdinalIgnoreCase) &&
+                !loader.Equals("vanila", StringComparison.OrdinalIgnoreCase))
             {
                 string loaderLower = loader.ToLower();
                 if (loaderLower == "quilt") facets.Add("[\"categories:quilt\",\"categories:fabric\"]");
@@ -301,9 +303,14 @@ namespace CL.Core.Services
                 else facets.Add($"[\"categories:{loaderLower}\"]");
             }
 
+            if (!string.IsNullOrWhiteSpace(gameVersion))
+            {
+                facets.Add($"[\"versions:{gameVersion.Trim()}\"]");
+            }
+
             string facetsJson = "[" + string.Join(",", facets) + "]";
             string index = string.IsNullOrWhiteSpace(query) ? "downloads" : "relevance";
-            string url = $"https://api.modrinth.com/v2/search?query={Uri.EscapeDataString(query)}&index={index}&offset={offset}&facets={facetsJson}&limit=10";
+            string url = $"https://api.modrinth.com/v2/search?query={Uri.EscapeDataString(query ?? string.Empty)}&index={index}&offset={offset}&facets={facetsJson}&limit=10";
 
             try
             {
@@ -338,9 +345,36 @@ namespace CL.Core.Services
             }
         }
 
-        private async Task<List<ModVersionInfo>> GetModrinthVersionsAsync(string modId)
+        private async Task<List<ModVersionInfo>> GetModrinthVersionsAsync(string modId, string? gameVersion = null, string? loader = null)
         {
-            string url = $"https://api.modrinth.com/v2/project/{modId}/version";
+            var queryParams = new List<string>();
+
+            if (!string.IsNullOrWhiteSpace(gameVersion))
+            {
+                queryParams.Add($"game_versions=[%22{Uri.EscapeDataString(gameVersion.Trim())}%22]");
+            }
+
+            if (!string.IsNullOrWhiteSpace(loader) &&
+                !loader.Equals("vanilla", StringComparison.OrdinalIgnoreCase) &&
+                !loader.Equals("vanila", StringComparison.OrdinalIgnoreCase))
+            {
+                string loaderLower = loader.Trim().ToLower();
+                if (loaderLower == "quilt")
+                {
+                    queryParams.Add("loaders=[%22quilt%22,%22fabric%22]");
+                }
+                else if (loaderLower == "neoforge")
+                {
+                    queryParams.Add("loaders=[%22neoforge%22,%22forge%22]");
+                }
+                else
+                {
+                    queryParams.Add($"loaders=[%22{Uri.EscapeDataString(loaderLower)}%22]");
+                }
+            }
+
+            string queryString = queryParams.Count > 0 ? "?" + string.Join("&", queryParams) : "";
+            string url = $"https://api.modrinth.com/v2/project/{modId}/version{queryString}";
             try
             {
                 var response = await WebHelper.Client.GetStringAsync(url);
@@ -348,9 +382,11 @@ namespace CL.Core.Services
 
                 if (versions == null) return new List<ModVersionInfo>();
 
-                return versions
+                var filtered = versions
                     .Where(v => v.VersionType == "release" || v.VersionType == "beta")
                     .ToList();
+
+                return filtered.Count > 0 ? filtered : versions;
             }
             catch (Exception ex)
             {
@@ -361,19 +397,23 @@ namespace CL.Core.Services
         #endregion
 
         #region CurseForge Logic
-        private async Task<List<ModSearchResult>> SearchCurseForgeAsync(string query, string loader, int modType, int offset = 0)
+        private async Task<List<ModSearchResult>> SearchCurseForgeAsync(string query, string loader, int modType, int offset = 0, string? gameVersion = null)
         {
             var cfApi = await GetCfClientAsync();
             if (cfApi == null) return new List<ModSearchResult>();
             ModLoaderType? targetLoaderType = null;
-            if (modType == 0)
+            if (modType == 0 && !string.IsNullOrEmpty(loader) &&
+                !loader.Equals("vanilla", StringComparison.OrdinalIgnoreCase) &&
+                !loader.Equals("vanila", StringComparison.OrdinalIgnoreCase))
             {
-                targetLoaderType = loader switch
+                targetLoaderType = loader.ToLower() switch
                 {
-                    "Forge" => ModLoaderType.Forge,
-                    "Fabric" => ModLoaderType.Fabric,
-                    "Quilt" => ModLoaderType.Quilt,
-                    "NeoForge" => ModLoaderType.NeoForge,
+                    "forge" => ModLoaderType.Forge,
+                    "fabric" => ModLoaderType.Fabric,
+                    "quilt" => ModLoaderType.Quilt,
+                    "neoforge" => ModLoaderType.NeoForge,
+                    "liteloader" => ModLoaderType.LiteLoader,
+                    "optifine" => ModLoaderType.Any,
                     _ => ModLoaderType.Any
                 };
             }
@@ -397,6 +437,7 @@ namespace CL.Core.Services
                     classId: classId,
                     searchFilter: cleanQuery,
                     modLoaderType: targetLoaderType,
+                    gameVersion: string.IsNullOrWhiteSpace(gameVersion) ? null : gameVersion.Trim(),
                     pageSize: 10,
                     sortField: sortField,
                     index: offset
@@ -429,30 +470,66 @@ namespace CL.Core.Services
                 return new List<ModSearchResult>();
             }
         }
-        private async Task<List<ModVersionInfo>> GetCurseForgeVersionsAsync(int modId)
+        private async Task<List<ModVersionInfo>> GetCurseForgeVersionsAsync(int modId, string? gameVersion = null, string? loader = null)
         {
             try
             {
                 var cfApi = await GetCfClientAsync();
                 if (cfApi == null) return new List<ModVersionInfo>();
 
-                var response = await cfApi.GetModFilesAsync(modId);
+                ModLoaderType? cfLoaderType = null;
+                if (!string.IsNullOrWhiteSpace(loader) &&
+                    !loader.Equals("vanilla", StringComparison.OrdinalIgnoreCase) &&
+                    !loader.Equals("vanila", StringComparison.OrdinalIgnoreCase))
+                {
+                    cfLoaderType = loader.ToLower() switch
+                    {
+                        "forge" => ModLoaderType.Forge,
+                        "fabric" => ModLoaderType.Fabric,
+                        "quilt" => ModLoaderType.Quilt,
+                        "neoforge" => ModLoaderType.NeoForge,
+                        "liteloader" => ModLoaderType.LiteLoader,
+                        _ => null
+                    };
+                }
+
+                var response = await cfApi.GetModFilesAsync(
+                    modId: modId,
+                    gameVersion: string.IsNullOrWhiteSpace(gameVersion) ? null : gameVersion.Trim(),
+                    modLoaderType: cfLoaderType
+                );
+
                 var list = new List<ModVersionInfo>();
                 if (response?.Data == null) return list;
 
-                var releaseFiles = response.Data
+                var candidateFiles = response.Data
                     .Where(file => file.ReleaseType == FileReleaseType.Release ||
-                                   file.ReleaseType == FileReleaseType.Beta);
+                                   file.ReleaseType == FileReleaseType.Beta)
+                    .ToList();
 
-                foreach (var file in releaseFiles)
+                var filesToUse = candidateFiles.Count > 0 ? candidateFiles : response.Data;
+
+                foreach (var file in filesToUse)
                 {
+                    string downloadUrl = file.DownloadUrl;
+                    if (string.IsNullOrEmpty(downloadUrl) && file.Id > 0 && !string.IsNullOrEmpty(file.FileName))
+                    {
+                        string fId = file.Id.ToString();
+                        if (fId.Length >= 7)
+                        {
+                            string part1 = fId.Substring(0, 4);
+                            string part2 = fId.Substring(4);
+                            downloadUrl = $"https://edge.forgecdn.net/files/{part1}/{part2}/{Uri.EscapeDataString(file.FileName)}";
+                        }
+                    }
+
                     list.Add(new ModVersionInfo
                     {
                         ModId = modId.ToString(),
                         VersionId = file.Id.ToString(),
                         VersionName = file.DisplayName,
                         FileName = file.FileName,
-                        DownloadUrl = file.DownloadUrl,
+                        DownloadUrl = downloadUrl,
                         Site = "CurseForge",
                         GameVersions = file.GameVersions.ToList(),
                         Loaders = file.GameVersions

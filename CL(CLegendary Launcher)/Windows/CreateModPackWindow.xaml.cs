@@ -320,7 +320,8 @@ namespace CL_CLegendary_Launcher_.Windows
                     SiteDowload,
                     LoderNow,
                     SelectMod,
-                    offset
+                    offset,
+                    VersionVanilBox.SelectedItem?.ToString()
                 );
 
                 if (token.IsCancellationRequested) return;
@@ -407,11 +408,11 @@ namespace CL_CLegendary_Launcher_.Windows
 
             try
             {
-                var allVersions = await _modDownloadService.GetVersionsAsync(mod);
+                var allVersions = await _modDownloadService.GetVersionsAsync(mod, selectedGameVersion, SelectMod == 0 ? LoderNow : null);
 
                 _currentAvailableVersions = allVersions
-                    .Where(v => v.GameVersions.Contains(selectedGameVersion) &&
-                                (SelectMod != 0 || v.Loaders.Any(l => l.Equals(LoderNow, StringComparison.OrdinalIgnoreCase))))
+                    .Where(v => (v.GameVersions.Contains(selectedGameVersion) || v.GameVersions.Count == 0) &&
+                                (SelectMod != 0 || IsLoaderCompatible(v.Loaders, LoderNow)))
                     .ToList();
 
                 if (_currentAvailableVersions.Any())
@@ -534,6 +535,24 @@ namespace CL_CLegendary_Launcher_.Windows
             }
         }
 
+        private static bool IsLoaderCompatible(List<string> versionLoaders, string targetLoader)
+        {
+            if (string.IsNullOrEmpty(targetLoader)) return true;
+            if (versionLoaders == null || versionLoaders.Count == 0) return true;
+
+            if (versionLoaders.Any(l => l.Equals(targetLoader, StringComparison.OrdinalIgnoreCase)))
+                return true;
+
+            if (targetLoader.Equals("Quilt", StringComparison.OrdinalIgnoreCase) &&
+                versionLoaders.Any(l => l.Equals("Fabric", StringComparison.OrdinalIgnoreCase)))
+                return true;
+
+            if (targetLoader.Equals("NeoForge", StringComparison.OrdinalIgnoreCase) &&
+                versionLoaders.Any(l => l.Equals("Forge", StringComparison.OrdinalIgnoreCase)))
+                return true;
+
+            return false;
+        }
         private void AddItemToRightList(ModInfo mod)
         {
             AddItemModPack moditem = new AddItemModPack();

@@ -476,7 +476,8 @@ public partial class CreateModpackViewModel : ObservableObject, IDisposable
                 site,
                 loader,
                 _selectMod,
-                offset
+                offset,
+                SelectedMinecraftVersion
             );
 
             if (token.IsCancellationRequested) return;
@@ -524,16 +525,19 @@ public partial class CreateModpackViewModel : ObservableObject, IDisposable
         _currentModToInstall = mod;
         SelectedModName = mod.Title;
         SelectedModVersions.Clear();
-        IsMenuInstallerVisible = true;
 
         try
         {
-            var allVersions = await _modDownloadService.GetVersionsAsync(mod);
+            var allVersions = await _modDownloadService.GetVersionsAsync(
+                mod,
+                SelectedMinecraftVersion,
+                _selectMod == 0 ? SelectedLoaderType : null
+            );
             string gameVersion = SelectedMinecraftVersion;
 
             _currentAvailableVersions = allVersions
-                .Where(v => v.GameVersions.Contains(gameVersion) &&
-                            (_selectMod != 0 || v.Loaders.Any(l => l.Equals(SelectedLoaderType, StringComparison.OrdinalIgnoreCase))))
+                .Where(v => (v.GameVersions.Contains(gameVersion) || v.GameVersions.Count == 0) &&
+                            (_selectMod != 0 || IsLoaderCompatible(v.Loaders, SelectedLoaderType)))
                 .ToList();
 
             if (_currentAvailableVersions.Count > 0)
@@ -543,6 +547,7 @@ public partial class CreateModpackViewModel : ObservableObject, IDisposable
                     SelectedModVersions.Add(v.VersionName);
                 }
                 SelectedModVersion = SelectedModVersions[0];
+                IsMenuInstallerVisible = true;
             }
             else
             {
@@ -558,6 +563,25 @@ public partial class CreateModpackViewModel : ObservableObject, IDisposable
             _dialogService?.ShowMessage($"{LocalizationManager.GetString("Dialogs.Error", "Помилка")}: {ex.Message}", LocalizationManager.GetString("Dialogs.Error", "Помилка"), MascotEmotion.Sad);
             IsMenuInstallerVisible = false;
         }
+    }
+
+    private static bool IsLoaderCompatible(List<string>? versionLoaders, string? targetLoader)
+    {
+        if (string.IsNullOrEmpty(targetLoader)) return true;
+        if (versionLoaders == null || versionLoaders.Count == 0) return true;
+
+        if (versionLoaders.Any(l => l.Equals(targetLoader, StringComparison.OrdinalIgnoreCase)))
+            return true;
+
+        if (targetLoader.Equals("Quilt", StringComparison.OrdinalIgnoreCase) &&
+            versionLoaders.Any(l => l.Equals("Fabric", StringComparison.OrdinalIgnoreCase)))
+            return true;
+
+        if (targetLoader.Equals("NeoForge", StringComparison.OrdinalIgnoreCase) &&
+            versionLoaders.Any(l => l.Equals("Forge", StringComparison.OrdinalIgnoreCase)))
+            return true;
+
+        return false;
     }
 
     [RelayCommand]
