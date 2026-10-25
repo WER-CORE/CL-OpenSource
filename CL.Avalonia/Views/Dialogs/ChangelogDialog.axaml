@@ -55,7 +55,7 @@
             <StackPanel x:Name="LoadingPanel" HorizontalAlignment="Center" VerticalAlignment="Center"
                         IsVisible="{Binding IsLoading}">
                 <progRing:ProgressRing IsActive="{Binding IsLoading}" Margin="0,0,0,15" Width="40" Height="40" Foreground="{DynamicResource MainForegroundBrush}"/>
-                <TextBlock x:Name="LoadingText" Text="{Binding LoadingText}" FontSize="16" HorizontalAlignment="Center" TextAlignment="Center" FontFamily="Inter"/>
+                <TextBlock x:Name="LoadingText" Text="{Binding LoadingText}" FontSize="16" HorizontalAlignment="Center" TextAlignment="Center" FontFamily="{DynamicResource AppFontFamily}"/>
             </StackPanel>
 
             <md:MarkdownScrollViewer x:Name="ChangelogMarkdownViewer" Margin="10,0,20,20"

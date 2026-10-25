@@ -93,7 +93,7 @@
                         <TextBlock x:Name="TitleModsDowload" Text="Вибір версії моду"
                            Foreground="{DynamicResource MainForegroundBrush}"
                            HorizontalAlignment="Center" VerticalAlignment="Center"
-                           FontSize="14" FontFamily="Inter" Padding="30,0" TextTrimming="CharacterEllipsis"/>
+                           FontSize="14" FontFamily="{DynamicResource AppFontFamily}" Padding="30,0" TextTrimming="CharacterEllipsis"/>
                     </Border>
 
                     <Button Classes="close-btn" Click="BtnCloseInstaller_Click"
@@ -402,7 +402,7 @@
                                                Margin="10"
                                                HorizontalAlignment="Center"
                                                VerticalAlignment="Center"
-                                               FontFamily="Inter"
+                                               FontFamily="{DynamicResource AppFontFamily}"
                                                FontSize="14"
                                                IsVisible="{Binding IsResultsEmpty}" />
 

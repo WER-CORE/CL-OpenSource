@@ -168,7 +168,7 @@
 
                                 <TextBlock x:Name="TxtPageInfo" Text="Сторінка 1 з 1"
                                    VerticalAlignment="Center" Foreground="{DynamicResource MainForegroundBrush}"
-                                   FontSize="16" FontFamily="Inter" FontWeight="SemiBold" Margin="0,0,15,0" />
+                                   FontSize="16" FontFamily="{DynamicResource AppFontFamily}" FontWeight="SemiBold" Margin="0,0,15,0" />
 
                                 <Button x:Name="BtnNextPage"
                                    Click="BtnNextPage_Click" IsEnabled="False"
@@ -237,7 +237,7 @@
 
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                         <TextBlock x:Name="TitleMain1" Text="DragonSevenUA"
-                                           FontSize="28" FontWeight="Bold" FontFamily="Inter"
+                                           FontSize="28" FontWeight="Bold" FontFamily="{DynamicResource AppFontFamily}"
                                            Foreground="White" Margin="0,0,0,8" />
 
                                         <WrapPanel Orientation="Horizontal">
@@ -307,7 +307,7 @@
 
                                     <ComboBox x:Name="VersionSelector" Grid.Column="0"
                                       Width="120" Height="50" Margin="0,0,15,0"
-                                      FontSize="16" FontFamily="Inter" FontWeight="SemiBold"
+                                      FontSize="16" FontFamily="{DynamicResource AppFontFamily}" FontWeight="SemiBold"
                                       Foreground="{DynamicResource MainForegroundBrush}"
                                       Background="#20FFFFFF" BorderThickness="0"
                                       IsVisible="False" Cursor="Hand" />

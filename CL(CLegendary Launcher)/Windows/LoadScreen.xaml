@@ -75,7 +75,7 @@
                                    Foreground="White" 
                                    FontSize="32" 
                                    FontWeight="Black" 
-                                   HorizontalAlignment="Center" FontFamily="Inter 18pt 18pt">
+                                   HorizontalAlignment="Center" FontFamily="{DynamicResource AppFontFamily}">
                             <TextBlock.Effect>
                                 <DropShadowEffect Color="#FFE9FF00" BlurRadius="20" ShadowDepth="0" Opacity="0.5"/>
                             </TextBlock.Effect>
@@ -87,7 +87,7 @@
                                    FontWeight="SemiBold" 
                                    HorizontalAlignment="Center" 
                                    FontStretch="Expanded"
-                                   Opacity="0.9" FontFamily="Inter 18pt 18pt"/>
+                                   Opacity="0.9" FontFamily="{DynamicResource AppFontFamily}"/>
                     </StackPanel>
 
                     <TextBlock x:Name="RandomPhraseText"
@@ -99,7 +99,7 @@
                                TextAlignment="Center"
                                HorizontalAlignment="Center"
                                TextWrapping="Wrap"
-                               Margin="0,0,0,15" FontFamily="Inter 18pt 18pt">
+                               Margin="0,0,0,15" FontFamily="{DynamicResource AppFontFamily}">
                         <TextBlock.Effect>
                             <DropShadowEffect Color="Black" BlurRadius="2" ShadowDepth="1" Opacity="0.8"/>
                         </TextBlock.Effect>
@@ -118,7 +118,7 @@
                                        Foreground="White"
                                        FontSize="14"
                                        FontWeight="SemiBold"
-                                       VerticalAlignment="Center" FontFamily="Inter 18pt 18pt"/>
+                                       VerticalAlignment="Center" FontFamily="{DynamicResource AppFontFamily}"/>
                         </StackPanel>
 
                         <TextBlock x:Name="VersionLauncherTXT"
@@ -127,7 +127,7 @@
                                    Foreground="#66FFFFFF"
                                    FontSize="12"
                                    FontWeight="Regular"
-                                   VerticalAlignment="Bottom" FontFamily="Inter 18pt 18pt"/>
+                                   VerticalAlignment="Bottom" FontFamily="{DynamicResource AppFontFamily}"/>
                     </Grid>
 
                     <Border Grid.Row="3" 

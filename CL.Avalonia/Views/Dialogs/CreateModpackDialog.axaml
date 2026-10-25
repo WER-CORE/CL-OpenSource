@@ -13,7 +13,7 @@
         Title="{Binding DialogTitle}" Height="600" Width="850"
         Background="Transparent"
         Foreground="{DynamicResource MainForegroundBrush}"
-        FontFamily="Inter"
+        FontFamily="{DynamicResource AppFontFamily}"
         WindowStartupLocation="CenterScreen"
         Icon="/Icon/IconCL(Common).webp"
         ExtendClientAreaToDecorationsHint="True"
@@ -215,7 +215,7 @@
                                 <Border Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="8" Margin="0,0,0,5" Height="40">
                                     <Grid Margin="10,0" ColumnDefinitions="Auto,*,Auto">
                                         <Image Grid.Column="0" Source="{Binding Icon}" Height="20" Width="20" VerticalAlignment="Center" RenderOptions.BitmapInterpolationMode="HighQuality"/>
-                                        <TextBlock Grid.Column="1" Text="{Binding Name}" VerticalAlignment="Center" Margin="10,0" FontSize="12" FontFamily="Inter" Foreground="{DynamicResource MainForegroundBrush}" TextTrimming="CharacterEllipsis"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding Name}" VerticalAlignment="Center" Margin="10,0" FontSize="12" FontFamily="{DynamicResource AppFontFamily}" Foreground="{DynamicResource MainForegroundBrush}" TextTrimming="CharacterEllipsis"/>
                                         <Button Grid.Column="2" Padding="0" Background="Transparent" Width="36" Height="36" Cursor="Hand" Command="{Binding DeleteCommand}">
                                             <Path Data="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"
                                                   Fill="{DynamicResource MainForegroundBrush}"

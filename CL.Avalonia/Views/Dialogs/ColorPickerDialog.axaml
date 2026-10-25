@@ -13,7 +13,7 @@
         Background="Transparent"
         TransparencyLevelHint="Transparent"
         TransparencyBackgroundFallback="Transparent"
-        FontFamily="Inter">
+        FontFamily="{DynamicResource AppFontFamily}">
 
     <Window.Styles>
         <Style Selector="Button.close-btn:pointerover /template/ ContentPresenter">
@@ -94,12 +94,12 @@
             <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
                 <Button Content="{Binding CancelButtonText}" Width="100" Height="35" Margin="0,0,10,0"
                         Classes="cancelBtn" Foreground="{DynamicResource MainForegroundBrush}"
-                        Command="{Binding CancelCommand}" Cursor="Hand" FontFamily="Inter"
+                        Command="{Binding CancelCommand}" Cursor="Hand" FontFamily="{DynamicResource AppFontFamily}"
                         HorizontalContentAlignment="Center" VerticalContentAlignment="Center" CornerRadius="6" />
 
                 <Button Content="{Binding ApplyButtonText}" Width="100" Height="35"
                         Classes="applyBtn" Foreground="{DynamicResource MainForegroundBrush}"
-                        Command="{Binding ApplyCommand}" Cursor="Hand" FontFamily="Inter"
+                        Command="{Binding ApplyCommand}" Cursor="Hand" FontFamily="{DynamicResource AppFontFamily}"
                         HorizontalContentAlignment="Center" VerticalContentAlignment="Center" CornerRadius="6" />
             </StackPanel>
         </Grid>

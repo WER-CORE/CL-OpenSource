@@ -69,7 +69,7 @@
                                Margin="0,0,8,0" />
 				<TextBlock x:Name="DevLogMinecraft"
                            Text="Що нового? (Changelog)"
-                           FontFamily="Inter" FontSize="14" FontWeight="SemiBold"
+                           FontFamily="{DynamicResource AppFontFamily}" FontSize="14" FontWeight="SemiBold"
                            Foreground="{DynamicResource MainForegroundBrush}" />
 			</StackPanel>
 
@@ -116,7 +116,7 @@
 									</Border>
 
 									<TextBlock Grid.Column="1" VerticalAlignment="Center"
-                                               FontFamily="Inter" FontSize="14"
+                                               FontFamily="{DynamicResource AppFontFamily}" FontSize="14"
                                                Foreground="{DynamicResource MainForegroundBrush}"
                                                Text="{Binding VersionId}" FontWeight="Medium" />
 
@@ -145,7 +145,7 @@
 							<ic:SymbolIcon Symbol="ArrowSync" FontSize="12" Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.7" />
 							<TextBlock x:Name="Loc_BtnLoadMoreChangelog"
                                        Text="Завантажити ще"
-                                       FontSize="11" FontFamily="Inter"
+                                       FontSize="11" FontFamily="{DynamicResource AppFontFamily}"
                                        Foreground="{DynamicResource MainForegroundBrush}"
                                        Opacity="0.8" VerticalAlignment="Center" />
 						</StackPanel>
@@ -170,7 +170,7 @@
 									<Path Width="20" Height="20" Stretch="Uniform"
                                           Fill="{DynamicResource MainForegroundBrush}"
                                           Data="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z" />
-									<TextBlock x:Name="Loc_SettingsMenu" Text="Налаштування" FontFamily="Inter"
+									<TextBlock x:Name="Loc_SettingsMenu" Text="Налаштування" FontFamily="{DynamicResource AppFontFamily}"
                                                FontSize="16" Foreground="{DynamicResource MainForegroundBrush}"
                                                VerticalAlignment="Center" Margin="12,0,0,0" />
 								</StackPanel>
@@ -238,7 +238,7 @@
 									<Path Width="20" Height="20" Stretch="Uniform"
                                           Fill="{DynamicResource MainForegroundBrush}"
                                           Data="M10,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V8C22,6.89 21.1,6 20,6H12L10,4Z" />
-									<TextBlock x:Name="Loc_FilesMenu" Text="Файли та Бекапи" FontFamily="Inter"
+									<TextBlock x:Name="Loc_FilesMenu" Text="Файли та Бекапи" FontFamily="{DynamicResource AppFontFamily}"
                                                FontSize="16" Foreground="{DynamicResource MainForegroundBrush}"
                                                VerticalAlignment="Center" Margin="12,0,0,0" Width="164" />
 									<TextBlock Text="▲" Margin="8,2,0,0" FontSize="10" VerticalAlignment="Center"
@@ -308,7 +308,7 @@
 									<Path Width="20" Height="20" Stretch="Uniform"
                                           Fill="{DynamicResource MainForegroundBrush}"
                                           Data="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,17H13V11H11V17Z" />
-									<TextBlock x:Name="Loc_InfoMenu" Text="Інформація" FontFamily="Inter" FontSize="16"
+									<TextBlock x:Name="Loc_InfoMenu" Text="Інформація" FontFamily="{DynamicResource AppFontFamily}" FontSize="16"
                                                Foreground="{DynamicResource MainForegroundBrush}"
                                                VerticalAlignment="Center" Margin="12,0,0,0" Width="163" />
 									<TextBlock Text="▲" Margin="8,2,0,0" FontSize="10" VerticalAlignment="Center"
@@ -333,7 +333,7 @@
 				<TextBlock x:Name="PlayTXT"
                            VerticalAlignment="Top" HorizontalAlignment="Left"
                            Margin="9,23,0,0" Width="176" Height="29"
-                           FontFamily="Inter" FontSize="10" Foreground="White"
+                           FontFamily="{DynamicResource AppFontFamily}" FontSize="10" Foreground="White"
                            Text="{Binding PlayButtonText}" Padding="53,10,0,0" />
 
 				<Image x:Name="IconSelectVersion" Source="/Assets/VanilaVersion.webp"
@@ -380,7 +380,7 @@
 				<ic:SymbolIcon Symbol="PeopleCommunity" FontSize="12"
                                Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,5,0" />
 				<TextBlock x:Name="Loc_PartnersTitle" Text="Партнери"
-                           FontFamily="Inter" FontSize="10"
+                           FontFamily="{DynamicResource AppFontFamily}" FontSize="10"
                            Foreground="{DynamicResource MainForegroundBrush}" />
 			</StackPanel>
 
@@ -389,7 +389,7 @@
                     HorizontalAlignment="Right" VerticalAlignment="Top"
                     Margin="0,48,255,0"
                     Background="{x:Null}" Foreground="{DynamicResource MainForegroundBrush}"
-                    FontFamily="Inter" FontSize="10" Cursor="Hand" BorderBrush="{x:Null}" />
+                    FontFamily="{DynamicResource AppFontFamily}" FontSize="10" Cursor="Hand" BorderBrush="{x:Null}" />
 
 			<Border Grid.Column="2"
                     BorderThickness="1"
@@ -448,7 +448,7 @@
                                Margin="0,0,5,0" />
 				<TextBlock x:Name="LatestActionsTXT"
                            Text="Останні дії"
-                           FontFamily="Inter" FontSize="10"
+                           FontFamily="{DynamicResource AppFontFamily}" FontSize="10"
                            Foreground="{DynamicResource MainForegroundBrush}" />
 			</StackPanel>
 
@@ -566,7 +566,7 @@
                                            FontSize="14" Foreground="{DynamicResource MainForegroundBrush}" Margin="33,-1,0,0" />
 								<Border x:Name="SelectVersion_Copy1" CornerRadius="3"
                                         Background="{DynamicResource MainBackgroundBrush}" Margin="36,15,46,1">
-									<TextBlock x:Name="VersionRelesedVanilLast" FontFamily="Inter"
+									<TextBlock x:Name="VersionRelesedVanilLast" FontFamily="{DynamicResource AppFontFamily}"
                                                Text="{Binding SelectedVanillaVersion, TargetNullValue='ОБЕРІТЬ ВЕРСІЮ'}"
                                                HorizontalAlignment="Center" VerticalAlignment="Center"
                                                Width="47" Height="22" FontSize="10"
@@ -591,7 +591,7 @@
                                            FontSize="14" Foreground="{DynamicResource MainForegroundBrush}" Margin="34,1,0,0" />
 								<Border x:Name="VersionRelesedOptifineLast" BorderThickness="1" CornerRadius="3"
                                         Background="{DynamicResource MainBackgroundBrush}" Margin="37,17,45,0">
-									<TextBlock x:Name="VersionRelesedVanilLast5" FontFamily="Inter"
+									<TextBlock x:Name="VersionRelesedVanilLast5" FontFamily="{DynamicResource AppFontFamily}"
                                                Text="{Binding SelectedOptifineMinecraftVersion, TargetNullValue='ОБЕРІТЬ ВЕРСІЮ'}"
                                                HorizontalAlignment="Center" VerticalAlignment="Center"
                                                Width="53" Height="20" FontSize="10"
@@ -612,11 +612,11 @@
                                       Stretch="Uniform" Width="20" Height="20"
                                       HorizontalAlignment="Left" VerticalAlignment="Center" Margin="8,0,0,0" />
 								<TextBlock x:Name="Loc_InstallModsTxt" Text="Встановити..."
-                                           FontFamily="Inter" FontWeight="Bold"
+                                           FontFamily="{DynamicResource AppFontFamily}" FontWeight="Bold"
                                            HorizontalAlignment="Left" VerticalAlignment="Top"
                                            FontSize="12" Foreground="{DynamicResource MainForegroundBrush}" Margin="38,4,0,0" />
 								<TextBlock x:Name="Loc_ForgeFabricTxt" Text="Forge / Fabric"
-                                           FontFamily="Inter" HorizontalAlignment="Left" VerticalAlignment="Bottom"
+                                           FontFamily="{DynamicResource AppFontFamily}" HorizontalAlignment="Left" VerticalAlignment="Bottom"
                                            FontSize="10" Opacity="0.8"
                                            Foreground="{DynamicResource MainForegroundBrush}" Margin="38,0,0,6" />
 							</Grid>
@@ -719,7 +719,7 @@
                                      Foreground="{DynamicResource MainForegroundBrush}"
                                      FontSize="11" Padding="6,0"
                                      VerticalContentAlignment="Center"
-                                     PlaceholderText="Шукайте ванільну версію..." FontFamily="Inter">
+                                     PlaceholderText="Шукайте ванільну версію..." FontFamily="{DynamicResource AppFontFamily}">
 								<TextBox.InnerLeftContent>
 									<ic:SymbolIcon Symbol="Search" FontSize="14" Margin="4,0,2,0" />
 								</TextBox.InnerLeftContent>

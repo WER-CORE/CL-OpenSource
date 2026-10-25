@@ -206,6 +206,10 @@
     <Resource Include="Icon\IconCL(Common).ico" />
     <Resource Include="Icon\IconCL(Common).png" />
     <Resource Include="Icon\IconCL(Halloween).png" />
+    <Resource Include="Fonts\Geist-Regular.ttf" />
+    <Resource Include="Fonts\Geist-Medium.ttf" />
+    <Resource Include="Fonts\Geist-SemiBold.ttf" />
+    <Resource Include="Fonts\Geist-Bold.ttf" />
   </ItemGroup>
 
   <ItemGroup>

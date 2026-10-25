@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:vm="using:CL_CLegendary_Launcher_.Avalonia.ViewModels.Controls"
              x:DataType="vm:ModpackCardViewModel"
-             mc:Ignorable="d" Height="155" Width="630" FontFamily="Inter">
+             mc:Ignorable="d" Height="155" Width="630" FontFamily="{DynamicResource AppFontFamily}">
 
     <Grid>
         <Border x:Name="MainBordr" BorderThickness="1"

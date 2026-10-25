@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:CL_CLegendary_Launcher_"
-             mc:Ignorable="d" Height="108" Width="885" Foreground="White" FontFamily="Inter">
+             mc:Ignorable="d" Height="108" Width="885" Foreground="White" FontFamily="{DynamicResource AppFontFamily}">
 
     <Grid x:Name="MainGirdItem4">
         <Border x:Name="BG" 

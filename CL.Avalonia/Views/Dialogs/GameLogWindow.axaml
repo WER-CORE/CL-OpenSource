@@ -12,7 +12,7 @@
         WindowStartupLocation="CenterScreen"
         Background="Transparent"
         Foreground="{DynamicResource MainForegroundBrush}"
-        FontFamily="Inter"
+        FontFamily="{DynamicResource AppFontFamily}"
         CanResize="True"
         WindowDecorations="None"
         ExtendClientAreaToDecorationsHint="True"
@@ -369,7 +369,7 @@
                         <Border Grid.Row="1" Background="{DynamicResource MainBackgroundBrush}" CornerRadius="8" Padding="10">
                             <ScrollViewer>
                                 <SelectableTextBlock Text="{Binding AiResponseText}" TextWrapping="Wrap"
-                                                     FontSize="14" LineHeight="22" FontFamily="Inter"
+                                                     FontSize="14" LineHeight="22" FontFamily="{DynamicResource AppFontFamily}"
                                                      Foreground="{DynamicResource MainForegroundBrush}" />
                             </ScrollViewer>
                         </Border>

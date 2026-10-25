@@ -21,7 +21,7 @@
         TransparencyBackgroundFallback="Transparent"
         Background="Transparent"
         Foreground="{DynamicResource MainForegroundBrush}"
-        FontFamily="Inter">
+        FontFamily="{DynamicResource AppFontFamily}">
 
     <Window.Styles>
         <Style Selector="Button.close-btn:pointerover /template/ ContentPresenter">
@@ -219,7 +219,7 @@
                                         <Border BorderThickness="1" Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="8" Margin="0,0,0,5" Padding="10,5">
                                             <Grid ColumnDefinitions="Auto,*,Auto">
                                                 <Image Grid.Column="0" Source="{Binding Icon}" Height="24" Width="24" VerticalAlignment="Center" RenderOptions.BitmapInterpolationMode="HighQuality"/>
-                                                <TextBlock Grid.Column="1" Text="{Binding Name}" VerticalAlignment="Center" Margin="10,0" FontSize="12" FontFamily="Inter" Foreground="{DynamicResource MainForegroundBrush}" TextTrimming="CharacterEllipsis"/>
+                                                <TextBlock Grid.Column="1" Text="{Binding Name}" VerticalAlignment="Center" Margin="10,0" FontSize="12" FontFamily="{DynamicResource AppFontFamily}" Foreground="{DynamicResource MainForegroundBrush}" TextTrimming="CharacterEllipsis"/>
                                                 <Button Grid.Column="2" Classes="card-action-btn" Width="32" Height="32" Command="{Binding OpenDetailsCommand}" ToolTip.Tip="Відкрити сторінку">
                                                     <fluentIcons:SymbolIcon Symbol="Open" FontSize="18" />
                                                 </Button>

@@ -87,11 +87,11 @@
             <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
                 <Button x:Name="BtnCancel" Content="Скасувати" Width="100" Height="35" Margin="0,0,10,0" 
                         Background="Transparent" Foreground="{DynamicResource MainForegroundBrush}" 
-                        BorderThickness="1" BorderBrush="#33FFFFFF" Click="BtnCancel_Click" Cursor="Hand" FontFamily="Inter 18pt 18pt"/>
+                        BorderThickness="1" BorderBrush="#33FFFFFF" Click="BtnCancel_Click" Cursor="Hand" FontFamily="{DynamicResource AppFontFamily}"/>
 
                 <Button x:Name="BtnApply" Content="Застосувати" Width="100" Height="35" 
                         Background="{DynamicResource MainBackgroundButton}" Foreground="{DynamicResource MainForegroundBrush}" BorderThickness="0" 
-                        Click="BtnApply_Click" Cursor="Hand" FontFamily="Inter 18pt 18pt">
+                        Click="BtnApply_Click" Cursor="Hand" FontFamily="{DynamicResource AppFontFamily}">
                     <Button.Resources>
                         <Style TargetType="Border">
                             <Setter Property="CornerRadius" Value="6"/>

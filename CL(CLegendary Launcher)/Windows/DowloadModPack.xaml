@@ -14,7 +14,7 @@
         Loaded="MainWin_Loaded"
         Background="Transparent"
         WindowStyle="None"
-        FontFamily="Inter"
+        FontFamily="{DynamicResource AppFontFamily}"
         Icon="/Icon/IconCL(Common).png"
         AllowsTransparency="True">
     <Window.Resources>

@@ -17,7 +17,7 @@
         TransparencyLevelHint="Transparent"
         TransparencyBackgroundFallback="Transparent"
         Background="Transparent"
-        FontFamily="Inter">
+        FontFamily="{DynamicResource AppFontFamily}">
 
     <Window.Styles>
         <Style Selector="Button.close-btn:pointerover /template/ ContentPresenter">

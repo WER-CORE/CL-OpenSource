@@ -47,7 +47,7 @@
             <TextBlock x:Name="ModPackName" Grid.Column="1"
                        Text="{Binding Name, FallbackValue='Mod Name Example'}"
                        VerticalAlignment="Center" Margin="10,0"
-                       FontSize="12" FontFamily="Inter"
+                       FontSize="12" FontFamily="{DynamicResource AppFontFamily}"
                        Foreground="{DynamicResource MainForegroundBrush}"
                        TextTrimming="CharacterEllipsis" />
 

@@ -44,7 +44,7 @@
 				<StackPanel Spacing="16" MaxWidth="840" HorizontalAlignment="Left">
 					<TextBlock Text="{Binding SelectedNewsTitle}"
                                FontSize="22" FontWeight="Bold"
-                               FontFamily="Inter"
+                               FontFamily="{DynamicResource AppFontFamily}"
                                Foreground="{DynamicResource MainForegroundBrush}"
                                TextWrapping="Wrap" />
 
@@ -55,7 +55,7 @@
 
 					<SelectableTextBlock Text="{Binding SelectedNewsContent}"
                                          FontSize="15" LineHeight="24"
-                                         FontFamily="Inter"
+                                         FontFamily="{DynamicResource AppFontFamily}"
                                          Foreground="{DynamicResource MainForegroundBrush}"
                                          TextWrapping="Wrap" />
 				</StackPanel>
@@ -123,7 +123,7 @@
 				<TextBlock Text="{Binding SearchingNewsText}"
                            Margin="0,20,0,0"
                            FontSize="16"
-                           FontFamily="Inter"
+                           FontFamily="{DynamicResource AppFontFamily}"
                            FontWeight="Medium"
                            Foreground="{DynamicResource MainForegroundBrush}"
                            HorizontalAlignment="Center"

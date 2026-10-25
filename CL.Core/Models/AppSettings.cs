@@ -65,6 +65,7 @@ namespace CL.Core.Models
         public bool EnableSound { get; set; } = true;
         public double UIScale { get; set; } = 1.0;
         public string UpdateChannel { get; set; } = "Stable";
+        public string SelectedFont { get; set; } = "Inter";
         public object this[string propertyName]
         {
             get

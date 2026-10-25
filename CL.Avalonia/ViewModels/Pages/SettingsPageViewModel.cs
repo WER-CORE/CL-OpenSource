@@ -52,6 +52,22 @@ public class UiScaleOption
     public override string ToString() => Display;
 }
 
+public partial class FontOption : ObservableObject
+{
+    public string Key { get; }
+
+    [ObservableProperty]
+    private string _displayName;
+
+    public FontOption(string key, string displayName)
+    {
+        Key = key;
+        _displayName = displayName;
+    }
+
+    public override string ToString() => DisplayName;
+}
+
 public partial class ThemeOption : ObservableObject
 {
     public string Key { get; }
@@ -122,6 +138,14 @@ public partial class SettingsPageViewModel : ObservableObject
     [ObservableProperty] private LanguageItem? _selectedLanguage;
     [ObservableProperty] private bool _isLoadingLanguage;
     private bool _suppressLanguageChange;
+
+    public ObservableCollection<FontOption> AvailableFonts { get; } = new()
+    {
+        new("Inter", "Inter"),
+        new("Geist", "Geist")
+    };
+    [ObservableProperty] private FontOption? _selectedFontOption;
+    private bool _suppressFontChange;
 
     public ObservableCollection<UiScaleOption> AvailableUiScales { get; } = new()
     {
@@ -234,6 +258,7 @@ public partial class SettingsPageViewModel : ObservableObject
     {
         _suppressThemeChange = true;
         _suppressScaleChange = true;
+        _suppressFontChange = true;
         _suppressModuleNotifications = true;
 
         EnableLog = SettingsManager.Default.EnableLog;
@@ -258,6 +283,9 @@ public partial class SettingsPageViewModel : ObservableObject
         LauncherPath = string.IsNullOrWhiteSpace(SettingsManager.Default.PathLacunher)
             ? PlatformPaths.DefaultLauncherPath()
             : SettingsManager.Default.PathLacunher;
+
+        string currentFont = string.IsNullOrWhiteSpace(SettingsManager.Default.SelectedFont) ? "Inter" : SettingsManager.Default.SelectedFont;
+        SelectedFontOption = AvailableFonts.FirstOrDefault(f => f.Key.Equals(currentFont, StringComparison.OrdinalIgnoreCase)) ?? AvailableFonts[0];
 
         double currentScale = SettingsManager.Default.UIScale > 0.1 ? SettingsManager.Default.UIScale : 1.0;
         SelectedUiScale = AvailableUiScales.FirstOrDefault(s => Math.Abs(s.Scale - currentScale) < 0.05)
@@ -295,6 +323,7 @@ public partial class SettingsPageViewModel : ObservableObject
 
         _suppressThemeChange = false;
         _suppressScaleChange = false;
+        _suppressFontChange = false;
         _suppressModuleNotifications = false;
     }
 
@@ -480,6 +509,16 @@ public partial class SettingsPageViewModel : ObservableObject
             SettingsManager.Default.height = h;
             Save();
         }
+    }
+
+    partial void OnSelectedFontOptionChanged(FontOption? value)
+    {
+        if (_suppressFontChange || value == null) return;
+        _soundService.PlayClick();
+
+        SettingsManager.Default.SelectedFont = value.Key;
+        Save();
+        _themeService.ApplyFont(value.Key);
     }
 
     partial void OnSelectedUiScaleChanged(UiScaleOption? value)

@@ -1,6 +1,10 @@
 ﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
+    <FontFamily x:Key="AppFontFamily">Inter, Segoe UI, sans-serif</FontFamily>
+    <FontFamily x:Key="GeistFontFamily">avares://CL.Avalonia/Fonts#Geist</FontFamily>
+    <FontFamily x:Key="InterFontFamily">Inter, Segoe UI, sans-serif</FontFamily>
+
     <SolidColorBrush x:Key="MainBackgroundButton">#FF202020</SolidColorBrush>
     <SolidColorBrush x:Key="MainForegroundBrush">#FFFFFFFF</SolidColorBrush>
     <SolidColorBrush x:Key="MainBackgroundProgressBar">#FF1863C9</SolidColorBrush>

@@ -21,7 +21,7 @@
                    TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"
                    Foreground="{DynamicResource MainForegroundBrush}"
                    Width="115"
-                   FontFamily="Inter" FontSize="12" FontWeight="SemiBold"/>
+                   FontFamily="{DynamicResource AppFontFamily}" FontSize="12" FontWeight="SemiBold"/>
 
         <Button x:Name="DeleteAccountBtn" Command="{Binding DeleteCommand}"
                 HorizontalAlignment="Right" VerticalAlignment="Bottom"

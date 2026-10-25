@@ -14,7 +14,7 @@
         TransparencyBackgroundFallback="Transparent"
         WindowDecorations="None"
         WindowStartupLocation="CenterScreen"
-        FontFamily="Inter">
+        FontFamily="{DynamicResource AppFontFamily}">
 
     <Window.Styles>
         <Style Selector="ProgressBar">

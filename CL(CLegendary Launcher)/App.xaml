@@ -11,6 +11,9 @@
                 <ResourceDictionary Source="Them/DarkTheme.xaml" />
                 <ResourceDictionary Source="Them/DarkThemeSerLisAndUpdMinecraft.xaml" />
             </ResourceDictionary.MergedDictionaries>
+            <FontFamily x:Key="AppFontFamily">pack://application:,,,/Fonts/#Geist, Inter, Segoe UI, sans-serif</FontFamily>
+            <FontFamily x:Key="GeistFontFamily">pack://application:,,,/Fonts/#Geist, Segoe UI</FontFamily>
+            <FontFamily x:Key="InterFontFamily">Inter, Segoe UI, sans-serif</FontFamily>
             <sys:Double x:Key="GlassBlurRadius">20</sys:Double>
             <Visibility x:Key="GlassVisibility">Visible</Visibility>
             <SolidColorBrush x:Key="GlassTintBrush" Color="#66000000"/>

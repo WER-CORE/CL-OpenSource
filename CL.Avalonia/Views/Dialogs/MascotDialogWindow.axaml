@@ -64,11 +64,11 @@
                     </Grid.RowDefinitions>
 
                     <TextBlock x:Name="TitleTxt" Text="Заголовок"
-                               FontFamily="Inter" FontWeight="Bold" FontSize="18"
+                               FontFamily="{DynamicResource AppFontFamily}" FontWeight="Bold" FontSize="18"
                                Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,0,10"/>
 
                     <TextBox x:Name="MessageTxt" Text="Тут буде текст повідомлення від маскота..."
-                             FontFamily="Inter" FontSize="14"
+                             FontFamily="{DynamicResource AppFontFamily}" FontSize="14"
                              Foreground="{DynamicResource MainForegroundBrush}" TextWrapping="Wrap"
                              Grid.Row="1" VerticalAlignment="Center" IsReadOnly="True"
                              Background="Transparent" BorderThickness="0"

@@ -96,6 +96,10 @@
 	  <AvaloniaResource Include="Icon\IconCL(Winter).ico" />
 	  <AvaloniaResource Include="Assets\Sounds\click.wav" />
 	  <AvaloniaResource Include="Assets\Flags\bchb.webp" />
+	  <AvaloniaResource Include="Fonts\Geist-Regular.ttf" />
+	  <AvaloniaResource Include="Fonts\Geist-Medium.ttf" />
+	  <AvaloniaResource Include="Fonts\Geist-SemiBold.ttf" />
+	  <AvaloniaResource Include="Fonts\Geist-Bold.ttf" />
 	</ItemGroup>
 
 	<ItemGroup>

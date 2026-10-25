@@ -55,6 +55,7 @@ public class AvaloniaThemeService
             : SettingsManager.Default.Them;
 
         ToggleGlassEffect(SettingsManager.Default.DisableGlassEffect);
+        ApplyFont(SettingsManager.Default.SelectedFont);
 
         bool isPredefined = savedTheme.Equals("Dark", StringComparison.OrdinalIgnoreCase)
                          || savedTheme.Equals("Light", StringComparison.OrdinalIgnoreCase)
@@ -467,6 +468,23 @@ public class AvaloniaThemeService
             return luminance > 0.6;
         }
         return false;
+    }
+
+    public void ApplyFont(string? fontName)
+    {
+        if (!global::Avalonia.Threading.Dispatcher.UIThread.CheckAccess())
+        {
+            global::Avalonia.Threading.Dispatcher.UIThread.Post(() => ApplyFont(fontName));
+            return;
+        }
+
+        if (Application.Current?.Resources == null) return;
+
+        string targetFont = string.Equals(fontName, "Geist", StringComparison.OrdinalIgnoreCase)
+            ? "avares://CL.Avalonia/Fonts#Geist"
+            : "Inter, Segoe UI, sans-serif";
+
+        Application.Current.Resources["AppFontFamily"] = new FontFamily(targetFont);
     }
 
     private static void UpdateResource(IResourceDictionary resources, string key, string? hexColor)

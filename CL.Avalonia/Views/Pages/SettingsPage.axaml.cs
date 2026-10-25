@@ -63,6 +63,8 @@ public partial class SettingsPage : UserControl
         Loc_Settings_SoundDesc.Text = LocalizationManager.GetString("Settings.SoundDesc", "Озвучка кліків та натискань кнопок");
         Loc_Settings_ScaleTitle.Text = LocalizationManager.GetString("Settings.ScaleTitle", "Масштаб інтерфейсу");
         Loc_Settings_ScaleDesc.Text = LocalizationManager.GetString("Settings.ScaleDesc", "Збільшує або зменшує розмір всіх елементів у лаунчері");
+        if (Loc_Settings_FontTitle != null) Loc_Settings_FontTitle.Text = LocalizationManager.GetString("Settings.FontTitle", "Шрифт інтерфейсу");
+        if (Loc_Settings_FontDesc != null) Loc_Settings_FontDesc.Text = LocalizationManager.GetString("Settings.FontDesc", "Виберіть стиль шрифту для відображення тексту в лаунчері");
         Loc_Settings_CrashReportTitle.Text = LocalizationManager.GetString("Settings.CrashReportTitle", "Звіти про помилки");
         Loc_Settings_CrashReportDesc.Text = LocalizationManager.GetString("Settings.CrashReportDesc", "Анонімне відправлення даних про критичні збої розробнику для їх виправлення");
         Loc_Settings_CloseLaunchTitle.Text = LocalizationManager.GetString("Settings.CloseLaunchTitle", "Закриття лаунчера під час гри");

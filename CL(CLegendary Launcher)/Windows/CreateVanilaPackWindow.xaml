@@ -21,7 +21,7 @@
         
         Background="{x:Null}" 
         Foreground="{DynamicResource MainForegroundBrush}" 
-        FontFamily="Inter"
+        FontFamily="{DynamicResource AppFontFamily}"
         WindowStartupLocation="CenterScreen" 
         Icon="/Icon/IconCL(Common).png" 
         
@@ -259,7 +259,7 @@
                             <TextBlock x:Name="TxtSearchLoading" Text="Bit-CL шукає потрібні файли..." 
                        Margin="0,20,0,0"
                        FontSize="16" 
-                       FontFamily="Inter"
+                       FontFamily="{DynamicResource AppFontFamily}"
                        FontWeight="Medium"
                        Foreground="{DynamicResource MainForegroundBrush}"
                        HorizontalAlignment="Center"

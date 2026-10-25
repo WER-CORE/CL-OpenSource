@@ -36,7 +36,7 @@
         <TextBlock Text="{Binding Title}"
                    HorizontalAlignment="Left" Margin="48,0,0,0" VerticalAlignment="Center"
                    Foreground="{DynamicResource MainForegroundBrush}"
-                   FontFamily="Inter" FontWeight="Bold" FontSize="14"
+                   FontFamily="{DynamicResource AppFontFamily}" FontWeight="Bold" FontSize="14"
                    TextTrimming="CharacterEllipsis" MaxWidth="110">
             <TextBlock.Effect>
                 <DropShadowDirectionEffect ShadowDepth="1" BlurRadius="2" Opacity="0.8" Color="Black"/>
@@ -46,25 +46,25 @@
         <Button Command="{Binding OpenInfoCommand}" Classes="cardBtn"
                 HorizontalAlignment="Left" Height="24" Margin="158,6,0,0" VerticalAlignment="Top" Width="151"
                 Cursor="Hand" ToolTip.Tip="{Binding InfoTooltip}">
-            <TextBlock Text="{Binding VisitPageText}" Foreground="{DynamicResource MainForegroundBrush}" FontSize="10" FontFamily="Inter"/>
+            <TextBlock Text="{Binding VisitPageText}" Foreground="{DynamicResource MainForegroundBrush}" FontSize="10" FontFamily="{DynamicResource AppFontFamily}"/>
         </Button>
 
         <Button Command="{Binding OpenOnlineCommand}" Classes="cardBtn"
                 HorizontalAlignment="Left" Height="22" Margin="158,30,0,0" VerticalAlignment="Top" Width="39"
                 Cursor="Hand" ToolTip.Tip="{Binding OnlineTooltip}">
-            <TextBlock Text="{Binding OnlinePlayers}" Foreground="{DynamicResource MainForegroundBrush}" FontSize="10" FontFamily="Inter"/>
+            <TextBlock Text="{Binding OnlinePlayers}" Foreground="{DynamicResource MainForegroundBrush}" FontSize="10" FontFamily="{DynamicResource AppFontFamily}"/>
         </Button>
 
         <Button Command="{Binding CopyIpCommand}" Classes="cardBtn"
                 HorizontalAlignment="Left" Height="22" Margin="199,30,0,0" VerticalAlignment="Top" Width="68"
                 Cursor="Hand" ToolTip.Tip="{Binding CopyIpTooltip}">
-            <TextBlock Text="{Binding IpAddress}" Foreground="{DynamicResource MainForegroundBrush}" FontSize="10" FontFamily="Inter" TextTrimming="CharacterEllipsis"/>
+            <TextBlock Text="{Binding IpAddress}" Foreground="{DynamicResource MainForegroundBrush}" FontSize="10" FontFamily="{DynamicResource AppFontFamily}" TextTrimming="CharacterEllipsis"/>
         </Button>
 
         <Button Command="{Binding PlayCommand}" Classes="cardBtn"
                 HorizontalAlignment="Left" Height="22" Margin="269,30,0,0" VerticalAlignment="Top" Width="40"
                 Cursor="Hand" ToolTip.Tip="{Binding PlayTooltip}">
-            <TextBlock Text="{Binding PlayBtnText}" Foreground="{DynamicResource MainForegroundBrush}" FontSize="10" FontFamily="Inter"/>
+            <TextBlock Text="{Binding PlayBtnText}" Foreground="{DynamicResource MainForegroundBrush}" FontSize="10" FontFamily="{DynamicResource AppFontFamily}"/>
         </Button>
 
     </Grid>

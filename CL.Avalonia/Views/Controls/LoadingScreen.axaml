@@ -44,14 +44,14 @@
                                FontSize="32"
                                FontWeight="Black"
                                HorizontalAlignment="Center"
-                               FontFamily="Inter"/>
+                               FontFamily="{DynamicResource AppFontFamily}"/>
                     <TextBlock Text="Avalonia Edition"
                                Foreground="#FFE9FF00"
                                FontSize="14"
                                FontWeight="SemiBold"
                                HorizontalAlignment="Center"
                                Opacity="0.9"
-                               FontFamily="Inter"/>
+                               FontFamily="{DynamicResource AppFontFamily}"/>
                 </StackPanel>
 
                 <TextBlock Grid.Row="1"
@@ -63,7 +63,7 @@
                            HorizontalAlignment="Center"
                            TextWrapping="Wrap"
                            Margin="0,0,0,15"
-                           FontFamily="Inter"/>
+                           FontFamily="{DynamicResource AppFontFamily}"/>
 
                 <Grid Grid.Row="2" Margin="0,0,0,5" ColumnDefinitions="*, Auto">
                     <TextBlock Grid.Column="0"
@@ -72,7 +72,7 @@
                                FontSize="14"
                                FontWeight="SemiBold"
                                VerticalAlignment="Bottom"
-                               FontFamily="Inter"/>
+                               FontFamily="{DynamicResource AppFontFamily}"/>
 
                     <TextBlock Grid.Column="1"
                                Text="{Binding VersionText}"
@@ -80,7 +80,7 @@
                                FontSize="12"
                                FontWeight="Regular"
                                VerticalAlignment="Bottom"
-                               FontFamily="Inter"/>
+                               FontFamily="{DynamicResource AppFontFamily}"/>
                 </Grid>
 
                 <Border Grid.Row="3"

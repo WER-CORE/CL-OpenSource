@@ -6,7 +6,7 @@
                  xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
                  mc:Ignorable="d"
                  Title="CL - Build Editor" Height="500" Width="800"
-                 FontFamily="Inter" ResizeMode="NoResize" WindowStyle="None"
+                 FontFamily="{DynamicResource AppFontFamily}" ResizeMode="NoResize" WindowStyle="None"
                  Icon="/Icon/IconCL(Common).png" Loaded="Window_Loaded" ExtendsContentIntoTitleBar="True"
                  WindowBackdropType="Mica"
                  Background="{x:Null}">

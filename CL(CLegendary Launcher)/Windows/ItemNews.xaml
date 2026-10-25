@@ -37,7 +37,7 @@
                            Text="Заголовок новини..." 
                            HorizontalAlignment="Center" VerticalAlignment="Center"
                            Foreground="{DynamicResource MainBorderBrush}" 
-                           FontFamily="Inter" FontSize="12" FontWeight="SemiBold"
+                           FontFamily="{DynamicResource AppFontFamily}" FontSize="12" FontWeight="SemiBold"
                            TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"/>
             </Border>
         </Grid>

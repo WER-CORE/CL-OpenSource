@@ -174,7 +174,7 @@
                                         <Path Data="M10,20V14H14V20H19V12H22L12,3L2,12H5V20H10Z"
                                               Fill="{DynamicResource MainForegroundBrush}" Stretch="Uniform" Height="16"
                                               Width="16" Margin="0,0,8,0" />
-                                        <TextBlock Name="Loc_MenuBtnMain" Text="Головна" FontFamily="Inter" FontSize="14"
+                                        <TextBlock Name="Loc_MenuBtnMain" Text="Головна" FontFamily="{DynamicResource AppFontFamily}" FontSize="14"
                                                    FontWeight="Medium" Foreground="{DynamicResource MainForegroundBrush}"
                                                    VerticalAlignment="Center" />
                                     </StackPanel>
@@ -189,7 +189,7 @@
                                         <Path Data="M21,16.5C21,16.88 20.79,17.21 20.47,17.38L12.57,21.82C12.41,21.94 12.21,22 12,22C11.79,22 11.59,21.94 11.43,21.82L3.53,17.38C3.21,17.21 3,16.88 3,16.5V7.5C3,7.12 3.21,6.79 3.53,6.62L11.43,2.18C11.59,2.06 11.79,2 12,2C12.21,2 12.41,2.06 12.57,2.18L20.47,6.62C20.79,6.79 21,7.12 21,7.5V16.5M12,4.15L6.04,7.5L12,10.85L17.96,7.5L12,4.15M5,15.91L11,19.29V12.58L5,9.21V15.91M19,15.91V9.21L13,12.58V19.29L19,15.91Z"
                                               Fill="{DynamicResource MainForegroundBrush}" Stretch="Uniform" Height="15"
                                               Width="15" Margin="0,0,8,0" />
-                                        <TextBlock Name="Loc_MenuBtnModpacks" Text="Збірки" FontFamily="Inter"
+                                        <TextBlock Name="Loc_MenuBtnModpacks" Text="Збірки" FontFamily="{DynamicResource AppFontFamily}"
                                                    FontSize="14" FontWeight="Medium"
                                                    Foreground="{DynamicResource MainForegroundBrush}"
                                                    VerticalAlignment="Center" />
@@ -205,7 +205,7 @@
                                         <Path Data="M20.5,11H19V7C19,5.89 18.1,5 17,5H13V3.5A2.5,2.5 0 0,0 10.5,1A2.5,2.5 0 0,0 8,3.5V5H4A2,2 0 0,0 2,7V11H3.5A2.5,2.5 0 0,1 6,13.5A2.5,2.5 0 0,1 3.5,16H2V20A2,2 0 0,0 4,22H8V20.5A2.5,2.5 0 0,1 10.5,18A2.5,2.5 0 0,1 13,20.5V22H17A2,2 0 0,0 19,20V16H20.5A2.5,2.5 0 0,0 23,13.5A2.5,2.5 0 0,0 20.5,11M10.5,3A1,1 0 0,1 11.5,4A1,1 0 0,1 10.5,5A1,1 0 0,1 9.5,4A1,1 0 0,1 10.5,3M13,19.5A1,1 0 0,0 12,20.5A1,1 0 0,0 13,21.5A1,1 0 0,0 14,20.5A1,1 0 0,0 13,19.5M5,13.5A1,1 0 0,0 4,14.5A1,1 0 0,0 5,15.5A1,1 0 0,0 6,14.5A1,1 0 0,0 5,13.5M20.5,15A1,1 0 0,1 19.5,14A1,1 0 0,1 20.5,13A1,1 0 0,1 21.5,14A1,1 0 0,1 20.5,15Z"
                                               Fill="{DynamicResource MainForegroundBrush}" Stretch="Uniform" Height="16"
                                               Width="16" Margin="0,0,8,0" />
-                                        <TextBlock Name="Loc_MenuBtnMods" Text="Моди" FontFamily="Inter" FontSize="14"
+                                        <TextBlock Name="Loc_MenuBtnMods" Text="Моди" FontFamily="{DynamicResource AppFontFamily}" FontSize="14"
                                                    FontWeight="Medium" Foreground="{DynamicResource MainForegroundBrush}"
                                                    VerticalAlignment="Center" />
                                     </StackPanel>
@@ -220,7 +220,7 @@
                                         <Path Data="M17.9,17.39C17.64,16.59 16.89,16 16,16H15V13A1,1 0 0,0 14,12H8V10H10A1,1 0 0,0 11,9V7H13A2,2 0 0,0 15,5V4.59C17.93,5.77 20,8.64 20,12C20,14.08 19.2,15.97 17.9,17.39M11,19.93C7.05,19.44 4,16.08 4,12C4,11.38 4.08,10.78 4.21,10.21L9,15V16A2,2 0 0,0 11,18M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z"
                                               Fill="{DynamicResource MainForegroundBrush}" Stretch="Uniform" Height="16"
                                               Width="16" Margin="0,0,8,0" />
-                                        <TextBlock Name="Loc_MenuBtnServers" Text="Сервери" FontFamily="Inter"
+                                        <TextBlock Name="Loc_MenuBtnServers" Text="Сервери" FontFamily="{DynamicResource AppFontFamily}"
                                                    FontSize="14" FontWeight="Medium"
                                                    Foreground="{DynamicResource MainForegroundBrush}"
                                                    VerticalAlignment="Center" />
@@ -236,7 +236,7 @@
                                         <Path Data="M8.5,13.5L11,16.5L14.5,12L19,18H5M21,19V5C21,3.89 20.1,3 19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19Z"
                                               Fill="{DynamicResource MainForegroundBrush}" Stretch="Uniform" Height="16"
                                               Width="16" Margin="0,0,8,0" />
-                                        <TextBlock Name="Loc_MenuBtnGallery" Text="Галерея" FontFamily="Inter"
+                                        <TextBlock Name="Loc_MenuBtnGallery" Text="Галерея" FontFamily="{DynamicResource AppFontFamily}"
                                                    FontSize="14" FontWeight="Medium"
                                                    Foreground="{DynamicResource MainForegroundBrush}"
                                                    VerticalAlignment="Center" />
@@ -302,7 +302,7 @@
 
                                 <TextBlock Name="NameNik" Grid.Column="1"
                                            Text="{Binding CurrentAccountName}"
-                                           FontFamily="Inter" FontSize="12"
+                                           FontFamily="{DynamicResource AppFontFamily}" FontSize="12"
                                            Foreground="{DynamicResource MainForegroundBrush}"
                                            VerticalAlignment="Center" HorizontalAlignment="Left"
                                            Margin="10,0,5,0"
@@ -364,7 +364,7 @@
                                    Text="Завантаження..."
                                    HorizontalAlignment="Stretch"
                                    VerticalAlignment="Top"
-                                   FontFamily="Inter"
+                                   FontFamily="{DynamicResource AppFontFamily}"
                                    FontSize="12"
                                    Foreground="{DynamicResource MainForegroundBrush}"
                                    Background="Transparent" />
@@ -449,7 +449,7 @@
                                Grid.Row="1"
                                Text="Додати профіль +"
                                HorizontalAlignment="Center"
-                               FontFamily="Inter" FontSize="12"
+                               FontFamily="{DynamicResource AppFontFamily}" FontSize="12"
                                Cursor="Hand"
                                Foreground="{DynamicResource MainForegroundBrush}"
                                Background="Transparent"
@@ -459,7 +459,7 @@
                                Grid.Row="2"
                                Text="Статистика"
                                HorizontalAlignment="Center"
-                               FontFamily="Inter" FontSize="12"
+                               FontFamily="{DynamicResource AppFontFamily}" FontSize="12"
                                Cursor="Hand"
                                PointerPressed="StatsTextOpen_MouseDown"
                                Foreground="{DynamicResource MainForegroundBrush}"
@@ -781,7 +781,7 @@
                             <TextBlock x:Name="TutorialHelloText" Text="Привіт, я Сіель"
                                        FontSize="24" FontWeight="Bold"
                                        Foreground="{DynamicResource MainForegroundBrush}"
-                                       FontFamily="Inter 18pt 18pt"
+                                       FontFamily="{DynamicResource AppFontFamily}"
                                        HorizontalAlignment="Left" />
 
                             <TextBlock x:Name="QuestionTXT"
@@ -791,7 +791,7 @@
                                        Foreground="{DynamicResource MainForegroundBrush}"
                                        Opacity="0.9"
                                        Margin="5,10,5,20"
-                                       FontFamily="Inter 18pt 18pt" />
+                                       FontFamily="{DynamicResource AppFontFamily}" />
                         </StackPanel>
 
                         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right">
@@ -935,7 +935,7 @@
                                        Foreground="{DynamicResource MainBackgroundProgressBar}" />
 
                 <TextBlock x:Name="ExportProgressText" Text="Експорт збірки: 0%"
-                           Margin="0,20,0,0" FontSize="18" FontFamily="Inter"
+                           Margin="0,20,0,0" FontSize="18" FontFamily="{DynamicResource AppFontFamily}"
                            FontWeight="SemiBold" Foreground="{DynamicResource MainForegroundBrush}"
                            HorizontalAlignment="Center" TextAlignment="Center" />
 

@@ -10,7 +10,7 @@
         x:Name="RootWindow"
         Title="{Binding WindowTitle}" Height="600" Width="900"
         WindowStartupLocation="CenterScreen" CanResize="False" WindowDecorations="None"
-        Background="Transparent" FontFamily="Inter"
+        Background="Transparent" FontFamily="{DynamicResource AppFontFamily}"
         TransparencyLevelHint="Transparent" TransparencyBackgroundFallback="Transparent" Foreground="{DynamicResource MainForegroundBrush}" Icon="/Icon/IconCL(Common).webp"
         IsEnabled="{Binding !IsWorking}">
 
