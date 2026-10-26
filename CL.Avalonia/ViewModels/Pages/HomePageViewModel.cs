@@ -63,6 +63,7 @@ public partial class HomePageViewModel : ObservableObject
     public ObservableCollection<string> OptifineModVersions { get; } = new();
     public ObservableCollection<VersionLogItem> ChangelogItems { get; } = new();
     public ObservableCollection<PartnerServerCardViewModel> PartnerCards { get; } = new();
+    public event Action<ServerInfo>? ServerInfoRequested;
     public ObservableCollection<HistoryActionItemViewModel> RecentActions { get; } = new();
 
     [ObservableProperty] private string? _selectedVanillaVersion;
@@ -707,7 +708,7 @@ public partial class HomePageViewModel : ObservableObject
                         PartnerCards.Add(new PartnerServerCardViewModel(
                             p,
                             (ver, ip, port) => _ = LaunchDirectGameAsync(LoaderType.Vanilla, ver, null, ip, (short)port, p.Name),
-                            null));
+                            (cardVm, info) => ServerInfoRequested?.Invoke(info)));
                     }
                 });
             }

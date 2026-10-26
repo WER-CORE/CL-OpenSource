@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using Avalonia.Media.Imaging;
 using CL.Core.Models;
@@ -52,9 +52,20 @@ public partial class AccountCardViewModel : ObservableObject
 
     private async Task LoadAvatarAsync(string? url)
     {
-        if (!string.IsNullOrEmpty(url))
+        try
         {
-            IconBitmap = await AvaloniaImageHelper.LoadOptimizedImageAsync(url, 64);
+            Bitmap? bmp = null;
+            if (!string.IsNullOrEmpty(url))
+            {
+                bmp = await AvaloniaImageHelper.LoadOptimizedImageAsync(url, 64);
+            }
+            bmp ??= await AvaloniaImageHelper.LoadOptimizedImageAsync("avares://CL.Avalonia/Assets/default_steve.webp", 64);
+            IconBitmap = bmp;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[AccountCardViewModel] Failed to load avatar: {ex.Message}");
+            IconBitmap = await AvaloniaImageHelper.LoadOptimizedImageAsync("avares://CL.Avalonia/Assets/default_steve.webp", 64);
         }
     }
 

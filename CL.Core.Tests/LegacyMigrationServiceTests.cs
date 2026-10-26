@@ -198,7 +198,7 @@ namespace CL.Core.Tests
                 Assert.Equal("Forest", SettingsManager.Default.Them);
                 Assert.Equal(1.5, SettingsManager.Default.UIScale);
                 Assert.Equal("G:\\.ClMinecraft", SettingsManager.Default.PathLacunher);
-                Assert.True(SettingsManager.Default.FullScreen);
+                Assert.False(SettingsManager.Default.FullScreen);
             }
             finally
             {
@@ -207,6 +207,78 @@ namespace CL.Core.Tests
 
                 if (Directory.Exists(tempTarget))
                     Directory.Delete(tempTarget, true);
+            }
+        }
+    
+        [Theory]
+        [InlineData("pack://application:,,,/CL(CLegendary Launcher);component/Assets/default_steve.png", "avares://CL.Avalonia/Assets/default_steve.webp")]
+        [InlineData("pack://application:,,,/Assets/big-steve-face-2002298922 2.png", "avares://CL.Avalonia/Assets/default_steve.webp")]
+        [InlineData("pack://application:,,,/CL(CLegendary Launcher);component/Assets/LittleSkinAccount.png", "avares://CL.Avalonia/Assets/LittleSkinAccount.webp")]
+        [InlineData("pack://application:,,,/Icon/IconCL(Common).png", "avares://CL.Avalonia/Icon/IconCL(Common).webp")]
+        [InlineData("avares://CL.Avalonia/Assets/default_steve.png", "avares://CL.Avalonia/Assets/default_steve.webp")]
+        [InlineData("https://mc-heads.net/avatar/Steve", "https://mc-heads.net/avatar/Steve")]
+        public void ConvertProfileImageUrl_ConvertsLegacyUris(string input, string expected)
+        {
+            string converted = ProfileManagerService.ConvertProfileImageUrl(input);
+            Assert.Equal(expected, converted);
+        }
+
+        [Fact]
+        public void NormalizeProfiles_ConvertsAndFlagsChanges()
+        {
+            var profiles = new System.Collections.Generic.List<CL.Core.Models.ProfileItem>
+            {
+                new() { NameAccount = "Player1", ImageUrl = "pack://application:,,,/Assets/big-steve-face-2002298922 2.png", TypeAccount = CL.Core.Models.AccountType.Offline },
+                new() { NameAccount = "Player2", ImageUrl = "https://mc-heads.net/avatar/Player2", TypeAccount = CL.Core.Models.AccountType.Microsoft }
+            };
+
+            bool changed = ProfileManagerService.NormalizeProfiles(profiles);
+
+            Assert.True(changed);
+            Assert.Equal("avares://CL.Avalonia/Assets/default_steve.webp", profiles[0].ImageUrl);
+            Assert.Equal("https://mc-heads.net/avatar/Player2", profiles[1].ImageUrl);
+        }
+
+        [Fact]
+        public void ImportProfilesFromFile_ImportsAndConvertsCorrectly()
+        {
+            string tempDir = Path.Combine(Path.GetTempPath(), "cl_test_profiles_import_" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(tempDir);
+
+            try
+            {
+                string sourceJsonPath = Path.Combine(tempDir, "legacy_profiles.json");
+                var sourceProfiles = new System.Collections.Generic.List<CL.Core.Models.ProfileItem>
+                {
+                    new()
+                    {
+                        NameAccount = "LegacyUser",
+                        UUID = "12345",
+                        AccessToken = "token",
+                        ImageUrl = "pack://application:,,,/CL(CLegendary Launcher);component/Assets/LittleSkinAccount.png",
+                        TypeAccount = CL.Core.Models.AccountType.LittleSkin
+                    }
+                };
+
+                File.WriteAllText(sourceJsonPath, Newtonsoft.Json.JsonConvert.SerializeObject(sourceProfiles));
+
+                string targetDir = Path.Combine(tempDir, "target_data");
+                var result = LegacyMigrationService.ImportProfilesFromFile(sourceJsonPath, targetDir);
+
+                Assert.True(result.Success);
+                Assert.Equal(1, result.ProfilesImported);
+
+                var targetService = new ProfileManagerService(targetDir);
+                var loaded = targetService.LoadProfiles();
+
+                Assert.Single(loaded);
+                Assert.Equal("LegacyUser", loaded[0].NameAccount);
+                Assert.Equal("avares://CL.Avalonia/Assets/LittleSkinAccount.webp", loaded[0].ImageUrl);
+            }
+            finally
+            {
+                if (Directory.Exists(tempDir))
+                    Directory.Delete(tempDir, true);
             }
         }
     }

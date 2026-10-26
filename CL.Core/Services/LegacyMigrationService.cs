@@ -58,18 +58,6 @@ namespace CL.Core.Services
 
             var result = new LegacyMigrationResult { Success = true };
 
-            List<ProfileItem>? importedProfiles = null;
-            string sourceProfiles = Path.Combine(dataDir, "ProfilesManeger.json");
-            if (File.Exists(sourceProfiles))
-            {
-                try
-                {
-                    byte[] bytes = File.ReadAllBytes(sourceProfiles);
-                    importedProfiles = TryDecodeProfiles(bytes);
-                }
-                catch { }
-            }
-
             string sourceSettings = Path.Combine(dataDir, "UserSaves.json");
             AppSettings? importedSettings = null;
             if (File.Exists(sourceSettings))
@@ -83,6 +71,23 @@ namespace CL.Core.Services
                 {
                     System.Diagnostics.Debug.WriteLine($"Failed to parse source UserSaves.json: {ex.Message}");
                 }
+            }
+
+            List<ProfileItem>? importedProfiles = null;
+            string sourceProfiles = Path.Combine(dataDir, "ProfilesManeger.json");
+            if (File.Exists(sourceProfiles))
+            {
+                try
+                {
+                    byte[] bytes = File.ReadAllBytes(sourceProfiles);
+                    string? key = importedSettings?.EncryptKey ?? SettingsManager.Default.EncryptKey;
+                    importedProfiles = ProfileManagerService.TryDecodeProfilesBytes(bytes, key);
+                    if (importedProfiles != null)
+                    {
+                        ProfileManagerService.NormalizeProfiles(importedProfiles);
+                    }
+                }
+                catch { }
             }
 
             result.FilesImported = CopyDirectoryContents(dataDir, targetDataDir);
@@ -171,39 +176,66 @@ namespace CL.Core.Services
             return result;
         }
 
-        private static List<ProfileItem>? TryDecodeProfiles(byte[] bytes)
+        public static LegacyMigrationResult ImportProfilesFromFile(string filePath, string? targetDataDir = null)
         {
-            if (bytes == null || bytes.Length == 0) return null;
-
-            if (bytes.Length >= 6 && bytes[0] == (byte)'C' && bytes[1] == (byte)'L' && bytes[2] == (byte)'E' && bytes[3] == (byte)'N' && bytes[4] == (byte)'C')
+            if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath))
             {
-                return null;
+                return new LegacyMigrationResult { Success = false, ErrorMessage = "Файл не існує." };
             }
 
-            if (OperatingSystem.IsWindows())
+            targetDataDir ??= SettingsManager.FolderPath;
+            if (!Directory.Exists(targetDataDir))
             {
-                try
-                {
-                    byte[] decrypted = ProtectedData.Unprotect(bytes, null, DataProtectionScope.CurrentUser);
-                    string json = Encoding.UTF8.GetString(decrypted);
-                    var list = JsonConvert.DeserializeObject<List<ProfileItem>>(json);
-                    if (list != null && list.Count > 0) return list;
-                }
-                catch { }
+                Directory.CreateDirectory(targetDataDir);
             }
 
+            List<ProfileItem>? importedProfiles = null;
             try
             {
-                string text = Encoding.UTF8.GetString(bytes);
-                if (text.TrimStart().StartsWith("["))
+                byte[] bytes = File.ReadAllBytes(filePath);
+                importedProfiles = ProfileManagerService.TryDecodeProfilesBytes(bytes, SettingsManager.Default.EncryptKey);
+            }
+            catch (Exception ex)
+            {
+                return new LegacyMigrationResult { Success = false, ErrorMessage = $"Помилка читання файлу: {ex.Message}" };
+            }
+
+            if (importedProfiles == null || importedProfiles.Count == 0)
+            {
+                return new LegacyMigrationResult { Success = false, ErrorMessage = "У вибраному файлі не знайдено акаунтів для імпорту." };
+            }
+
+            ProfileManagerService.NormalizeProfiles(importedProfiles);
+
+            var targetService = new ProfileManagerService(targetDataDir);
+            var existingProfiles = targetService.LoadProfiles();
+
+            int addedCount = 0;
+            foreach (var imported in importedProfiles)
+            {
+                var existing = existingProfiles.FirstOrDefault(p => p.NameAccount == imported.NameAccount && p.TypeAccount == imported.TypeAccount);
+                if (existing == null)
                 {
-                    var list = JsonConvert.DeserializeObject<List<ProfileItem>>(text);
-                    if (list != null && list.Count > 0) return list;
+                    existingProfiles.Add(imported);
+                    addedCount++;
+                }
+                else
+                {
+                    existing.ImageUrl = imported.ImageUrl;
+                    existing.AccessToken = imported.AccessToken;
+                    existing.UUID = imported.UUID;
+                    existing.LastAuthTime = imported.LastAuthTime;
+                    addedCount++;
                 }
             }
-            catch { }
 
-            return null;
+            targetService.SaveProfiles(existingProfiles);
+
+            return new LegacyMigrationResult
+            {
+                Success = true,
+                ProfilesImported = addedCount
+            };
         }
 
         private static int CopyDirectoryContents(string sourceDir, string targetDir)

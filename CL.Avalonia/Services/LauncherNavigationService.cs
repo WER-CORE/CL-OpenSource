@@ -1,4 +1,6 @@
 using System;
+using System.Linq;
+using CL.Core.Models;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
@@ -49,6 +51,7 @@ public class LauncherNavigationService
         _homePage.SettingsRequested += (_, _) => NavigateToSettings();
         _homePage.NewsRequested += (_, _) => NavigateToNews();
         _homePage.ModPacksRequested += (_, showForgeTutorial) => NavigateToModPacks(showForgeTutorial);
+        _homePage.ServerRequested += (_, serverInfo) => NavigateToServers(serverInfo);
 
         return _homePage;
     }
@@ -198,7 +201,9 @@ public class LauncherNavigationService
         }
     }
 
-    public async void NavigateToServers()
+    public void NavigateToServers() => NavigateToServers(null);
+
+    public async void NavigateToServers(ServerInfo? serverToSelect)
     {
         _main.SetActiveTab(_main.ServersBtnBorder);
         var page = GetServerPage();
@@ -207,6 +212,22 @@ public class LauncherNavigationService
             if (page.DataContext is ServersPageViewModel vm)
             {
                 await vm.EnsureInitializedAsync();
+                if (serverToSelect != null)
+                {
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        var matchingCard = vm.ServerCards.FirstOrDefault(c => c.ServerData?.Ip == serverToSelect.Ip && c.ServerData?.Port == serverToSelect.Port)
+                                           ?? vm.ServerCards.FirstOrDefault(c => c.ServerData?.Name == serverToSelect.Name);
+                        if (matchingCard != null)
+                        {
+                            page.OpenServerInfoPanel(serverToSelect, matchingCard.OnlinePlayers, matchingCard.Icon);
+                        }
+                        else
+                        {
+                            page.OpenServerInfoPanel(serverToSelect, "-", null);
+                        }
+                    });
+                }
             }
         });
     }

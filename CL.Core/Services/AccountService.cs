@@ -277,7 +277,7 @@ namespace CL.Core.Services
                 NameAccount = nickname,
                 UUID = uuid,
                 AccessToken = "-",
-                ImageUrl = $"{CL.Core.Platform.UIConfig.AssetScheme}/Assets/default_steve.png",
+                ImageUrl = $"{CL.Core.Platform.UIConfig.AssetScheme}/Assets/default_steve.webp",
                 TypeAccount = AccountType.Offline
             };
 
@@ -314,7 +314,7 @@ namespace CL.Core.Services
                     NameAccount = session.Username,
                     UUID = session.UUID,
                     AccessToken = session.AccessToken,
-                    ImageUrl = $"{CL.Core.Platform.UIConfig.AssetScheme}/Assets/LittleSkinAccount.png",
+                    ImageUrl = $"{CL.Core.Platform.UIConfig.AssetScheme}/Assets/LittleSkinAccount.webp",
                     TypeAccount = AccountType.LittleSkin
                 };
 

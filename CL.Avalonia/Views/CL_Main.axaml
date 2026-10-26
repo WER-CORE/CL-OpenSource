@@ -308,17 +308,18 @@
                                            Margin="10,0,5,0"
                                            TextTrimming="CharacterEllipsis" />
 
-                                <Path Name="CheckMarkAccount" Grid.Column="2"
-                                      Data="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z"
-                                      Fill="{DynamicResource MainForegroundBrush}"
-                                      Stretch="Uniform"
-                                      Height="16" Width="16"
-                                      Margin="0,0,8,0" VerticalAlignment="Center"
-                                      RenderTransformOrigin="50%,50%">
-                                    <Path.RenderTransform>
-                                        <RotateTransform  Angle="0" />
-                                    </Path.RenderTransform>
-                                </Path>
+                                <Border Name="CheckMarkAccount" Grid.Column="2"
+                                        Width="20" Height="20"
+                                        Margin="0,0,8,0" VerticalAlignment="Center"
+                                        HorizontalAlignment="Center" Background="Transparent"
+                                        RenderTransformOrigin="50%,50%">
+                                    <Border.RenderTransform>
+                                        <RotateTransform Angle="0" />
+                                    </Border.RenderTransform>
+                                    <ic:SymbolIcon Symbol="ChevronDown" FontSize="14"
+                                                   Foreground="{DynamicResource MainForegroundBrush}"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Border>
                             </Grid>
                         </Grid>
                     </Border>
@@ -331,6 +332,7 @@
                   Width="206"
                   Height="134"
                   Margin="0,80,20,0"
+                  ZIndex="25"
                   IsVisible="False">
 
                 <Border Name="OnllinePanel1"

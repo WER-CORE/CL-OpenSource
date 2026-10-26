@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using Avalonia;
@@ -162,7 +162,7 @@ public partial class ServerPage : UserControl
             _boundVm.SearchQuery = SearchSystemTXT.Text ?? string.Empty;
     }
 
-    private void OpenServerInfoPanel(ServerInfo data, string online, Bitmap? iconBitmap)
+    public void OpenServerInfoPanel(ServerInfo data, string online = "-", Bitmap? iconBitmap = null)
     {
         AvaloniaSoundService.Click();
 

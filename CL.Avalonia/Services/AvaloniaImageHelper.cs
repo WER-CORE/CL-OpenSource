@@ -232,8 +232,31 @@ public static class AvaloniaImageHelper
                 relativePath = relativePath.Substring("pack://application:,,,".Length);
             }
 
+            int componentIdx = relativePath.IndexOf(";component/", StringComparison.OrdinalIgnoreCase);
+            if (componentIdx >= 0)
+            {
+                relativePath = relativePath.Substring(componentIdx + ";component/".Length);
+            }
+
             relativePath = relativePath.TrimStart('/');
             string fileName = Path.GetFileName(relativePath);
+            string fileNameNoExt = Path.GetFileNameWithoutExtension(relativePath);
+
+            if (fileNameNoExt.Contains("steve", StringComparison.OrdinalIgnoreCase))
+            {
+                relativePath = "Assets/default_steve.webp";
+                fileName = "default_steve.webp";
+            }
+            else if (fileNameNoExt.Contains("LittleSkin", StringComparison.OrdinalIgnoreCase))
+            {
+                relativePath = "Assets/LittleSkinAccount.webp";
+                fileName = "LittleSkinAccount.webp";
+            }
+            else if (fileNameNoExt.Contains("IconCL", StringComparison.OrdinalIgnoreCase))
+            {
+                relativePath = "Icon/IconCL(Common).webp";
+                fileName = "IconCL(Common).webp";
+            }
 
             string webpRaw = rawPath.EndsWith(".png", StringComparison.OrdinalIgnoreCase)
                 ? rawPath.Substring(0, rawPath.Length - 4) + ".webp"

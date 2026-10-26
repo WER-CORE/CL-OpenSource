@@ -27,6 +27,8 @@ public partial class CL_Main : Window
     private readonly TutorialTourManager _tourManager;
     private Control? _activeTabBorder;
     private bool _isProfilesLoaded;
+    private DateTime _lastAccountToggleTime = DateTime.MinValue;
+    private bool _isAccountMenuAnimating;
 
     public CL_Main()
     {
@@ -427,6 +429,14 @@ public partial class CL_Main : Window
 
     private async void IconAccount_MouseDown(object? sender, PointerPressedEventArgs e)
     {
+        var now = DateTime.UtcNow;
+        if ((now - _lastAccountToggleTime).TotalMilliseconds < 300 || _isAccountMenuAnimating)
+        {
+            return;
+        }
+        _lastAccountToggleTime = now;
+        _isAccountMenuAnimating = true;
+
         try
         {
             AvaloniaSoundService.Click();
@@ -459,6 +469,11 @@ public partial class CL_Main : Window
                     LocalizationManager.GetString("Dialogs.Error", "Помилка"),
                     MascotEmotion.Sad);
             }
+        }
+        finally
+        {
+            await Task.Delay(250);
+            _isAccountMenuAnimating = false;
         }
     }
 

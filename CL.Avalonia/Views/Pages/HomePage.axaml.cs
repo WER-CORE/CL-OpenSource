@@ -44,9 +44,12 @@ public partial class HomePage : UserControl
     public event EventHandler? SettingsRequested;
     public event EventHandler? NewsRequested;
     public event EventHandler<bool>? ModPacksRequested;
+    public event EventHandler<ServerInfo?>? ServerRequested;
 
     private DispatcherTimer? _slideTimer;
     private int _lastIndex = -1;
+    private DateTime _lastVersionToggleTime = DateTime.MinValue;
+    private bool _isClosingVersionMenu;
 
     private static readonly IBrush PressedButtonBrush = new LinearGradientBrush
     {
@@ -71,6 +74,7 @@ public partial class HomePage : UserControl
         base.OnDataContextChanged(e);
         if (DataContext is HomePageViewModel vm)
         {
+            vm.ServerInfoRequested += info => ServerRequested?.Invoke(this, info);
             vm.PartnerCards.CollectionChanged += (_, _) =>
             {
                 Dispatcher.UIThread.Post(() =>
@@ -573,6 +577,13 @@ public partial class HomePage : UserControl
 
     public async void CheckMarkVersionSelect_PointerPressed(object? sender, PointerPressedEventArgs e)
     {
+        var now = DateTime.UtcNow;
+        if ((now - _lastVersionToggleTime).TotalMilliseconds < 300 || _isClosingVersionMenu)
+        {
+            return;
+        }
+        _lastVersionToggleTime = now;
+
         AvaloniaSoundService.Click();
 
         if (SelectVersionTypeGird.IsVisible)
@@ -590,9 +601,9 @@ public partial class HomePage : UserControl
         SelectVersionTypeGird.IsVisible = true;
         SelectVersionTypeGird.Opacity = 1;
 
-        if (CheckMarkVersionSelect.Child is Path chevronPath)
+        if (CheckMarkVersionSelect != null)
         {
-            AvaloniaAnimationService.AnimateRotation(chevronPath, 180);
+            AvaloniaAnimationService.AnimateRotation(CheckMarkVersionSelect, 180);
         }
 
         AvaloniaAnimationService.AnimatePageTransition(SelectVersionTypeGird);
@@ -606,27 +617,34 @@ public partial class HomePage : UserControl
 
     private async Task CloseVersionMenuAsync()
     {
-        if (!SelectVersionTypeGird.IsVisible) return;
-
-        if (CheckMarkVersionSelect.Child is Path chevronPath)
+        if (_isClosingVersionMenu || !SelectVersionTypeGird.IsVisible) return;
+        _isClosingVersionMenu = true;
+        try
         {
-            AvaloniaAnimationService.AnimateRotation(chevronPath, 0);
+            if (CheckMarkVersionSelect != null)
+            {
+                AvaloniaAnimationService.AnimateRotation(CheckMarkVersionSelect, 0);
+            }
+
+            if (SelectVersion.IsVisible) AvaloniaAnimationService.AnimatePageTransitionExit(SelectVersion, 20);
+            AvaloniaAnimationService.AnimatePageTransitionExit(SelectVersionTypeGird, 20);
+            if (SelectVersionMod.IsVisible) AvaloniaAnimationService.AnimatePageTransitionExit(SelectVersionMod, 20);
+
+            await Task.Delay(250);
+
+            SelectVersionTypeGird.IsVisible = false;
+            SelectVersion.IsVisible = false;
+            SelectVersionMod.IsVisible = false;
+
+            if (DataContext is HomePageViewModel { IsVersionSelectorOpen: true } vm &&
+                vm.ToggleVersionSelectorCommand.CanExecute(null))
+            {
+                vm.ToggleVersionSelectorCommand.Execute(null);
+            }
         }
-
-        if (SelectVersion.IsVisible) AvaloniaAnimationService.AnimatePageTransitionExit(SelectVersion, 20);
-        AvaloniaAnimationService.AnimatePageTransitionExit(SelectVersionTypeGird, 20);
-        if (SelectVersionMod.IsVisible) AvaloniaAnimationService.AnimatePageTransitionExit(SelectVersionMod, 20);
-
-        await Task.Delay(250);
-
-        SelectVersionTypeGird.IsVisible = false;
-        SelectVersion.IsVisible = false;
-        SelectVersionMod.IsVisible = false;
-
-        if (DataContext is HomePageViewModel { IsVersionSelectorOpen: true } vm &&
-            vm.ToggleVersionSelectorCommand.CanExecute(null))
+        finally
         {
-            vm.ToggleVersionSelectorCommand.Execute(null);
+            _isClosingVersionMenu = false;
         }
     }
 

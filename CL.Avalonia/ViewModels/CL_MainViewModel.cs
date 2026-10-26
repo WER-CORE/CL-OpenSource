@@ -240,18 +240,21 @@ public partial class CL_MainViewModel : ObservableObject
 
         if (string.IsNullOrEmpty(profile.ImageUrl))
         {
-            await Dispatcher.UIThread.InvokeAsync(() => CurrentAccountAvatar = null);
+            var fallback = await AvaloniaImageHelper.LoadOptimizedImageAsync("avares://CL.Avalonia/Assets/default_steve.webp", 64).ConfigureAwait(false);
+            await Dispatcher.UIThread.InvokeAsync(() => CurrentAccountAvatar = fallback);
         }
         else
         {
             try
             {
                 var avatar = await AvaloniaImageHelper.LoadOptimizedImageAsync(profile.ImageUrl, 64).ConfigureAwait(false);
+                avatar ??= await AvaloniaImageHelper.LoadOptimizedImageAsync("avares://CL.Avalonia/Assets/default_steve.webp", 64).ConfigureAwait(false);
                 await Dispatcher.UIThread.InvokeAsync(() => CurrentAccountAvatar = avatar);
             }
             catch
             {
-                await Dispatcher.UIThread.InvokeAsync(() => CurrentAccountAvatar = null);
+                var fallback = await AvaloniaImageHelper.LoadOptimizedImageAsync("avares://CL.Avalonia/Assets/default_steve.webp", 64).ConfigureAwait(false);
+                await Dispatcher.UIThread.InvokeAsync(() => CurrentAccountAvatar = fallback);
             }
         }
     }
