@@ -122,4 +122,8 @@
 		<PackageReference Include="Velopack" Version="1.2.161" />
 	</ItemGroup>
 
+	<Target Name="CopyExecutableForWindows" AfterTargets="Build" Condition="'$(OS)' == 'Windows_NT'">
+		<Copy SourceFiles="$(TargetDir)CL.Avalonia.exe" DestinationFiles="$(TargetDir)CL(CLegendary Launcher).exe" Condition="Exists('$(TargetDir)CL.Avalonia.exe')" SkipUnchangedFiles="true" />
+	</Target>
+
 </Project>

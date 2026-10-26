@@ -126,6 +126,11 @@ jobs:
       - name: Publish Windows x64
         run: dotnet publish CL.Avalonia/CL.Avalonia.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=false -p:IsPreviewBuild=${{ env.IS_PRERELEASE }} -p:Version=${{ env.RELEASE_VERSION }} -p:AssemblyVersion=${{ env.NUMERIC_VERSION }}.0 -p:FileVersion=${{ env.NUMERIC_VERSION }}.0 -p:InformationalVersion=${{ env.RELEASE_VERSION }} -o ./publish/win-x64
 
+      - name: Prepare Windows Executable Name
+        shell: pwsh
+        run: |
+          Copy-Item -Path "./publish/win-x64/CL.Avalonia.exe" -Destination "./publish/win-x64/CL(CLegendary Launcher).exe" -Force
+
       - name: Sign launcher via SignPath
         if: env.SIGNPATH_API_TOKEN != ''
         continue-on-error: true
@@ -134,8 +139,8 @@ jobs:
           Install-Module -Name SignPath -Force -Scope CurrentUser
           New-Item -ItemType Directory -Path "./signed-launcher" -Force | Out-Null
           Submit-SigningRequest `
-            -InputArtifactPath "./publish/win-x64/CL.Avalonia.exe" `
-            -OutputArtifactPath "./signed-launcher/CL.Avalonia.exe" `
+            -InputArtifactPath "./publish/win-x64/CL(CLegendary Launcher).exe" `
+            -OutputArtifactPath "./signed-launcher/CL(CLegendary Launcher).exe" `
             -ApiToken "${{ env.SIGNPATH_API_TOKEN }}" `
             -OrganizationId "${{ env.SIGNPATH_ORGANIZATION_ID }}" `
             -ProjectSlug "${{ env.SIGNPATH_PROJECT_SLUG }}" `
@@ -146,8 +151,9 @@ jobs:
         if: env.SIGNPATH_API_TOKEN != ''
         shell: pwsh
         run: |
-          if (Test-Path "./signed-launcher/CL.Avalonia.exe") {
-            Copy-Item -Path "./signed-launcher/CL.Avalonia.exe" -Destination "./publish/win-x64/CL.Avalonia.exe" -Force
+          if (Test-Path "./signed-launcher/CL(CLegendary Launcher).exe") {
+            Copy-Item -Path "./signed-launcher/CL(CLegendary Launcher).exe" -Destination "./publish/win-x64/CL(CLegendary Launcher).exe" -Force
+            Copy-Item -Path "./signed-launcher/CL(CLegendary Launcher).exe" -Destination "./publish/win-x64/CL.Avalonia.exe" -Force
           }
 
       - name: Install Velopack CLI
@@ -159,7 +165,7 @@ jobs:
           vpk pack --packId "CLegendaryLauncher" `
                    --packVersion "${{ env.RELEASE_VERSION }}" `
                    --packDir "./publish/win-x64" `
-                   --mainExe "CL.Avalonia.exe" `
+                   --mainExe "CL(CLegendary Launcher).exe" `
                    --icon "CL.Avalonia/Icon/IconCL(Halloween).ico" `
                    --packTitle "CLegendary Launcher" `
                    --packAuthors "WER-CORE" `
@@ -205,14 +211,19 @@ jobs:
               }
             }
 
-            $currentExe = Join-Path $portableTemp "current\CL.Avalonia.exe"
+            $currentExe = Join-Path $portableTemp "current\CL(CLegendary Launcher).exe"
+            if (-not (Test-Path $currentExe)) {
+              $currentExe = Join-Path $portableTemp "current\CL.Avalonia.exe"
+            }
             if (Test-Path $currentExe) {
               $sig = Get-AuthenticodeSignature $currentExe
               if ($sig.Status -ne 'Valid') {
-                if (Test-Path "./signed-launcher/CL.Avalonia.exe") {
+                if (Test-Path "./signed-launcher/CL(CLegendary Launcher).exe") {
+                  Copy-Item -Path "./signed-launcher/CL(CLegendary Launcher).exe" -Destination $currentExe -Force
+                } elseif (Test-Path "./signed-launcher/CL.Avalonia.exe") {
                   Copy-Item -Path "./signed-launcher/CL.Avalonia.exe" -Destination $currentExe -Force
                 } else {
-                  $signedCurrent = "./signed-launcher/current-CL.Avalonia.exe"
+                  $signedCurrent = "./signed-launcher/current-$([System.IO.Path]::GetFileName($currentExe))"
                   Submit-SigningRequest `
                     -InputArtifactPath $currentExe `
                     -OutputArtifactPath $signedCurrent `
