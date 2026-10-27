@@ -1,4 +1,5 @@
 using Avalonia;
+using Avalonia.Skia;
 using Velopack;
 
 namespace CL_CLegendary_Launcher_.Avalonia
@@ -9,6 +10,10 @@ namespace CL_CLegendary_Launcher_.Avalonia
             => AppBuilder.Configure<App>()
                 .UsePlatformDetect()
                 .WithInterFont()
+                .With(new SkiaOptions
+                {
+                    MaxGpuResourceSizeBytes = 64 * 1024 * 1024
+                })
                 .LogToTrace();
 
         [System.STAThread]

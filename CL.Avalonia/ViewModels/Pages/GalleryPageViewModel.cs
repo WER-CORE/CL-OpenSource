@@ -21,6 +21,10 @@ public partial class GalleryPageViewModel : ObservableObject, ITrimmablePage
 
     public void TrimMemory()
     {
+        foreach (var item in Screenshots)
+        {
+            item.ImagePath = null;
+        }
         Screenshots.Clear();
         SelectedScreenshot = null;
         _isInitialized = false;

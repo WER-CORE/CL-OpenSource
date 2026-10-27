@@ -55,6 +55,15 @@ public partial class App : Application
 
         RegisterGlobalSoundHandlers();
 
+        MemoryCleaner.OnExtraCleanup = () =>
+        {
+            try
+            {
+                SkiaSharp.SKGraphics.PurgeAllCaches();
+            }
+            catch { }
+        };
+
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             desktop.ShutdownMode = ShutdownMode.OnMainWindowClose;

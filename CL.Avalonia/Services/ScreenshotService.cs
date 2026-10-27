@@ -152,7 +152,13 @@ public class ScreenshotService
                     }
 
 
-                    var bitmap = AvaloniaImageHelper.LoadOptimizedImage(fileInfo.FullName, 300);
+                    Bitmap? bitmap = null;
+                    try
+                    {
+                        using var stream = File.OpenRead(fileInfo.FullName);
+                        bitmap = Bitmap.DecodeToWidth(stream, 300);
+                    }
+                    catch { }
 
                     if (bitmap != null)
                     {

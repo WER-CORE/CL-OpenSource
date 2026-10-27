@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace CL_CLegendary_Launcher_.Avalonia.ViewModels.Controls;
 
-public partial class ModpackCardViewModel : ObservableObject
+public partial class ModpackCardViewModel : ObservableObject, IDisposable
 {
     private static readonly string[] IconFileNames =
     [
@@ -28,6 +28,16 @@ public partial class ModpackCardViewModel : ObservableObject
     [ObservableProperty] private string _description = string.Empty;
     [ObservableProperty] private Bitmap? _icon;
     [ObservableProperty] private bool _isSettingsVisible;
+
+    public void Dispose()
+    {
+        Icon = null;
+        OnPlay = null;
+        OnDelete = null;
+        OnOpenFolder = null;
+        OnExport = null;
+        OnEdit = null;
+    }
 
     public ModpackCardViewModel()
     {

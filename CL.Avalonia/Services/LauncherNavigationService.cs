@@ -152,7 +152,7 @@ public class LauncherNavigationService
                 _ = DiscordController.UpdatePresence(discordStatus);
             }
 
-            AvaloniaImageHelper.TrimCache(24);
+            AvaloniaImageHelper.TrimCache(16);
 
             _ = Task.Run(async () =>
             {
@@ -194,7 +194,14 @@ public class LauncherNavigationService
     public async void NavigateToModPacks(bool showForgeTutorial)
     {
         _main.SetActiveTab(_main.ModpacksBtnBorder);
-        await NavigateToPage(GetOrCreateModPacksPage(), LocalizationManager.GetString("DiscordRPC.ViewingModpacks", "Дивиться збірки"));
+        var page = GetOrCreateModPacksPage();
+        await NavigateToPage(page, LocalizationManager.GetString("DiscordRPC.ViewingModpacks", "Дивиться збірки"), async () =>
+        {
+            if (page.DataContext is ModpacksPageViewModel vm && vm.ModpackCards.Count == 0)
+            {
+                await vm.RefreshModpacksListAsync();
+            }
+        });
         if (showForgeTutorial)
         {
             _main.ShowForgeTutorial();

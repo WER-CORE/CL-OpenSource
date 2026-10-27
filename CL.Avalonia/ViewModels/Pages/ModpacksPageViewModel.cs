@@ -26,8 +26,17 @@ using Newtonsoft.Json.Linq;
 
 namespace CL_CLegendary_Launcher_.Avalonia.ViewModels.Pages;
 
-public partial class ModpacksPageViewModel : ObservableObject
+public partial class ModpacksPageViewModel : ObservableObject, ITrimmablePage
 {
+    public void TrimMemory()
+    {
+        foreach (var card in ModpackCards)
+        {
+            card.Dispose();
+        }
+        ModpackCards.Clear();
+        _allInstalledModpacks.Clear();
+    }
     private readonly ModpackService? _modpackService;
     private readonly GameSessionManager? _gameSessionManager;
     private readonly AccountService? _accountService;

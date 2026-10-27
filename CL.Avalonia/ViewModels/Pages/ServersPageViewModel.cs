@@ -35,6 +35,13 @@ public partial class ServersPageViewModel : ObservableObject, ITrimmablePage
         IsServerInfoPanelVisible = false;
         IsNewsOverlayVisible = false;
         IsFundraiserOverlayVisible = false;
+        _searchCts?.Cancel();
+        foreach (var card in ServerCards)
+        {
+            card.Dispose();
+        }
+        ServerCards.Clear();
+        _isInitialized = false;
     }
 
     private CancellationTokenSource? _searchCts;
