@@ -195,6 +195,12 @@ jobs:
             if (Test-Path $portableTemp) { Remove-Item -Path $portableTemp -Recurse -Force }
             Expand-Archive -Path "./release_output/CLegendaryLauncher-win-Portable.zip" -DestinationPath $portableTemp -Force
 
+            # Ensure root launcher stub matches preferred naming CL(CLegendary Launcher).exe
+            $rootStub = Get-ChildItem -Path $portableTemp -Filter "CLegendary Launcher.exe" -File
+            if ($rootStub) {
+              Rename-Item -Path $rootStub.FullName -NewName "CL(CLegendary Launcher).exe" -Force
+            }
+
             $portableExes = Get-ChildItem -Path $portableTemp -Filter "*.exe" -File
             foreach ($exe in $portableExes) {
               $signedFile = "./signed-launcher/portable-$($exe.Name)"
