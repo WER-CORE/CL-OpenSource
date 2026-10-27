@@ -1,10 +1,9 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
 
 namespace CL.Core.Services
 {
-
     public static class UrlOpener
     {
         public static Action<Exception, string>? ErrorHandler { get; set; }
@@ -41,10 +40,25 @@ namespace CL.Core.Services
 
         private static void OpenLinux(string target)
         {
-
             if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("FLATPAK_ID")))
             {
-                if (TryRun("flatpak-spawn", "--host", "xdg-open", target)) return;
+                if (TryRunAndWaitSuccess("flatpak-spawn", "--host", "xdg-open", target)) return;
+            }
+
+            bool isFile = File.Exists(target);
+            bool isDir = Directory.Exists(target);
+
+            if (isFile)
+            {
+                string ext = Path.GetExtension(target).ToLowerInvariant();
+                if (ext is ".txt" or ".json" or ".log" or ".cfg" or ".ini" or ".md" or ".yml" or ".yaml")
+                {
+                    string[] editors = { "kwrite", "kate", "xed", "gedit", "mousepad", "pluma", "featherpad", "gnome-text-editor" };
+                    foreach (var editor in editors)
+                    {
+                        if (TryRun(editor, target)) return;
+                    }
+                }
             }
 
             string[] launchers = { "xdg-open", "gio", "gnome-open", "kde-open5", "kde-open", "wslview" };
@@ -52,30 +66,39 @@ namespace CL.Core.Services
             {
                 if (launcher == "gio")
                 {
-                    if (TryRun("gio", "open", target)) return;
+                    if (TryRunAndWaitSuccess("gio", "open", target)) return;
                 }
                 else
                 {
-                    if (TryRun(launcher, target)) return;
+                    if (TryRunAndWaitSuccess(launcher, target)) return;
                 }
             }
 
-            if (Directory.Exists(target) || File.Exists(target))
+            if (isDir || isFile)
             {
-                string[] fileManagers = { "nautilus", "dolphin", "thunar", "pcmanfm" };
+                string dirToOpen = isDir ? target : (Path.GetDirectoryName(target) ?? target);
+                string[] fileManagers = { "dolphin", "nemo", "nautilus", "thunar", "pcmanfm", "pcmanfm-qt", "caja" };
                 foreach (var fm in fileManagers)
                 {
-                    if (TryRun(fm, target)) return;
+                    if (TryRun(fm, dirToOpen)) return;
                 }
             }
 
-            Process.Start(new ProcessStartInfo(target) { UseShellExecute = true });
+            try
+            {
+                Process.Start(new ProcessStartInfo(target) { UseShellExecute = true });
+            }
+            catch { }
         }
 
         private static void OpenMac(string target)
         {
-            if (TryRun("open", target)) return;
-            Process.Start(new ProcessStartInfo(target) { UseShellExecute = true });
+            if (TryRunAndWaitSuccess("open", target)) return;
+            try
+            {
+                Process.Start(new ProcessStartInfo(target) { UseShellExecute = true });
+            }
+            catch { }
         }
 
         private static bool TryRun(string command, params string[] args)
@@ -94,6 +117,36 @@ namespace CL.Core.Services
 
                 using var proc = Process.Start(psi);
                 return proc != null;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private static bool TryRunAndWaitSuccess(string command, params string[] args)
+        {
+            try
+            {
+                var psi = new ProcessStartInfo(command)
+                {
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                };
+                foreach (var arg in args)
+                {
+                    psi.ArgumentList.Add(arg);
+                }
+
+                using var proc = Process.Start(psi);
+                if (proc == null) return false;
+
+                if (proc.WaitForExit(1500))
+                {
+                    return proc.ExitCode == 0;
+                }
+
+                return true;
             }
             catch
             {
