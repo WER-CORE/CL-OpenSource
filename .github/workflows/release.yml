@@ -372,12 +372,15 @@ jobs:
       - name: Organize Linux release artifacts
         run: |
           mkdir -p ./linux_artifacts
-          cp -r ./linux_artifacts_x64/* ./linux_artifacts/
-          if [ -f ./linux_artifacts/CLegendaryLauncher.AppImage ]; then
-            mv ./linux_artifacts/CLegendaryLauncher.AppImage ./linux_artifacts/CLegendaryLauncher-x64.AppImage
-          fi
+          cp ./linux_artifacts_x64/*.nupkg ./linux_artifacts/ 2>/dev/null || true
+          cp ./linux_artifacts_x64/*.json ./linux_artifacts/ 2>/dev/null || true
           cp ./linux_artifacts_arm64/*.nupkg ./linux_artifacts/ 2>/dev/null || true
           cp ./linux_artifacts_arm64/*.json ./linux_artifacts/ 2>/dev/null || true
+          for f in ./linux_artifacts_x64/*.AppImage; do
+            if [ -f "$f" ]; then
+              cp "$f" ./linux_artifacts/CLegendaryLauncher-x64.AppImage || true
+            fi
+          done
           for f in ./linux_artifacts_arm64/*.AppImage; do
             if [ -f "$f" ]; then
               cp "$f" ./linux_artifacts/CLegendaryLauncher-arm64.AppImage || true
@@ -475,6 +478,7 @@ jobs:
 
       - name: Package with Velopack macOS (Apple Silicon arm64)
         run: |
+          mkdir -p ./macos_artifacts_arm64
           vpk pack --packId "CLegendaryLauncher" \
                    --packVersion "${{ env.RELEASE_VERSION }}" \
                    --packDir "./publish/osx-arm64" \
@@ -483,10 +487,11 @@ jobs:
                    --packTitle "CLegendary Launcher" \
                    --packAuthors "WER-CORE" \
                    --channel "osx-arm64" \
-                   --outputDir "./macos_artifacts"
+                   --outputDir "./macos_artifacts_arm64"
 
       - name: Package with Velopack macOS (Intel x64)
         run: |
+          mkdir -p ./macos_artifacts_x64
           vpk pack --packId "CLegendaryLauncher" \
                    --packVersion "${{ env.RELEASE_VERSION }}" \
                    --packDir "./publish/osx-x64" \
@@ -495,7 +500,36 @@ jobs:
                    --packTitle "CLegendary Launcher" \
                    --packAuthors "WER-CORE" \
                    --channel "osx-x64" \
-                   --outputDir "./macos_artifacts"
+                   --outputDir "./macos_artifacts_x64"
+
+      - name: Organize macOS release artifacts
+        run: |
+          mkdir -p ./macos_artifacts
+          cp ./macos_artifacts_arm64/*.nupkg ./macos_artifacts/ 2>/dev/null || true
+          cp ./macos_artifacts_arm64/*.json ./macos_artifacts/ 2>/dev/null || true
+          cp ./macos_artifacts_x64/*.nupkg ./macos_artifacts/ 2>/dev/null || true
+          cp ./macos_artifacts_x64/*.json ./macos_artifacts/ 2>/dev/null || true
+          for f in ./macos_artifacts_arm64/*.pkg; do
+            if [ -f "$f" ]; then
+              cp "$f" ./macos_artifacts/CLegendaryLauncher-osx-arm64-Setup.pkg || true
+            fi
+          done
+          for f in ./macos_artifacts_arm64/*.zip; do
+            if [ -f "$f" ]; then
+              cp "$f" ./macos_artifacts/CLegendaryLauncher-osx-arm64-Portable.zip || true
+            fi
+          done
+          for f in ./macos_artifacts_x64/*.pkg; do
+            if [ -f "$f" ]; then
+              cp "$f" ./macos_artifacts/CLegendaryLauncher-osx-x64-Setup.pkg || true
+            fi
+          done
+          for f in ./macos_artifacts_x64/*.zip; do
+            if [ -f "$f" ]; then
+              cp "$f" ./macos_artifacts/CLegendaryLauncher-osx-x64-Portable.zip || true
+            fi
+          done
+          ls -la ./macos_artifacts
 
       - name: Upload macOS Artifacts
         uses: actions/upload-artifact@v4
