@@ -17,8 +17,13 @@ namespace CL.Core.Services
         [DllImport("psapi.dll", SetLastError = true)]
         private static extern bool EmptyWorkingSet(IntPtr hProcess);
 
-        [DllImport("libc", EntryPoint = "malloc_trim", CallingConvention = CallingConvention.Cdecl)]
-        private static extern int malloc_trim(int pad);
+        private delegate int MallocTrimDelegate(int pad);
+        private static MallocTrimDelegate? _mallocTrim;
+        private static bool _mallocTrimInitialized;
+
+        private delegate void MallocZonePressureReliefDelegate(IntPtr zone, IntPtr goal);
+        private static MallocZonePressureReliefDelegate? _mallocZonePressureRelief;
+        private static bool _macosReliefInitialized;
 
         public static Action? OnExtraCleanup { get; set; }
 
@@ -50,17 +55,73 @@ namespace CL.Core.Services
                     }
                     else if (OperatingSystem.IsLinux())
                     {
-                        try
-                        {
-                            malloc_trim(0);
-                        }
-                        catch { }
+                        TrimLinuxHeap();
+                    }
+                    else if (OperatingSystem.IsMacOS())
+                    {
+                        TrimMacOsHeap();
                     }
                 }
             }
             catch (Exception e)
             {
                 Debug.WriteLine($"[MemoryCleaner] Помилка очищення: {e.Message}");
+            }
+        }
+
+        private static void TrimLinuxHeap()
+        {
+            try
+            {
+                if (!_mallocTrimInitialized)
+                {
+                    _mallocTrimInitialized = true;
+                    string[] candidateLibs = { "libc.so.6", "libc.so", "libc" };
+                    foreach (var lib in candidateLibs)
+                    {
+                        if (NativeLibrary.TryLoad(lib, typeof(MemoryCleaner).Assembly, null, out var handle))
+                        {
+                            if (NativeLibrary.TryGetExport(handle, "malloc_trim", out var funcPtr))
+                            {
+                                _mallocTrim = Marshal.GetDelegateForFunctionPointer<MallocTrimDelegate>(funcPtr);
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                _mallocTrim?.Invoke(0);
+            }
+            catch
+            {
+            }
+        }
+
+        private static void TrimMacOsHeap()
+        {
+            try
+            {
+                if (!_macosReliefInitialized)
+                {
+                    _macosReliefInitialized = true;
+                    string[] candidateLibs = { "/usr/lib/libSystem.B.dylib", "libSystem.B.dylib", "libSystem.dylib" };
+                    foreach (var lib in candidateLibs)
+                    {
+                        if (NativeLibrary.TryLoad(lib, typeof(MemoryCleaner).Assembly, null, out var handle))
+                        {
+                            if (NativeLibrary.TryGetExport(handle, "malloc_zone_pressure_relief", out var funcPtr))
+                            {
+                                _mallocZonePressureRelief = Marshal.GetDelegateForFunctionPointer<MallocZonePressureReliefDelegate>(funcPtr);
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                _mallocZonePressureRelief?.Invoke(IntPtr.Zero, IntPtr.Zero);
+            }
+            catch
+            {
             }
         }
     }

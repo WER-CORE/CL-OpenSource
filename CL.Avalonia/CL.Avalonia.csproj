@@ -29,6 +29,7 @@
 
 	<ItemGroup>
 		<RuntimeHostConfigurationOption Include="System.GC.TrimCommit" Value="true" />
+		<RuntimeHostConfigurationOption Include="System.GC.ConserveMemory" Value="5" />
 	</ItemGroup>
 
 	<ItemGroup>
