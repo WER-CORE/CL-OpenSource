@@ -14,7 +14,7 @@ public static class AvaloniaImageHelper
     private static readonly object _cacheLock = new();
     private static readonly Dictionary<string, (Bitmap Bitmap, DateTime LastAccess)> _bitmapCache = new();
     private static readonly HttpClient _httpClient = new() { Timeout = TimeSpan.FromSeconds(10) };
-    private const int MaxCacheCapacity = 24;
+    private const int MaxCacheCapacity = 16;
 
     static AvaloniaImageHelper()
     {
@@ -35,7 +35,7 @@ public static class AvaloniaImageHelper
         }
     }
 
-    public static void TrimCache(int keepCount = 16)
+    public static void TrimCache(int keepCount = 8)
     {
         lock (_cacheLock)
         {

@@ -413,11 +413,22 @@ namespace CL.Core.Services
                     {
                         ServiceLocator.Current.GetService<IDispatcherService>().Invoke(() => Environment.Exit(0));
                     }
+                    else
+                    {
+                        ServiceLocator.Current.GetService<IDispatcherService>().Invoke(() =>
+                        {
+                            ServiceLocator.Current.GetService<IMainWindowController>().Restore();
+                        });
+                    }
                 }
             }
             catch (OperationCanceledException)
             {
-                ServiceLocator.Current.GetService<IDispatcherService>().Invoke(() => { if (versionDownloadWindow.IsLoaded) versionDownloadWindow.CloseProgressWindow(); });
+                ServiceLocator.Current.GetService<IDispatcherService>().Invoke(() =>
+                {
+                    if (versionDownloadWindow.IsLoaded) versionDownloadWindow.CloseProgressWindow();
+                    ServiceLocator.Current.GetService<IMainWindowController>().Restore();
+                });
                 ServiceLocator.Current.GetService<IDialogService>().ShowMessage(
                     LocalizationManager.GetString("Modpacks.LaunchCancelledDesc", "Добре, я зупинила завантаження модпаку.\nСпробуємо іншим разом!"),
                     LocalizationManager.GetString("GameLaunch.LaunchCancelledTitle", "Скасовано"),
@@ -425,7 +436,11 @@ namespace CL.Core.Services
             }
             catch (Exception ex)
             {
-                ServiceLocator.Current.GetService<IDispatcherService>().Invoke(() => { if (versionDownloadWindow.IsLoaded) versionDownloadWindow.CloseProgressWindow(); });
+                ServiceLocator.Current.GetService<IDispatcherService>().Invoke(() =>
+                {
+                    if (versionDownloadWindow.IsLoaded) versionDownloadWindow.CloseProgressWindow();
+                    ServiceLocator.Current.GetService<IMainWindowController>().Restore();
+                });
                 ServiceLocator.Current.GetService<IDialogService>().ShowMessage(
                     string.Format(LocalizationManager.GetString("Modpacks.LaunchCrashDesc", "Біда! Щось зламалося під час запуску модпаку.\n\nДеталі: {0}"), ex.Message),
                     LocalizationManager.GetString("Modpacks.ConfigCorruptedTitle", "Помилка"),

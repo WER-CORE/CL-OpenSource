@@ -59,6 +59,9 @@ public partial class App : Application
         {
             try
             {
+                AvaloniaImageHelper.TrimCache(4);
+                SkiaSharp.SKGraphics.PurgeFontCache();
+                SkiaSharp.SKGraphics.PurgeResourceCache();
                 SkiaSharp.SKGraphics.PurgeAllCaches();
             }
             catch { }

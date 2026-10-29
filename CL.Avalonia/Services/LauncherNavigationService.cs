@@ -152,11 +152,13 @@ public class LauncherNavigationService
                 _ = DiscordController.UpdatePresence(discordStatus);
             }
 
-            AvaloniaImageHelper.TrimCache(16);
+            AvaloniaImageHelper.TrimCache(8);
 
+            int navToken = currentToken;
             _ = Task.Run(async () =>
             {
                 await Task.Delay(400);
+                if (navToken != _navigationToken) return;
                 await MemoryCleaner.FlushMemoryAsync(trimWorkingSet: OperatingSystem.IsWindows() || OperatingSystem.IsLinux());
             });
 

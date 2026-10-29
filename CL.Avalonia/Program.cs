@@ -12,7 +12,7 @@ namespace CL_CLegendary_Launcher_.Avalonia
                 .WithInterFont()
                 .With(new SkiaOptions
                 {
-                    MaxGpuResourceSizeBytes = 64 * 1024 * 1024
+                    MaxGpuResourceSizeBytes = 32 * 1024 * 1024
                 })
                 .LogToTrace();
 
@@ -23,14 +23,7 @@ namespace CL_CLegendary_Launcher_.Avalonia
             {
                 try
                 {
-                    if (string.IsNullOrEmpty(System.Environment.GetEnvironmentVariable("MALLOC_ARENA_MAX")))
-                    {
-                        System.Environment.SetEnvironmentVariable("MALLOC_ARENA_MAX", "2");
-                    }
-                    if (string.IsNullOrEmpty(System.Environment.GetEnvironmentVariable("MALLOC_TRIM_THRESHOLD_")))
-                    {
-                        System.Environment.SetEnvironmentVariable("MALLOC_TRIM_THRESHOLD_", "131072");
-                    }
+                    CL.Core.Services.MemoryCleaner.ConfigureLinuxAllocator();
                 }
                 catch
                 {

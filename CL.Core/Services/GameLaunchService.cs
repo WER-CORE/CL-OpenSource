@@ -295,10 +295,21 @@ namespace CL.Core.Services
                     {
                         ServiceLocator.Current.GetService<IDispatcherService>().Invoke(() => Environment.Exit(0));
                     }
+                    else
+                    {
+                        ServiceLocator.Current.GetService<IDispatcherService>().Invoke(() =>
+                        {
+                            ServiceLocator.Current.GetService<IMainWindowController>().Restore();
+                        });
+                    }
                 }
             }
             catch (OperationCanceledException)
             {
+                ServiceLocator.Current.GetService<IDispatcherService>().Invoke(() =>
+                {
+                    ServiceLocator.Current.GetService<IMainWindowController>().Restore();
+                });
                 ServiceLocator.Current.GetService<IDialogService>().ShowMessage(
                     LocalizationManager.GetString("GameLaunch.LaunchCancelledDesc", "Гаразд, я зупинила завантаження.\nМи можемо спробувати знову, коли ти будеш готовий!"),
                     LocalizationManager.GetString("GameLaunch.LaunchCancelledTitle", "Скасовано"),
@@ -306,6 +317,10 @@ namespace CL.Core.Services
             }
             catch (Exception ex)
             {
+                ServiceLocator.Current.GetService<IDispatcherService>().Invoke(() =>
+                {
+                    ServiceLocator.Current.GetService<IMainWindowController>().Restore();
+                });
                 ServiceLocator.Current.GetService<IDialogService>().ShowMessage(
                     string.Format(LocalizationManager.GetString("GameLaunch.LaunchCrashDesc", "Ой! Сталася помилка під час запуску гри.\n\nДеталі: {0}"), ex.Message),
                     LocalizationManager.GetString("GameLaunch.LaunchCrashTitle", "Помилка запуску"),

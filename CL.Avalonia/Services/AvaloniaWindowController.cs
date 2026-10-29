@@ -12,7 +12,20 @@ public class AvaloniaWindowController : IMainWindowController
     public void Minimize()
     {
         if (global::Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow != null)
+        {
             desktop.MainWindow.WindowState = global::Avalonia.Controls.WindowState.Minimized;
+            if (OperatingSystem.IsLinux())
+            {
+                desktop.MainWindow.Hide();
+            }
+
+            _ = Task.Run(async () =>
+            {
+                await Task.Delay(200);
+                AvaloniaImageHelper.ClearCache();
+                await CL.Core.Services.MemoryCleaner.FlushMemoryAsync(trimWorkingSet: true);
+            });
+        }
     }
 
     public void Maximize()
@@ -34,7 +47,14 @@ public class AvaloniaWindowController : IMainWindowController
     public void Restore()
     {
         if (global::Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow != null)
+        {
+            if (!desktop.MainWindow.IsVisible)
+            {
+                desktop.MainWindow.Show();
+            }
             desktop.MainWindow.WindowState = global::Avalonia.Controls.WindowState.Normal;
+            desktop.MainWindow.Activate();
+        }
     }
 
     public void ShowSnackbar(string title, string message, int durationSeconds = 3)
