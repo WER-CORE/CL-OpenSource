@@ -116,11 +116,11 @@
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
 		<PackageReference Include="Deadpikle.AvaloniaProgressRing" Version="0.11.0" />
 		<PackageReference Include="FluentAvaloniaUI" Version="3.1.0" />
-		<PackageReference Include="FluentIcons.Avalonia" Version="2.1.341" />
-		<PackageReference Include="Markdown.Avalonia" Version="12.0.0-a3" />
+		<PackageReference Include="FluentIcons.Avalonia" Version="2.1.344" />
+		<PackageReference Include="Markdown.Avalonia" Version="12.0.2" />
 		<PackageReference Include="MCQuery" Version="2022.7.13.192844" />
-		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.12" />
-		<PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.0" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.14" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.14" />
 		<PackageReference Include="Velopack" Version="1.2.161" />
 	</ItemGroup>
 

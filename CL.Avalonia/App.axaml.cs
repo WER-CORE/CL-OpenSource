@@ -1,4 +1,4 @@
-using Avalonia.VisualTree;
+﻿using Avalonia.VisualTree;
 using Avalonia.Input;
 ﻿using System;
 using System.IO;
@@ -143,6 +143,7 @@ public partial class App : Application
         services.AddSingleton<ModpackService>();
         services.AddSingleton<ServerListService>();
         services.AddSingleton<NewsService>();
+        services.AddSingleton<CL.Core.Services.P2P.P2PManagerService>();
         services.AddSingleton(_ =>
         {
             string path = SettingsManager.Default.PathLacunher;
@@ -158,7 +159,7 @@ public partial class App : Application
         services.AddTransient<HomePageViewModel>();
         services.AddTransient<ModpacksPageViewModel>();
         services.AddTransient<ModsPageViewModel>();
-        services.AddTransient<ServersPageViewModel>();
+        services.AddSingleton<ServersPageViewModel>();
         services.AddTransient<GalleryPageViewModel>();
         services.AddTransient<AccountsPageViewModel>();
         services.AddTransient<SettingsPageViewModel>();

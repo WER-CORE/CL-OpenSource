@@ -238,7 +238,7 @@ public partial class HomePageViewModel : ObservableObject
         return accountService.CurrentSession != null && !string.IsNullOrWhiteSpace(accountService.CurrentSession.Username);
     }
 
-    public LaunchConfiguration CreateLaunchConfig(string? serverIp = null, short serverPort = 0, string? serverName = null)
+    public LaunchConfiguration CreateLaunchConfig(string? serverIp = null, int serverPort = 0, string? serverName = null)
     {
         var settings = SettingsManager.Default;
         int ram = settings.OP > 0 ? settings.OP : 2048;
@@ -707,7 +707,7 @@ public partial class HomePageViewModel : ObservableObject
                     {
                         PartnerCards.Add(new PartnerServerCardViewModel(
                             p,
-                            (ver, ip, port) => _ = LaunchDirectGameAsync(LoaderType.Vanilla, ver, null, ip, (short)port, p.Name),
+                            (ver, ip, port) => _ = LaunchDirectGameAsync(LoaderType.Vanilla, ver, null, ip, port, p.Name),
                             (cardVm, info) => ServerInfoRequested?.Invoke(info)));
                     }
                 });
@@ -732,7 +732,7 @@ public partial class HomePageViewModel : ObservableObject
                 {
                     var item = new HistoryActionItemViewModel(
                         action,
-                        onPlayServer: (ver, ip, port) => _ = LaunchDirectGameAsync(LoaderType.Vanilla, ver, null, ip, (short)port),
+                        onPlayServer: (ver, ip, port) => _ = LaunchDirectGameAsync(LoaderType.Vanilla, ver, null, ip, port),
                         onPlayOptifine: (ver, modVer) => _ = LaunchDirectGameAsync(LoaderType.Optifine, ver, modVer),
                         onPlayVanilla: ver => _ = LaunchDirectGameAsync(LoaderType.Vanilla, ver, null)
                     );
@@ -746,7 +746,7 @@ public partial class HomePageViewModel : ObservableObject
         });
     }
 
-    public async Task LaunchDirectGameAsync(LoaderType loader, string version, string? modVersion, string? ip = null, short port = 0, string? serverName = null)
+    public async Task LaunchDirectGameAsync(LoaderType loader, string version, string? modVersion, string? ip = null, int port = 0, string? serverName = null)
     {
         if (_gameLaunchService == null) return;
         var config = CreateLaunchConfig(ip, port, serverName);

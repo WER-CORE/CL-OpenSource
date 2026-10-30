@@ -43,12 +43,20 @@ public partial class DownloadModpackDialogViewModel : ObservableObject, IDisposa
     private const int ItemsPerPage = 10;
     private int _currentPage;
     private CancellationTokenSource? _searchCts;
+    private CancellationTokenSource? _downloadCts;
 
     public Action? CloseAction { get; set; }
     public event Action? ScrollToTopRequested;
 
     [RelayCommand]
-    private void CloseWindow() => CloseAction?.Invoke();
+    private void CloseWindow()
+    {
+        if (IsDownloading || IsImporting)
+        {
+            _downloadCts?.Cancel();
+        }
+        CloseAction?.Invoke();
+    }
 
     [ObservableProperty] private string _searchQuery = string.Empty;
     [ObservableProperty] private string _selectedSite = "Modrinth";
@@ -483,6 +491,10 @@ public partial class DownloadModpackDialogViewModel : ObservableObject, IDisposa
     {
         if (SelectedModpack == null || SelectedPackVersion == null || IsDownloading) return;
 
+        _downloadCts?.Cancel();
+        _downloadCts = new CancellationTokenSource();
+        var token = _downloadCts.Token;
+
         IsDownloading = true;
         ProgressValue = 0;
         DownloadProgressText = "Підготовка... 0%";
@@ -494,15 +506,16 @@ public partial class DownloadModpackDialogViewModel : ObservableObject, IDisposa
         Directory.CreateDirectory(tempFolder);
         string zipFileName = string.IsNullOrWhiteSpace(SelectedPackVersion.FileName) ? $"{SelectedModpack.Name}.zip" : SelectedPackVersion.FileName;
         string zipFilePath = Path.Combine(tempFolder, zipFileName);
+        string extractPath = Path.Combine(baseDir, "CLModpack", SelectedModpack.Name);
+        bool installCompleted = false;
 
         try
         {
-
-            using (var response = await WebHelper.Client.GetAsync(SelectedPackVersion.DownloadUrl, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false))
+            using (var response = await WebHelper.Client.GetAsync(SelectedPackVersion.DownloadUrl, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false))
             {
                 response.EnsureSuccessStatusCode();
                 long? totalBytes = response.Content.Headers.ContentLength;
-                await using var contentStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                await using var contentStream = await response.Content.ReadAsStreamAsync(token).ConfigureAwait(false);
                 await using var fileStream = new FileStream(zipFilePath, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
 
                 var buffer = new byte[8192];
@@ -510,9 +523,9 @@ public partial class DownloadModpackDialogViewModel : ObservableObject, IDisposa
                 int read;
                 int lastPct = -1;
 
-                while ((read = await contentStream.ReadAsync(buffer).ConfigureAwait(false)) > 0)
+                while ((read = await contentStream.ReadAsync(buffer, token).ConfigureAwait(false)) > 0)
                 {
-                    await fileStream.WriteAsync(buffer.AsMemory(0, read)).ConfigureAwait(false);
+                    await fileStream.WriteAsync(buffer.AsMemory(0, read), token).ConfigureAwait(false);
                     totalRead += read;
 
                     if (totalBytes is > 0)
@@ -531,7 +544,8 @@ public partial class DownloadModpackDialogViewModel : ObservableObject, IDisposa
                 }
             }
 
-            string extractPath = Path.Combine(baseDir, "CLModpack", SelectedModpack.Name);
+            token.ThrowIfCancellationRequested();
+
             await ExtractArchiveWithProgressAsync(zipFilePath, extractPath, pct =>
             {
                 Dispatcher.UIThread.Post(() =>
@@ -540,6 +554,8 @@ public partial class DownloadModpackDialogViewModel : ObservableObject, IDisposa
                     DownloadProgressText = $"Розпакування: {pct}%";
                 });
             }).ConfigureAwait(false);
+
+            token.ThrowIfCancellationRequested();
 
             string pathJson = SelectedSite == "Modrinth"
                 ? Path.Combine(extractPath, "modrinth.index.json")
@@ -561,11 +577,23 @@ public partial class DownloadModpackDialogViewModel : ObservableObject, IDisposa
             };
 
             SaveInstalledModpackToJson(newPack);
+            installCompleted = true;
 
             await Dispatcher.UIThread.InvokeAsync(() => CloseAction?.Invoke());
         }
+        catch (OperationCanceledException)
+        {
+            if (!installCompleted && Directory.Exists(extractPath))
+            {
+                try { Directory.Delete(extractPath, true); } catch { }
+            }
+        }
         catch (Exception ex)
         {
+            if (!installCompleted && Directory.Exists(extractPath))
+            {
+                try { Directory.Delete(extractPath, true); } catch { }
+            }
             await Dispatcher.UIThread.InvokeAsync(() =>
                 AvaloniaDialogService.Show($"Помилка завантаження:\n{ex.Message}", "Помилка", MascotEmotion.Sad));
         }
@@ -880,6 +908,7 @@ public partial class DownloadModpackDialogViewModel : ObservableObject, IDisposa
     public void Dispose()
     {
         _searchCts?.Cancel();
+        _downloadCts?.Cancel();
         CloseAction = null;
         ScrollToTopRequested = null;
         Modpacks.Clear();

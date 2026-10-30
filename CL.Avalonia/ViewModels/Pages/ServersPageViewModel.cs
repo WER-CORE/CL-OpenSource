@@ -20,6 +20,10 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Newtonsoft.Json;
 
+using CL.Core.Models.P2P;
+using CL.Core.Services.P2P;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Input.Platform;
 namespace CL_CLegendary_Launcher_.Avalonia.ViewModels.Pages;
 
 public partial class ServersPageViewModel : ObservableObject, ITrimmablePage
@@ -42,6 +46,13 @@ public partial class ServersPageViewModel : ObservableObject, ITrimmablePage
         }
         ServerCards.Clear();
         _isInitialized = false;
+
+
+        if (!IsHostingActive)
+        {
+            _ = _p2pManager.StopDiscoveryAsync();
+            DiscoveredLanWorlds.Clear();
+        }
     }
 
     private CancellationTokenSource? _searchCts;
@@ -86,11 +97,40 @@ public partial class ServersPageViewModel : ObservableObject, ITrimmablePage
     [ObservableProperty] private NewsItem? _selectedNewsItem;
     public ObservableCollection<PartnerServerCardViewModel> PartnerServerCards { get; } = new();
     public ObservableCollection<NewsCardViewModel> NewsCards { get; } = new();
+    private readonly P2PManagerService _p2pManager;
+
+    [ObservableProperty] private bool _isPublicServersTab = true;
+    [ObservableProperty] private bool _isP2PTab;
+
+    public ObservableCollection<P2PLanWorld> DiscoveredLanWorlds { get; } = new();
+    [ObservableProperty] private P2PLanWorld? _selectedLanWorld;
+    [ObservableProperty] private string _manualPortInput = string.Empty;
+    [ObservableProperty] private bool _isDiscoveryRefreshing;
+    [ObservableProperty] private bool _isHostingActive;
+    [ObservableProperty] private string _hostRoomCode = string.Empty;
+    [ObservableProperty] private string _hostWorldName = string.Empty;
+    [ObservableProperty] private string _hostStatus = "Очікування запуску або відкриття LAN-світу у грі...";
+    [ObservableProperty] private bool _requireApproval;
+    [ObservableProperty] private bool _allowOfflinePlayers = true;
+    [ObservableProperty] private bool _isHostBusy;
+    public ObservableCollection<P2PPlayer> ConnectedPlayers { get; } = new();
+
+    [ObservableProperty] private string _inputRoomCode = string.Empty;
+    [ObservableProperty] private bool _isGuestChecking;
+    [ObservableProperty] private bool _isGuestRoomFound;
+    [ObservableProperty] private string _guestWorldName = string.Empty;
+    [ObservableProperty] private string _guestGameVersion = string.Empty;
+    [ObservableProperty] private string _guestLoaderType = string.Empty;
+    [ObservableProperty] private string _guestStatusMessage = string.Empty;
+    [ObservableProperty] private bool _isGuestLaunching;
+    private P2PRoomPayload? _guestPayload;
+
     public ServersPageViewModel() : this(
         ResolveService<ServerListService>() ?? new ServerListService(),
         ResolveService<LastActionService>(),
         ResolveService<NewsService>(),
-        ResolveService<GameSessionManager>())
+        ResolveService<GameSessionManager>(),
+        ResolveService<P2PManagerService>() ?? new P2PManagerService())
     {
     }
 
@@ -98,12 +138,28 @@ public partial class ServersPageViewModel : ObservableObject, ITrimmablePage
         ServerListService serverListService,
         LastActionService? lastActionService,
         NewsService? newsService,
-        GameSessionManager? sessionManager)
+        GameSessionManager? sessionManager,
+        P2PManagerService? p2pManager = null)
     {
         _serverListService = serverListService;
         _lastActionService = lastActionService;
         _newsService = newsService;
         _sessionManager = sessionManager;
+        _p2pManager = p2pManager ?? ResolveService<P2PManagerService>() ?? new P2PManagerService();
+
+        _p2pManager.WorldDiscovered -= OnP2PWorldDiscovered;
+        _p2pManager.WorldDiscovered += OnP2PWorldDiscovered;
+
+        _p2pManager.PlayerConnected -= OnP2PPlayerConnected;
+        _p2pManager.PlayerConnected += OnP2PPlayerConnected;
+
+        _p2pManager.PlayerDisconnected -= OnP2PPlayerDisconnected;
+        _p2pManager.PlayerDisconnected += OnP2PPlayerDisconnected;
+
+        _p2pManager.SessionStateChanged -= OnP2PSessionStateChanged;
+        _p2pManager.SessionStateChanged += OnP2PSessionStateChanged;
+
+        _p2pManager.ApprovalRequested = OnP2PApprovalRequested;
     }
 
     private static T? ResolveService<T>() where T : class
@@ -377,7 +433,7 @@ public partial class ServersPageViewModel : ObservableObject, ITrimmablePage
                 Session = accountService.CurrentSession,
                 AccountType = accountService.CurrentProfile.TypeAccount,
                 ServerIp = ip,
-                ServerPort = (short)port,
+                ServerPort = port,
                 ServerName = serverName
             });
 
@@ -521,6 +577,478 @@ public partial class ServersPageViewModel : ObservableObject, ITrimmablePage
         if (dialogService != null)
         {
             _ = dialogService.ShowMessageAsync(message, title, MascotEmotion.Confused);
+        }
+    }
+
+    [RelayCommand]
+    public void SelectPublicTab()
+    {
+        IsPublicServersTab = true;
+        IsP2PTab = false;
+    }
+
+    [RelayCommand]
+    public async Task SelectP2PTab()
+    {
+        IsPublicServersTab = false;
+        IsP2PTab = true;
+        await InitP2PAsync();
+    }
+
+    private async Task InitP2PAsync()
+    {
+        if (!IsHostingActive)
+        {
+            await _p2pManager.StartDiscoveryAsync();
+        }
+    }
+
+    private void OnP2PWorldDiscovered(P2PLanWorld world)
+    {
+        Dispatcher.UIThread.Post(() =>
+        {
+            var existing = DiscoveredLanWorlds.FirstOrDefault(w => w.Port == world.Port);
+            if (existing == null)
+            {
+                DiscoveredLanWorlds.Add(world);
+                if (SelectedLanWorld == null) SelectedLanWorld = world;
+            }
+            else
+            {
+                int index = DiscoveredLanWorlds.IndexOf(existing);
+                DiscoveredLanWorlds[index] = world;
+                if (SelectedLanWorld?.Port == world.Port) SelectedLanWorld = world;
+            }
+        });
+    }
+
+    [RelayCommand]
+    public async Task RefreshDiscoveryAsync()
+    {
+        if (IsDiscoveryRefreshing) return;
+        IsDiscoveryRefreshing = true;
+        try
+        {
+            await _p2pManager.RefreshDiscoveryAsync();
+        }
+        finally
+        {
+            IsDiscoveryRefreshing = false;
+        }
+    }
+
+    [RelayCommand]
+    public async Task AddManualPortAsync()
+    {
+        if (int.TryParse(ManualPortInput?.Trim(), out int port) && port > 0 && port <= 65535)
+        {
+            var world = await _p2pManager.ScanOrAddPortAsync(port);
+            if (world != null)
+            {
+                SelectedLanWorld = world;
+                ManualPortInput = string.Empty;
+                AvaloniaNotificationService.ShowNotification("Успіх", $"Світ на порті {port} успішно додано!", sec: 2);
+            }
+            else
+            {
+                ShowNotification("Помилка", $"Не вдалося підключитися до порту {port}. Переконайтеся, що світ відкрито для LAN у грі.");
+            }
+        }
+    }
+
+    private void OnP2PPlayerConnected(P2PPlayer player)
+    {
+        Dispatcher.UIThread.Post(() =>
+        {
+            if (!ConnectedPlayers.Any(p => p.ConnectionId == player.ConnectionId))
+            {
+                ConnectedPlayers.Add(player);
+                AvaloniaNotificationService.ShowNotification("Гравець приєднався", $"{player.PlayerName} увійшов у гру!", sec: 3);
+            }
+        });
+    }
+
+    private void OnP2PPlayerDisconnected(P2PPlayer player)
+    {
+        Dispatcher.UIThread.Post(() =>
+        {
+            var existing = ConnectedPlayers.FirstOrDefault(p => p.ConnectionId == player.ConnectionId);
+            if (existing != null)
+            {
+                ConnectedPlayers.Remove(existing);
+                AvaloniaNotificationService.ShowNotification("Гравець вийшов", $"{player.PlayerName} покинув гру.", sec: 3);
+            }
+        });
+    }
+
+    private async Task<bool> OnP2PApprovalRequested(P2PPlayer player)
+    {
+        return await Dispatcher.UIThread.InvokeAsync(async () =>
+        {
+            var dialogService = ResolveService<IDialogService>();
+            if (dialogService == null) return true;
+
+            return await dialogService.AskQuestionAsync(
+                $"Гравець {player.PlayerName} хоче приєднатися до вашої гри.\n\nДозволити вхід?",
+                "Запит на підключення (P2P)",
+                MascotEmotion.Normal);
+        });
+    }
+
+    private void OnP2PSessionStateChanged(P2PRoomSession? session)
+    {
+        Dispatcher.UIThread.Post(() =>
+        {
+            IsHostingActive = session != null && session.IsActive;
+            if (session != null && session.IsActive)
+            {
+                HostRoomCode = session.RoomCode;
+                HostWorldName = session.WorldName;
+                string loaderInfo = !string.IsNullOrEmpty(session.LoaderType) && session.LoaderType != "Vanilla"
+                    ? (!string.IsNullOrEmpty(session.LoaderVersion) ? $" ({session.LoaderType} {session.LoaderVersion})" : $" ({session.LoaderType})")
+                    : string.Empty;
+                HostStatus = $"Спільна гра активна! Версія: {session.GameVersion}{loaderInfo}. Очікування друзів.";
+            }
+            else
+            {
+                HostRoomCode = string.Empty;
+                HostWorldName = string.Empty;
+                HostStatus = "Очікування запуску або відкриття LAN-світу у грі...";
+                ConnectedPlayers.Clear();
+            }
+        });
+    }
+
+    [RelayCommand]
+    public async Task StartHostingAsync()
+    {
+        var targetWorld = SelectedLanWorld ?? DiscoveredLanWorlds.FirstOrDefault();
+        if (targetWorld == null)
+        {
+            ShowNotification(LocalizationManager.GetString("Dialogs.Alert", "Увага"), "Спочатку відкрийте світ для мережі в грі Minecraft (Відкрити для LAN).");
+            return;
+        }
+
+        IsHostBusy = true;
+        HostStatus = "Визначення версії та відкриття кімнати...";
+        try
+        {
+            var accountService = ResolveService<AccountService>();
+            string hostNick = accountService?.CurrentProfile?.NameAccount ?? accountService?.CurrentSession?.Username ?? string.Empty;
+
+            string gameVersion = targetWorld.GameVersion ?? "1.20.1";
+            string loaderType = targetWorld.LoaderType ?? "Vanilla";
+            string loaderVersion = targetWorld.LoaderVersion ?? GameLaunchService.ActiveLoaderVersion ?? string.Empty;
+            string? modsDirectory = targetWorld.ModsDirectory;
+
+            if (string.IsNullOrWhiteSpace(modsDirectory) && !string.IsNullOrEmpty(GameLaunchService.ActiveGamePath))
+            {
+                string candidateMods = System.IO.Path.Combine(GameLaunchService.ActiveGamePath, "mods");
+                if (System.IO.Directory.Exists(candidateMods)) modsDirectory = candidateMods;
+            }
+
+            var pingResult = await MinecraftPingHelper.TryGetServerInfoAsync(targetWorld.Port);
+            if (pingResult != null && !string.IsNullOrWhiteSpace(pingResult.Value.Version))
+            {
+                gameVersion = pingResult.Value.Version;
+                if (!string.IsNullOrEmpty(pingResult.Value.Loader) && pingResult.Value.Loader != "Vanilla")
+                {
+                    loaderType = pingResult.Value.Loader;
+                }
+            }
+            else if (!string.IsNullOrEmpty(GameLaunchService.ActiveMinecraftVersion))
+            {
+                gameVersion = GameLaunchService.ActiveMinecraftVersion;
+                loaderType = GameLaunchService.ActiveLoaderType.ToString();
+            }
+
+            if (loaderType == "Vanilla" && GameLaunchService.ActiveLoaderType != LoaderType.Vanilla)
+            {
+                loaderType = GameLaunchService.ActiveLoaderType.ToString();
+            }
+
+            if (string.IsNullOrEmpty(loaderVersion) && !string.IsNullOrEmpty(GameLaunchService.ActiveLoaderVersion))
+            {
+                loaderVersion = GameLaunchService.ActiveLoaderVersion;
+            }
+
+            if (string.IsNullOrEmpty(targetWorld.ModpackName) && !string.IsNullOrEmpty(GameLaunchService.ActiveModpackName))
+            {
+                targetWorld.ModpackName = GameLaunchService.ActiveModpackName;
+            }
+
+            var session = await _p2pManager.StartHostingAsync(targetWorld, gameVersion, loaderType, loaderVersion, modsDirectory, RequireApproval, hostNick);
+            if (session == null)
+            {
+                HostStatus = "Не вдалося відкрити кімнату. Перевірте з'єднання з мережею.";
+            }
+            else if (AllowOfflinePlayers && accountService?.CurrentProfile?.TypeAccount == AccountType.Microsoft)
+            {
+                HostStatus = "Спільна гра активна! Порада: для входу друзів без ліцензії хосту рекомендовано відкривати світ з офлайн-акаунта.";
+            }
+        }
+        catch (Exception ex)
+        {
+            HostStatus = $"Помилка: {ex.Message}";
+        }
+        finally
+        {
+            IsHostBusy = false;
+        }
+    }
+
+    [RelayCommand]
+    public async Task StopHostingAsync()
+    {
+        IsHostBusy = true;
+        try
+        {
+            await _p2pManager.StopHostingAsync();
+
+            if (IsGuestRoomFound)
+            {
+                IsGuestRoomFound = false;
+                _guestPayload = null;
+                GuestStatusMessage = "Кімнату закрито (хост зупинив спільну гру).";
+            }
+        }
+        finally
+        {
+            IsHostBusy = false;
+        }
+    }
+
+    [RelayCommand]
+    public async Task CopyRoomCodeAsync()
+    {
+        if (string.IsNullOrWhiteSpace(HostRoomCode)) return;
+
+        if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime { MainWindow.Clipboard: { } clipboard })
+        {
+            await clipboard.SetTextAsync(HostRoomCode);
+            AvaloniaNotificationService.ShowNotification("Успіх", "Код кімнати скопійовано в буфер обміну!", sec: 3);
+        }
+    }
+
+    [RelayCommand]
+    public void KickPlayer(P2PPlayer? player)
+    {
+        if (player != null && !string.IsNullOrEmpty(player.ConnectionId))
+        {
+            _p2pManager.KickPlayer(player.ConnectionId);
+        }
+    }
+
+    [RelayCommand]
+    public async Task CheckRoomCodeAsync()
+    {
+        if (string.IsNullOrWhiteSpace(InputRoomCode)) return;
+
+        IsGuestChecking = true;
+        GuestStatusMessage = "Перевірка зв'язку з хостом...";
+        try
+        {
+            var (payload, success, error) = await _p2pManager.ValidateRoomCodeAsync(InputRoomCode);
+            if (success && payload != null)
+            {
+                _guestPayload = payload;
+                GuestWorldName = payload.WorldName;
+                GuestGameVersion = payload.GameVersion;
+                GuestLoaderType = !string.IsNullOrEmpty(payload.LoaderVersion)
+                    ? $"{payload.LoaderType} {payload.LoaderVersion}"
+                    : payload.LoaderType;
+                IsGuestRoomFound = true;
+
+                string loaderInfo = !string.IsNullOrEmpty(payload.LoaderType) && payload.LoaderType != "Vanilla"
+                    ? (!string.IsNullOrEmpty(payload.LoaderVersion) ? $" ({payload.LoaderType} {payload.LoaderVersion})" : $" ({payload.LoaderType})")
+                    : string.Empty;
+
+                if (!string.IsNullOrEmpty(payload.ModpackName))
+                {
+                    GuestStatusMessage = $"Знайдено світ: {payload.WorldName} (Збірка: {payload.ModpackName}, {payload.GameVersion}{loaderInfo})";
+                }
+                else
+                {
+                    GuestStatusMessage = $"Знайдено світ: {payload.WorldName} (версія {payload.GameVersion}{loaderInfo})";
+                }
+            }
+            else
+            {
+                IsGuestRoomFound = false;
+                _guestPayload = null;
+                GuestStatusMessage = error ?? "Невірний або недійсний код кімнати.";
+            }
+        }
+        finally
+        {
+            IsGuestChecking = false;
+        }
+    }
+
+    [RelayCommand]
+    public async Task JoinAndPlayAsync()
+    {
+        if (_guestPayload == null) return;
+
+        IsGuestLaunching = true;
+        GuestStatusMessage = "Запуск клієнта та підключення до світу...";
+        try
+        {
+            var accountService = ResolveService<AccountService>();
+            var launchService = ResolveService<GameLaunchService>();
+            if (accountService == null || launchService == null) return;
+
+            var settings = SettingsManager.Default;
+            int ram = Math.Clamp(settings.OP > 0 ? settings.OP : 2048, 1024, 32768);
+
+            var guestSession = accountService.CurrentSession;
+            var guestAccountType = accountService.CurrentProfile?.TypeAccount ?? AccountType.Offline;
+            if (guestAccountType == AccountType.Offline && guestSession != null && string.IsNullOrEmpty(guestSession.UserType))
+            {
+                guestSession.UserType = "legacy";
+            }
+
+            var config = new LaunchConfiguration
+            {
+                MinimumRamMb = ram,
+                MaximumRamMb = ram,
+                ScreenWidth = settings.width > 0 ? settings.width : 854,
+                ScreenHeight = settings.height > 0 ? settings.height : 480,
+                IsFullscreen = settings.FullScreen,
+                IsOffline = settings.OfflineModLauncher || !NetworkInterface.GetIsNetworkAvailable(),
+                Session = guestSession,
+                AccountType = guestAccountType,
+                ServerIp = _guestPayload.HostAddress,
+                ServerPort = _guestPayload.Port,
+                ServerName = _guestPayload.WorldName,
+                JoinServer = true,
+                AllowOfflineLan = AllowOfflinePlayers
+            };
+
+            if (!string.IsNullOrEmpty(_guestPayload.ModpackName))
+            {
+                var modpackService = ResolveService<ModpackService>();
+                var installedModpacks = modpackService?.LoadInstalledModpacks();
+                var matchingPack = installedModpacks?.FirstOrDefault(p =>
+                    string.Equals(p.Name, _guestPayload.ModpackName, StringComparison.OrdinalIgnoreCase) &&
+                    (string.IsNullOrEmpty(_guestPayload.GameVersion) || string.Equals(p.MinecraftVersion, _guestPayload.GameVersion, StringComparison.OrdinalIgnoreCase)) &&
+                    (string.IsNullOrEmpty(_guestPayload.LoaderType) || string.Equals(p.LoaderType, _guestPayload.LoaderType, StringComparison.OrdinalIgnoreCase)));
+
+                if (matchingPack != null)
+                {
+                    matchingPack.EnterInServer = true;
+                    matchingPack.ServerIP = $"{_guestPayload.HostAddress}:{_guestPayload.Port}";
+
+                    string mcVer = !string.IsNullOrWhiteSpace(matchingPack.MinecraftVersion) && !matchingPack.MinecraftVersion.Equals("Unknown", StringComparison.OrdinalIgnoreCase)
+                        ? matchingPack.MinecraftVersion
+                        : _guestPayload.GameVersion;
+                    string loaderVer = !string.IsNullOrWhiteSpace(matchingPack.LoaderVersion) && !matchingPack.LoaderVersion.Equals("Unknown", StringComparison.OrdinalIgnoreCase)
+                        ? matchingPack.LoaderVersion
+                        : _guestPayload.LoaderVersion;
+                    string loaderType = !string.IsNullOrWhiteSpace(matchingPack.LoaderType) && !matchingPack.LoaderType.Equals("Unknown", StringComparison.OrdinalIgnoreCase)
+                        ? matchingPack.LoaderType
+                        : _guestPayload.LoaderType;
+
+                    modpackService!.PlayModPack(
+                        mcVer,
+                        loaderVer,
+                        loaderType,
+                        matchingPack.Name,
+                        matchingPack.Path,
+                        matchingPack.PathJson,
+                        matchingPack.TypeSite,
+                        matchingPack.JavaPath,
+                        config
+                    );
+                    return;
+                }
+                else
+                {
+                    if (string.Equals(_guestPayload.ModpackTypeSite, "Custom", StringComparison.OrdinalIgnoreCase))
+                    {
+                        ShowNotification("Користувацька збірка",
+                            $"Збірку «{_guestPayload.ModpackName}» ({_guestPayload.GameVersion}, {_guestPayload.LoaderType}) створено вручну в CL.\n\nЇї немає в публічних каталогах Modrinth або CurseForge. Будь ласка, перенесіть файли збірки з комп'ютера хоста та імпортуйте їх у вкладці «Збірки».");
+                        GuestStatusMessage = "Для входу потрібна локальна збірка хоста.";
+                        return;
+                    }
+
+                    var dialogService = ResolveService<IDialogService>();
+                    string question = $"Збірку «{_guestPayload.ModpackName}» ({_guestPayload.GameVersion}, {_guestPayload.LoaderType}) не знайдено серед встановлених.\n\nЗавантажити та встановити її автоматично для входу в кімнату?";
+                    bool shouldDownload = dialogService != null && await dialogService.AskQuestionAsync(question, "Встановлення збірки", MascotEmotion.Confused);
+
+                    if (shouldDownload && modpackService != null)
+                    {
+                        GuestStatusMessage = $"Завантаження збірки «{_guestPayload.ModpackName}»...";
+                        var installedPack = await modpackService.AutoDownloadAndInstallModpackAsync(
+                            _guestPayload.ModpackName,
+                            _guestPayload.GameVersion,
+                            _guestPayload.LoaderType,
+                            (status, _) =>
+                            {
+                                Dispatcher.UIThread.Post(() => GuestStatusMessage = status);
+                            },
+                            typeSite: _guestPayload.ModpackTypeSite
+                        );
+
+                        if (installedPack != null)
+                        {
+                            installedPack.EnterInServer = true;
+                            installedPack.ServerIP = $"{_guestPayload.HostAddress}:{_guestPayload.Port}";
+
+                            string mcVer = !string.IsNullOrWhiteSpace(installedPack.MinecraftVersion) && !installedPack.MinecraftVersion.Equals("Unknown", StringComparison.OrdinalIgnoreCase)
+                                ? installedPack.MinecraftVersion
+                                : _guestPayload.GameVersion;
+                            string loaderVer = !string.IsNullOrWhiteSpace(installedPack.LoaderVersion) && !installedPack.LoaderVersion.Equals("Unknown", StringComparison.OrdinalIgnoreCase)
+                                ? installedPack.LoaderVersion
+                                : _guestPayload.LoaderVersion;
+                            string loaderType = !string.IsNullOrWhiteSpace(installedPack.LoaderType) && !installedPack.LoaderType.Equals("Unknown", StringComparison.OrdinalIgnoreCase)
+                                ? installedPack.LoaderType
+                                : _guestPayload.LoaderType;
+
+                            GuestStatusMessage = "Запуск завантаженої збірки...";
+                            modpackService.PlayModPack(
+                                mcVer,
+                                loaderVer,
+                                loaderType,
+                                installedPack.Name,
+                                installedPack.Path,
+                                installedPack.PathJson,
+                                installedPack.TypeSite,
+                                installedPack.JavaPath,
+                                config
+                            );
+                            return;
+                        }
+                        else
+                        {
+                            ShowNotification("Помилка завантаження",
+                                $"Не вдалося автоматично знайти або завантажити збірку «{_guestPayload.ModpackName}».\n\nБудь ласка, встановіть або імпортуйте її у вкладці «Збірки».");
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        GuestStatusMessage = "Приєднання скасовано: відсутня потрібна збірка.";
+                        return;
+                    }
+                }
+            }
+
+            string version = !string.IsNullOrEmpty(_guestPayload.GameVersion) ? _guestPayload.GameVersion : "1.20.1";
+            var loader = LoaderType.Vanilla;
+            if (string.Equals(_guestPayload.LoaderType, "Fabric", StringComparison.OrdinalIgnoreCase)) loader = LoaderType.Fabric;
+            else if (string.Equals(_guestPayload.LoaderType, "Forge", StringComparison.OrdinalIgnoreCase)) loader = LoaderType.Forge;
+            else if (string.Equals(_guestPayload.LoaderType, "NeoForge", StringComparison.OrdinalIgnoreCase)) loader = LoaderType.NeoForge;
+
+            await launchService.LaunchGameAsync(loader, version, _guestPayload.LoaderVersion, config);
+        }
+        catch (Exception ex)
+        {
+            GuestStatusMessage = $"Помилка підключення: {ex.Message}";
+        }
+        finally
+        {
+            IsGuestLaunching = false;
         }
     }
 }

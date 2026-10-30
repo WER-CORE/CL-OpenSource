@@ -731,7 +731,15 @@ public partial class CreateModpackViewModel : ObservableObject, IDisposable
 
             Directory.CreateDirectory(basePath);
 
-            string newJson = JsonConvert.SerializeObject(_tempModList, Formatting.Indented);
+            var manifest = new CustomModpackManifest
+            {
+                Name = name,
+                Minecraft = SelectedMinecraftVersion ?? "Unknown",
+                Loader = IsVanilla ? "Vanilla" : SelectedLoaderType,
+                LoaderVersion = IsVanilla ? "Latest" : (SelectedLoaderVersion ?? "Unknown"),
+                Files = _tempModList ?? new List<ModInfo>()
+            };
+            string newJson = JsonConvert.SerializeObject(manifest, Formatting.Indented);
             await File.WriteAllTextAsync(pathJson, newJson);
 
             string iconDestPath = Path.Combine(basePath, "icon.png");

@@ -1,4 +1,4 @@
-﻿using CL.Core.Interfaces;
+using CL.Core.Interfaces;
 using CL.Core.Platform;
 using CL.Core.Models;
 using CmlLib.Core.Auth;
@@ -83,7 +83,8 @@ namespace CL.Core.Services
                     {
                         Username = profile.NameAccount,
                         UUID = profile.UUID,
-                        AccessToken = "access_token"
+                        AccessToken = "access_token",
+                        UserType = "legacy"
                     };
                 }
                 else if (profile.TypeAccount == AccountType.LittleSkin)
