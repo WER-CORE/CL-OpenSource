@@ -89,6 +89,37 @@ public partial class ServerPage : UserControl
         if (Loc_TxtPlayServer != null) Loc_TxtPlayServer.Text = LocalizationManager.GetString("Servers.PlayOnServer", "ГРАТИ НА СЕРВЕРІ");
         if (DescriptionServer != null && string.IsNullOrWhiteSpace(DescriptionServer.Text))
             DescriptionServer.Text = LocalizationManager.GetString("Servers.Description", "Опис...");
+
+        if (Loc_TxtTabPublic != null) Loc_TxtTabPublic.Text = LocalizationManager.GetString("P2P.TabPublic", "Громадські сервери");
+        if (Loc_TxtTabP2P != null) Loc_TxtTabP2P.Text = LocalizationManager.GetString("P2P.TabP2P", "Гра з друзями (P2P)");
+        if (Loc_TxtHostTitle != null) Loc_TxtHostTitle.Text = LocalizationManager.GetString("P2P.HostTitle", "Створити спільну гру (Хост)");
+        if (Loc_TxtHostSubtitle != null) Loc_TxtHostSubtitle.Text = LocalizationManager.GetString("P2P.HostSubtitle", "Трансляція вашого LAN-світу друзям");
+        if (Loc_TxtLanWorldsTitle != null) Loc_TxtLanWorldsTitle.Text = LocalizationManager.GetString("P2P.LanWorldsTitle", "Виявлені світи у вашій мережі:");
+        if (Loc_BtnRefreshDiscovery != null) ToolTip.SetTip(Loc_BtnRefreshDiscovery, LocalizationManager.GetString("P2P.RefreshTooltip", "Оновити пошук світів"));
+        if (Loc_TxtRefreshBtn != null) Loc_TxtRefreshBtn.Text = LocalizationManager.GetString("P2P.RefreshBtn", "Оновити");
+        if (Loc_TxtManualPortInput != null) Loc_TxtManualPortInput.PlaceholderText = LocalizationManager.GetString("P2P.PortPlaceholder", "Або вкажіть порт LAN вручну (наприклад 54321)...");
+        if (Loc_BtnAddManualPort != null) Loc_BtnAddManualPort.Content = LocalizationManager.GetString("P2P.AddPortBtn", "Додати");
+        if (Loc_TxtLanHint != null) Loc_TxtLanHint.Text = LocalizationManager.GetString("P2P.LanHint", "Порада: увійдіть у світ Minecraft, відкрийте меню паузи і натисніть «Відкрити для LAN».");
+        if (Loc_TxtApprovalTitle != null) Loc_TxtApprovalTitle.Text = LocalizationManager.GetString("P2P.ApprovalTitle", "Ручне схвалення підключень");
+        if (Loc_TxtApprovalDesc != null) Loc_TxtApprovalDesc.Text = LocalizationManager.GetString("P2P.ApprovalDesc", "Запитувати дозвіл перед входом нових гравців");
+        if (Loc_TxtOfflineTitle != null) Loc_TxtOfflineTitle.Text = LocalizationManager.GetString("P2P.OfflineTitle", "Дозволити гравців без ліцензії");
+        if (Loc_TxtOfflineDesc != null) Loc_TxtOfflineDesc.Text = LocalizationManager.GetString("P2P.OfflineDesc", "Дозволяє друзям з офлайн-акаунтами приєднуватися до гри");
+        if (Loc_TxtStartHostingBtn != null) Loc_TxtStartHostingBtn.Text = LocalizationManager.GetString("P2P.StartHostingBtn", "Почати спільну гру");
+        if (Loc_TxtHostingActive != null) Loc_TxtHostingActive.Text = LocalizationManager.GetString("P2P.HostingActive", "Спільний доступ активний");
+        if (Loc_TxtRoomCodeTitle != null) Loc_TxtRoomCodeTitle.Text = LocalizationManager.GetString("P2P.RoomCodeTitle", "Код кімнати (передайте друзям):");
+        if (Loc_TxtCopyBtn != null) Loc_TxtCopyBtn.Text = LocalizationManager.GetString("P2P.CopyBtn", "Копіювати");
+        if (Loc_TxtIpProtectedHint != null) Loc_TxtIpProtectedHint.Text = LocalizationManager.GetString("P2P.IpProtectedHint", "Ваша IP-адреса надійно прихована від сторонніх очей та стрімів.");
+        if (Loc_TxtWaitingPlayers != null) Loc_TxtWaitingPlayers.Text = LocalizationManager.GetString("P2P.WaitingPlayers", "Очікування підключення гравців...");
+        if (Loc_TxtStopHostingBtn != null) Loc_TxtStopHostingBtn.Text = LocalizationManager.GetString("P2P.StopHostingBtn", "Зупинити спільний доступ");
+        if (Loc_TxtGuestTitle != null) Loc_TxtGuestTitle.Text = LocalizationManager.GetString("P2P.GuestTitle", "Приєднатися до гри (Гість)");
+        if (Loc_TxtGuestSubtitle != null) Loc_TxtGuestSubtitle.Text = LocalizationManager.GetString("P2P.GuestSubtitle", "Підключення за унікальним кодом кімнати");
+        if (Loc_TxtGuestHint != null) Loc_TxtGuestHint.Text = LocalizationManager.GetString("P2P.GuestHint", "Введіть код кімнати, наданий хостом, щоб перевірити версію та підключитися:");
+        if (Loc_TxtSearchRoomBtn != null) Loc_TxtSearchRoomBtn.Text = LocalizationManager.GetString("P2P.SearchRoomBtn", "Знайти");
+        if (Loc_TxtRoomFound != null) Loc_TxtRoomFound.Text = LocalizationManager.GetString("P2P.RoomFound", "Кімнату успішно знайдено!");
+        if (Loc_TxtWorldLabel != null) Loc_TxtWorldLabel.Text = LocalizationManager.GetString("P2P.WorldLabel", "Світ:");
+        if (Loc_TxtVersionLabel != null) Loc_TxtVersionLabel.Text = LocalizationManager.GetString("P2P.VersionLabel", "Версія:");
+        if (Loc_TxtLoaderLabel != null) Loc_TxtLoaderLabel.Text = LocalizationManager.GetString("P2P.LoaderLabel", "Завантажувач:");
+        if (Loc_TxtJoinAndPlayBtn != null) Loc_TxtJoinAndPlayBtn.Text = LocalizationManager.GetString("P2P.JoinAndPlayBtn", "ПРИЄДНАТИСЯ ТА ГРАТИ");
     }
 
     private void OnServerCardsChanged(object? sender, NotifyCollectionChangedEventArgs e)

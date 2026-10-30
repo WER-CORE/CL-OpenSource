@@ -109,7 +109,7 @@ public partial class ServersPageViewModel : ObservableObject, ITrimmablePage
     [ObservableProperty] private bool _isHostingActive;
     [ObservableProperty] private string _hostRoomCode = string.Empty;
     [ObservableProperty] private string _hostWorldName = string.Empty;
-    [ObservableProperty] private string _hostStatus = "Очікування запуску або відкриття LAN-світу у грі...";
+    [ObservableProperty] private string _hostStatus = LocalizationManager.GetString("P2P.WaitingLan", "Очікування запуску або відкриття LAN-світу у грі...");
     [ObservableProperty] private bool _requireApproval;
     [ObservableProperty] private bool _allowOfflinePlayers = true;
     [ObservableProperty] private bool _isHostBusy;
@@ -647,11 +647,16 @@ public partial class ServersPageViewModel : ObservableObject, ITrimmablePage
             {
                 SelectedLanWorld = world;
                 ManualPortInput = string.Empty;
-                AvaloniaNotificationService.ShowNotification("Успіх", $"Світ на порті {port} успішно додано!", sec: 2);
+                AvaloniaNotificationService.ShowNotification(
+                    LocalizationManager.GetString("Generic.Success", "Успіх"),
+                    string.Format(LocalizationManager.GetString("P2P.PortAddedSuccess", "Світ на порті {0} успішно додано!"), port),
+                    sec: 2);
             }
             else
             {
-                ShowNotification("Помилка", $"Не вдалося підключитися до порту {port}. Переконайтеся, що світ відкрито для LAN у грі.");
+                ShowNotification(
+                    LocalizationManager.GetString("Dialogs.Error", "Помилка"),
+                    string.Format(LocalizationManager.GetString("P2P.PortAddError", "Не вдалося підключитися до порту {0}. Переконайтеся, що світ відкрито для LAN у грі."), port));
             }
         }
     }
@@ -663,7 +668,10 @@ public partial class ServersPageViewModel : ObservableObject, ITrimmablePage
             if (!ConnectedPlayers.Any(p => p.ConnectionId == player.ConnectionId))
             {
                 ConnectedPlayers.Add(player);
-                AvaloniaNotificationService.ShowNotification("Гравець приєднався", $"{player.PlayerName} увійшов у гру!", sec: 3);
+                AvaloniaNotificationService.ShowNotification(
+                    LocalizationManager.GetString("P2P.PlayerJoinedTitle", "Гравець приєднався"),
+                    string.Format(LocalizationManager.GetString("P2P.PlayerJoined", "{0} увійшов у гру!"), player.PlayerName),
+                    sec: 3);
             }
         });
     }
@@ -676,7 +684,10 @@ public partial class ServersPageViewModel : ObservableObject, ITrimmablePage
             if (existing != null)
             {
                 ConnectedPlayers.Remove(existing);
-                AvaloniaNotificationService.ShowNotification("Гравець вийшов", $"{player.PlayerName} покинув гру.", sec: 3);
+                AvaloniaNotificationService.ShowNotification(
+                    LocalizationManager.GetString("P2P.PlayerLeftTitle", "Гравець вийшов"),
+                    string.Format(LocalizationManager.GetString("P2P.PlayerLeft", "{0} покинув гру."), player.PlayerName),
+                    sec: 3);
             }
         });
     }
@@ -689,8 +700,8 @@ public partial class ServersPageViewModel : ObservableObject, ITrimmablePage
             if (dialogService == null) return true;
 
             return await dialogService.AskQuestionAsync(
-                $"Гравець {player.PlayerName} хоче приєднатися до вашої гри.\n\nДозволити вхід?",
-                "Запит на підключення (P2P)",
+                string.Format(LocalizationManager.GetString("P2P.ApprovalPromptDesc", "Гравець {0} хоче приєднатися до вашої гри.\n\nДозволити вхід?"), player.PlayerName),
+                LocalizationManager.GetString("P2P.ApprovalPromptTitle", "Запит на підключення (P2P)"),
                 MascotEmotion.Normal);
         });
     }
@@ -707,13 +718,13 @@ public partial class ServersPageViewModel : ObservableObject, ITrimmablePage
                 string loaderInfo = !string.IsNullOrEmpty(session.LoaderType) && session.LoaderType != "Vanilla"
                     ? (!string.IsNullOrEmpty(session.LoaderVersion) ? $" ({session.LoaderType} {session.LoaderVersion})" : $" ({session.LoaderType})")
                     : string.Empty;
-                HostStatus = $"Спільна гра активна! Версія: {session.GameVersion}{loaderInfo}. Очікування друзів.";
+                HostStatus = string.Format(LocalizationManager.GetString("P2P.ActiveHostingWaiting", "Спільна гра активна! Версія: {0}. Очікування друзів."), $"{session.GameVersion}{loaderInfo}");
             }
             else
             {
                 HostRoomCode = string.Empty;
                 HostWorldName = string.Empty;
-                HostStatus = "Очікування запуску або відкриття LAN-світу у грі...";
+                HostStatus = LocalizationManager.GetString("P2P.WaitingLan", "Очікування запуску або відкриття LAN-світу у грі...");
                 ConnectedPlayers.Clear();
             }
         });
@@ -725,7 +736,9 @@ public partial class ServersPageViewModel : ObservableObject, ITrimmablePage
         var targetWorld = SelectedLanWorld ?? DiscoveredLanWorlds.FirstOrDefault();
         if (targetWorld == null)
         {
-            ShowNotification(LocalizationManager.GetString("Dialogs.Alert", "Увага"), "Спочатку відкрийте світ для мережі в грі Minecraft (Відкрити для LAN).");
+            ShowNotification(
+                LocalizationManager.GetString("Dialogs.Alert", "Увага"),
+                LocalizationManager.GetString("P2P.NeedOpenLanFirst", "Спочатку відкрийте світ для мережі в грі Minecraft (Відкрити для LAN)."));
             return;
         }
 
@@ -784,12 +797,12 @@ public partial class ServersPageViewModel : ObservableObject, ITrimmablePage
             }
             else if (AllowOfflinePlayers && accountService?.CurrentProfile?.TypeAccount == AccountType.Microsoft)
             {
-                HostStatus = "Спільна гра активна! Порада: для входу друзів без ліцензії хосту рекомендовано відкривати світ з офлайн-акаунта.";
+                HostStatus = LocalizationManager.GetString("P2P.ActiveHostingOfflineTip", "Спільна гра активна! Порада: для входу друзів без ліцензії хосту рекомендовано відкривати світ з офлайн-акаунта.");
             }
         }
         catch (Exception ex)
         {
-            HostStatus = $"Помилка: {ex.Message}";
+            HostStatus = $"{LocalizationManager.GetString("Dialogs.Error", "Помилка")}: {ex.Message}";
         }
         finally
         {
@@ -809,7 +822,7 @@ public partial class ServersPageViewModel : ObservableObject, ITrimmablePage
             {
                 IsGuestRoomFound = false;
                 _guestPayload = null;
-                GuestStatusMessage = "Кімнату закрито (хост зупинив спільну гру).";
+                GuestStatusMessage = LocalizationManager.GetString("P2P.RoomClosed", "Кімнату закрито (хост зупинив спільну гру).");
             }
         }
         finally
@@ -826,7 +839,10 @@ public partial class ServersPageViewModel : ObservableObject, ITrimmablePage
         if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime { MainWindow.Clipboard: { } clipboard })
         {
             await clipboard.SetTextAsync(HostRoomCode);
-            AvaloniaNotificationService.ShowNotification("Успіх", "Код кімнати скопійовано в буфер обміну!", sec: 3);
+            AvaloniaNotificationService.ShowNotification(
+                LocalizationManager.GetString("Generic.Success", "Успіх"),
+                LocalizationManager.GetString("P2P.RoomCodeCopied", "Код кімнати скопійовано в буфер обміну!"),
+                sec: 3);
         }
     }
 
@@ -845,7 +861,7 @@ public partial class ServersPageViewModel : ObservableObject, ITrimmablePage
         if (string.IsNullOrWhiteSpace(InputRoomCode)) return;
 
         IsGuestChecking = true;
-        GuestStatusMessage = "Перевірка зв'язку з хостом...";
+        GuestStatusMessage = LocalizationManager.GetString("P2P.SearchingRoom", "Перевірка зв'язку з хостом...");
         try
         {
             var (payload, success, error) = await _p2pManager.ValidateRoomCodeAsync(InputRoomCode);
@@ -865,18 +881,25 @@ public partial class ServersPageViewModel : ObservableObject, ITrimmablePage
 
                 if (!string.IsNullOrEmpty(payload.ModpackName))
                 {
-                    GuestStatusMessage = $"Знайдено світ: {payload.WorldName} (Збірка: {payload.ModpackName}, {payload.GameVersion}{loaderInfo})";
+                    GuestStatusMessage = string.Format(
+                        LocalizationManager.GetString("P2P.JoiningModpackSuccess", "Знайдено світ: {0} (Збірка: {1}, {2})"),
+                        payload.WorldName,
+                        payload.ModpackName,
+                        $"{payload.GameVersion}{loaderInfo}");
                 }
                 else
                 {
-                    GuestStatusMessage = $"Знайдено світ: {payload.WorldName} (версія {payload.GameVersion}{loaderInfo})";
+                    GuestStatusMessage = string.Format(
+                        LocalizationManager.GetString("P2P.JoiningRoomSuccess", "Знайдено світ: {0} (версія {1})"),
+                        payload.WorldName,
+                        $"{payload.GameVersion}{loaderInfo}");
                 }
             }
             else
             {
                 IsGuestRoomFound = false;
                 _guestPayload = null;
-                GuestStatusMessage = error ?? "Невірний або недійсний код кімнати.";
+                GuestStatusMessage = error ?? LocalizationManager.GetString("P2P.RoomNotFound", "Невірний або недійсний код кімнати.");
             }
         }
         finally
@@ -966,19 +989,33 @@ public partial class ServersPageViewModel : ObservableObject, ITrimmablePage
                 {
                     if (string.Equals(_guestPayload.ModpackTypeSite, "Custom", StringComparison.OrdinalIgnoreCase))
                     {
-                        ShowNotification("Користувацька збірка",
-                            $"Збірку «{_guestPayload.ModpackName}» ({_guestPayload.GameVersion}, {_guestPayload.LoaderType}) створено вручну в CL.\n\nЇї немає в публічних каталогах Modrinth або CurseForge. Будь ласка, перенесіть файли збірки з комп'ютера хоста та імпортуйте їх у вкладці «Збірки».");
-                        GuestStatusMessage = "Для входу потрібна локальна збірка хоста.";
+                        ShowNotification(
+                            LocalizationManager.GetString("P2P.CustomModpackTitle", "Користувацька збірка"),
+                            string.Format(
+                                LocalizationManager.GetString("P2P.CustomModpackDesc", "Збірку «{0}» ({1}, {2}) створено вручну в CL.\n\nЇї немає в публічних каталогах Modrinth або CurseForge. Будь ласка, перенесіть файли збірки з комп'ютера хоста та імпортуйте їх у вкладці «Збірки»."),
+                                _guestPayload.ModpackName,
+                                _guestPayload.GameVersion,
+                                _guestPayload.LoaderType));
+                        GuestStatusMessage = LocalizationManager.GetString("P2P.CustomModpackStatus", "Для входу потрібна локальна збірка хоста.");
                         return;
                     }
 
                     var dialogService = ResolveService<IDialogService>();
-                    string question = $"Збірку «{_guestPayload.ModpackName}» ({_guestPayload.GameVersion}, {_guestPayload.LoaderType}) не знайдено серед встановлених.\n\nЗавантажити та встановити її автоматично для входу в кімнату?";
-                    bool shouldDownload = dialogService != null && await dialogService.AskQuestionAsync(question, "Встановлення збірки", MascotEmotion.Confused);
+                    string question = string.Format(
+                        LocalizationManager.GetString("P2P.ModpackInstallQuestion", "Збірку «{0}» ({1}, {2}) не знайдено серед встановлених.\n\nЗавантажити та встановити її автоматично для входу в кімнату?"),
+                        _guestPayload.ModpackName,
+                        _guestPayload.GameVersion,
+                        _guestPayload.LoaderType);
+                    bool shouldDownload = dialogService != null && await dialogService.AskQuestionAsync(
+                        question,
+                        LocalizationManager.GetString("P2P.ModpackInstallTitle", "Встановлення збірки"),
+                        MascotEmotion.Confused);
 
                     if (shouldDownload && modpackService != null)
                     {
-                        GuestStatusMessage = $"Завантаження збірки «{_guestPayload.ModpackName}»...";
+                        GuestStatusMessage = string.Format(
+                            LocalizationManager.GetString("P2P.ModpackDownloading", "Завантаження збірки «{0}»..."),
+                            _guestPayload.ModpackName);
                         var installedPack = await modpackService.AutoDownloadAndInstallModpackAsync(
                             _guestPayload.ModpackName,
                             _guestPayload.GameVersion,
@@ -1005,7 +1042,7 @@ public partial class ServersPageViewModel : ObservableObject, ITrimmablePage
                                 ? installedPack.LoaderType
                                 : _guestPayload.LoaderType;
 
-                            GuestStatusMessage = "Запуск завантаженої збірки...";
+                            GuestStatusMessage = LocalizationManager.GetString("P2P.ModpackLaunching", "Запуск завантаженої збірки...");
                             modpackService.PlayModPack(
                                 mcVer,
                                 loaderVer,
@@ -1021,14 +1058,17 @@ public partial class ServersPageViewModel : ObservableObject, ITrimmablePage
                         }
                         else
                         {
-                            ShowNotification("Помилка завантаження",
-                                $"Не вдалося автоматично знайти або завантажити збірку «{_guestPayload.ModpackName}».\n\nБудь ласка, встановіть або імпортуйте її у вкладці «Збірки».");
+                            ShowNotification(
+                                LocalizationManager.GetString("P2P.ModpackDownloadFailTitle", "Помилка завантаження"),
+                                string.Format(
+                                    LocalizationManager.GetString("P2P.ModpackDownloadFailDesc", "Не вдалося автоматично знайти або завантажити збірку «{0}».\n\nБудь ласка, встановіть або імпортуйте її у вкладці «Збірки»."),
+                                    _guestPayload.ModpackName));
                             return;
                         }
                     }
                     else
                     {
-                        GuestStatusMessage = "Приєднання скасовано: відсутня потрібна збірка.";
+                        GuestStatusMessage = LocalizationManager.GetString("P2P.JoinCancelledNoModpack", "Приєднання скасовано: відсутня потрібна збірка.");
                         return;
                     }
                 }
@@ -1044,7 +1084,7 @@ public partial class ServersPageViewModel : ObservableObject, ITrimmablePage
         }
         catch (Exception ex)
         {
-            GuestStatusMessage = $"Помилка підключення: {ex.Message}";
+            GuestStatusMessage = string.Format(LocalizationManager.GetString("P2P.ConnectError", "Помилка підключення: {0}"), ex.Message);
         }
         finally
         {
