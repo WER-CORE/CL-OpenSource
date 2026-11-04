@@ -109,15 +109,15 @@ public partial class ModsPage : UserControl
     private void OnModCardsChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         ScrollModsToTop();
+        if (ModsDowloadList != null && ModsDowloadList.IsVisible)
+        {
+            AvaloniaAnimationService.AnimatePageTransition(ModsDowloadList, 20, 0.25);
+        }
     }
 
     private void ModsPage_Loaded(object? sender, RoutedEventArgs e)
     {
         UpdateIndicatorPosition(animate: false);
-        if (_boundVm != null && _boundVm.SearchResults.Count == 0 && !_boundVm.IsLoading)
-        {
-            _boundVm.TriggerSearch();
-        }
     }
 
     private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -129,8 +129,15 @@ public partial class ModsPage : UserControl
             case nameof(ModsPageViewModel.IsLoading):
                 ModsSearchLoader.IsVisible = _boundVm.IsLoading;
                 ModsSkeletonPanel.IsVisible = _boundVm.IsLoading;
-                ModsDowloadList.IsVisible = !_boundVm.IsLoading;
-                if (!_boundVm.IsLoading) ScrollModsToTop();
+                if (!_boundVm.IsLoading)
+                {
+                    ScrollModsToTop();
+                    AvaloniaAnimationService.AnimatePageTransition(ModsDowloadList, 20, 0.25);
+                }
+                else
+                {
+                    ModsDowloadList.IsVisible = false;
+                }
                 break;
 
             case nameof(ModsPageViewModel.PageNumberText):
@@ -172,12 +179,14 @@ public partial class ModsPage : UserControl
     public void PrevPageBtn_Click(object? sender, RoutedEventArgs e)
     {
         AvaloniaSoundService.Click();
+        if (PrevPageBtn != null) AvaloniaAnimationService.AnimatePressBounce(PrevPageBtn);
         _boundVm?.PrevPageCommand.Execute(null);
     }
 
     public void NextPageBtn_Click(object? sender, RoutedEventArgs e)
     {
         AvaloniaSoundService.Click();
+        if (NextPageBtn != null) AvaloniaAnimationService.AnimatePressBounce(NextPageBtn);
         _boundVm?.NextPageCommand.Execute(null);
     }
 
@@ -288,6 +297,7 @@ public partial class ModsPage : UserControl
         if (sender is Control element && byte.TryParse(element.Tag?.ToString(), out byte categoryId))
         {
             AvaloniaSoundService.Click();
+            AvaloniaAnimationService.AnimatePressBounce(element);
             _currentCategoryIndex = categoryId;
             UpdateIndicatorPosition(animate: true);
             _boundVm?.SetCategory(categoryId);
@@ -321,9 +331,10 @@ public partial class ModsPage : UserControl
 
     public void OnModProviderClicked(object? sender, PointerPressedEventArgs e)
     {
-        if (sender is Control { Tag: string provider })
+        if (sender is Control { Tag: string provider } element)
         {
             AvaloniaSoundService.Click();
+            AvaloniaAnimationService.AnimatePressBounce(element);
             AvaloniaAnimationService.AnimateVerticalIndicator(PanelSelectNowSiteMods, provider == "Modrinth" ? 0 : 45);
             _boundVm?.SetProvider(provider);
         }
@@ -331,9 +342,10 @@ public partial class ModsPage : UserControl
 
     public void OnLoaderTypeClicked(object? sender, PointerPressedEventArgs e)
     {
-        if (sender is Control { Tag: string loaderType })
+        if (sender is Control { Tag: string loaderType } element)
         {
             AvaloniaSoundService.Click();
+            AvaloniaAnimationService.AnimatePressBounce(element);
             double targetPos = loaderType switch
             {
                 "Fabric" => 0,
@@ -350,6 +362,7 @@ public partial class ModsPage : UserControl
     public void ModsDowloadTypeTXT_MouseDown(object? sender, PointerPressedEventArgs e)
     {
         AvaloniaSoundService.Click();
+        if (sender is Control element) AvaloniaAnimationService.AnimatePressBounce(element);
         AvaloniaAnimationService.AnimateVerticalIndicator(PanelSelectNowModsType, 0);
         VersionVanilBorder.IsVisible = false;
         CollectionListBorder.IsVisible = true;
@@ -359,6 +372,7 @@ public partial class ModsPage : UserControl
     public void ModsManegerTypeTXT_MouseDown(object? sender, PointerPressedEventArgs e)
     {
         AvaloniaSoundService.Click();
+        if (sender is Control element) AvaloniaAnimationService.AnimatePressBounce(element);
         AvaloniaAnimationService.AnimateVerticalIndicator(PanelSelectNowModsType, 45);
         VersionVanilBorder.IsVisible = true;
         CollectionListBorder.IsVisible = false;

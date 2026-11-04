@@ -30,6 +30,10 @@ public partial class ModpacksPageViewModel : ObservableObject, ITrimmablePage
 {
     public void TrimMemory()
     {
+    }
+
+    public void Unload()
+    {
         foreach (var card in ModpackCards)
         {
             card.Dispose();

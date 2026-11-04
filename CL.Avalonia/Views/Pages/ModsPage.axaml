@@ -280,61 +280,63 @@
                                 <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
 
-                            <Grid Grid.Row="0" Height="45" Margin="0,0,0,15">
+                            <Grid Grid.Row="0" Height="44" Margin="0,0,0,15">
                                 <Border x:Name="BorderSelectDowloadModificed" BorderThickness="1" BorderBrush="#20FFFFFF"
                                 CornerRadius="12" Background="{DynamicResource MainBackgroundBrushServer}" />
 
-                                <Border x:Name="PanelSelectNowDowloadModifi" Width="0" Height="35"
-                                CornerRadius="10" Background="{DynamicResource MainBackgroundButton}"
-                                HorizontalAlignment="Left" VerticalAlignment="Center" Margin="5,0,0,0">
-                                    <Border.Effect>
-                                        <DropShadowEffect BlurRadius="10" OffsetX="0" OffsetY="2" Opacity="0.3" />
-                                    </Border.Effect>
-                                    <Border.RenderTransform>
-                                        <TranslateTransform />
-                                    </Border.RenderTransform>
-                                </Border>
+                                <Grid Margin="4">
+                                    <Border x:Name="PanelSelectNowDowloadModifi" Width="0"
+                                    CornerRadius="8" Background="{DynamicResource MainBackgroundButton}"
+                                    HorizontalAlignment="Left" VerticalAlignment="Stretch">
+                                        <Border.Effect>
+                                            <DropShadowEffect BlurRadius="8" OffsetX="0" OffsetY="1" Opacity="0.25" />
+                                        </Border.Effect>
+                                        <Border.RenderTransform>
+                                            <TranslateTransform />
+                                        </Border.RenderTransform>
+                                    </Border>
 
-                                <Grid x:Name="CategoriesGrid" SizeChanged="CategoriesGrid_SizeChanged">
-                                    <Grid.Styles>
-                                        <Style Selector="Grid#CategoriesGrid TextBlock">
-                                            <Setter Property="FontFamily" Value="Inter" />
-                                            <Setter Property="FontSize" Value="14" />
-                                            <Setter Property="FontWeight" Value="SemiBold" />
-                                            <Setter Property="Foreground" Value="{DynamicResource MainForegroundBrush}" />
-                                            <Setter Property="HorizontalAlignment" Value="Center" />
-                                            <Setter Property="VerticalAlignment" Value="Center" />
-                                            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
-                                        </Style>
-                                        <Style Selector="Grid#CategoriesGrid Border">
-                                            <Setter Property="Background" Value="Transparent" />
-                                            <Setter Property="Cursor" Value="Hand" />
-                                        </Style>
-                                    </Grid.Styles>
+                                    <Grid x:Name="CategoriesGrid" SizeChanged="CategoriesGrid_SizeChanged">
+                                        <Grid.Styles>
+                                            <Style Selector="Grid#CategoriesGrid TextBlock">
+                                                <Setter Property="FontFamily" Value="Inter" />
+                                                <Setter Property="FontSize" Value="14" />
+                                                <Setter Property="FontWeight" Value="SemiBold" />
+                                                <Setter Property="Foreground" Value="{DynamicResource MainForegroundBrush}" />
+                                                <Setter Property="HorizontalAlignment" Value="Center" />
+                                                <Setter Property="VerticalAlignment" Value="Center" />
+                                                <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+                                            </Style>
+                                            <Style Selector="Grid#CategoriesGrid Border">
+                                                <Setter Property="Background" Value="Transparent" />
+                                                <Setter Property="Cursor" Value="Hand" />
+                                            </Style>
+                                        </Grid.Styles>
 
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="*" />
-                                    </Grid.ColumnDefinitions>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
 
-                                    <Border Grid.Column="0" Tag="0" PointerPressed="OnModCategoryClicked">
-                                        <TextBlock x:Name="ModsTXT" Text="Моди" />
-                                    </Border>
-                                    <Border Grid.Column="1" Tag="1" PointerPressed="OnModCategoryClicked">
-                                        <TextBlock x:Name="ShardTXT" Text="Шейдери" />
-                                    </Border>
-                                    <Border Grid.Column="2" Tag="2" PointerPressed="OnModCategoryClicked">
-                                        <TextBlock x:Name="ResourcePackTXT" Text="Ресурспаки" />
-                                    </Border>
-                                    <Border Grid.Column="3" Tag="3" PointerPressed="OnModCategoryClicked">
-                                        <TextBlock x:Name="MapsTXT" Text="Мапи" />
-                                    </Border>
-                                    <Border Grid.Column="4" Tag="4" PointerPressed="OnModCategoryClicked">
-                                        <TextBlock x:Name="DataPacksTXT" Text="Датапаки" />
-                                    </Border>
+                                        <Border Grid.Column="0" Tag="0" PointerPressed="OnModCategoryClicked">
+                                            <TextBlock x:Name="ModsTXT" Text="Моди" />
+                                        </Border>
+                                        <Border Grid.Column="1" Tag="1" PointerPressed="OnModCategoryClicked">
+                                            <TextBlock x:Name="ShardTXT" Text="Шейдери" />
+                                        </Border>
+                                        <Border Grid.Column="2" Tag="2" PointerPressed="OnModCategoryClicked">
+                                            <TextBlock x:Name="ResourcePackTXT" Text="Ресурспаки" />
+                                        </Border>
+                                        <Border Grid.Column="3" Tag="3" PointerPressed="OnModCategoryClicked">
+                                            <TextBlock x:Name="MapsTXT" Text="Мапи" />
+                                        </Border>
+                                        <Border Grid.Column="4" Tag="4" PointerPressed="OnModCategoryClicked">
+                                            <TextBlock x:Name="DataPacksTXT" Text="Датапаки" />
+                                        </Border>
+                                    </Grid>
                                 </Grid>
                             </Grid>
 

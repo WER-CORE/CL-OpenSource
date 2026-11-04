@@ -40,13 +40,19 @@ public partial class ServersPageViewModel : ObservableObject, ITrimmablePage
         IsNewsOverlayVisible = false;
         IsFundraiserOverlayVisible = false;
         _searchCts?.Cancel();
+    }
+
+    public void Unload()
+    {
+        TrimMemory();
         foreach (var card in ServerCards)
         {
             card.Dispose();
         }
         ServerCards.Clear();
+        AllServers.Clear();
+        DisplayedServers.Clear();
         _isInitialized = false;
-
 
         if (!IsHostingActive)
         {

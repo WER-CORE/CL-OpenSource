@@ -24,6 +24,11 @@ public partial class NewsPageViewModel : ObservableObject, ITrimmablePage, IDisp
     {
         SelectedNewsImage = null;
         IsArticleOpen = false;
+    }
+
+    public void Unload()
+    {
+        TrimMemory();
         foreach (var card in NewsCards)
         {
             card.Dispose();

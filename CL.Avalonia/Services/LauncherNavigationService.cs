@@ -152,7 +152,6 @@ public class LauncherNavigationService
                 _ = DiscordController.UpdatePresence(discordStatus);
             }
 
-            AvaloniaImageHelper.TrimCache(8);
 
             int navToken = currentToken;
             _ = Task.Run(async () =>
@@ -170,6 +169,49 @@ public class LauncherNavigationService
         catch
         {
         }
+    }
+
+    public void UnloadDisabledModules()
+    {
+        var settings = SettingsManager.Default;
+
+        if (!settings.EnableMods && _modsPage != null)
+        {
+            if (_currentPage == _modsPage) NavigateToHome();
+            if (_modsPage.DataContext is ITrimmablePage vm) vm.Unload();
+            _modsPage = null;
+        }
+
+        if (!settings.EnableServers && _serverPage != null)
+        {
+            if (_currentPage == _serverPage) NavigateToHome();
+            if (_serverPage.DataContext is ITrimmablePage vm) vm.Unload();
+            _serverPage = null;
+        }
+
+        if (!settings.EnableModpacks && _modPacksPage != null)
+        {
+            if (_currentPage == _modPacksPage) NavigateToHome();
+            if (_modPacksPage.DataContext is ITrimmablePage vm) vm.Unload();
+            _modPacksPage = null;
+        }
+
+        if (!settings.EnableGallery && _galleryPage != null)
+        {
+            if (_currentPage == _galleryPage) NavigateToHome();
+            if (_galleryPage.DataContext is ITrimmablePage vm) vm.Unload();
+            _galleryPage = null;
+        }
+
+        if (!settings.EnableSubInfo_News && _newsPage != null)
+        {
+            if (_currentPage == _newsPage) NavigateToHome();
+            if (_newsPage.DataContext is ITrimmablePage vm) vm.Unload();
+            _newsPage = null;
+        }
+
+        AvaloniaImageHelper.ClearCache();
+        _ = MemoryCleaner.FlushMemoryAsync(trimWorkingSet: OperatingSystem.IsWindows() || OperatingSystem.IsLinux());
     }
 
     public async void NavigateToHome()

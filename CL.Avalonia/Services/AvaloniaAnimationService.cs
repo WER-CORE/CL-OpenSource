@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia;
@@ -16,10 +17,10 @@ namespace CL_CLegendary_Launcher_.Avalonia.Services
 {
     public static class AvaloniaAnimationService
     {
-        private static readonly Dictionary<Control, CancellationTokenSource> _tabIndicatorCts = new();
-        private static readonly Dictionary<Control, CancellationTokenSource> _scaleCts = new();
-        private static readonly Dictionary<Control, CancellationTokenSource> _rotateCts = new();
-        private static readonly Dictionary<Control, CancellationTokenSource> _transitionCts = new();
+        private static readonly ConditionalWeakTable<Control, CancellationTokenSource> _tabIndicatorCts = new();
+        private static readonly ConditionalWeakTable<Control, CancellationTokenSource> _scaleCts = new();
+        private static readonly ConditionalWeakTable<Control, CancellationTokenSource> _rotateCts = new();
+        private static readonly ConditionalWeakTable<Control, CancellationTokenSource> _transitionCts = new();
 
         public static void AnimateProgressBar(RangeBase progressBar, double targetValue, double durationMs = 250)
         {
@@ -86,7 +87,7 @@ namespace CL_CLegendary_Launcher_.Avalonia.Services
             if (animate)
             {
                 var cts = new CancellationTokenSource();
-                _tabIndicatorCts[indicator] = cts;
+                _tabIndicatorCts.AddOrUpdate(indicator, cts);
 
                 var duration = TimeSpan.FromMilliseconds(250);
                 var easing = new BackEaseOut();
@@ -196,7 +197,7 @@ namespace CL_CLegendary_Launcher_.Avalonia.Services
             if (Math.Abs(currentAngle - targetAngle) < 0.01) return;
 
             var cts = new CancellationTokenSource();
-            _rotateCts[element] = cts;
+            _rotateCts.AddOrUpdate(element, cts);
 
             var duration = TimeSpan.FromSeconds(durationSeconds);
             var easing = new QuadraticEaseOut();
@@ -272,7 +273,7 @@ namespace CL_CLegendary_Launcher_.Avalonia.Services
             }
 
             var cts = new CancellationTokenSource();
-            _scaleCts[element] = cts;
+            _scaleCts.AddOrUpdate(element, cts);
 
             var anim = new Animation
             {
@@ -308,7 +309,7 @@ namespace CL_CLegendary_Launcher_.Avalonia.Services
             }
 
             var cts = new CancellationTokenSource();
-            _transitionCts[element] = cts;
+            _transitionCts.AddOrUpdate(element, cts);
 
             if (element.RenderTransform == null || element.RenderTransform is not TranslateTransform)
             {
@@ -376,7 +377,7 @@ namespace CL_CLegendary_Launcher_.Avalonia.Services
             }
 
             var cts = new CancellationTokenSource();
-            _transitionCts[element] = cts;
+            _transitionCts.AddOrUpdate(element, cts);
 
             if (element.RenderTransform == null || element.RenderTransform is not TranslateTransform)
             {
@@ -423,6 +424,10 @@ namespace CL_CLegendary_Launcher_.Avalonia.Services
             }
             catch (OperationCanceledException)
             {
+            }
+            finally
+            {
+                _transitionCts.Remove(element);
             }
         }
 
@@ -530,6 +535,16 @@ namespace CL_CLegendary_Launcher_.Avalonia.Services
             await anim.RunAsync(border);
 
             if (!visibly) border.IsVisible = false;
+        }
+        public static void AnimatePressBounce(Control element)
+        {
+            if (element == null) return;
+            AnimateScale(element, 0.93, 0.08);
+            _ = Task.Run(async () =>
+            {
+                await Task.Delay(90);
+                await Dispatcher.UIThread.InvokeAsync(() => AnimateScale(element, 1.0, 0.12));
+            });
         }
     }
 }

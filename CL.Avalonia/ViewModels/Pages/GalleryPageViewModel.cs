@@ -21,12 +21,19 @@ public partial class GalleryPageViewModel : ObservableObject, ITrimmablePage
 
     public void TrimMemory()
     {
+        SelectedScreenshot = null;
+        IsActionPanelVisible = false;
+    }
+
+    public void Unload()
+    {
+        TrimMemory();
         foreach (var item in Screenshots)
         {
             item.ImagePath = null;
         }
         Screenshots.Clear();
-        SelectedScreenshot = null;
+        Sources.Clear();
         _isInitialized = false;
         IsNoScreenshotsVisible = true;
     }

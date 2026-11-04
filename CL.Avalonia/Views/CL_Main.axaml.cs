@@ -146,7 +146,11 @@ public partial class CL_Main : Window
 
     private void OnModulesConfigurationChanged()
     {
-        Dispatcher.UIThread.Post(ApplyModulesVisibility);
+        Dispatcher.UIThread.Post(() =>
+        {
+            ApplyModulesVisibility();
+            NavigationService.UnloadDisabledModules();
+        });
     }
 
     private void OnUiScaleConfigurationChanged(double newScale)

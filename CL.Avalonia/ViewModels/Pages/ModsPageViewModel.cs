@@ -32,18 +32,29 @@ public partial class ModsPageViewModel : ObservableObject, ITrimmablePage
     public void TrimMemory()
     {
         _searchCts?.Cancel();
+        IsInstallerOpen = false;
+    }
+
+    public void Unload()
+    {
+        _searchCts?.Cancel();
         foreach (var card in ModCards)
         {
             card.Dispose();
         }
         ModCards.Clear();
         SearchResults.Clear();
+        InstalledModpacks.Clear();
+        GameVersions.Clear();
+        ModFileVersions.Clear();
         IsResultsEmpty = false;
+        IsInstallerOpen = false;
     }
 
     private const int ItemsPerPage = 10;
     private CancellationTokenSource? _searchCts;
     private List<ModVersionInfo>? _currentModVersions;
+    private int _searchOperationToken;
 
     [ObservableProperty] private string _searchText = string.Empty;
     [ObservableProperty] private string _siteMods = "Modrinth";
@@ -229,6 +240,16 @@ public partial class ModsPageViewModel : ObservableObject, ITrimmablePage
             if (!token.IsCancellationRequested)
             {
                 await Dispatcher.UIThread.InvokeAsync(() => IsLoading = false);
+
+                int opToken = unchecked(++_searchOperationToken);
+                _ = Task.Run(async () =>
+                {
+                    await Task.Delay(400);
+                    if (opToken != _searchOperationToken) return;
+
+                    AvaloniaImageHelper.TrimCache(12);
+                    await MemoryCleaner.FlushMemoryAsync(trimWorkingSet: OperatingSystem.IsWindows() || OperatingSystem.IsLinux());
+                });
             }
         }
     }
