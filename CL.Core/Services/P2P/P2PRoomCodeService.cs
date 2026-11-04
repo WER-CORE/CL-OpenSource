@@ -10,6 +10,7 @@ namespace CL.Core.Services.P2P;
 public class P2PRoomPayload
 {
     public string HostAddress { get; set; } = string.Empty;
+    public string? PublicDomain { get; set; }
     public int Port { get; set; }
     public string SessionSecret { get; set; } = string.Empty;
     public string WorldName { get; set; } = string.Empty;
@@ -83,6 +84,29 @@ public static class P2PRoomCodeService
         if (cleaned.StartsWith("clegendary://join/", StringComparison.OrdinalIgnoreCase))
         {
             cleaned = cleaned.Substring("clegendary://join/".Length);
+        }
+
+        if (cleaned.IndexOf(".e4mc.link", StringComparison.OrdinalIgnoreCase) >= 0)
+        {
+            string host = cleaned;
+            int port = 25565;
+            int colonIdx = cleaned.IndexOf(':');
+            if (colonIdx > 0 && int.TryParse(cleaned.Substring(colonIdx + 1), out int parsedPort))
+            {
+                host = cleaned.Substring(0, colonIdx);
+                port = parsedPort;
+            }
+
+            payload = new P2PRoomPayload
+            {
+                HostAddress = host,
+                Port = port,
+                PublicDomain = host,
+                WorldName = "Світ e4mc",
+                GameVersion = "1.20.1",
+                LoaderType = "Vanilla"
+            };
+            return true;
         }
 
         if (cleaned.StartsWith("CL-", StringComparison.OrdinalIgnoreCase))

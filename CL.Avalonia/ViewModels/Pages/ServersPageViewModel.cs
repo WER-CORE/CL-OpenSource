@@ -108,6 +108,8 @@ public partial class ServersPageViewModel : ObservableObject, ITrimmablePage
     [ObservableProperty] private bool _isDiscoveryRefreshing;
     [ObservableProperty] private bool _isHostingActive;
     [ObservableProperty] private string _hostRoomCode = string.Empty;
+    [ObservableProperty] private string _hostDirectAddress = string.Empty;
+    [ObservableProperty] private bool _hasDirectAddress;
     [ObservableProperty] private string _hostWorldName = string.Empty;
     [ObservableProperty] private string _hostStatus = LocalizationManager.GetString("P2P.WaitingLan", "Очікування запуску або відкриття LAN-світу у грі...");
     [ObservableProperty] private bool _requireApproval;
@@ -630,6 +632,36 @@ public partial class ServersPageViewModel : ObservableObject, ITrimmablePage
         try
         {
             await _p2pManager.RefreshDiscoveryAsync();
+
+            var active = _p2pManager.DiscoveredWorlds.ToList();
+
+            for (int i = DiscoveredLanWorlds.Count - 1; i >= 0; i--)
+            {
+                var current = DiscoveredLanWorlds[i];
+                if (!active.Any(a => a.Port == current.Port))
+                {
+                    DiscoveredLanWorlds.RemoveAt(i);
+                }
+            }
+
+            foreach (var world in active)
+            {
+                var existing = DiscoveredLanWorlds.FirstOrDefault(w => w.Port == world.Port);
+                if (existing == null)
+                {
+                    DiscoveredLanWorlds.Add(world);
+                }
+                else
+                {
+                    int idx = DiscoveredLanWorlds.IndexOf(existing);
+                    DiscoveredLanWorlds[idx] = world;
+                }
+            }
+
+            if (SelectedLanWorld == null || !DiscoveredLanWorlds.Any(w => w.Port == SelectedLanWorld.Port))
+            {
+                SelectedLanWorld = DiscoveredLanWorlds.FirstOrDefault();
+            }
         }
         finally
         {
@@ -714,6 +746,10 @@ public partial class ServersPageViewModel : ObservableObject, ITrimmablePage
             if (session != null && session.IsActive)
             {
                 HostRoomCode = session.RoomCode;
+                HostDirectAddress = !string.IsNullOrEmpty(session.PublicDomain)
+                    ? session.PublicDomain
+                    : (session.PublicPort == 25565 ? session.HostAddress : $"{session.HostAddress}:{session.PublicPort}");
+                HasDirectAddress = !string.IsNullOrWhiteSpace(HostDirectAddress);
                 HostWorldName = session.WorldName;
                 string loaderInfo = !string.IsNullOrEmpty(session.LoaderType) && session.LoaderType != "Vanilla"
                     ? (!string.IsNullOrEmpty(session.LoaderVersion) ? $" ({session.LoaderType} {session.LoaderVersion})" : $" ({session.LoaderType})")
@@ -723,6 +759,8 @@ public partial class ServersPageViewModel : ObservableObject, ITrimmablePage
             else
             {
                 HostRoomCode = string.Empty;
+                HostDirectAddress = string.Empty;
+                HasDirectAddress = false;
                 HostWorldName = string.Empty;
                 HostStatus = LocalizationManager.GetString("P2P.WaitingLan", "Очікування запуску або відкриття LAN-світу у грі...");
                 ConnectedPlayers.Clear();
@@ -790,6 +828,15 @@ public partial class ServersPageViewModel : ObservableObject, ITrimmablePage
                 targetWorld.ModpackName = GameLaunchService.ActiveModpackName;
             }
 
+            if (!IsP2PVersionSupported(gameVersion))
+            {
+                ShowNotification(
+                    LocalizationManager.GetString("Dialogs.Alert", "Увага"),
+                    LocalizationManager.GetString("P2P.UnsupportedVersion", "Спільна гра підтримується для версій Minecraft 1.7.2 та новіших."));
+                HostStatus = "Версія не підтримується для спільної гри (потрібна 1.7.2+).";
+                return;
+            }
+
             var session = await _p2pManager.StartHostingAsync(targetWorld, gameVersion, loaderType, loaderVersion, modsDirectory, RequireApproval, hostNick);
             if (session == null)
             {
@@ -841,8 +888,23 @@ public partial class ServersPageViewModel : ObservableObject, ITrimmablePage
             await clipboard.SetTextAsync(HostRoomCode);
             AvaloniaNotificationService.ShowNotification(
                 LocalizationManager.GetString("Generic.Success", "Успіх"),
-                LocalizationManager.GetString("P2P.RoomCodeCopied", "Код кімнати скопійовано в буфер обміну!"),
-                sec: 3);
+                LocalizationManager.GetString("P2P.RoomCodeCopied", "Код скопійовано"),
+                sec: 2);
+        }
+    }
+
+    [RelayCommand]
+    public async Task CopyDirectAddressAsync()
+    {
+        if (string.IsNullOrWhiteSpace(HostDirectAddress)) return;
+
+        if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime { MainWindow.Clipboard: { } clipboard })
+        {
+            await clipboard.SetTextAsync(HostDirectAddress);
+            AvaloniaNotificationService.ShowNotification(
+                LocalizationManager.GetString("Generic.Success", "Успіх"),
+                LocalizationManager.GetString("P2P.DirectAddressCopied", "IP скопійовано"),
+                sec: 2);
         }
     }
 
@@ -867,6 +929,17 @@ public partial class ServersPageViewModel : ObservableObject, ITrimmablePage
             var (payload, success, error) = await _p2pManager.ValidateRoomCodeAsync(InputRoomCode);
             if (success && payload != null)
             {
+                if (!IsP2PVersionSupported(payload.GameVersion))
+                {
+                    IsGuestRoomFound = false;
+                    _guestPayload = null;
+                    GuestStatusMessage = "Версія хоста не підтримується для спільної гри (потрібна 1.7.2+).";
+                    ShowNotification(
+                        LocalizationManager.GetString("Dialogs.Alert", "Увага"),
+                        LocalizationManager.GetString("P2P.UnsupportedVersion", "Спільна гра підтримується для версій Minecraft 1.7.2 та новіших."));
+                    return;
+                }
+
                 _guestPayload = payload;
                 GuestWorldName = payload.WorldName;
                 GuestGameVersion = payload.GameVersion;
@@ -912,6 +985,14 @@ public partial class ServersPageViewModel : ObservableObject, ITrimmablePage
     public async Task JoinAndPlayAsync()
     {
         if (_guestPayload == null) return;
+
+        if (!IsP2PVersionSupported(_guestPayload.GameVersion))
+        {
+            ShowNotification(
+                LocalizationManager.GetString("Dialogs.Alert", "Увага"),
+                LocalizationManager.GetString("P2P.UnsupportedVersion", "Спільна гра підтримується для версій Minecraft 1.7.2 та новіших."));
+            return;
+        }
 
         IsGuestLaunching = true;
         GuestStatusMessage = "Запуск клієнта та підключення до світу...";
@@ -1090,5 +1171,25 @@ public partial class ServersPageViewModel : ObservableObject, ITrimmablePage
         {
             IsGuestLaunching = false;
         }
+    }
+
+    public static bool IsP2PVersionSupported(string? version)
+    {
+        if (string.IsNullOrWhiteSpace(version)) return true;
+        version = version.Trim().ToLowerInvariant();
+
+        if (version.StartsWith("a") || version.StartsWith("b") || version.StartsWith("c") ||
+            version.Contains("alpha") || version.Contains("beta") || version.Contains("infdev") || version.Contains("indev"))
+        {
+            return false;
+        }
+
+        var match = System.Text.RegularExpressions.Regex.Match(version, @"^1\.(\d+)");
+        if (match.Success && int.TryParse(match.Groups[1].Value, out int minor))
+        {
+            return minor >= 7;
+        }
+
+        return true;
     }
 }

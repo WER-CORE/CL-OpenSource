@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using Avalonia.Media.Imaging;
@@ -113,7 +114,8 @@ public partial class NewsPageViewModel : ObservableObject, ITrimmablePage, IDisp
                 NewsCards.Clear();
                 if (items != null)
                 {
-                    foreach (var item in items)
+                    var reversed = Enumerable.Reverse(items).Take(3);
+                    foreach (var item in reversed)
                     {
                         NewsCards.Add(new NewsCardViewModel(item, OnNewsCardClicked));
                     }
@@ -153,7 +155,7 @@ public partial class NewsPageViewModel : ObservableObject, ITrimmablePage, IDisp
     {
         try
         {
-            var bitmap = await AvaloniaImageHelper.LoadOptimizedImageAsync(iconUrl, 800);
+            var bitmap = await AvaloniaImageHelper.LoadOptimizedImageAsync(iconUrl, 400);
             if (bitmap != null)
             {
                 await Dispatcher.UIThread.InvokeAsync(() => SelectedNewsImage = bitmap);

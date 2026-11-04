@@ -108,7 +108,6 @@ public partial class ServerPage : UserControl
         if (Loc_TxtHostingActive != null) Loc_TxtHostingActive.Text = LocalizationManager.GetString("P2P.HostingActive", "Спільний доступ активний");
         if (Loc_TxtRoomCodeTitle != null) Loc_TxtRoomCodeTitle.Text = LocalizationManager.GetString("P2P.RoomCodeTitle", "Код кімнати (передайте друзям):");
         if (Loc_TxtCopyBtn != null) Loc_TxtCopyBtn.Text = LocalizationManager.GetString("P2P.CopyBtn", "Копіювати");
-        if (Loc_TxtIpProtectedHint != null) Loc_TxtIpProtectedHint.Text = LocalizationManager.GetString("P2P.IpProtectedHint", "Ваша IP-адреса надійно прихована від сторонніх очей та стрімів.");
         if (Loc_TxtWaitingPlayers != null) Loc_TxtWaitingPlayers.Text = LocalizationManager.GetString("P2P.WaitingPlayers", "Очікування підключення гравців...");
         if (Loc_TxtStopHostingBtn != null) Loc_TxtStopHostingBtn.Text = LocalizationManager.GetString("P2P.StopHostingBtn", "Зупинити спільний доступ");
         if (Loc_TxtGuestTitle != null) Loc_TxtGuestTitle.Text = LocalizationManager.GetString("P2P.GuestTitle", "Приєднатися до гри (Гість)");

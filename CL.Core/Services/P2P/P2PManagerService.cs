@@ -13,6 +13,7 @@ public class P2PManagerService : IAsyncDisposable, IDisposable
     private readonly UpnpPortMapperService _portMapper = new();
     private readonly P2PSecurityProxy _proxy = new();
     private readonly P2PManifestService _manifestService = new();
+    private readonly E4mcTunnelService _tunnelService = new();
 
     private P2PRoomSession? _currentSession;
     private string? _lastStoppedSecret;
@@ -20,6 +21,7 @@ public class P2PManagerService : IAsyncDisposable, IDisposable
 
     public P2PRoomSession? CurrentSession => _currentSession;
     public bool IsHosting => _currentSession != null && _currentSession.IsActive;
+    public string? AssignedDomain => _tunnelService.AssignedDomain;
     public IReadOnlyCollection<P2PPlayer> ConnectedPlayers => _proxy.ConnectedPlayers;
     public IReadOnlyCollection<P2PLanWorld> DiscoveredWorlds => _discovery.DiscoveredWorlds;
 
@@ -71,27 +73,7 @@ public class P2PManagerService : IAsyncDisposable, IDisposable
         await StopHostingAsync().ConfigureAwait(false);
 
         int localPort = world.Port;
-        int publicPort = localPort;
-
-        // Try mapping UPnP port
-        bool upnpSuccess = await _portMapper.OpenPortAsync(localPort, publicPort, token).ConfigureAwait(false);
-        if (!upnpSuccess)
-        {
-            // Fallback: try standard default port 25565
-            publicPort = 25565;
-            upnpSuccess = await _portMapper.OpenPortAsync(localPort, publicPort, token).ConfigureAwait(false);
-            if (!upnpSuccess)
-            {
-                // In local network mode or if UPnP disabled, proxy still listens on publicPort
-                publicPort = localPort;
-            }
-        }
-
-        string? externalIp = await _portMapper.GetExternalIpAsync(token).ConfigureAwait(false);
-        if (string.IsNullOrEmpty(externalIp))
-        {
-            externalIp = "127.0.0.1";
-        }
+        int proxyListenPort = localPort == 25565 ? 25566 : (localPort + 100);
 
         string secret = Guid.NewGuid().ToString("N").Substring(0, 8);
 
@@ -99,27 +81,32 @@ public class P2PManagerService : IAsyncDisposable, IDisposable
         _proxy.ExpectedSessionSecret = secret;
         _proxy.HostUsername = hostUsername ?? string.Empty;
 
-        // Start Security Proxy
-        // If localPort == publicPort, proxy listens on publicPort and forwards to localPort.
-        // But if game is already bound to localPort, proxy must bind to an external listening port.
-        // When UPnP is used, router maps external publicPort to proxy's listening port.
-        int proxyListenPort = (localPort == publicPort) ? localPort + 100 : publicPort;
-        if (upnpSuccess)
-        {
-            // Re-map router to proxyListenPort so external traffic hits our security proxy
-            await _portMapper.OpenPortAsync(proxyListenPort, publicPort, token).ConfigureAwait(false);
-        }
-        else
-        {
-            // When UPnP is not active or testing on local LAN/loopback, the room must target the proxy port
-            publicPort = proxyListenPort;
-        }
-
         await _proxy.StartAsync(proxyListenPort, localPort, token).ConfigureAwait(false);
+
+        string hostAddress;
+        string? publicDomain = null;
+        int publicPort = 25565;
+
+        try
+        {
+            publicDomain = await _tunnelService.StartTunnelAsync(proxyListenPort, token).ConfigureAwait(false);
+            hostAddress = publicDomain;
+        }
+        catch
+        {
+            bool upnpSuccess = await _portMapper.OpenPortAsync(proxyListenPort, publicPort, token).ConfigureAwait(false);
+            string? externalIp = await _portMapper.GetExternalIpAsync(token).ConfigureAwait(false);
+            hostAddress = !string.IsNullOrEmpty(externalIp) ? externalIp : "127.0.0.1";
+            if (!upnpSuccess)
+            {
+                publicPort = proxyListenPort;
+            }
+        }
 
         var payload = new P2PRoomPayload
         {
-            HostAddress = externalIp,
+            HostAddress = hostAddress,
+            PublicDomain = publicDomain,
             Port = publicPort,
             SessionSecret = secret,
             WorldName = world.WorldName,
@@ -135,7 +122,8 @@ public class P2PManagerService : IAsyncDisposable, IDisposable
         _currentSession = new P2PRoomSession
         {
             RoomCode = roomCode,
-            HostAddress = externalIp,
+            HostAddress = hostAddress,
+            PublicDomain = publicDomain,
             PublicPort = publicPort,
             LocalPort = localPort,
             WorldName = world.WorldName,
@@ -159,6 +147,7 @@ public class P2PManagerService : IAsyncDisposable, IDisposable
 
         _lastStoppedSecret = _currentSession.SessionSecret;
 
+        await _tunnelService.StopTunnelAsync().ConfigureAwait(false);
         await _proxy.StopAsync().ConfigureAwait(false);
         await _portMapper.ClosePortAsync().ConfigureAwait(false);
 
@@ -223,6 +212,7 @@ public class P2PManagerService : IAsyncDisposable, IDisposable
         if (_isDisposed) return;
         _isDisposed = true;
         StopHostingAsync().GetAwaiter().GetResult();
+        _tunnelService.Dispose();
         _discovery.Dispose();
         _portMapper.Dispose();
         _proxy.Dispose();
@@ -233,6 +223,7 @@ public class P2PManagerService : IAsyncDisposable, IDisposable
         if (_isDisposed) return;
         _isDisposed = true;
         await StopHostingAsync().ConfigureAwait(false);
+        await _tunnelService.DisposeAsync().ConfigureAwait(false);
         await _discovery.DisposeAsync().ConfigureAwait(false);
         await _portMapper.DisposeAsync().ConfigureAwait(false);
         await _proxy.DisposeAsync().ConfigureAwait(false);

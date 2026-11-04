@@ -4,6 +4,7 @@
     <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
     <AssemblyName>CL.Core.Tests</AssemblyName>
     <Nullable>enable</Nullable>
+    <NoWarn>$(NoWarn);CA2252;CA1416</NoWarn>
     <ImplicitUsings>disable</ImplicitUsings>
     <IsPackable>false</IsPackable>
     <RollForward>Major</RollForward>

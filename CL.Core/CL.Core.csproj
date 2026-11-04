@@ -1,10 +1,11 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFrameworks>net8.0;net10.0</TargetFrameworks>		
 		<RootNamespace>CL_CLegendary_Launcher_</RootNamespace>
 		<AssemblyName>CL.Core</AssemblyName>
 		<Nullable>enable</Nullable>
+		<NoWarn>$(NoWarn);CA2252;CA1416</NoWarn>
 		<ImplicitUsings>disable</ImplicitUsings>
 		<NeutralLanguage>uk-UA</NeutralLanguage>
 		<GenerateDocumentationFile>False</GenerateDocumentationFile>

@@ -143,7 +143,7 @@ public partial class ServerCardViewModel : ObservableObject, IDisposable
 
         if (serverData.Priority > 0 && !string.IsNullOrEmpty(serverData.BgUrl))
         {
-            BackgroundBitmap = await AvaloniaImageHelper.LoadOptimizedImageAsync(serverData.BgUrl, 885);
+            BackgroundBitmap = await AvaloniaImageHelper.LoadOptimizedImageAsync(serverData.BgUrl, 300);
         }
     }
 

@@ -58,7 +58,7 @@ public partial class ModsListItemViewModel : ObservableObject, IDisposable
     {
         if (!string.IsNullOrEmpty(iconUrl))
         {
-            ModImage = await AvaloniaImageHelper.LoadOptimizedImageAsync(iconUrl, 86);
+            ModImage = await AvaloniaImageHelper.LoadOptimizedImageAsync(iconUrl, 48);
         }
     }
 

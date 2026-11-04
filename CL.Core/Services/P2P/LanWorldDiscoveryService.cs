@@ -189,18 +189,42 @@ public class LanWorldDiscoveryService : IAsyncDisposable, IDisposable
     {
         try
         {
+            foreach (var port in _worlds.Keys.ToList())
+            {
+                if (token.IsCancellationRequested) break;
+                try
+                {
+                    using var tcp = new TcpClient();
+                    var connectTask = tcp.ConnectAsync("127.0.0.1", port);
+                    if (await Task.WhenAny(connectTask, Task.Delay(200, token)).ConfigureAwait(false) != connectTask || !tcp.Connected)
+                    {
+                        _worlds.TryRemove(port, out _);
+                    }
+                }
+                catch
+                {
+                    _worlds.TryRemove(port, out _);
+                }
+            }
+
             var candidateLogs = new List<(string LogPath, string? ModpackName, string? ModpackRoot)>();
 
             if (!string.IsNullOrEmpty(GameLaunchService.ActiveGamePath))
             {
                 string activeLog = Path.Combine(GameLaunchService.ActiveGamePath, "logs", "latest.log");
                 candidateLogs.Add((activeLog, GameLaunchService.ActiveModpackName, GameLaunchService.ActiveGamePath));
+
+                string legacyLog = Path.Combine(GameLaunchService.ActiveGamePath, "output-client.log");
+                if (File.Exists(legacyLog)) candidateLogs.Add((legacyLog, GameLaunchService.ActiveModpackName, GameLaunchService.ActiveGamePath));
             }
 
             string basePath = SettingsManager.Default.PathLacunher;
             if (!string.IsNullOrEmpty(basePath))
             {
                 candidateLogs.Add((Path.Combine(basePath, "logs", "latest.log"), null, basePath));
+
+                string legacyBaseLog = Path.Combine(basePath, "output-client.log");
+                if (File.Exists(legacyBaseLog)) candidateLogs.Add((legacyBaseLog, null, basePath));
 
                 string clModpackRoot = Path.Combine(basePath, "CLModpack");
                 if (Directory.Exists(clModpackRoot))
@@ -240,6 +264,24 @@ public class LanWorldDiscoveryService : IAsyncDisposable, IDisposable
                     await TryRegisterActivePortAsync(detectedPort, modpackName, modpackRoot, logPath, token).ConfigureAwait(false);
                 }
             }
+
+            try
+            {
+                var listeners = System.Net.NetworkInformation.IPGlobalProperties.GetIPGlobalProperties().GetActiveTcpListeners();
+                foreach (var ep in listeners)
+                {
+                    if (token.IsCancellationRequested) break;
+                    if (ep.Port > 1024 && ep.Port <= 65535 && !_worlds.ContainsKey(ep.Port))
+                    {
+                        var info = await MinecraftPingHelper.TryGetServerInfoAsync(ep.Port, token).ConfigureAwait(false);
+                        if (info != null && !string.IsNullOrWhiteSpace(info.Value.Version))
+                        {
+                            await TryRegisterActivePortAsync(ep.Port, GameLaunchService.ActiveModpackName, GameLaunchService.ActiveGamePath, null, token).ConfigureAwait(false);
+                        }
+                    }
+                }
+            }
+            catch { }
         }
         catch
         {

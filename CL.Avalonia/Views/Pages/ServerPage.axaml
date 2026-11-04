@@ -365,13 +365,41 @@
                                                         Cursor="Hand">
                                                     <StackPanel Orientation="Horizontal" Spacing="6">
                                                         <ic:SymbolIcon Symbol="Document" FontSize="16" />
-                                                        <TextBlock x:Name="Loc_TxtCopyBtn" Text="Копіювати" FontSize="12" FontWeight="SemiBold" />
+                                                        <TextBlock x:Name="Loc_TxtCopyBtn" Text="Копіювати код CL" FontSize="12" FontWeight="SemiBold" />
                                                     </StackPanel>
                                                 </Button>
                                             </Grid>
-                                            <TextBlock x:Name="Loc_TxtIpProtectedHint" Text="Ваша IP-адреса надійно прихована від сторонніх очей та стрімів."
-                                                       FontSize="11"
-                                                       Foreground="#66FFFFFF" />
+                                            <Border IsVisible="{Binding HasDirectAddress}"
+                                                    Background="#10FFFFFF"
+                                                    CornerRadius="8"
+                                                    Padding="10,8"
+                                                    Margin="0,4,0,0">
+                                                <Grid ColumnDefinitions="*,Auto">
+                                                    <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                                        <TextBlock Text="IP адреса" FontSize="11" Foreground="#AAAAAA" />
+                                                        <SelectableTextBlock Text="{Binding HostDirectAddress}"
+                                                                             FontSize="13"
+                                                                             FontWeight="SemiBold"
+                                                                             Foreground="#81C784" />
+                                                    </StackPanel>
+                                                    <Button Grid.Column="1"
+                                                            Command="{Binding CopyDirectAddressCommand}"
+                                                            CornerRadius="8"
+                                                            Padding="10,6"
+                                                            Background="#2AFFFFFF"
+                                                            Foreground="White"
+                                                            Cursor="Hand"
+                                                            VerticalAlignment="Center">
+                                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                                            <ic:SymbolIcon Symbol="Link" FontSize="15" />
+                                                            <TextBlock Text="Скопіювати IP" FontSize="11" FontWeight="SemiBold" />
+                                                        </StackPanel>
+                                                    </Button>
+                                                </Grid>
+                                            </Border>
+                                            <TextBlock x:Name="Loc_TxtIpProtectedHint" IsVisible="False" />
+
+
                                         </StackPanel>
                                     </Border>
                                     <Border Background="#10FFFFFF" CornerRadius="10" Padding="12">
@@ -555,7 +583,7 @@
                 <Grid>
                     <Image x:Name="BG" Opacity="0.5">
                         <Image.Effect>
-                            <BlurEffect Radius="60" />
+                            <BlurEffect Radius="10" />
                         </Image.Effect>
                     </Image>
                     <Border Background="#99000000" />

@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -53,7 +53,7 @@
 						<Image Source="{Binding SelectedNewsImage}" Stretch="Uniform" RenderOptions.BitmapInterpolationMode="HighQuality"/>
 					</Border>
 
-					<SelectableTextBlock Text="{Binding SelectedNewsContent}"
+					<TextBlock Text="{Binding SelectedNewsContent}"
                                          FontSize="15" LineHeight="24"
                                          FontFamily="{DynamicResource AppFontFamily}"
                                          Foreground="{DynamicResource MainForegroundBrush}"

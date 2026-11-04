@@ -68,6 +68,19 @@ namespace CL.Core.Tests
             Assert.Equal(payload.Port, decoded.Port);
         }
 
+        [Fact]
+        public void TryParseRoomCode_E4mcDomain_Succeeds()
+        {
+            string domainInput = "cool-fox-jump.e4mc.link:25565";
+            bool success = P2PRoomCodeService.TryParseRoomCode(domainInput, out var decoded);
+
+            Assert.True(success);
+            Assert.NotNull(decoded);
+            Assert.Equal("cool-fox-jump.e4mc.link", decoded!.HostAddress);
+            Assert.Equal(25565, decoded.Port);
+            Assert.Equal("cool-fox-jump.e4mc.link", decoded.PublicDomain);
+        }
+
         [Theory]
         [InlineData(null)]
         [InlineData("")]

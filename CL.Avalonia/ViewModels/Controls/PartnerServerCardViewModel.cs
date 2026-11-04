@@ -82,7 +82,7 @@ public partial class PartnerServerCardViewModel : ObservableObject, IDisposable
 
         if (!string.IsNullOrEmpty(serverData.BgUrl))
         {
-            BackgroundBitmap = await AvaloniaImageHelper.LoadOptimizedImageAsync(serverData.BgUrl, 315);
+            BackgroundBitmap = await AvaloniaImageHelper.LoadOptimizedImageAsync(serverData.BgUrl, 300);
         }
     }
 

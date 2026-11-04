@@ -106,6 +106,68 @@ public static class MinecraftPingHelper
         }
         catch
         {
+        }
+
+        return await TryGetLegacyServerInfoAsync(port, token).ConfigureAwait(false);
+    }
+
+    private static async Task<(string Version, string Loader, string Motd)?> TryGetLegacyServerInfoAsync(int port, CancellationToken token)
+    {
+        try
+        {
+            using var client = new TcpClient();
+            var connectTask = client.ConnectAsync("127.0.0.1", port);
+            var timeoutTask = Task.Delay(1000, token);
+            if (await Task.WhenAny(connectTask, timeoutTask).ConfigureAwait(false) != connectTask || !client.Connected)
+            {
+                return null;
+            }
+
+            using var stream = client.GetStream();
+            stream.ReadTimeout = 1500;
+            stream.WriteTimeout = 1500;
+
+            await stream.WriteAsync(new byte[] { 0xFE, 0x01 }, token).ConfigureAwait(false);
+            await stream.FlushAsync(token).ConfigureAwait(false);
+
+            int packetId = stream.ReadByte();
+            if (packetId != 0xFF) return null;
+
+            int lenHi = stream.ReadByte();
+            int lenLo = stream.ReadByte();
+            if (lenHi == -1 || lenLo == -1) return null;
+            int charLen = (lenHi << 8) | lenLo;
+            if (charLen <= 0 || charLen > 1024) return null;
+
+            byte[] buffer = new byte[charLen * 2];
+            int totalRead = 0;
+            while (totalRead < buffer.Length)
+            {
+                int r = await stream.ReadAsync(buffer.AsMemory(totalRead, buffer.Length - totalRead), token).ConfigureAwait(false);
+                if (r <= 0) break;
+                totalRead += r;
+            }
+
+            string text = Encoding.BigEndianUnicode.GetString(buffer, 0, totalRead);
+            if (string.IsNullOrWhiteSpace(text)) return null;
+
+            if (text.StartsWith("§1\0") || text.StartsWith("\u00A71\0"))
+            {
+                var parts = text.Substring(3).Split('\0');
+                if (parts.Length >= 3)
+                {
+                    string version = parts[1];
+                    string motd = parts[2];
+                    return (version, "Vanilla", motd);
+                }
+            }
+
+            var legacyParts = text.Split('§', '\u00A7');
+            string simpleMotd = legacyParts.Length > 0 ? legacyParts[0] : text;
+            return ("1.5.2", "Vanilla", simpleMotd);
+        }
+        catch
+        {
             return null;
         }
     }

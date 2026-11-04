@@ -18,6 +18,10 @@ public class P2PSecurityProxy : IAsyncDisposable, IDisposable
     private CancellationTokenSource? _cts;
     private Task? _acceptTask;
     private readonly ConcurrentDictionary<string, (TcpClient Client, TcpClient Server, P2PPlayer Player)> _activeConnections = new();
+    private readonly ConcurrentDictionary<string, (int Count, DateTime WindowStart)> _rateLimits = new(StringComparer.OrdinalIgnoreCase);
+    private readonly ConcurrentDictionary<string, DateTime> _rejectionCooldowns = new(StringComparer.OrdinalIgnoreCase);
+    private readonly ConcurrentDictionary<string, int> _rejectionCounts = new(StringComparer.OrdinalIgnoreCase);
+    private readonly ConcurrentDictionary<string, bool> _sessionBlacklist = new(StringComparer.OrdinalIgnoreCase);
     private bool _isDisposed;
 
     public int BoundPort { get; private set; }
@@ -91,10 +95,50 @@ public class P2PSecurityProxy : IAsyncDisposable, IDisposable
         try
         {
             clientStream = client.GetStream();
-            clientStream.ReadTimeout = 5000;
 
-            // 1. DPI: Read & Validate Minecraft Handshake Packet (ID 0x00)
-            if (!TryReadVarInt(clientStream, out int packetLength) || packetLength <= 0 || packetLength > 2048)
+            using var handshakeCts = CancellationTokenSource.CreateLinkedTokenSource(token);
+            handshakeCts.CancelAfter(TimeSpan.FromSeconds(10));
+            var hToken = handshakeCts.Token;
+
+            int firstByte = clientStream.ReadByte();
+            if (firstByte == -1)
+            {
+                CloseQuietly(client);
+                return;
+            }
+
+            if (firstByte == 0xFE)
+            {
+                server = new TcpClient();
+                server.NoDelay = true;
+                await server.ConnectAsync(IPAddress.Loopback, TargetLocalPort, token).ConfigureAwait(false);
+                serverStream = server.GetStream();
+
+                await serverStream.WriteAsync(new byte[] { 0xFE }, token).ConfigureAwait(false);
+                await serverStream.FlushAsync(token).ConfigureAwait(false);
+
+                var c2s = PipeStreamAsync(clientStream, serverStream, token);
+                var s2c = PipeStreamAsync(serverStream, clientStream, token);
+                await Task.WhenAny(c2s, s2c).ConfigureAwait(false);
+                return;
+            }
+
+            int packetLength = firstByte & 0x7F;
+            if ((firstByte & 0x80) != 0)
+            {
+                int shift = 7;
+                while (true)
+                {
+                    int b = clientStream.ReadByte();
+                    if (b == -1) { CloseQuietly(client); return; }
+                    packetLength |= (b & 0x7F) << shift;
+                    shift += 7;
+                    if (shift > 35) { CloseQuietly(client); return; }
+                    if ((b & 0x80) == 0) break;
+                }
+            }
+
+            if (packetLength <= 0 || packetLength > 2048)
             {
                 CloseQuietly(client);
                 return;
@@ -104,7 +148,7 @@ public class P2PSecurityProxy : IAsyncDisposable, IDisposable
             int readBytes = 0;
             while (readBytes < packetLength)
             {
-                int r = await clientStream.ReadAsync(packetBuffer.AsMemory(readBytes, packetLength - readBytes), token).ConfigureAwait(false);
+                int r = await clientStream.ReadAsync(packetBuffer.AsMemory(readBytes, packetLength - readBytes), hToken).ConfigureAwait(false);
                 if (r <= 0) { CloseQuietly(client); return; }
                 readBytes += r;
             }
@@ -112,7 +156,6 @@ public class P2PSecurityProxy : IAsyncDisposable, IDisposable
             using var packetMs = new MemoryStream(packetBuffer, false);
             if (!TryReadVarInt(packetMs, out int packetId) || packetId != 0x00)
             {
-                // Not a valid Minecraft handshake (HTTP bot, scanner probe, exploit)
                 CloseQuietly(client);
                 return;
             }
@@ -123,20 +166,16 @@ public class P2PSecurityProxy : IAsyncDisposable, IDisposable
             int port = (packetMs.ReadByte() << 8) | packetMs.ReadByte();
             if (!TryReadVarInt(packetMs, out int nextState)) { CloseQuietly(client); return; }
 
-            // 2. Connect to local Minecraft LAN server
             server = new TcpClient();
             server.NoDelay = true;
             await server.ConnectAsync(IPAddress.Loopback, TargetLocalPort, token).ConfigureAwait(false);
             serverStream = server.GetStream();
 
-            // Reconstruct Handshake packet targeting 127.0.0.1 loopback
-            // This ensures the local IntegratedServer treats incoming connections as local loopback
             byte[] normalizedHandshake = CreateHandshakePacket(protocolVersion, "127.0.0.1", TargetLocalPort, nextState);
             await serverStream.WriteAsync(normalizedHandshake, token).ConfigureAwait(false);
 
-            if (nextState == 2) // Login State
+            if (nextState == 2)
             {
-                // Read Login Start Packet (ID 0x00)
                 if (!TryReadVarInt(clientStream, out int loginLen) || loginLen <= 0 || loginLen > 2048)
                 {
                     CloseQuietly(client, server);
@@ -147,7 +186,7 @@ public class P2PSecurityProxy : IAsyncDisposable, IDisposable
                 int loginRead = 0;
                 while (loginRead < loginLen)
                 {
-                    int r = await clientStream.ReadAsync(loginBuffer.AsMemory(loginRead, loginLen - loginRead), token).ConfigureAwait(false);
+                    int r = await clientStream.ReadAsync(loginBuffer.AsMemory(loginRead, loginLen - loginRead), hToken).ConfigureAwait(false);
                     if (r <= 0) { CloseQuietly(client, server); return; }
                     loginRead += r;
                 }
@@ -160,39 +199,8 @@ public class P2PSecurityProxy : IAsyncDisposable, IDisposable
                 }
 
                 string username = ReadMinecraftString(loginMs);
-                if (string.IsNullOrWhiteSpace(username) || username.Length > 20)
+                if (!await ValidateAndApproveAsync(username, clientStream, hToken).ConfigureAwait(false))
                 {
-                    CloseQuietly(client, server);
-                    return;
-                }
-
-                // Check 1: Host nickname impersonation protection
-                if (!string.IsNullOrEmpty(HostUsername) &&
-                    string.Equals(username.Trim(), HostUsername.Trim(), StringComparison.OrdinalIgnoreCase))
-                {
-                    byte[] disconnectPacket = CreateLoginDisconnectPacket("Цей нікнейм належить хосту кімнати.");
-                    await clientStream.WriteAsync(disconnectPacket, token).ConfigureAwait(false);
-                    await clientStream.FlushAsync(token).ConfigureAwait(false);
-                    CloseQuietly(client, server);
-                    return;
-                }
-
-                // Check 2: Nickname uniqueness among connected players
-                bool isAlreadyConnected = false;
-                foreach (var pair in _activeConnections.Values)
-                {
-                    if (string.Equals(pair.Player.Username.Trim(), username.Trim(), StringComparison.OrdinalIgnoreCase))
-                    {
-                        isAlreadyConnected = true;
-                        break;
-                    }
-                }
-
-                if (isAlreadyConnected)
-                {
-                    byte[] disconnectPacket = CreateLoginDisconnectPacket($"Гравець з нікнеймом {username} вже підключений до гри.");
-                    await clientStream.WriteAsync(disconnectPacket, token).ConfigureAwait(false);
-                    await clientStream.FlushAsync(token).ConfigureAwait(false);
                     CloseQuietly(client, server);
                     return;
                 }
@@ -204,21 +212,6 @@ public class P2PSecurityProxy : IAsyncDisposable, IDisposable
                     ConnectedAt = DateTime.UtcNow
                 };
 
-                // Optional approval check
-                if (RequireApproval && ApprovalRequested != null)
-                {
-                    bool isApproved = await ApprovalRequested.Invoke(player).ConfigureAwait(false);
-                    if (!isApproved)
-                    {
-                        byte[] disconnectPacket = CreateLoginDisconnectPacket("Ваш запит на підключення відхилено хостом.");
-                        await clientStream.WriteAsync(disconnectPacket, token).ConfigureAwait(false);
-                        await clientStream.FlushAsync(token).ConfigureAwait(false);
-                        CloseQuietly(client, server);
-                        return;
-                    }
-                }
-
-                // Forward Login Start packet to game server
                 await WriteVarIntAsync(serverStream, loginLen, token).ConfigureAwait(false);
                 await serverStream.WriteAsync(loginBuffer.AsMemory(0, loginLen), token).ConfigureAwait(false);
 
@@ -226,11 +219,10 @@ public class P2PSecurityProxy : IAsyncDisposable, IDisposable
                 PlayerConnected?.Invoke(player);
             }
 
-            // 3. Bidirectional pipe using pooled buffers
-            var clientToServer = PipeStreamAsync(clientStream, serverStream, token);
-            var serverToClient = PipeStreamAsync(serverStream, clientStream, token);
+            var clientToServerNetty = PipeStreamAsync(clientStream, serverStream, token);
+            var serverToClientNetty = PipeStreamAsync(serverStream, clientStream, token);
 
-            await Task.WhenAny(clientToServer, serverToClient).ConfigureAwait(false);
+            await Task.WhenAny(clientToServerNetty, serverToClientNetty).ConfigureAwait(false);
         }
         catch
         {
@@ -244,6 +236,87 @@ public class P2PSecurityProxy : IAsyncDisposable, IDisposable
             }
             CloseQuietly(client, server);
         }
+    }
+
+    private async Task<bool> ValidateAndApproveAsync(string username, Stream clientStream, CancellationToken token)
+    {
+        if (string.IsNullOrWhiteSpace(username) || username.Length > 20) return false;
+
+        string userKey = username.Trim().ToLowerInvariant();
+
+        if (_sessionBlacklist.ContainsKey(userKey))
+        {
+            byte[] disconnectPacket = CreateLoginDisconnectPacket("Підключення заблоковано хостом.");
+            await clientStream.WriteAsync(disconnectPacket, token).ConfigureAwait(false);
+            await clientStream.FlushAsync(token).ConfigureAwait(false);
+            return false;
+        }
+
+        if (_rejectionCooldowns.TryGetValue(userKey, out var cooldownUntil) && DateTime.UtcNow < cooldownUntil)
+        {
+            int remainSec = Math.Max(1, (int)(cooldownUntil - DateTime.UtcNow).TotalSeconds);
+            byte[] disconnectPacket = CreateLoginDisconnectPacket($"Ваш попередній запит відхилено. Зачекайте {remainSec} сек. перед повторною спробою.");
+            await clientStream.WriteAsync(disconnectPacket, token).ConfigureAwait(false);
+            await clientStream.FlushAsync(token).ConfigureAwait(false);
+            return false;
+        }
+
+        var now = DateTime.UtcNow;
+        var rate = _rateLimits.AddOrUpdate(userKey, (1, now), (_, current) =>
+        {
+            if ((now - current.WindowStart).TotalSeconds < 15)
+            {
+                return (current.Count + 1, current.WindowStart);
+            }
+            return (1, now);
+        });
+
+        if (rate.Count > 5)
+        {
+            byte[] disconnectPacket = CreateLoginDisconnectPacket("Забагато спроб підключення. Зачекайте 15 секунд.");
+            await clientStream.WriteAsync(disconnectPacket, token).ConfigureAwait(false);
+            await clientStream.FlushAsync(token).ConfigureAwait(false);
+            return false;
+        }
+
+        foreach (var pair in _activeConnections.Values)
+        {
+            if (string.Equals(pair.Player.Username.Trim(), username.Trim(), StringComparison.OrdinalIgnoreCase))
+            {
+                byte[] disconnectPacket = CreateLoginDisconnectPacket($"Гравець з нікнеймом {username} вже підключений до гри.");
+                await clientStream.WriteAsync(disconnectPacket, token).ConfigureAwait(false);
+                await clientStream.FlushAsync(token).ConfigureAwait(false);
+                return false;
+            }
+        }
+
+        if (RequireApproval && ApprovalRequested != null)
+        {
+            var tempPlayer = new P2PPlayer
+            {
+                ConnectionId = Guid.NewGuid().ToString("N"),
+                Username = username,
+                ConnectedAt = DateTime.UtcNow
+            };
+
+            bool isApproved = await ApprovalRequested.Invoke(tempPlayer).ConfigureAwait(false);
+            if (!isApproved)
+            {
+                _rejectionCooldowns[userKey] = DateTime.UtcNow.AddSeconds(60);
+                int rejections = _rejectionCounts.AddOrUpdate(userKey, 1, (_, cur) => cur + 1);
+                if (rejections >= 3)
+                {
+                    _sessionBlacklist[userKey] = true;
+                }
+
+                byte[] disconnectPacket = CreateLoginDisconnectPacket("Ваш запит на підключення відхилено хостом.");
+                await clientStream.WriteAsync(disconnectPacket, token).ConfigureAwait(false);
+                await clientStream.FlushAsync(token).ConfigureAwait(false);
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private static async Task PipeStreamAsync(Stream input, Stream output, CancellationToken token)

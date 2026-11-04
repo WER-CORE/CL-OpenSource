@@ -6,6 +6,7 @@ public class P2PRoomSession
 {
     public string RoomCode { get; set; } = string.Empty;
     public string HostAddress { get; set; } = string.Empty;
+    public string? PublicDomain { get; set; }
     public int PublicPort { get; set; }
     public int LocalPort { get; set; }
     public string WorldName { get; set; } = string.Empty;
