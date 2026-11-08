@@ -40,10 +40,32 @@ namespace CL.Core.Services
 
         private static void OpenLinux(string target)
         {
-            if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("FLATPAK_ID")))
+            bool isFlatpak = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("FLATPAK_ID"));
+            string fileUri = target;
+            if (Path.IsPathRooted(target) && !target.StartsWith("file://", StringComparison.OrdinalIgnoreCase))
+            {
+                try
+                {
+                    fileUri = new Uri(target).AbsoluteUri;
+                }
+                catch
+                {
+                    fileUri = target;
+                }
+            }
+
+            if (isFlatpak)
             {
                 if (TryRunAndWaitSuccess("flatpak-spawn", "--host", "xdg-open", target)) return;
+                if (fileUri != target && TryRunAndWaitSuccess("flatpak-spawn", "--host", "xdg-open", fileUri)) return;
+                if (TryRunAndWaitSuccess("flatpak-spawn", "--host", "gio", "open", target)) return;
+                if (fileUri != target && TryRunAndWaitSuccess("flatpak-spawn", "--host", "gio", "open", fileUri)) return;
             }
+
+            if (TryRunAndWaitSuccess("xdg-open", target)) return;
+            if (fileUri != target && TryRunAndWaitSuccess("xdg-open", fileUri)) return;
+            if (TryRunAndWaitSuccess("gio", "open", target)) return;
+            if (fileUri != target && TryRunAndWaitSuccess("gio", "open", fileUri)) return;
 
             bool isFile = File.Exists(target);
             bool isDir = Directory.Exists(target);
@@ -56,22 +78,17 @@ namespace CL.Core.Services
                     string[] editors = { "kwrite", "kate", "xed", "gedit", "mousepad", "pluma", "featherpad", "gnome-text-editor" };
                     foreach (var editor in editors)
                     {
+                        if (isFlatpak && TryRun("flatpak-spawn", "--host", editor, target)) return;
                         if (TryRun(editor, target)) return;
                     }
                 }
             }
 
-            string[] launchers = { "xdg-open", "gio", "gnome-open", "kde-open5", "kde-open", "wslview" };
+            string[] launchers = { "gnome-open", "kde-open5", "kde-open", "wslview" };
             foreach (var launcher in launchers)
             {
-                if (launcher == "gio")
-                {
-                    if (TryRunAndWaitSuccess("gio", "open", target)) return;
-                }
-                else
-                {
-                    if (TryRunAndWaitSuccess(launcher, target)) return;
-                }
+                if (isFlatpak && TryRunAndWaitSuccess("flatpak-spawn", "--host", launcher, target)) return;
+                if (TryRunAndWaitSuccess(launcher, target)) return;
             }
 
             if (isDir || isFile)
@@ -80,6 +97,7 @@ namespace CL.Core.Services
                 string[] fileManagers = { "dolphin", "nemo", "nautilus", "thunar", "pcmanfm", "pcmanfm-qt", "caja" };
                 foreach (var fm in fileManagers)
                 {
+                    if (isFlatpak && TryRun("flatpak-spawn", "--host", fm, dirToOpen)) return;
                     if (TryRun(fm, dirToOpen)) return;
                 }
             }

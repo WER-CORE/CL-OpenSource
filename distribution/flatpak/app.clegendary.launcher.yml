@@ -1,6 +1,6 @@
 app-id: app.clegendary.launcher
 runtime: org.freedesktop.Platform
-runtime-version: '24.08'
+runtime-version: '25.08'
 sdk: org.freedesktop.Sdk
 command: CL.Avalonia
 
@@ -13,9 +13,13 @@ finish-args:
   - --device=dri
   - --filesystem=xdg-data/cl-launcher:create
   - --filesystem=xdg-data/CLMinecraft:create
+  - --filesystem=~/.clminecraft:create
   - --filesystem=~/.minecraft:ro
   - --filesystem=xdg-run/discord-ipc-0
   - --talk-name=org.freedesktop.Notifications
+  - --talk-name=org.freedesktop.portal.OpenURI
+  - --talk-name=org.freedesktop.portal.Desktop
+  - --talk-name=org.freedesktop.FileManager1
 
 modules:
   - name: clegendary-launcher
