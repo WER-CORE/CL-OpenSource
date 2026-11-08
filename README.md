@@ -42,10 +42,10 @@
 ## 📸 Скріншоти (Screenshots)
 
 <div align="center">
-  <img width="750" height="438" alt="image" src="https://github.com/user-attachments/assets/ee937845-e937-4756-8809-577f7342e666" />
-  <img width="1200" height="678" alt="image" src="https://github.com/user-attachments/assets/18b91731-1da7-4c08-896b-3acca5e2f92f" />
+  <img width="750" height="438" alt="image" src="https://github.com/user-attachments/assets/4f4696dd-031d-4d5f-b564-2b5225a62ace" />
+  <img width="1200" height="678" alt="image" src="https://github.com/user-attachments/assets/fe144e5a-4ade-4e12-9dab-f16649d1ccde" />
 
-  <p><i>Інтерфейс версії 1.0.0.2R</i></p>
+  <p><i>Інтерфейс версії 1.1.0.0R</i></p>
 </div>
 
 ---
