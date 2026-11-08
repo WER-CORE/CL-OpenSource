@@ -24,7 +24,9 @@
   <url type="homepage">https://github.com/WER-CORE/CL-OpenSource</url>
   <url type="bugtracker">https://github.com/WER-CORE/CL-OpenSource/issues</url>
   <url type="vcs-browser">https://github.com/WER-CORE/CL-OpenSource</url>
-  <developer_name>WER-CORE</developer_name>
+  <developer id="io.github.wer_core">
+    <name>WER-CORE</name>
+  </developer>
   <screenshots>
     <screenshot type="default">
       <image>https://raw.githubusercontent.com/WER-CORE/CL-OpenSource/dev/CL.Avalonia/Assets/Backgrounds/DarkThemBG.png</image>
@@ -32,9 +34,9 @@
     </screenshot>
   </screenshots>
   <releases>
-    <release version="1.1.0" date="2026-10-20">
+    <release version="1.1.0-preview9.6" date="2026-11-08">
       <description>
-        <p>Release 1.1.0: Cross-platform support, Velopack automated updates, and modern Avalonia interface.</p>
+        <p>Preview 9.6: Improved modpack export cancellation, P2P discovery timeout, UI thread safety, enhanced localization, and official Flatpak packaging.</p>
       </description>
     </release>
   </releases>

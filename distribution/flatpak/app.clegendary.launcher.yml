@@ -25,31 +25,35 @@ modules:
   - name: clegendary-launcher
     buildsystem: simple
     build-commands:
+      - chmod +x *.AppImage
+      - ./*.AppImage --appimage-extract
       - install -d /app/bin /app/share/applications /app/share/metainfo /app/share/icons/hicolor/512x512/apps
-      - cp -r * /app/bin/
+      - cp -r squashfs-root/* /app/bin/
       - chmod +x /app/bin/CL.Avalonia
       - install -Dm644 app.clegendary.launcher.desktop /app/share/applications/app.clegendary.launcher.desktop
       - install -Dm644 app.clegendary.launcher.metainfo.xml /app/share/metainfo/app.clegendary.launcher.metainfo.xml
       - install -Dm644 app.clegendary.launcher.png /app/share/icons/hicolor/512x512/apps/app.clegendary.launcher.png
     sources:
-      - type: archive
+      - type: file
         only-arches: [x86_64]
-        url: https://github.com/WER-CORE/CL-Win-Edition--Update/releases/download/v1.1.0/CLegendaryLauncher-linux-x64.tar.gz
-        sha256: 0000000000000000000000000000000000000000000000000000000000000000
+        filename: CLegendaryLauncher-x64.AppImage
+        url: https://github.com/WER-CORE/CL-Win-Edition--Update/releases/download/v1.1.0-preview9.6/CLegendaryLauncher-x64.AppImage
+        sha256: 6221d437ce7f7734ff585ab9d4dd9565e18ceb8a32b51d6186e27954128aa993
         x-checker-data:
           type: json
-          url: https://api.github.com/repos/WER-CORE/CL-Win-Edition--Update/releases/latest
-          version-query: .tag_name | sub("^v"; "")
-          url-query: '"https://github.com/WER-CORE/CL-Win-Edition--Update/releases/download/" + $tag + "/CLegendaryLauncher-linux-x64.tar.gz"'
-      - type: archive
+          url: https://api.github.com/repos/WER-CORE/CL-Win-Edition--Update/releases
+          version-query: '[.[] | select(.prerelease == true)][0].tag_name | sub("^v"; "")'
+          url-query: '"https://github.com/WER-CORE/CL-Win-Edition--Update/releases/download/v" + $version + "/CLegendaryLauncher-x64.AppImage"'
+      - type: file
         only-arches: [aarch64]
-        url: https://github.com/WER-CORE/CL-Win-Edition--Update/releases/download/v1.1.0/CLegendaryLauncher-linux-arm64.tar.gz
-        sha256: 0000000000000000000000000000000000000000000000000000000000000000
+        filename: CLegendaryLauncher-arm64.AppImage
+        url: https://github.com/WER-CORE/CL-Win-Edition--Update/releases/download/v1.1.0-preview9.6/CLegendaryLauncher-arm64.AppImage
+        sha256: 647ccd731132272e12bea8c848f23aa9e4c0ea2aede01dc2d662a7e02eacf42d
         x-checker-data:
           type: json
-          url: https://api.github.com/repos/WER-CORE/CL-Win-Edition--Update/releases/latest
-          version-query: .tag_name | sub("^v"; "")
-          url-query: '"https://github.com/WER-CORE/CL-Win-Edition--Update/releases/download/" + $tag + "/CLegendaryLauncher-linux-arm64.tar.gz"'
+          url: https://api.github.com/repos/WER-CORE/CL-Win-Edition--Update/releases
+          version-query: '[.[] | select(.prerelease == true)][0].tag_name | sub("^v"; "")'
+          url-query: '"https://github.com/WER-CORE/CL-Win-Edition--Update/releases/download/v" + $version + "/CLegendaryLauncher-arm64.AppImage"'
       - type: file
         path: app.clegendary.launcher.desktop
       - type: file
