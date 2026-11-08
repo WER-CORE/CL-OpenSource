@@ -374,7 +374,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y flatpak flatpak-builder elfutils
           flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
-          flatpak install --user -y flathub org.freedesktop.Platform//24.08 org.freedesktop.Sdk//24.08
+          flatpak install --user -y flathub org.freedesktop.Platform//25.08 org.freedesktop.Sdk//25.08
 
           mkdir -p ./flatpak_build/source_x64
           cp -r ./publish/linux-x64/* ./flatpak_build/source_x64/
@@ -385,7 +385,7 @@ jobs:
           cat << 'EOF' > ./flatpak_build/app.clegendary.launcher.local.yml
           app-id: app.clegendary.launcher
           runtime: org.freedesktop.Platform
-          runtime-version: '24.08'
+          runtime-version: '25.08'
           sdk: org.freedesktop.Sdk
           command: CL.Avalonia
           
@@ -398,9 +398,13 @@ jobs:
             - --device=dri
             - --filesystem=xdg-data/cl-launcher:create
             - --filesystem=xdg-data/CLMinecraft:create
+            - --filesystem=~/.clminecraft:create
             - --filesystem=~/.minecraft:ro
             - --filesystem=xdg-run/discord-ipc-0
             - --talk-name=org.freedesktop.Notifications
+            - --talk-name=org.freedesktop.portal.OpenURI
+            - --talk-name=org.freedesktop.portal.Desktop
+            - --talk-name=org.freedesktop.FileManager1
           
           modules:
             - name: clegendary-launcher
