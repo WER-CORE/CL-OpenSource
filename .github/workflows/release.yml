@@ -395,6 +395,7 @@ jobs:
             - --socket=wayland
             - --socket=fallback-x11
             - --socket=pulseaudio
+            - --socket=pipewire
             - --device=dri
             - --filesystem=xdg-data/cl-launcher:create
             - --filesystem=xdg-data/CLMinecraft:create
