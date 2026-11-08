@@ -422,11 +422,12 @@ jobs:
           flatpak build-bundle repo CLegendaryLauncher-x64.flatpak app.clegendary.launcher
           cd ..
 
-          cp ./flatpak_build/CLegendaryLauncher-x64.flatpak ./linux_artifacts/ || true
-
       - name: Organize Linux release artifacts
         run: |
           mkdir -p ./linux_artifacts
+          if [ -f ./flatpak_build/CLegendaryLauncher-x64.flatpak ]; then
+            cp -v ./flatpak_build/CLegendaryLauncher-x64.flatpak ./linux_artifacts/
+          fi
           cp ./linux_artifacts_x64/*.nupkg ./linux_artifacts/ 2>/dev/null || true
           cp ./linux_artifacts_x64/*.json ./linux_artifacts/ 2>/dev/null || true
           cp ./linux_artifacts_arm64/*.nupkg ./linux_artifacts/ 2>/dev/null || true
