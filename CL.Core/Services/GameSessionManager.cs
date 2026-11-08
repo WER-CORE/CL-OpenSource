@@ -54,11 +54,15 @@ namespace CL.Core.Services
                 var mod = TimeSpan.FromHours(SettingsManager.Default.StatsGameMod);
                 var server = TimeSpan.FromHours(SettingsManager.Default.StatsGameServer);
 
-                return $"Ванілла: {(int)vanila.TotalHours}h {vanila.Minutes}m\nЗ модами: {(int)mod.TotalHours}h {mod.Minutes}m\nСервери: {(int)server.TotalHours}h {server.Minutes}m";
+                string lblVanilla = LocalizationManager.GetString("Accounts.StatsVanilla", "Ванілла");
+                string lblModded = LocalizationManager.GetString("Accounts.StatsModded", "З модами");
+                string lblServers = LocalizationManager.GetString("Accounts.StatsServers", "Сервери");
+
+                return $"{lblVanilla}: {(int)vanila.TotalHours}h {vanila.Minutes}m\n{lblModded}: {(int)mod.TotalHours}h {mod.Minutes}m\n{lblServers}: {(int)server.TotalHours}h {server.Minutes}m";
             }
             else
             {
-                return "Немає статистики гри";
+                return LocalizationManager.GetString("Accounts.NoStats", "Немає статистики гри");
             }
         }
     }

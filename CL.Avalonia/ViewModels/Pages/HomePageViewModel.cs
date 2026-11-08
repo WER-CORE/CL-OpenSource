@@ -66,8 +66,21 @@ public partial class HomePageViewModel : ObservableObject
     public event Action<ServerInfo>? ServerInfoRequested;
     public ObservableCollection<HistoryActionItemViewModel> RecentActions { get; } = new();
 
-    [ObservableProperty] private string? _selectedVanillaVersion;
-    [ObservableProperty] private string? _selectedOptifineMinecraftVersion;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(VanillaBadgeText))]
+    private string? _selectedVanillaVersion;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(OptifineBadgeText))]
+    private string? _selectedOptifineMinecraftVersion;
+
+    public string VanillaBadgeText => string.IsNullOrEmpty(SelectedVanillaVersion)
+        ? LocalizationManager.GetString("GameLaunch.SelectBadge", "ОБЕРІТЬ")
+        : SelectedVanillaVersion;
+
+    public string OptifineBadgeText => string.IsNullOrEmpty(SelectedOptifineMinecraftVersion)
+        ? LocalizationManager.GetString("GameLaunch.SelectBadge", "ОБЕРІТЬ")
+        : SelectedOptifineMinecraftVersion;
     [ObservableProperty] private string? _selectedOptifineModVersion;
     [ObservableProperty] private VersionLogItem? _selectedChangelogItem;
     [ObservableProperty] private bool _hasMoreChangelogItems = true;
@@ -342,6 +355,8 @@ public partial class HomePageViewModel : ObservableObject
 
     public void RestoreSavedVersionState()
     {
+        OnPropertyChanged(nameof(VanillaBadgeText));
+        OnPropertyChanged(nameof(OptifineBadgeText));
         int savedType = SettingsManager.Default.LastSelectedType;
         string? savedVer = SettingsManager.Default.LastSelectedVersion;
         string? savedModVer = SettingsManager.Default.LastSelectedModVersion;

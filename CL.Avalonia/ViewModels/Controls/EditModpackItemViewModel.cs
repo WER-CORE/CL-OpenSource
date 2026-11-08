@@ -1,4 +1,5 @@
 ﻿using Avalonia.Media.Imaging;
+using CL.Core.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System;
@@ -22,6 +23,8 @@ public partial class EditModpackItemViewModel : ObservableObject
 
     [ObservableProperty]
     private string _filePath = string.Empty;
+
+    public string DeleteTooltip => LocalizationManager.GetString("Modpacks.DeleteFileTooltip", "Видалити файл");
 
     private readonly Action<EditModpackItemViewModel> _onToggle;
     private readonly Action<EditModpackItemViewModel> _onDelete;

@@ -78,6 +78,7 @@ public partial class ModsPage : UserControl
         if (SearchSystemModsTXT != null) SearchSystemModsTXT.PlaceholderText = LocalizationManager.GetString("Generic.SearchMods", "Пошук модів...");
         if (TitleModsDowload != null) TitleModsDowload.Text = LocalizationManager.GetString("Mods.ModVersionSelectionTitle", "Вибір версії моду");
         if (Loc_TxtInstallMod != null) Loc_TxtInstallMod.Text = LocalizationManager.GetString("Mods.InstallBtn", "Встановити");
+        if (Loc_EmptySearchMods != null) Loc_EmptySearchMods.Text = LocalizationManager.GetString("Mods.EmptySearch", "Пошук не дав результатів (або кінець списку).");
     }
 
     protected override void OnDataContextChanged(EventArgs e)

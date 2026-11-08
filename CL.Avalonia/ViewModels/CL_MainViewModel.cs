@@ -266,7 +266,7 @@ public partial class CL_MainViewModel : ObservableObject
         if (DialogService != null)
         {
             bool confirmed = await DialogService.AskQuestionAsync(
-                LocalizationManager.GetString("Accounts.DeleteConfirmMsg", $"Ви дійсно бажаєте видалити профіль {profile.NameAccount}?"),
+                string.Format(LocalizationManager.GetString("Accounts.DeleteConfirmMsg", "Ви дійсно бажаєте видалити профіль {0}?"), profile.NameAccount),
                 LocalizationManager.GetString("Dialogs.Confirm", "Підтвердження"),
                 MascotEmotion.Confused);
 

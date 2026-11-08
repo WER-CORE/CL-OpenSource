@@ -3,7 +3,7 @@
         xmlns:fluentIcons="using:FluentIcons.Avalonia"
         x:Class="CL_CLegendary_Launcher_.Avalonia.Views.Windows.UpdaterWindow"
         Title="CL - Updater"
-        Height="450" Width="600"
+        Height="490" Width="620"
         CanResize="False"
         WindowStartupLocation="CenterScreen"
         ExtendClientAreaToDecorationsHint="True"
@@ -89,9 +89,22 @@
                     </StackPanel>
                 </Border>
 
-                <Button x:Name="BtnUpdate" Content="Завантажити та Встановити"
-                        HorizontalAlignment="Stretch" Height="40" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
-                        IsVisible="False" Click="BtnUpdate_Click" Background="{DynamicResource MainBackgroundButton}" Foreground="{DynamicResource MainForegroundBrush}"/>
+                <StackPanel x:Name="UpdateActionsPanel" IsVisible="False" Spacing="8">
+                    <Button x:Name="BtnUpdate" Content="Завантажити та Встановити"
+                            HorizontalAlignment="Stretch" Height="40" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                            Click="BtnUpdate_Click" Background="{DynamicResource MainBackgroundButton}" Foreground="{DynamicResource MainForegroundBrush}"
+                            CornerRadius="8" Cursor="Hand" FontWeight="SemiBold"/>
+                    <Grid ColumnDefinitions="*, 8, *">
+                        <Button Grid.Column="0" x:Name="BtnRemindLater" Content="Нагадати пізніше"
+                                HorizontalAlignment="Stretch" Height="36" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                                Click="BtnRemindLater_Click" Background="{DynamicResource MainBackgroundBrushServer}" Foreground="{DynamicResource MainForegroundBrush}"
+                                CornerRadius="8" Cursor="Hand" Opacity="0.9"/>
+                        <Button Grid.Column="2" x:Name="BtnSkipVersion" Content="Пропустити цю версію"
+                                HorizontalAlignment="Stretch" Height="36" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                                Click="BtnSkipVersion_Click" Background="{DynamicResource MainBackgroundBrushServer}" Foreground="{DynamicResource MainForegroundBrush}"
+                                CornerRadius="8" Cursor="Hand" Opacity="0.75"/>
+                    </Grid>
+                </StackPanel>
             </StackPanel>
         </Grid>
     </Grid>

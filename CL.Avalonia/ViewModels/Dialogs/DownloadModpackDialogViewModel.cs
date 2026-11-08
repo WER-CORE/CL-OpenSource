@@ -16,6 +16,7 @@ using Avalonia.Threading;
 using CL.Core.Models;
 using CL.Core.Services;
 using CL_CLegendary_Launcher_.Avalonia.ViewModels.Controls;
+using CL_CLegendary_Launcher_.Avalonia.ViewModels.Pages;
 using CL_CLegendary_Launcher_.Avalonia.Services;
 using CmlLib.Core;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -100,13 +101,22 @@ public partial class DownloadModpackDialogViewModel : ObservableObject, IDisposa
     [ObservableProperty] private string _step2Title = string.Empty;
     [ObservableProperty] private string _step3Title = string.Empty;
     [ObservableProperty] private string _importOverlayText = string.Empty;
+    [ObservableProperty] private string _closeWindowTooltip = string.Empty;
+    [ObservableProperty] private string _importTooltip = string.Empty;
+    [ObservableProperty] private string _searchTooltip = string.Empty;
+    [ObservableProperty] private string _modrinthTooltip = string.Empty;
+    [ObservableProperty] private string _curseForgeTooltip = string.Empty;
+    [ObservableProperty] private string _downloadBtnTooltip = string.Empty;
 
     public DownloadModpackDialogViewModel(ModpackService modpackService)
     {
         _modpackService = modpackService;
         ApplyLocalization();
+        SettingsPageViewModel.LanguageConfigurationChanged += OnLanguageChanged;
         _ = LoadMcVersionsAsync();
     }
+
+    private void OnLanguageChanged() => Dispatcher.UIThread.Post(ApplyLocalization);
 
     public void ApplyLocalization()
     {
@@ -119,6 +129,12 @@ public partial class DownloadModpackDialogViewModel : ObservableObject, IDisposa
         Step2Title = LocalizationManager.GetString("Modpacks.DownloadModpackHeader", "2. ВИБІР ЗБІРКИ");
         Step3Title = LocalizationManager.GetString("Modpacks.SelectVersionTitle", "3. ВЕРСІЯ ФАЙЛУ");
         ImportOverlayText = LocalizationManager.GetString("Modpacks.ModpackCielDownloading", "Триває імпорт архіву...");
+        CloseWindowTooltip = LocalizationManager.GetString("Generic.Close", "Закрити вікно");
+        ImportTooltip = LocalizationManager.GetString("Modpacks.ImportArchiveTooltip", "Встановити модпак з .zip або .mrpack файлу");
+        SearchTooltip = LocalizationManager.GetString("Modpacks.SearchToolTip", "Введіть назву для пошуку");
+        ModrinthTooltip = LocalizationManager.GetString("Modpacks.SearchModrinthTooltip", "Шукати на Modrinth");
+        CurseForgeTooltip = LocalizationManager.GetString("Modpacks.SearchCurseForgeTooltip", "Шукати на CurseForge");
+        DownloadBtnTooltip = LocalizationManager.GetString("Modpacks.DownloadSelectedTooltip", "Почати встановлення обраної версії");
     }
 
     private static async Task<ApiClient?> GetCfClientAsync()
@@ -907,6 +923,7 @@ public partial class DownloadModpackDialogViewModel : ObservableObject, IDisposa
 
     public void Dispose()
     {
+        SettingsPageViewModel.LanguageConfigurationChanged -= OnLanguageChanged;
         _searchCts?.Cancel();
         _downloadCts?.Cancel();
         CloseAction = null;

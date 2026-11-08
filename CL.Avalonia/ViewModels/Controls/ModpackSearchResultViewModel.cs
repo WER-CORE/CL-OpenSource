@@ -18,6 +18,8 @@ public partial class ModpackSearchResultViewModel : ObservableObject
     [ObservableProperty]
     private Bitmap? _icon;
 
+    public string OpenPageTooltip => LocalizationManager.GetString("DownloadManager.OpenPageTooltip", "Відкрити сторінку");
+
     public ModpackSearchResultViewModel(string id, string name, string slug, string site, string iconUrl)
     {
         ProjectId = id;

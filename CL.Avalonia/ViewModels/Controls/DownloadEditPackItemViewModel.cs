@@ -19,6 +19,9 @@ public partial class DownloadEditPackItemViewModel : ObservableObject
     [ObservableProperty] private string _gameVersion = string.Empty;
     [ObservableProperty] private string _iconUrl = string.Empty;
 
+    public string OpenPageTooltip => LocalizationManager.GetString("DownloadManager.OpenPageTooltip", "Відкрити сторінку");
+    public string AddToQueueTooltip => LocalizationManager.GetString("DownloadManager.AddToQueue", "Додати до черги");
+
     private readonly string _detailsUrl;
     private readonly Action<DownloadEditPackItemViewModel> _onAddClicked;
 

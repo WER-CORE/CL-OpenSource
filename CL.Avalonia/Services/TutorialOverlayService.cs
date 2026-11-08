@@ -100,9 +100,9 @@ public class TutorialOverlayService
 
         if (_overlayPath.Data is CombinedGeometry cg)
         {
-            double screenW = Math.Max(4000, _overlayGrid.Bounds.Width + 1000);
-            double screenH = Math.Max(4000, _overlayGrid.Bounds.Height + 1000);
-            cg.Geometry1 = new RectangleGeometry(new Rect(0, 0, screenW, screenH));
+            double bgW = Math.Max(4000, _overlayGrid.Bounds.Width + 1000);
+            double bgH = Math.Max(4000, _overlayGrid.Bounds.Height + 1000);
+            cg.Geometry1 = new RectangleGeometry(new Rect(0, 0, bgW, bgH));
             cg.Geometry2 = new RectangleGeometry(new Rect(x, y, w, h), 8, 8);
         }
 
@@ -151,19 +151,36 @@ public class TutorialOverlayService
         if (_messageContainer.Bounds.Width > 0) popupWidth = Math.Max(popupWidth, _messageContainer.Bounds.Width);
         if (_messageContainer.Bounds.Height > 0) popupHeight = Math.Max(popupHeight, _messageContainer.Bounds.Height);
 
+        double screenW = _overlayGrid.Bounds.Width;
+        double screenH = _overlayGrid.Bounds.Height;
+        if (screenW <= 0 || screenH <= 0)
+        {
+            var topLevel = TopLevel.GetTopLevel(_overlayGrid);
+            if (topLevel != null && topLevel.ClientSize.Width > 0 && topLevel.ClientSize.Height > 0)
+            {
+                screenW = topLevel.ClientSize.Width;
+                screenH = topLevel.ClientSize.Height;
+            }
+            else
+            {
+                screenW = 1200;
+                screenH = 750;
+            }
+        }
+
         if (placement == CardPlacement.Auto)
         {
             if (verticalOffset < 0)
             {
-                placement = CardPlacement.Above;
+                placement = (y - popupHeight - Math.Abs(verticalOffset) >= 15) ? CardPlacement.Above : CardPlacement.Below;
             }
             else if (verticalOffset > 0)
             {
-                placement = CardPlacement.Below;
+                placement = (y + h + popupHeight + Math.Abs(verticalOffset) <= screenH - 15) ? CardPlacement.Below : CardPlacement.Above;
             }
             else
             {
-                placement = (y > 350) ? CardPlacement.Above : CardPlacement.Below;
+                placement = (y > screenH / 2.0) ? CardPlacement.Above : CardPlacement.Below;
             }
         }
 
@@ -175,10 +192,18 @@ public class TutorialOverlayService
             case CardPlacement.Above:
                 finalY = y - popupHeight - Math.Abs(verticalOffset);
                 finalX = x + (w / 2.0) - (popupWidth / 2.0);
+                if (finalY < 15 && y + h + popupHeight + 10 <= screenH - 15)
+                {
+                    finalY = y + h + 10;
+                }
                 break;
             case CardPlacement.Below:
                 finalY = y + h + Math.Abs(verticalOffset);
                 finalX = x + (w / 2.0) - (popupWidth / 2.0);
+                if (finalY + popupHeight > screenH - 15 && y - popupHeight - 10 >= 15)
+                {
+                    finalY = y - popupHeight - 10;
+                }
                 break;
             case CardPlacement.Right:
                 finalX = x + w + Math.Abs(verticalOffset);
@@ -186,7 +211,7 @@ public class TutorialOverlayService
                 break;
             case CardPlacement.TopScreen:
                 finalY = Math.Max(20, Math.Abs(verticalOffset));
-                finalX = (_overlayGrid.Bounds.Width / 2.0) - (popupWidth / 2.0);
+                finalX = (screenW / 2.0) - (popupWidth / 2.0);
                 break;
             default:
                 finalY = y;
@@ -194,14 +219,8 @@ public class TutorialOverlayService
                 break;
         }
 
-        if (_overlayGrid.Bounds.Width > 0)
-        {
-            finalX = Math.Clamp(finalX, 15, Math.Max(15, _overlayGrid.Bounds.Width - popupWidth - 15));
-        }
-        if (_overlayGrid.Bounds.Height > 0)
-        {
-            finalY = Math.Clamp(finalY, 15, Math.Max(15, _overlayGrid.Bounds.Height - popupHeight - 15));
-        }
+        finalX = Math.Clamp(finalX, 15, Math.Max(15, screenW - popupWidth - 15));
+        finalY = Math.Clamp(finalY, 15, Math.Max(15, screenH - popupHeight - 15));
 
         _messageContainer.Margin = new Thickness(finalX, finalY, 0, 0);
         _overlayGrid.IsVisible = true;

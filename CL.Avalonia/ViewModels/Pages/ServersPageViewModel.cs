@@ -54,6 +54,7 @@ public partial class ServersPageViewModel : ObservableObject, ITrimmablePage
         DisplayedServers.Clear();
         _isInitialized = false;
 
+        _lanDiscoveryTimeoutCts?.Cancel();
         if (!IsHostingActive)
         {
             _ = _p2pManager.StopDiscoveryAsync();
@@ -110,6 +111,10 @@ public partial class ServersPageViewModel : ObservableObject, ITrimmablePage
 
     public ObservableCollection<P2PLanWorld> DiscoveredLanWorlds { get; } = new();
     [ObservableProperty] private P2PLanWorld? _selectedLanWorld;
+    [ObservableProperty] private string _lanWorldPlaceholder = LocalizationManager.GetString("P2P.SearchingLanWorlds", "Пошук LAN-світів у мережі...");
+    [ObservableProperty] private bool _isLanWorldEmptyWarningVisible;
+    [ObservableProperty] private string _lanWorldEmptyWarningText = LocalizationManager.GetString("P2P.NoLanWorldsFoundAfterWait", "За 5 секунд пошуку активних LAN-світів не знайдено. Відкрийте світ для LAN у грі або введіть порт вручну.");
+    private CancellationTokenSource? _lanDiscoveryTimeoutCts;
     [ObservableProperty] private string _manualPortInput = string.Empty;
     [ObservableProperty] private bool _isDiscoveryRefreshing;
     [ObservableProperty] private bool _isHostingActive;
@@ -168,6 +173,27 @@ public partial class ServersPageViewModel : ObservableObject, ITrimmablePage
         _p2pManager.SessionStateChanged += OnP2PSessionStateChanged;
 
         _p2pManager.ApprovalRequested = OnP2PApprovalRequested;
+        SettingsPageViewModel.LanguageConfigurationChanged += OnLanguageConfigurationChanged;
+    }
+
+    private void OnLanguageConfigurationChanged()
+    {
+        Dispatcher.UIThread.Post(() =>
+        {
+            LanWorldEmptyWarningText = LocalizationManager.GetString("P2P.NoLanWorldsFoundAfterWait", "За 5 секунд пошуку активних LAN-світів не знайдено. Відкрийте світ для LAN у грі або введіть порт вручну.");
+            if (DiscoveredLanWorlds.Count == 0)
+            {
+                LanWorldPlaceholder = IsLanWorldEmptyWarningVisible
+                    ? LocalizationManager.GetString("P2P.NoLanWorldsFoundShort", "Світів LAN не знайдено")
+                    : LocalizationManager.GetString("P2P.SearchingLanWorlds", "Пошук LAN-світів у мережі...");
+            }
+            if (!IsHostingActive && !IsHostBusy)
+            {
+                HostStatus = IsLanWorldEmptyWarningVisible
+                    ? LanWorldEmptyWarningText
+                    : LocalizationManager.GetString("P2P.WaitingLan", "Очікування запуску або відкриття LAN-світу у грі...");
+            }
+        });
     }
 
     private static T? ResolveService<T>() where T : class
@@ -603,10 +629,55 @@ public partial class ServersPageViewModel : ObservableObject, ITrimmablePage
         await InitP2PAsync();
     }
 
+    private void StartLanDiscoveryCountdown()
+    {
+        _lanDiscoveryTimeoutCts?.Cancel();
+        if (DiscoveredLanWorlds.Count > 0 || IsHostingActive)
+        {
+            IsLanWorldEmptyWarningVisible = false;
+            return;
+        }
+
+        IsLanWorldEmptyWarningVisible = false;
+        LanWorldPlaceholder = LocalizationManager.GetString("P2P.SearchingLanWorlds", "Пошук LAN-світів у мережі...");
+        HostStatus = LocalizationManager.GetString("P2P.WaitingLan", "Очікування запуску або відкриття LAN-світу у грі...");
+
+        _lanDiscoveryTimeoutCts = new CancellationTokenSource();
+        var token = _lanDiscoveryTimeoutCts.Token;
+
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await Task.Delay(5000, token);
+                if (!token.IsCancellationRequested)
+                {
+                    await Dispatcher.UIThread.InvokeAsync(() =>
+                    {
+                        if (DiscoveredLanWorlds.Count == 0 && !IsHostingActive)
+                        {
+                            LanWorldPlaceholder = LocalizationManager.GetString("P2P.NoLanWorldsFoundShort", "Світів LAN не знайдено");
+                            LanWorldEmptyWarningText = LocalizationManager.GetString("P2P.NoLanWorldsFoundAfterWait", "За 5 секунд пошуку активних LAN-світів не знайдено. Відкрийте світ для LAN у грі або введіть порт вручну.");
+                            IsLanWorldEmptyWarningVisible = true;
+                            if (!IsHostBusy)
+                            {
+                                HostStatus = LanWorldEmptyWarningText;
+                            }
+                        }
+                    });
+                }
+            }
+            catch (OperationCanceledException)
+            {
+            }
+        }, token);
+    }
+
     private async Task InitP2PAsync()
     {
         if (!IsHostingActive)
         {
+            StartLanDiscoveryCountdown();
             await _p2pManager.StartDiscoveryAsync();
         }
     }
@@ -615,6 +686,8 @@ public partial class ServersPageViewModel : ObservableObject, ITrimmablePage
     {
         Dispatcher.UIThread.Post(() =>
         {
+            _lanDiscoveryTimeoutCts?.Cancel();
+            IsLanWorldEmptyWarningVisible = false;
             var existing = DiscoveredLanWorlds.FirstOrDefault(w => w.Port == world.Port);
             if (existing == null)
             {
@@ -627,6 +700,10 @@ public partial class ServersPageViewModel : ObservableObject, ITrimmablePage
                 DiscoveredLanWorlds[index] = world;
                 if (SelectedLanWorld?.Port == world.Port) SelectedLanWorld = world;
             }
+            if (!IsHostingActive && !IsHostBusy)
+            {
+                HostStatus = LocalizationManager.GetString("P2P.WaitingLan", "Очікування запуску або відкриття LAN-світу у грі...");
+            }
         });
     }
 
@@ -637,6 +714,7 @@ public partial class ServersPageViewModel : ObservableObject, ITrimmablePage
         IsDiscoveryRefreshing = true;
         try
         {
+            StartLanDiscoveryCountdown();
             await _p2pManager.RefreshDiscoveryAsync();
 
             var active = _p2pManager.DiscoveredWorlds.ToList();
@@ -668,6 +746,12 @@ public partial class ServersPageViewModel : ObservableObject, ITrimmablePage
             {
                 SelectedLanWorld = DiscoveredLanWorlds.FirstOrDefault();
             }
+
+            if (DiscoveredLanWorlds.Count > 0)
+            {
+                _lanDiscoveryTimeoutCts?.Cancel();
+                IsLanWorldEmptyWarningVisible = false;
+            }
         }
         finally
         {
@@ -683,6 +767,8 @@ public partial class ServersPageViewModel : ObservableObject, ITrimmablePage
             var world = await _p2pManager.ScanOrAddPortAsync(port);
             if (world != null)
             {
+                _lanDiscoveryTimeoutCts?.Cancel();
+                IsLanWorldEmptyWarningVisible = false;
                 SelectedLanWorld = world;
                 ManualPortInput = string.Empty;
                 AvaloniaNotificationService.ShowNotification(
@@ -787,7 +873,7 @@ public partial class ServersPageViewModel : ObservableObject, ITrimmablePage
         }
 
         IsHostBusy = true;
-        HostStatus = "Визначення версії та відкриття кімнати...";
+        HostStatus = LocalizationManager.GetString("P2P.OpeningRoomStatus", "Визначення версії та відкриття кімнати...");
         try
         {
             var accountService = ResolveService<AccountService>();
@@ -839,14 +925,14 @@ public partial class ServersPageViewModel : ObservableObject, ITrimmablePage
                 ShowNotification(
                     LocalizationManager.GetString("Dialogs.Alert", "Увага"),
                     LocalizationManager.GetString("P2P.UnsupportedVersion", "Спільна гра підтримується для версій Minecraft 1.7.2 та новіших."));
-                HostStatus = "Версія не підтримується для спільної гри (потрібна 1.7.2+).";
+                HostStatus = LocalizationManager.GetString("P2P.UnsupportedVersionStatus", "Версія не підтримується для спільної гри (потрібна 1.7.2+).");
                 return;
             }
 
             var session = await _p2pManager.StartHostingAsync(targetWorld, gameVersion, loaderType, loaderVersion, modsDirectory, RequireApproval, hostNick);
             if (session == null)
             {
-                HostStatus = "Не вдалося відкрити кімнату. Перевірте з'єднання з мережею.";
+                HostStatus = LocalizationManager.GetString("P2P.OpenRoomFailedStatus", "Не вдалося відкрити кімнату. Перевірте з'єднання з мережею.");
             }
             else if (AllowOfflinePlayers && accountService?.CurrentProfile?.TypeAccount == AccountType.Microsoft)
             {
@@ -939,7 +1025,7 @@ public partial class ServersPageViewModel : ObservableObject, ITrimmablePage
                 {
                     IsGuestRoomFound = false;
                     _guestPayload = null;
-                    GuestStatusMessage = "Версія хоста не підтримується для спільної гри (потрібна 1.7.2+).";
+                    GuestStatusMessage = LocalizationManager.GetString("P2P.UnsupportedHostVersionStatus", "Версія хоста не підтримується для спільної гри (потрібна 1.7.2+).");
                     ShowNotification(
                         LocalizationManager.GetString("Dialogs.Alert", "Увага"),
                         LocalizationManager.GetString("P2P.UnsupportedVersion", "Спільна гра підтримується для версій Minecraft 1.7.2 та новіших."));
@@ -1001,7 +1087,7 @@ public partial class ServersPageViewModel : ObservableObject, ITrimmablePage
         }
 
         IsGuestLaunching = true;
-        GuestStatusMessage = "Запуск клієнта та підключення до світу...";
+        GuestStatusMessage = LocalizationManager.GetString("P2P.LaunchingClientStatus", "Запуск клієнта та підключення до світу...");
         try
         {
             var accountService = ResolveService<AccountService>();

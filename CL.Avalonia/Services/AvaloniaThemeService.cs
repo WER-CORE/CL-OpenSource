@@ -345,8 +345,8 @@ public class AvaloniaThemeService
             if (!code.StartsWith("CL_THEME|"))
             {
                 _windowController.ShowSnackbar(
-                    "Помилка формату",
-                    "Цей код не підходить для Основної Теми.\nЦе точно не для екрану завантаження?");
+                    LocalizationManager.GetString("ThemesCustomization.ImportMainThemeFormatErrorTitle", "Помилка формату"),
+                    LocalizationManager.GetString("ThemesCustomization.ImportMainThemeFormatErrorDesc", "Цей код не підходить для Основної Теми.\nЦе точно не для екрану завантаження?"));
                 return;
             }
 
@@ -360,12 +360,18 @@ public class AvaloniaThemeService
                 SettingsManager.Default.Them = "Custom";
                 ApplyCustomTheme(config);
 
-                _dialogService.ShowMessage("Тема успішно імпортована!", "Успіх", MascotEmotion.Happy);
+                _dialogService.ShowMessage(
+                    LocalizationManager.GetString("ThemesCustomization.ImportThemeSuccessDesc", "Тема успішно імпортована!"),
+                    LocalizationManager.GetString("Generic.Success", "Успіх"),
+                    MascotEmotion.Happy);
             }
         }
         catch (Exception ex)
         {
-            _dialogService.ShowMessage($"Помилка імпорту: {ex.Message}", "Помилка", MascotEmotion.Sad);
+            _dialogService.ShowMessage(
+                string.Format(LocalizationManager.GetString("ThemesCustomization.ImportThemeErrorDesc", "Помилка імпорту: {0}"), ex.Message),
+                LocalizationManager.GetString("Dialogs.Error", "Помилка"),
+                MascotEmotion.Sad);
         }
     }
 
@@ -382,8 +388,8 @@ public class AvaloniaThemeService
             if (!code.StartsWith("CL_LOAD|"))
             {
                 _windowController.ShowSnackbar(
-                    "Помилка формату",
-                    "Цей код не підходить для Екрану Завантаження.\nМожливо, це код для Основної Теми?");
+                    LocalizationManager.GetString("ThemesCustomization.ImportMainThemeFormatErrorTitle", "Помилка формату"),
+                    LocalizationManager.GetString("ThemesCustomization.ImportLoadScreenFormatErrorDesc", "Цей код не підходить для Екрану Завантаження.\nМожливо, це код для Основної Теми?"));
                 return;
             }
 
@@ -399,12 +405,18 @@ public class AvaloniaThemeService
                     SettingsManager.Default.LoadScreenBackground = config.LoadScreenBg;
                 SettingsManager.Save();
 
-                _dialogService.ShowMessage("Екран завантаження оновлено!\nПерезапустіть лаунчер, щоб побачити зміни.", "Успіх", MascotEmotion.Happy);
+                _dialogService.ShowMessage(
+                    LocalizationManager.GetString("ThemesCustomization.ImportLoadScreenSuccessDesc", "Екран завантаження оновлено!\nПерезапустіть лаунчер, щоб побачити зміни."),
+                    LocalizationManager.GetString("Generic.Success", "Успіх"),
+                    MascotEmotion.Happy);
             }
         }
         catch (Exception ex)
         {
-            _dialogService.ShowMessage($"Помилка імпорту LoadScreen: {ex.Message}", "Помилка", MascotEmotion.Sad);
+            _dialogService.ShowMessage(
+                string.Format(LocalizationManager.GetString("ThemesCustomization.ImportScreenErrorDesc", "Помилка імпорту LoadScreen: {0}"), ex.Message),
+                LocalizationManager.GetString("Dialogs.Error", "Помилка"),
+                MascotEmotion.Sad);
         }
     }
 

@@ -1237,7 +1237,7 @@ public partial class SettingsPageViewModel : ObservableObject
         }
         _dialogService.ShowMessage(
             LocalizationManager.GetString("ThemesCustomization.CopyThemeSuccess", "Код теми скопійовано!"),
-            "Експорт",
+            LocalizationManager.GetString("ThemesCustomization.ExportTitle", "Експорт"),
             MascotEmotion.Happy);
     }
 
@@ -1331,7 +1331,7 @@ public partial class SettingsPageViewModel : ObservableObject
         }
         _dialogService.ShowMessage(
             LocalizationManager.GetString("ThemesCustomization.CopyScreenSuccess", "Код LoadScreen скопійовано!"),
-            "Експорт",
+            LocalizationManager.GetString("ThemesCustomization.ExportTitle", "Експорт"),
             MascotEmotion.Happy);
     }
 
@@ -1379,8 +1379,11 @@ public partial class SettingsPageViewModel : ObservableObject
                 if (info != null && info.TargetFullRelease != null)
                 {
                     UpdateStatusText = string.Format(LocalizationManager.GetString("Settings.UpdateFound", "Доступно: v{0}"), info.TargetFullRelease.Version);
-                    var updater = new UpdaterWindow();
-                    updater.Show();
+                    await Dispatcher.UIThread.InvokeAsync(() =>
+                    {
+                        var updater = new UpdaterWindow();
+                        updater.Show();
+                    });
                     return;
                 }
                 else
@@ -1396,8 +1399,11 @@ public partial class SettingsPageViewModel : ObservableObject
                 if (info != null && updateService.IsUpdateAvailable(info.Version, localVer))
                 {
                     UpdateStatusText = string.Format(LocalizationManager.GetString("Settings.UpdateFound", "Доступно: v{0}"), info.Version);
-                    var updater = new UpdaterWindow();
-                    updater.Show();
+                    await Dispatcher.UIThread.InvokeAsync(() =>
+                    {
+                        var updater = new UpdaterWindow();
+                        updater.Show();
+                    });
                     return;
                 }
                 else

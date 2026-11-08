@@ -1,7 +1,10 @@
+using Avalonia.Threading;
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
 using CL.Core.Models;
 using CL.Core.Services;
+using CL_CLegendary_Launcher_.Avalonia.Views;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -16,9 +19,11 @@ namespace CL_CLegendary_Launcher_.Avalonia.Views.Windows
         private string targetDownloadUrl = "";
         private string installPath = "";
         private string _downloadedFolderName = "win-x64";
+        private string _targetVersionString = "";
+        private readonly bool _isFlatpak = File.Exists("/.flatpak-info");
         private CL.Core.Models.UpdateInfo? _currentUpdateInfo;
-        private global::Velopack.UpdateManager? _velopackManager;
-        private global::Velopack.UpdateInfo? _velopackUpdateInfo;
+        private Velopack.UpdateManager? _velopackManager;
+        private Velopack.UpdateInfo? _velopackUpdateInfo;
 
         public UpdaterWindow()
         {
@@ -38,7 +43,13 @@ namespace CL_CLegendary_Launcher_.Avalonia.Views.Windows
             this.Title = LocalizationManager.GetString("Updater.WindowTitle", "Оновлення CL Launcher");
             TxtNewVersion.Text = LocalizationManager.GetString("Updater.NewVersionAvailable", "Доступна нова версія!");
             TxtPathSelection.Text = LocalizationManager.GetString("Updater.PathSelection", "Шлях встановлення:");
-            BtnUpdate.Content = LocalizationManager.GetString("Updater.BtnUpdate", "Завантажити та Встановити");
+            BtnUpdate.Content = _isFlatpak
+                ? LocalizationManager.GetString("Updater.BtnUpdateFlatpak", "Завантажити оновлення (Flatpak)")
+                : LocalizationManager.GetString("Updater.BtnUpdate", "Завантажити та Встановити");
+            if (BtnRemindLater != null)
+                BtnRemindLater.Content = LocalizationManager.GetString("Updater.BtnRemindLater", "Нагадати пізніше");
+            if (BtnSkipVersion != null)
+                BtnSkipVersion.Content = LocalizationManager.GetString("Updater.BtnSkipVersion", "Пропустити цю версію");
         }
 
         private async void UpdaterWindow_Loaded(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e)
@@ -76,9 +87,10 @@ namespace CL_CLegendary_Launcher_.Avalonia.Views.Windows
                     {
                         _velopackManager = mgr;
                         _velopackUpdateInfo = vInfo;
+                        _targetVersionString = vInfo.TargetFullRelease.Version.ToString().Trim().TrimStart('v', 'V');
                         VersionText.Text = $"Нова версія: {vInfo.TargetFullRelease.Version} (Поточна: {mgr.CurrentVersion})";
                         StatusText.Text = LocalizationManager.GetString("Updater.Available", "Доступне оновлення!");
-                        if (BtnUpdate != null) BtnUpdate.IsVisible = true;
+                        if (UpdateActionsPanel != null) UpdateActionsPanel.IsVisible = true;
                         if (PathSelectionPanel != null) PathSelectionPanel.IsVisible = false;
                         return;
                     }
@@ -105,6 +117,7 @@ namespace CL_CLegendary_Launcher_.Avalonia.Views.Windows
                 }
 
                 _currentUpdateInfo = info;
+                _targetVersionString = info.Version.Trim().TrimStart('v', 'V');
                 targetDownloadUrl = _updateService.GetCorrectDownloadUrl(info);
                 _downloadedFolderName = _updateService.GetDownloadedFolderName();
 
@@ -112,8 +125,8 @@ namespace CL_CLegendary_Launcher_.Avalonia.Views.Windows
                 {
                     VersionText.Text = $"Нова версія: {info.Version} (Поточна: {localVersion})";
                     StatusText.Text = LocalizationManager.GetString("Updater.Available", "Доступне оновлення!");
-                    if (BtnUpdate != null) BtnUpdate.IsVisible = true;
-                    if (PathSelectionPanel != null) PathSelectionPanel.IsVisible = true;
+                    if (UpdateActionsPanel != null) UpdateActionsPanel.IsVisible = true;
+                    if (PathSelectionPanel != null) PathSelectionPanel.IsVisible = !_isFlatpak;
                 }
                 else
                 {
@@ -130,8 +143,15 @@ namespace CL_CLegendary_Launcher_.Avalonia.Views.Windows
 
         private async void BtnUpdate_Click(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e)
         {
-            BtnUpdate.IsEnabled = false;
-            PathSelectionPanel.IsEnabled = false;
+            if (_isFlatpak)
+            {
+                UrlOpener.Open("https://github.com/WER-CORE/CL-Win-Edition--Update/releases/");
+                OpenMainLauncher();
+                return;
+            }
+
+            if (UpdateActionsPanel != null) UpdateActionsPanel.IsEnabled = false;
+            if (PathSelectionPanel != null) PathSelectionPanel.IsEnabled = false;
 
             try
             {
@@ -174,9 +194,24 @@ namespace CL_CLegendary_Launcher_.Avalonia.Views.Windows
             }
             catch (Exception)
             {
-                if (BtnUpdate != null) BtnUpdate.IsEnabled = true;
+                if (UpdateActionsPanel != null) UpdateActionsPanel.IsEnabled = true;
                 if (PathSelectionPanel != null) PathSelectionPanel.IsEnabled = true;
             }
+        }
+
+        private void BtnRemindLater_Click(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            OpenMainLauncher();
+        }
+
+        private void BtnSkipVersion_Click(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            if (!string.IsNullOrWhiteSpace(_targetVersionString))
+            {
+                SettingsManager.Default.SkippedUpdateVersion = _targetVersionString;
+                SettingsManager.Save();
+            }
+            OpenMainLauncher();
         }
 
         private void StartNewVersion()
@@ -199,13 +234,25 @@ namespace CL_CLegendary_Launcher_.Avalonia.Views.Windows
 
         private void OpenMainLauncher()
         {
-            if (global::Avalonia.Application.Current?.ApplicationLifetime is global::Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop)
+            Dispatcher.UIThread.Post(() =>
             {
-                var loadScreen = new CL_CLegendary_Launcher_.Avalonia.Views.Controls.LoadScreenWindow();
-                desktop.MainWindow = loadScreen;
-                loadScreen.Show();
-                this.Close();
-            }
+                if (global::Avalonia.Application.Current?.ApplicationLifetime is global::Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop)
+                {
+                    if (desktop.MainWindow is CL_Main && desktop.MainWindow != this)
+                    {
+                        this.Close();
+                        return;
+                    }
+
+                    var mainWindow = new CL_Main
+                    {
+                        DataContext = ((App)global::Avalonia.Application.Current!).ServiceProvider!.GetRequiredService<CL_CLegendary_Launcher_.Avalonia.ViewModels.CL_MainViewModel>()
+                    };
+                    desktop.MainWindow = mainWindow;
+                    mainWindow.Show();
+                    this.Close();
+                }
+            });
         }
 
         private void Header_PointerPressed(object? sender, global::Avalonia.Input.PointerPressedEventArgs e)
@@ -216,9 +263,14 @@ namespace CL_CLegendary_Launcher_.Avalonia.Views.Windows
             }
         }
 
+        private void CloseButton_Click(object? sender, global::Avalonia.Input.PointerPressedEventArgs e)
+        {
+            OpenMainLauncher();
+        }
+
         private void CloseButton_Click(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e)
         {
-            this.Close();
+            OpenMainLauncher();
         }
     }
 }

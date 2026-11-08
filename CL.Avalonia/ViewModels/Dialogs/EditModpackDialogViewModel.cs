@@ -3,8 +3,10 @@ using Avalonia.Platform.Storage;
 using CL.Core.Models;
 using CL.Core.Services;
 using CL.Core.Interfaces;
+using Avalonia.Threading;
 using CL_CLegendary_Launcher_.Avalonia.Services;
 using CL_CLegendary_Launcher_.Avalonia.ViewModels.Controls;
+using CL_CLegendary_Launcher_.Avalonia.ViewModels.Pages;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System;
@@ -100,13 +102,18 @@ public partial class EditModpackDialogViewModel : ObservableObject, IDisposable
     [ObservableProperty] private string _modpackIconTitle = string.Empty;
     [ObservableProperty] private string _changeIconBtnText = string.Empty;
     [ObservableProperty] private string _browseBtnText = string.Empty;
+    [ObservableProperty] private string _javaPlaceholderText = string.Empty;
+    [ObservableProperty] private string _resetJavaTooltip = string.Empty;
 
     public EditModpackDialogViewModel(IDialogService dialogService, ModpackService modpackService)
     {
         _dialogService = dialogService;
         _modpackService = modpackService;
         ApplyLocalization();
+        SettingsPageViewModel.LanguageConfigurationChanged += OnLanguageChanged;
     }
+
+    private void OnLanguageChanged() => Dispatcher.UIThread.Post(ApplyLocalization);
 
     public void ApplyLocalization()
     {
@@ -142,7 +149,9 @@ public partial class EditModpackDialogViewModel : ObservableObject, IDisposable
         CustomizationSectionTitle = LocalizationManager.GetString("Modpacks.ModpackCustomizationTitle", "Кастомізація");
         ModpackIconTitle = LocalizationManager.GetString("Modpacks.ModpackIcon", "Іконка збірки");
         ChangeIconBtnText = LocalizationManager.GetString("Modpacks.ModpackChangeBtn", "Змінити...");
-        BrowseBtnText = LocalizationManager.GetString("Modpacks.ModpackBrowseBtn", "Огляд");
+        BrowseBtnText = LocalizationManager.GetString("Modpacks.ModpackBrowseJavaBtn", LocalizationManager.GetString("Modpacks.ModpackBrowseBtn", "Огляд"));
+        JavaPlaceholderText = LocalizationManager.GetString("Modpacks.JavaAutoPlaceholder", "Автоматичний пошук Java (за замовчуванням)");
+        ResetJavaTooltip = LocalizationManager.GetString("Modpacks.ResetJavaTooltip", "Скинути до авто-пошуку");
     }
 
     public async Task InitializeAsync(ModpackInfo modpack)
@@ -663,7 +672,7 @@ public partial class EditModpackDialogViewModel : ObservableObject, IDisposable
         {
             var files = await desktop.MainWindow.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
             {
-                Title = "Додати файли",
+                Title = LocalizationManager.GetString("Modpacks.ModpackAddFileBtn", "Додати файли"),
                 AllowMultiple = true
             });
 
@@ -689,6 +698,7 @@ public partial class EditModpackDialogViewModel : ObservableObject, IDisposable
 
     public void Dispose()
     {
+        SettingsPageViewModel.LanguageConfigurationChanged -= OnLanguageChanged;
         CloseAction = null;
         ModpackIcon = null;
         ItemsList.Clear();

@@ -945,6 +945,21 @@
                              Width="260" Height="6" CornerRadius="3" Margin="0,15,0,0"
                              Foreground="{DynamicResource MainBackgroundProgressBar}"
                              Background="#33FFFFFF" HorizontalAlignment="Center" />
+
+                <Button x:Name="CancelExportBtn"
+                        Content="Скасувати"
+                        Click="CancelExportBtn_Click"
+                        Margin="0,20,0,0"
+                        Padding="20,8"
+                        CornerRadius="8"
+                        Background="#33FF5252"
+                        BorderBrush="#66FF5252"
+                        BorderThickness="1"
+                        Foreground="White"
+                        FontWeight="SemiBold"
+                        FontSize="13"
+                        HorizontalAlignment="Center"
+                        Cursor="Hand" />
             </StackPanel>
         </Grid>
 

@@ -515,7 +515,7 @@ public partial class DownloadEditPackViewModel : ObservableObject, IDisposable
                     {
                         var dialog = Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<CL.Core.Interfaces.IDialogService>(
                             ((App)global::Avalonia.Application.Current!).ServiceProvider!);
-                        dialog.ShowMessage(string.Format(LocalizationManager.GetString("Modpacks.ModpackDepsAdded", "Автоматично додано {0} залежних модів (API/Lib)."), addedCount), "Успіх");
+                        dialog.ShowMessage(string.Format(LocalizationManager.GetString("Modpacks.ModpackDepsAdded", "Автоматично додано {0} залежних модів (API/Lib)."), addedCount), LocalizationManager.GetString("Generic.Success", "Успіх"));
                     }
                 }
             }
@@ -559,7 +559,7 @@ public partial class DownloadEditPackViewModel : ObservableObject, IDisposable
             {
                 var dialog = Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<CL.Core.Interfaces.IDialogService>(
                     ((App)global::Avalonia.Application.Current!).ServiceProvider!);
-                dialog.ShowMessage(string.Format(LocalizationManager.GetString("Modpacks.ModAddedSuccessDesc", "Ура! Мод \"{0}\" успішно додано!"), mod.Name), "Готово!");
+                dialog.ShowMessage(string.Format(LocalizationManager.GetString("Modpacks.ModAddedSuccessDesc", "Ура! Мод \"{0}\" успішно додано!"), mod.Name), LocalizationManager.GetString("Modpacks.DoneTitle", "Готово!"));
             }
         }
         else
@@ -568,7 +568,7 @@ public partial class DownloadEditPackViewModel : ObservableObject, IDisposable
             {
                 var dialog = Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<CL.Core.Interfaces.IDialogService>(
                     ((App)global::Avalonia.Application.Current!).ServiceProvider!);
-                dialog.ShowMessage(string.Format(LocalizationManager.GetString("Modpacks.ModAlreadyInListDesc", "Мод \"{0}\" вже є в списку."), mod.Name), "Вже є");
+                dialog.ShowMessage(string.Format(LocalizationManager.GetString("Modpacks.ModAlreadyInListDesc", "Мод \"{0}\" вже є в списку."), mod.Name), LocalizationManager.GetString("Modpacks.AlreadyExistsTitle", "Вже є"));
             }
         }
     }
@@ -643,7 +643,7 @@ public partial class DownloadEditPackViewModel : ObservableObject, IDisposable
         {
             var dialog = Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<CL.Core.Interfaces.IDialogService>(
                 ((App)global::Avalonia.Application.Current!).ServiceProvider!);
-            dialog.ShowMessage(LocalizationManager.GetString("Modpacks.NoModsToDownloadDesc", "Немає модів для завантаження."), "Пусто");
+            dialog.ShowMessage(LocalizationManager.GetString("Modpacks.NoModsToDownloadDesc", "Немає модів для завантаження."), LocalizationManager.GetString("Dialogs.EmptyTitle", "Пусто"));
             return;
         }
 
@@ -710,7 +710,7 @@ public partial class DownloadEditPackViewModel : ObservableObject, IDisposable
             progressVm.CloseAction?.Invoke();
 
             var dialog = Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<CL.Core.Interfaces.IDialogService>(app.ServiceProvider!);
-            dialog.ShowMessage(LocalizationManager.GetString("Modpacks.AllModsDownloadedDesc", "Всі моди успішно завантажені!"), "Готово!");
+            dialog.ShowMessage(LocalizationManager.GetString("Modpacks.AllModsDownloadedDesc", "Всі моди успішно завантажені!"), LocalizationManager.GetString("Modpacks.DoneTitle", "Готово!"));
 
             CloseAction?.Invoke();
         }
@@ -718,7 +718,7 @@ public partial class DownloadEditPackViewModel : ObservableObject, IDisposable
         {
             progressVm.CloseAction?.Invoke();
             var dialog = Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<CL.Core.Interfaces.IDialogService>(app.ServiceProvider!);
-            dialog.ShowMessage($"Помилка: {ex.Message}", "Збій");
+            dialog.ShowMessage($"{LocalizationManager.GetString("Dialogs.Error", "Помилка")}: {ex.Message}", LocalizationManager.GetString("Dialogs.Oops", "Збій"));
         }
     }
 

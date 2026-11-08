@@ -399,7 +399,7 @@
                                         </ListBox.ItemTemplate>
                                     </ListBox>
 
-                                    <TextBlock Text="Пошук не дав результатів (або кінець списку)."
+                                    <TextBlock x:Name="Loc_EmptySearchMods" Text="Пошук не дав результатів (або кінець списку)."
                                                Foreground="{DynamicResource MainForegroundBrush}"
                                                Margin="10"
                                                HorizontalAlignment="Center"

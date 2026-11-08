@@ -140,11 +140,11 @@
                                                                Foreground="{DynamicResource MainForegroundBrush}" FontSize="12"
                                                                TextTrimming="CharacterEllipsis" />
 
-                                                    <Button Grid.Column="2" Classes="card-action-btn" Command="{Binding OpenDetailsCommand}" Margin="2,0" Width="30" Height="30" ToolTip.Tip="Відкрити сторінку">
+                                                    <Button Grid.Column="2" Classes="card-action-btn" Command="{Binding OpenDetailsCommand}" Margin="2,0" Width="30" Height="30" ToolTip.Tip="{Binding OpenPageTooltip}">
                                                         <fluentIcons:SymbolIcon Symbol="Open" FontSize="16" />
                                                     </Button>
 
-                                                    <Button Grid.Column="3" Classes="card-action-btn" Command="{Binding AddToQueueCommand}" Margin="2,0" Width="30" Height="30" ToolTip.Tip="Додати до черги">
+                                                    <Button Grid.Column="3" Classes="card-action-btn" Command="{Binding AddToQueueCommand}" Margin="2,0" Width="30" Height="30" ToolTip.Tip="{Binding AddToQueueTooltip}">
                                                         <fluentIcons:SymbolIcon Symbol="Add" FontSize="18" />
                                                     </Button>
                                                 </Grid>

@@ -86,7 +86,7 @@
                             Background="Transparent" BorderThickness="0"
                             Foreground="{DynamicResource MainForegroundBrush}"
                             Width="35" Height="30" Padding="0" Cursor="Hand"
-                            CornerRadius="6" ToolTip.Tip="Закрити вікно">
+                            CornerRadius="6" ToolTip.Tip="{Binding CloseWindowTooltip}">
                         <fluentIcons:SymbolIcon Symbol="Dismiss" FontSize="16" />
                     </Button>
                 </Grid>
@@ -103,7 +103,7 @@
                         Width="90" Height="32" Margin="0,0,10,0"
                         Background="{DynamicResource MainBackgroundBrushServer}"
                         CornerRadius="8" Cursor="Hand"
-                        ToolTip.Tip="Встановити модпак з .zip або .mrpack файлу">
+                        ToolTip.Tip="{Binding ImportTooltip}">
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                         <fluentIcons:SymbolIcon Symbol="ArrowImport" FontSize="16" Margin="0,0,5,0" />
                         <TextBlock Text="{Binding ImportButtonText}" FontSize="12" Foreground="{DynamicResource MainForegroundBrush}" />
@@ -118,7 +118,7 @@
                          Foreground="{DynamicResource MainForegroundBrush}"
                          VerticalContentAlignment="Center" Padding="10,0" FontSize="13"
                          PlaceholderText="{Binding SearchPlaceholder}"
-                         ToolTip.Tip="Введіть назву для пошуку">
+                         ToolTip.Tip="{Binding SearchTooltip}">
                     <TextBox.InnerLeftContent>
                         <fluentIcons:SymbolIcon Symbol="Search" Margin="5,0" />
                     </TextBox.InnerLeftContent>
@@ -137,10 +137,10 @@
                 <Border Grid.Column="2" Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="8" Padding="6,0" Margin="10,0,0,0"
                         IsEnabled="{Binding CanInteract}">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Spacing="8">
-                        <Button Background="Transparent" Padding="0" Command="{Binding SelectSiteCommand}" CommandParameter="Modrinth" Cursor="Hand" ToolTip.Tip="Шукати на Modrinth">
+                        <Button Background="Transparent" Padding="0" Command="{Binding SelectSiteCommand}" CommandParameter="Modrinth" Cursor="Hand" ToolTip.Tip="{Binding ModrinthTooltip}">
                             <Image Source="avares://CL.Avalonia/Assets/1200-818013157 1.webp" Width="20" Height="20" Opacity="{Binding SelectedSite, Converter={StaticResource SiteOpacityConverter}, ConverterParameter=Modrinth}" />
                         </Button>
-                        <Button Background="Transparent" Padding="0" Command="{Binding SelectSiteCommand}" CommandParameter="CurseForge" Cursor="Hand" ToolTip.Tip="Шукати на CurseForge">
+                        <Button Background="Transparent" Padding="0" Command="{Binding SelectSiteCommand}" CommandParameter="CurseForge" Cursor="Hand" ToolTip.Tip="{Binding CurseForgeTooltip}">
                             <Image Source="avares://CL.Avalonia/Assets/curseforge-logo-3499974474.webp" Width="20" Height="20" Opacity="{Binding SelectedSite, Converter={StaticResource SiteOpacityConverter}, ConverterParameter=CurseForge}" />
                         </Button>
                     </StackPanel>
@@ -171,7 +171,7 @@
 
                     <TextBlock Grid.Row="2" Text="{Binding LoaderTitle}" FontSize="10" FontWeight="SemiBold" Opacity="0.5" Margin="2,0,0,5" Foreground="{DynamicResource MainForegroundBrush}" />
 
-                    <Border Grid.Row="3" Height="32" Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="8" ToolTip.Tip="Тип завантажувача">
+                    <Border Grid.Row="3" Height="32" Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="8" ToolTip.Tip="{Binding LoaderTitle}">
                         <ComboBox ItemsSource="{Binding Loaders}" SelectedItem="{Binding SelectedLoader}"
                                   Foreground="{DynamicResource MainForegroundBrush}" Background="Transparent"
                                   BorderThickness="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
@@ -220,7 +220,7 @@
                                             <Grid ColumnDefinitions="Auto,*,Auto">
                                                 <Image Grid.Column="0" Source="{Binding Icon}" Height="24" Width="24" VerticalAlignment="Center" RenderOptions.BitmapInterpolationMode="HighQuality"/>
                                                 <TextBlock Grid.Column="1" Text="{Binding Name}" VerticalAlignment="Center" Margin="10,0" FontSize="12" FontFamily="{DynamicResource AppFontFamily}" Foreground="{DynamicResource MainForegroundBrush}" TextTrimming="CharacterEllipsis"/>
-                                                <Button Grid.Column="2" Classes="card-action-btn" Width="32" Height="32" Command="{Binding OpenDetailsCommand}" ToolTip.Tip="Відкрити сторінку">
+                                                <Button Grid.Column="2" Classes="card-action-btn" Width="32" Height="32" Command="{Binding OpenDetailsCommand}" ToolTip.Tip="{Binding OpenPageTooltip}">
                                                     <fluentIcons:SymbolIcon Symbol="Open" FontSize="18" />
                                                 </Button>
                                             </Grid>
@@ -261,7 +261,7 @@
 
                 <Button Grid.Column="1" Command="{Binding DownloadCommand}" IsEnabled="{Binding CanDownload}"
                         Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="10" Height="36"
-                        Cursor="Hand" ToolTip.Tip="Почати встановлення обраної версії" VerticalAlignment="Bottom">
+                        Cursor="Hand" ToolTip.Tip="{Binding DownloadBtnTooltip}" VerticalAlignment="Bottom">
                     <TextBlock Text="{Binding DownloadProgressText}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource MainForegroundBrush}" />
                 </Button>
             </Grid>

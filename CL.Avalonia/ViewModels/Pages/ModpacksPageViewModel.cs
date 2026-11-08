@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
@@ -56,6 +57,18 @@ public partial class ModpacksPageViewModel : ObservableObject, ITrimmablePage
     [ObservableProperty] private double _exportProgressValue;
 
     public static event Action<bool, string, double>? ExportProgressChanged;
+    private static CancellationTokenSource? _exportCts;
+
+    public static void CancelActiveExport()
+    {
+        try
+        {
+            _exportCts?.Cancel();
+        }
+        catch
+        {
+        }
+    }
 
     public ModpacksPageViewModel() : this(
         ResolveService<ModpackService>(),
@@ -211,7 +224,7 @@ public partial class ModpacksPageViewModel : ObservableObject, ITrimmablePage
         if (dialogService != null)
         {
             bool confirm = await dialogService.AskQuestionAsync(
-                LocalizationManager.GetString("Modpacks.DeleteConfirmMsg", $"Ви дійсно бажаєте видалити збірку {pack.Name}?"),
+                string.Format(LocalizationManager.GetString("Modpacks.DeleteConfirmMsg", "Ви дійсно бажаєте видалити збірку {0}?"), pack.Name),
                 LocalizationManager.GetString("Dialogs.Confirm", "Підтвердження"),
                 MascotEmotion.Confused);
 
@@ -264,17 +277,25 @@ public partial class ModpacksPageViewModel : ObservableObject, ITrimmablePage
 
         if (!string.IsNullOrEmpty(savePath))
         {
-            await ExecuteExportToPathAsync(pack, savePath);
-            await dialogService.ShowMessageAsync(
-                LocalizationManager.GetString("Modpacks.ExportSuccess", "Збірку успішно експортовано!"),
-                LocalizationManager.GetString("Dialogs.Success", "Успіх!"),
-                MascotEmotion.Normal);
+            bool exported = await ExecuteExportToPathAsync(pack, savePath);
+            if (exported)
+            {
+                await dialogService.ShowMessageAsync(
+                    LocalizationManager.GetString("Modpacks.ExportSuccess", "Збірку успішно експортовано!"),
+                    LocalizationManager.GetString("Dialogs.Success", "Успіх!"),
+                    MascotEmotion.Normal);
+            }
         }
     }
 
-    public async Task ExecuteExportToPathAsync(InstalledModpack pack, string saveFilePath)
+    public async Task<bool> ExecuteExportToPathAsync(InstalledModpack pack, string saveFilePath)
     {
-        if (!Directory.Exists(pack.Path)) return;
+        if (!Directory.Exists(pack.Path)) return false;
+
+        _exportCts?.Cancel();
+        _exportCts?.Dispose();
+        _exportCts = new CancellationTokenSource();
+        var token = _exportCts.Token;
 
         IsExporting = true;
         string prepText = LocalizationManager.GetString("Modpacks.ExportPreparing", "Підготовка файлів...");
@@ -282,10 +303,12 @@ public partial class ModpacksPageViewModel : ObservableObject, ITrimmablePage
         ExportProgressValue = 0;
         Dispatcher.UIThread.Post(() => ExportProgressChanged?.Invoke(true, prepText, 0));
 
+        bool success = false;
         try
         {
             await Task.Run(() =>
             {
+                token.ThrowIfCancellationRequested();
                 if (File.Exists(saveFilePath)) File.Delete(saveFilePath);
 
                 var manifest = new CustomModpackManifest
@@ -306,14 +329,14 @@ public partial class ModpacksPageViewModel : ObservableObject, ITrimmablePage
                     try
                     {
                         string oldJson = File.ReadAllText(existingJsonPath);
-                        var token = JToken.Parse(oldJson);
+                        var tokenJson = JToken.Parse(oldJson);
 
-                        if (token is JArray array)
+                        if (tokenJson is JArray array)
                         {
                             var oldList = array.ToObject<List<ModInfo>>();
                             if (oldList != null) manifest.Files.AddRange(oldList);
                         }
-                        else if (token is JObject obj && obj["Files"] is JArray filesArray)
+                        else if (tokenJson is JObject obj && obj["Files"] is JArray filesArray)
                         {
                             var oldList = filesArray.ToObject<List<ModInfo>>();
                             if (oldList != null) manifest.Files.AddRange(oldList);
@@ -349,7 +372,17 @@ public partial class ModpacksPageViewModel : ObservableObject, ITrimmablePage
                 File.WriteAllText(existingJsonPath, JsonConvert.SerializeObject(manifest, Formatting.Indented));
 
                 var dirInfo = new DirectoryInfo(pack.Path);
-                string[] excludedDirs = { "logs", "crash-reports", ".mixin.out", "saves" };
+                string[] excludedDirs =
+                {
+                    "logs", "crash-reports", ".mixin.out", "saves", "backups",
+                    ".cache", "webcache2", "libraries", "assets", "versions",
+                    "runtime", "natives", "screenshots", "downloads", "distant_horizons_lod"
+                };
+
+                HashSet<string> preCompressedExts = new(StringComparer.OrdinalIgnoreCase)
+                {
+                    ".jar", ".zip", ".mrpack", ".png", ".jpg", ".jpeg", ".webp", ".ogg", ".mp3", ".gz", ".7z"
+                };
 
                 var filesToArchive = dirInfo.EnumerateFiles("*", SearchOption.AllDirectories)
                     .Where(f =>
@@ -365,32 +398,71 @@ public partial class ModpacksPageViewModel : ObservableObject, ITrimmablePage
                 int processedFiles = 0;
                 int lastReportedPct = -1;
 
-                using var archive = ZipFile.Open(saveFilePath, ZipArchiveMode.Create);
-                foreach (var file in filesToArchive)
+                using (var archive = ZipFile.Open(saveFilePath, ZipArchiveMode.Create))
                 {
-                    string entryName = Path.GetRelativePath(dirInfo.FullName, file.FullName).Replace('\\', '/');
-                    archive.CreateEntryFromFile(file.FullName, entryName, CompressionLevel.Optimal);
-                    processedFiles++;
-
-                    int pct = totalFiles > 0 ? (int)((double)processedFiles / totalFiles * 100) : 100;
-                    if (pct != lastReportedPct)
+                    foreach (var file in filesToArchive)
                     {
-                        lastReportedPct = pct;
-                        string format = LocalizationManager.GetString("Modpacks.ExportProgress", "Експорт: {0:F0}%");
-                        string progressMsg = string.Format(format, pct);
-                        Dispatcher.UIThread.Post(() =>
+                        token.ThrowIfCancellationRequested();
+
+                        string entryName = Path.GetRelativePath(dirInfo.FullName, file.FullName).Replace('\\', '/');
+                        var level = preCompressedExts.Contains(file.Extension)
+                            ? CompressionLevel.NoCompression
+                            : CompressionLevel.Fastest;
+
+                        archive.CreateEntryFromFile(file.FullName, entryName, level);
+                        processedFiles++;
+
+                        int pct = totalFiles > 0 ? (int)((double)processedFiles / totalFiles * 100) : 100;
+                        if (pct != lastReportedPct)
                         {
-                            ExportProgressText = progressMsg;
-                            ExportProgressValue = pct;
-                            ExportProgressChanged?.Invoke(true, progressMsg, pct);
-                        });
+                            lastReportedPct = pct;
+                            string format = LocalizationManager.GetString("Modpacks.ExportProgress", "Експорт: {0:F0}%");
+                            string progressMsg = string.Format(format, pct);
+                            Dispatcher.UIThread.Post(() =>
+                            {
+                                ExportProgressText = progressMsg;
+                                ExportProgressValue = pct;
+                                ExportProgressChanged?.Invoke(true, progressMsg, pct);
+                            });
+                        }
                     }
                 }
-            }).ConfigureAwait(false);
+
+                success = true;
+            }, token).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            try
+            {
+                if (File.Exists(saveFilePath))
+                {
+                    File.Delete(saveFilePath);
+                }
+            }
+            catch (Exception delEx)
+            {
+                Debug.WriteLine($"Failed to delete cancelled export zip: {delEx.Message}");
+            }
+
+            AvaloniaNotificationService.ShowNotification(
+                LocalizationManager.GetString("Generic.Cancel", "Скасувати"),
+                LocalizationManager.GetString("Modpacks.ExportCancelled", "Експорт збірки скасовано, тимчасовий архів видалено."),
+                sec: 3);
         }
         catch (Exception ex)
         {
             Debug.WriteLine($"Export error: {ex.Message}");
+            try
+            {
+                if (File.Exists(saveFilePath))
+                {
+                    File.Delete(saveFilePath);
+                }
+            }
+            catch
+            {
+            }
         }
         finally
         {
@@ -401,6 +473,8 @@ public partial class ModpacksPageViewModel : ObservableObject, ITrimmablePage
                 ExportProgressChanged?.Invoke(false, string.Empty, 0);
             });
         }
+
+        return success;
     }
 
     [RelayCommand]

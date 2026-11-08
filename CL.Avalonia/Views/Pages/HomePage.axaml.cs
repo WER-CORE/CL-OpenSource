@@ -180,6 +180,8 @@ public partial class HomePage : UserControl
         if (PartherHelper != null) PartherHelper.Content = LocalizationManager.GetString("MainScreen.HowToJoin", "Як потрапити?");
         if (LatestActionsTXT != null) LatestActionsTXT.Text = LocalizationManager.GetString("MainScreen.LatestActions", "Останні дії");
         if (Loc_InstallModsTxt != null) Loc_InstallModsTxt.Text = LocalizationManager.GetString("Mods.InstallModsTxt", "Встановити...");
+        if (IconSelectVersion_Copy != null) ToolTip.SetTip(IconSelectVersion_Copy, LocalizationManager.GetString("GameLaunch.PlayBtnPlay", "ГРАТИ"));
+        if (IconSelectVersion_Copy2 != null) ToolTip.SetTip(IconSelectVersion_Copy2, LocalizationManager.GetString("GameLaunch.PlayBtnPlay", "ГРАТИ"));
 
         if (Loc_MenuOpenFolder != null) Loc_MenuOpenFolder.Header = LocalizationManager.GetString("Context.OpenFolder", "Відкрити папку...");
         if (Loc_MenuRootFolder != null) Loc_MenuRootFolder.Header = LocalizationManager.GetString("Context.RootFolder", "Коренева папка (Лаунчер)");

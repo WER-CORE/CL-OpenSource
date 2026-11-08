@@ -116,6 +116,12 @@ public partial class CL_Main : Window
         };
     }
 
+    public void CancelExportBtn_Click(object? sender, RoutedEventArgs e)
+    {
+        AvaloniaSoundService.Click();
+        ModpacksPageViewModel.CancelActiveExport();
+    }
+
     private void OnExportProgressChanged(bool isVisible, string text, double pct)
     {
         Dispatcher.UIThread.Post(() =>
@@ -211,6 +217,7 @@ public partial class CL_Main : Window
 
         if (AddProfile != null) AddProfile.Text = LocalizationManager.GetString("Accounts.AddProfile", "Додати профіль +");
         if (StatsTextOpen != null) StatsTextOpen.Text = LocalizationManager.GetString("Accounts.Stats", "Статистика");
+        if (TextStatsGameMinecraft != null && _boundVm != null) TextStatsGameMinecraft.Text = _boundVm.GetFormattedStats();
         if (Loc_TxtOfflineAccountTitle != null) Loc_TxtOfflineAccountTitle.Text = LocalizationManager.GetString("Accounts.OfflineTitle", "Офлайн акаунт");
         if (NameNikManeger != null) NameNikManeger.Watermark = LocalizationManager.GetString("Accounts.PlaceholderNickname", "Нікнейм...");
         if (CreateAccount_Offline != null) CreateAccount_Offline.Content = LocalizationManager.GetString("Accounts.CreateBtn", "Створити");
@@ -236,6 +243,7 @@ public partial class CL_Main : Window
         if (TutorialNextBtn != null) TutorialNextBtn.Content = LocalizationManager.GetString("TutorialTour.BtnNext", "Далі");
         if (TutorialFinishBtn != null) TutorialFinishBtn.Content = LocalizationManager.GetString("TutorialTour.BtnFinish", "Завершити");
         if (TutorialSkipBtn != null) TutorialSkipBtn.Content = LocalizationManager.GetString("TutorialTour.BtnSkip", "Пропустити");
+        if (CancelExportBtn != null) CancelExportBtn.Content = LocalizationManager.GetString("Generic.Cancel", "Скасувати");
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -711,7 +719,7 @@ public partial class CL_Main : Window
     {
         Dispatcher.UIThread.Post(async () =>
         {
-            await Task.Delay(400);
+            await Task.Delay(450);
             if (PageHost.Content is ModPacksPage modPacksPage)
             {
                 var target = modPacksPage.FindControl<Control>("DowloadModPacks") ?? modPacksPage.FindControl<Control>("CreateModPacksTXT");
@@ -721,7 +729,12 @@ public partial class CL_Main : Window
                         target,
                         LocalizationManager.GetString("Mods.WhereIsForgeTitle", "Де знайти Forge та інші ядра"),
                         LocalizationManager.GetString("Mods.WhereIsForgeDesc", "Модифіковані версії (Forge, Fabric та інші) створюються як окремі збірки. Це захищає клієнт від збоїв і конфліктів між модами.\n\nНатисни кнопку «Створити», щоб додати потрібну збірку."),
-                        -120
+                        12,
+                        stepCounter: null,
+                        isTourMode: false,
+                        isFirstStep: false,
+                        isLastStep: false,
+                        placement: CardPlacement.Below
                     );
                 }
             }

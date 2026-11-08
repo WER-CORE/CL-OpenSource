@@ -202,7 +202,7 @@
 
                                                 <ToggleSwitch Grid.Column="2" OnContent="{x:Null}" OffContent="{x:Null}" IsChecked="{Binding IsEnabled, Mode=TwoWay}" Margin="10,0" VerticalAlignment="Center" Cursor="Hand" />
 
-                                                <Button Grid.Column="3" Command="{Binding DeleteCommand}" Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="5" ToolTip.Tip="Видалити файл">
+                                                <Button Grid.Column="3" Command="{Binding DeleteCommand}" Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="5" ToolTip.Tip="{Binding DeleteTooltip}">
                                                     <fluentIcons:SymbolIcon Symbol="Delete" Foreground="#FF5555" FontSize="18" />
                                                 </Button>
                                             </Grid>
@@ -290,9 +290,9 @@
                                             </StackPanel>
                                             <Grid ColumnDefinitions="*,Auto,Auto">
                                                 <ComboBox Grid.Column="0" ItemsSource="{Binding AvailableJavaPaths}" SelectedItem="{Binding JavaPath, Mode=TwoWay}"
-                                                          PlaceholderText="Автоматичний пошук Java (за замовчуванням)"
+                                                          PlaceholderText="{Binding JavaPlaceholderText}"
                                                           HorizontalAlignment="Stretch" Height="32" />
-                                                <Button Grid.Column="1" Command="{Binding ClearJavaCommand}" ToolTip.Tip="Скинути до авто-пошуку"
+                                                <Button Grid.Column="1" Command="{Binding ClearJavaCommand}" ToolTip.Tip="{Binding ResetJavaTooltip}"
                                                         Height="32" Width="34" Margin="6,0,0,0" Padding="0"
                                                         Background="{DynamicResource MainBackgroundButton}" Foreground="{DynamicResource MainForegroundBrush}"
                                                         Cursor="Hand" CornerRadius="6">

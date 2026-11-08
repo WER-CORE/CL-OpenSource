@@ -1,3 +1,4 @@
+using Avalonia.Threading;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -147,13 +148,16 @@ namespace CL_CLegendary_Launcher_.Avalonia.Views.Controls
 
             if (updateAvailable)
             {
-                var updater = new UpdaterWindow();
-                if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+                await Dispatcher.UIThread.InvokeAsync(() =>
                 {
-                    desktop.MainWindow = updater;
-                }
-                updater.Show();
-                this.Close();
+                    var updater = new UpdaterWindow();
+                    if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+                    {
+                        desktop.MainWindow = updater;
+                    }
+                    updater.Show();
+                    this.Close();
+                });
                 return;
             }
 
@@ -183,6 +187,8 @@ namespace CL_CLegendary_Launcher_.Avalonia.Views.Controls
 
         private async Task<bool> CheckForUpdatesAsync()
         {
+            string skippedVersion = (SettingsManager.Default.SkippedUpdateVersion ?? "").Trim().TrimStart('v', 'V');
+
             try
             {
                 bool isPrerelease = string.Equals(SettingsManager.Default.UpdateChannel, "Preview", StringComparison.OrdinalIgnoreCase);
@@ -191,7 +197,16 @@ namespace CL_CLegendary_Launcher_.Avalonia.Views.Controls
                 if (mgr.IsInstalled)
                 {
                     var updateInfo = await mgr.CheckForUpdatesAsync();
-                    return updateInfo != null && updateInfo.TargetFullRelease != null;
+                    if (updateInfo != null && updateInfo.TargetFullRelease != null)
+                    {
+                        string targetVer = updateInfo.TargetFullRelease.Version.ToString().Trim().TrimStart('v', 'V');
+                        if (!string.IsNullOrEmpty(skippedVersion) && string.Equals(targetVer, skippedVersion, StringComparison.OrdinalIgnoreCase))
+                        {
+                            return false;
+                        }
+                        return true;
+                    }
+                    return false;
                 }
             }
             catch { }
@@ -204,6 +219,11 @@ namespace CL_CLegendary_Launcher_.Avalonia.Views.Controls
             {
                 string remoteVerStr = versionElement.GetString()?.Trim().Replace("v", "", StringComparison.OrdinalIgnoreCase) ?? "";
                 string localVerStr = versionLauncher.Trim().Replace("v", "", StringComparison.OrdinalIgnoreCase);
+
+                if (!string.IsNullOrEmpty(skippedVersion) && string.Equals(remoteVerStr, skippedVersion, StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
 
                 if (Version.TryParse(remoteVerStr, out Version? vRemote) && Version.TryParse(localVerStr, out Version? vLocal))
                 {
@@ -365,11 +385,14 @@ namespace CL_CLegendary_Launcher_.Avalonia.Views.Controls
 
             if (showEula)
             {
-                this.Opacity = 0;
-                var eulaWin = new EulaWindow(eulaConfig);
-                var result = await eulaWin.ShowDialog<bool>(this);
-                this.Opacity = 1;
-                return result;
+                return await Dispatcher.UIThread.InvokeAsync(async () =>
+                {
+                    this.Opacity = 0;
+                    var eulaWin = new EulaWindow(eulaConfig);
+                    var result = await eulaWin.ShowDialog<bool>(this);
+                    this.Opacity = 1;
+                    return result;
+                });
             }
 
             return true;
@@ -377,17 +400,20 @@ namespace CL_CLegendary_Launcher_.Avalonia.Views.Controls
 
         private void OpenMainWindow()
         {
-            if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            Dispatcher.UIThread.Post(() =>
             {
-                var mainWindow = new CL_Main
+                if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
                 {
-                    DataContext = ((App)Application.Current!).ServiceProvider!.GetRequiredService<CL_MainViewModel>()
-                };
+                    var mainWindow = new CL_Main
+                    {
+                        DataContext = ((App)Application.Current!).ServiceProvider!.GetRequiredService<CL_MainViewModel>()
+                    };
 
-                desktop.MainWindow = mainWindow;
-                mainWindow.Show();
-                this.Close();
-            }
+                    desktop.MainWindow = mainWindow;
+                    mainWindow.Show();
+                    this.Close();
+                }
+            });
         }
     }
 }

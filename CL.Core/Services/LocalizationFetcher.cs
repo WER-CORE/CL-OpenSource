@@ -50,6 +50,21 @@ namespace CL.Core.Services
                 }
 
                 string filePath = Path.Combine(LocalesFolder, $"{lang.Code}.json");
+                if (File.Exists(filePath))
+                {
+                    try
+                    {
+                        var localObj = Newtonsoft.Json.Linq.JObject.Parse(File.ReadAllText(filePath));
+                        var remoteObj = Newtonsoft.Json.Linq.JObject.Parse(jsonContent);
+                        localObj.Merge(remoteObj, new Newtonsoft.Json.Linq.JsonMergeSettings
+                        {
+                            MergeArrayHandling = Newtonsoft.Json.Linq.MergeArrayHandling.Replace,
+                            MergeNullValueHandling = Newtonsoft.Json.Linq.MergeNullValueHandling.Ignore
+                        });
+                        jsonContent = localObj.ToString(Formatting.Indented);
+                    }
+                    catch { }
+                }
                 File.WriteAllText(filePath, jsonContent);
 
                 return true;

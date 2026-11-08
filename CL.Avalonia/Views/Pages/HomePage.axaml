@@ -587,10 +587,10 @@
 								<Border x:Name="SelectVersion_Copy1" CornerRadius="3"
                                         Background="{DynamicResource MainBackgroundBrush}" Margin="36,15,46,1">
 									<TextBlock x:Name="VersionRelesedVanilLast" FontFamily="{DynamicResource AppFontFamily}"
-                                               Text="{Binding SelectedVanillaVersion, TargetNullValue='ОБЕРІТЬ ВЕРСІЮ'}"
-                                               HorizontalAlignment="Center" VerticalAlignment="Center"
-                                               Width="47" Height="22" FontSize="10"
-                                               Foreground="{DynamicResource MainForegroundBrush}" Padding="10,5,0,0" />
+                                               Text="{Binding VanillaBadgeText}"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center"
+                                               Width="53" Height="22" FontSize="10"
+                                               Foreground="{DynamicResource MainForegroundBrush}" Padding="0,5,0,0" />
 								</Border>
 							</Grid>
 						</Border>
@@ -612,10 +612,10 @@
 								<Border x:Name="VersionRelesedOptifineLast" BorderThickness="1" CornerRadius="3"
                                         Background="{DynamicResource MainBackgroundBrush}" Margin="37,17,45,0">
 									<TextBlock x:Name="VersionRelesedVanilLast5" FontFamily="{DynamicResource AppFontFamily}"
-                                               Text="{Binding SelectedOptifineMinecraftVersion, TargetNullValue='ОБЕРІТЬ ВЕРСІЮ'}"
-                                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                                               Text="{Binding OptifineBadgeText}"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center"
                                                Width="53" Height="20" FontSize="10"
-                                               Foreground="{DynamicResource MainForegroundBrush}" Padding="13,4,0,0" />
+                                               Foreground="{DynamicResource MainForegroundBrush}" Padding="0,4,0,0" />
 								</Border>
 							</Grid>
 						</Border>
