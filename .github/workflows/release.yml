@@ -393,18 +393,20 @@ jobs:
             - --share=network
             - --share=ipc
             - --socket=wayland
-            - --socket=fallback-x11
+            - --socket=x11
             - --socket=pulseaudio
             - --device=dri
             - --filesystem=xdg-data/cl-launcher:create
             - --filesystem=xdg-data/CLMinecraft:create
             - --filesystem=~/.clminecraft:create
-            - --filesystem=~/.minecraft:ro
+            - --filesystem=~/.minecraft:create
+            - --filesystem=xdg-run/pipewire-0
             - --filesystem=xdg-run/discord-ipc-0
             - --talk-name=org.freedesktop.Notifications
             - --talk-name=org.freedesktop.portal.OpenURI
             - --talk-name=org.freedesktop.portal.Desktop
             - --talk-name=org.freedesktop.FileManager1
+            - --talk-name=org.freedesktop.Flatpak
           
           modules:
             - name: clegendary-launcher
