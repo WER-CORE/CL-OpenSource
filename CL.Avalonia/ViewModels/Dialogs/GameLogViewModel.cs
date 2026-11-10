@@ -186,39 +186,30 @@ public partial class GameLogViewModel : ObservableObject, IDisposable
         OnPropertyChanged(nameof(IsResultState));
     }
 
-    private readonly StringBuilder _logBuffer = new StringBuilder();
-    private bool _isFlushScheduled = false;
+    private readonly GameLogBuffer _logBuffer = new GameLogBuffer();
+    private volatile bool _isDisposed;
 
     public void AppendLog(string text)
     {
-        lock (_logBuffer)
+        if (_isDisposed) return;
+
+        if (_logBuffer.Append(text))
         {
-            _logBuffer.AppendLine(text);
-            if (!_isFlushScheduled)
+            Dispatcher.UIThread.Post(async () =>
             {
-                _isFlushScheduled = true;
-                Dispatcher.UIThread.Post(async () =>
-                {
-                    await Task.Delay(100);
-                    FlushLogs();
-                });
-            }
+                await Task.Delay(100);
+                FlushLogs();
+            });
         }
     }
 
     private void FlushLogs()
     {
-        string newLogs;
-        lock (_logBuffer)
-        {
-            newLogs = _logBuffer.ToString();
-            _logBuffer.Clear();
-            _isFlushScheduled = false;
-        }
+        if (_isDisposed) return;
 
-        if (!string.IsNullOrEmpty(newLogs))
+        if (_logBuffer.TryTakeDisplayText(out string displayText))
         {
-            LogText += newLogs;
+            LogText = displayText;
         }
     }
 
@@ -258,7 +249,7 @@ public partial class GameLogViewModel : ObservableObject, IDisposable
     {
         AvaloniaSoundService.Click();
 
-        if (string.IsNullOrWhiteSpace(LogText))
+        if (!_logBuffer.HasContent)
         {
             AvaloniaDialogService.Show(
                 LocalizationManager.GetString("AI.EmptyLogAlert", "Лог пустий!"),
@@ -374,7 +365,7 @@ public partial class GameLogViewModel : ObservableObject, IDisposable
                     UserContext.Trim());
             }
 
-            string fullQuery = contextInfo + LocalizationManager.GetString("AI.AiSystemCrashLogPrefix", "\n[LOG FILE]\n") + LogText;
+            string fullQuery = contextInfo + LocalizationManager.GetString("AI.AiSystemCrashLogPrefix", "\n[LOG FILE]\n") + _logBuffer.GetFullText();
 
             string analysisResult = await _aiService.AnalyzeCrashLogAsync(
                 logContent: fullQuery,
@@ -399,6 +390,8 @@ public partial class GameLogViewModel : ObservableObject, IDisposable
     public void Dispose()
     {
         SettingsPageViewModel.LanguageConfigurationChanged -= OnLanguageChanged;
+        _isDisposed = true;
+        _logBuffer.Clear();
         LogText = string.Empty;
     }
 }
