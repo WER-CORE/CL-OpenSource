@@ -183,7 +183,9 @@ namespace CL.Core.Services
 
             _cts = new CancellationTokenSource();
 
-            var token = _cts.Token;
+            var launchCts = _cts;
+            var token = launchCts.Token;
+            Process? launchedProcess = null;
 
             config.IsOffline = IsOfflineMode();
             ActiveMinecraftVersion = minecraftVersion;
@@ -479,9 +481,11 @@ namespace CL.Core.Services
                 {
 
                     process.Start();
-                    ActiveProcess = process;
 
                 }
+
+                ActiveProcess = process;
+                launchedProcess = process;
 
 
 
@@ -548,15 +552,7 @@ namespace CL.Core.Services
                 await MemoryCleaner.FlushMemoryAsync(trimWorkingSet: true);
 
                 await process.WaitForExitAsync();
-                if (ActiveProcess == process)
-                {
-                    ActiveMinecraftVersion = null;
-                    ActiveLoaderType = LoaderType.Vanilla;
-                    ActiveLoaderVersion = null;
-                    ActiveModpackName = null;
-                    ActiveGamePath = null;
-                    ActiveProcess = null;
-                }
+                ClearActiveProcessState(process);
 
                 int exitCode = process.ExitCode;
 
@@ -690,6 +686,12 @@ namespace CL.Core.Services
 
                 _gameSessionManager.StopGameSession();
 
+                if (launchedProcess != null)
+                {
+                    ClearActiveProcessState(launchedProcess);
+                    launchedProcess.Dispose();
+                }
+
                 ServiceLocator.Current.GetService<IDispatcherService>().Invoke(() =>
 
                 {
@@ -722,8 +724,23 @@ namespace CL.Core.Services
 
                 });
 
+                launchCts.Dispose();
+
             }
 
+        }
+
+        public static void ClearActiveProcessState(Process process)
+        {
+            if (!ReferenceEquals(ActiveProcess, process)) return;
+
+            ActiveMinecraftVersion = null;
+            ActiveLoaderType = LoaderType.Vanilla;
+            ActiveLoaderVersion = null;
+            ActiveModpackName = null;
+            ActiveModpackTypeSite = null;
+            ActiveGamePath = null;
+            ActiveProcess = null;
         }
 
         public async Task<string> InstallVersionAsync(LoaderType loaderType, string mcVersion, string loaderVersion, MinecraftLauncher launcher, CancellationToken token)
