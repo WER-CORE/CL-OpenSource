@@ -95,6 +95,24 @@ namespace CL.Core.Services
             }
         }
 
+        public static string GetCurrentLauncherVersion(Assembly? assembly = null)
+        {
+            assembly ??= Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly();
+            try
+            {
+                var infoVerAttr = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
+                if (!string.IsNullOrWhiteSpace(infoVerAttr?.InformationalVersion))
+                {
+                    string infoVer = infoVerAttr.InformationalVersion.Split('+')[0].Trim().TrimStart('v', 'V');
+                    if (!string.IsNullOrEmpty(infoVer)) return infoVer;
+                }
+            }
+            catch { }
+
+            var ver = assembly.GetName().Version;
+            return ver != null ? ver.ToString() : "1.1.0";
+        }
+
         public bool IsUpdateAvailable(string newVersion, string currentVersion)
         {
             if (string.IsNullOrEmpty(newVersion) || string.IsNullOrEmpty(currentVersion)) return false;
@@ -132,7 +150,24 @@ namespace CL.Core.Services
                     }
                 }
 
-                result = p1.preview.CompareTo(p2.preview);
+                if (p1.isRelease != p2.isRelease)
+                {
+                    result = p1.isRelease ? 1 : -1;
+                    return true;
+                }
+
+                for (int i = 0; i < Math.Max(p1.previewParts.Length, p2.previewParts.Length); i++)
+                {
+                    int num1 = i < p1.previewParts.Length ? p1.previewParts[i] : 0;
+                    int num2 = i < p2.previewParts.Length ? p2.previewParts[i] : 0;
+                    if (num1 != num2)
+                    {
+                        result = num1.CompareTo(num2);
+                        return true;
+                    }
+                }
+
+                result = 0;
                 return true;
             }
             catch
@@ -141,26 +176,34 @@ namespace CL.Core.Services
             }
         }
 
-        private static (int[] main, double preview) ParseVersionWithPreview(string v)
+        private static (int[] main, bool isRelease, int[] previewParts) ParseVersionWithPreview(string v)
         {
             int idx = v.IndexOf("-preview", StringComparison.OrdinalIgnoreCase);
             if (idx >= 0)
             {
                 string mainStr = v.Substring(0, idx);
                 string prevStr = v.Substring(idx + 8);
-                string[] parts = mainStr.Split('.');
-                int[] nums = new int[parts.Length];
-                for (int i = 0; i < parts.Length; i++) int.TryParse(parts[i], out nums[i]);
-                double.TryParse(prevStr, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double prevNum);
-                return (nums, prevNum);
+                int[] nums = ParseIntArray(mainStr);
+                int[] prevParts = ParseIntArray(prevStr);
+                return (nums, false, prevParts);
             }
             else
             {
-                string[] parts = v.Split('.');
-                int[] nums = new int[parts.Length];
-                for (int i = 0; i < parts.Length; i++) int.TryParse(parts[i], out nums[i]);
-                return (nums, 999999.0);
+                int[] nums = ParseIntArray(v);
+                return (nums, true, Array.Empty<int>());
             }
+        }
+
+        private static int[] ParseIntArray(string s)
+        {
+            if (string.IsNullOrWhiteSpace(s)) return Array.Empty<int>();
+            string[] raw = s.Split(new[] { '.', '-', '_' }, StringSplitOptions.RemoveEmptyEntries);
+            var list = new System.Collections.Generic.List<int>();
+            foreach (var r in raw)
+            {
+                if (int.TryParse(r, out int n)) list.Add(n);
+            }
+            return list.ToArray();
         }
 
         public string GetCorrectDownloadUrl(UpdateInfo info)

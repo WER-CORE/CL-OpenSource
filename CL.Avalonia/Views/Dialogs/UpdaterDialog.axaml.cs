@@ -15,7 +15,7 @@ namespace CL_CLegendary_Launcher_.Avalonia.Views.Windows
     public partial class UpdaterWindow : Window
     {
         private UpdateService _updateService;
-        private string localVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "0.0.0";
+        private string localVersion = UpdateService.GetCurrentLauncherVersion();
         private string targetDownloadUrl = "";
         private string installPath = "";
         private string _downloadedFolderName = "win-x64";

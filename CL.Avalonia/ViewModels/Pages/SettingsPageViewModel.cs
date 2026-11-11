@@ -1396,7 +1396,7 @@ public partial class SettingsPageViewModel : ObservableObject
                 var updateService = new UpdateService();
                 var info = await updateService.CheckForUpdateFromGitHubAsync("WER-CORE/CL-Win-Edition--Update", isPrerelease)
                            ?? await updateService.CheckForUpdateAsync(Secrets.updateInfoUrl);
-                string localVer = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "0.0.0";
+                string localVer = UpdateService.GetCurrentLauncherVersion();
                 if (info != null && updateService.IsUpdateAvailable(info.Version, localVer))
                 {
                     UpdateStatusText = string.Format(LocalizationManager.GetString("Settings.UpdateFound", "Доступно: v{0}"), info.Version);

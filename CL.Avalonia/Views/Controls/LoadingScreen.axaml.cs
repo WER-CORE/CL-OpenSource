@@ -188,10 +188,10 @@ namespace CL_CLegendary_Launcher_.Avalonia.Views.Controls
         private async Task<bool> CheckForUpdatesAsync()
         {
             string skippedVersion = (SettingsManager.Default.SkippedUpdateVersion ?? "").Trim().TrimStart('v', 'V');
+            bool isPrerelease = string.Equals(SettingsManager.Default.UpdateChannel, "Preview", StringComparison.OrdinalIgnoreCase);
 
             try
             {
-                bool isPrerelease = string.Equals(SettingsManager.Default.UpdateChannel, "Preview", StringComparison.OrdinalIgnoreCase);
                 var source = new global::Velopack.Sources.GithubSource("https://github.com/WER-CORE/CL-Win-Edition--Update", null, isPrerelease);
                 var mgr = new global::Velopack.UpdateManager(source);
                 if (mgr.IsInstalled)
@@ -211,26 +211,25 @@ namespace CL_CLegendary_Launcher_.Avalonia.Views.Controls
             }
             catch { }
 
-            using var client = new System.Net.Http.HttpClient();
-            string json = await client.GetStringAsync(Secrets.UpdateUrlCheckLoadScreen);
-
-            var doc = JsonDocument.Parse(json);
-            if (doc.RootElement.TryGetProperty("version", out var versionElement))
+            try
             {
-                string remoteVerStr = versionElement.GetString()?.Trim().Replace("v", "", StringComparison.OrdinalIgnoreCase) ?? "";
-                string localVerStr = versionLauncher.Trim().Replace("v", "", StringComparison.OrdinalIgnoreCase);
+                var updateService = new UpdateService();
+                var info = await updateService.CheckForUpdateFromGitHubAsync("WER-CORE/CL-Win-Edition--Update", isPrerelease)
+                           ?? await updateService.CheckForUpdateAsync(Secrets.updateInfoUrl);
 
-                if (!string.IsNullOrEmpty(skippedVersion) && string.Equals(remoteVerStr, skippedVersion, StringComparison.OrdinalIgnoreCase))
+                if (info != null && !string.IsNullOrEmpty(info.Version))
                 {
-                    return false;
-                }
+                    string remoteVer = info.Version.Trim().TrimStart('v', 'V');
+                    if (!string.IsNullOrEmpty(skippedVersion) && string.Equals(remoteVer, skippedVersion, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return false;
+                    }
 
-                if (Version.TryParse(remoteVerStr, out Version? vRemote) && Version.TryParse(localVerStr, out Version? vLocal))
-                {
-                    return vRemote > vLocal;
+                    return updateService.IsUpdateAvailable(info.Version, UpdateService.GetCurrentLauncherVersion());
                 }
-                return remoteVerStr != localVerStr;
             }
+            catch { }
+
             return false;
         }
 
