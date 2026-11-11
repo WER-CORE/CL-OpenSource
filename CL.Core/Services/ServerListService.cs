@@ -1,88 +1,144 @@
-﻿using CL.Core.Models;
+using CL.Core.Models;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
-using System.Net.Http;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace CL.Core.Services
 {
+    public class AllMcServerDto
+    {
+        [JsonProperty("con")]
+        [JsonPropertyName("con")]
+        public string? Con { get; set; }
+
+        [JsonProperty("ver")]
+        [JsonPropertyName("ver")]
+        public string? Ver { get; set; }
+
+        [JsonProperty("onl")]
+        [JsonPropertyName("onl")]
+        public int Onl { get; set; }
+
+        [JsonProperty("url")]
+        [JsonPropertyName("url")]
+        public string? Url { get; set; }
+
+        [JsonProperty("ico")]
+        [JsonPropertyName("ico")]
+        public string? Ico { get; set; }
+
+        [JsonProperty("web")]
+        [JsonPropertyName("web")]
+        public string? Web { get; set; }
+
+        [JsonProperty("dis")]
+        [JsonPropertyName("dis")]
+        public string? Dis { get; set; }
+    }
+
     public class ServerListService
     {
-        public async Task<List<ServerInfo>> GetServersAsync(string url, string searchQuery = null)
+        public async Task<List<ServerInfo>> GetServersAsync(string url, string? searchQuery = null)
         {
             try
             {
-                using var client = new HttpClient();
-                string jsonContent = await client.GetStringAsync(url);
-                var serversData = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, object>>>(jsonContent);
+                string jsonContent = await WebHelper.Client.GetStringAsync(url).ConfigureAwait(false);
+                return ParseServersJson(jsonContent, searchQuery);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[ServerListService] Failed to load servers from {url}: {ex.Message}");
+                return new List<ServerInfo>();
+            }
+        }
 
-                if (serversData != null && serversData.ContainsKey("serverstest"))
+        public static List<ServerInfo> ParseServersJson(string jsonContent, string? searchQuery = null)
+        {
+            if (string.IsNullOrWhiteSpace(jsonContent))
+            {
+                return new List<ServerInfo>();
+            }
+
+            try
+            {
+                string trimmed = jsonContent.TrimStart();
+                if (!trimmed.StartsWith("["))
                 {
-                    var serversList = serversData["serverstest"];
-                    var result = new List<ServerInfo>();
+                    return new List<ServerInfo>();
+                }
 
-                    foreach (var serverEntry in serversList)
+                var dtoList = JsonConvert.DeserializeObject<List<AllMcServerDto>>(jsonContent);
+                if (dtoList == null || dtoList.Count == 0)
+                {
+                    return new List<ServerInfo>();
+                }
+
+                var result = new List<ServerInfo>();
+                foreach (var dto in dtoList)
+                {
+                    string con = dto.Con?.Trim() ?? string.Empty;
+                    if (string.IsNullOrEmpty(con)) continue;
+
+                    string ip = con;
+                    int port = 25565;
+
+                    int colonIdx = con.LastIndexOf(':');
+                    if (colonIdx > 0 && int.TryParse(con.Substring(colonIdx + 1), out int customPort))
                     {
-                        var data = serverEntry.Value as JObject;
-                        if (data == null)
-                        {
-                            var dict = serverEntry.Value as Dictionary<string, object>;
-                            if (dict != null) data = JObject.FromObject(dict);
-                        }
-
-                        if (data == null) continue;
-
-                        string name = data.ContainsKey("name") ? data["name"].ToString() : "Unknown";
-
-                        if (!string.IsNullOrEmpty(searchQuery) && !name.Contains(searchQuery, StringComparison.OrdinalIgnoreCase))
-                        {
-                            continue;
-                        }
-
-                        bool isPartner = false;
-                        if (data.TryGetValue("partner", out var partnerValue)) bool.TryParse(partnerValue?.ToString(), out isPartner);
-
-                        int priority = 0;
-                        if (data.TryGetValue("priority", out var priorityVal)) int.TryParse(priorityVal?.ToString(), out priority);
-                        else if (isPartner) priority = 10;
-
-                        var serverInfo = new ServerInfo
-                        {
-                            Name = name,
-                            Ip = data.ContainsKey("ip") ? data["ip"].ToString() : "",
-                            Port = data.ContainsKey("port") ? Convert.ToInt32(data["port"]) : 25565,
-                            Version = data.ContainsKey("version") ? data["version"].ToString() : "",
-                            Type = data.ContainsKey("type") ? data["type"].ToString() : "",
-                            IsPartner = isPartner,
-                            Priority = priority,
-                            BorderColorHex = data.ContainsKey("borderColor") ? data["borderColor"].ToString() : "#FFFFFF",
-                            TextColorHex = data.ContainsKey("textColor") ? data["textColor"].ToString() : null,
-                            NeonEffect = data.TryGetValue("neonEffect", out var neonValue) && bool.TryParse(neonValue?.ToString(), out var neon) ? neon : false,
-                            DiscordLink = data.ContainsKey("discord") ? data["discord"].ToString() : "",
-                            DonateLink = data.ContainsKey("donatelink") ? data["donatelink"].ToString() : "",
-                            SiteLink = data.ContainsKey("sitelink") ? data["sitelink"].ToString() : "",
-                            Description = data.ContainsKey("description") ? data["description"].ToString() : "",
-                            LogoUrl = data.ContainsKey("logoUrl") ? data["logoUrl"].ToString() : "",
-                            BgUrl = data.ContainsKey("bgUrl") ? data["bgUrl"].ToString() : "",
-                            VersionsSupported = data.ContainsKey("versions") ? (data["versions"] as Newtonsoft.Json.Linq.JArray)?.ToObject<List<string>>() : null
-                        };
-
-                        result.Add(serverInfo);
+                        ip = con.Substring(0, colonIdx);
+                        port = customPort;
                     }
 
-                    return result;
+                    string version = dto.Ver?.Trim() ?? string.Empty;
+                    string name = con;
+
+                    if (!string.IsNullOrEmpty(searchQuery))
+                    {
+                        bool matches = name.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
+                                       ip.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
+                                       version.Contains(searchQuery, StringComparison.OrdinalIgnoreCase);
+                        if (!matches) continue;
+                    }
+
+                    var server = new ServerInfo
+                    {
+                        Name = name,
+                        Ip = ip,
+                        Port = port,
+                        Version = version,
+                        OnlinePlayers = dto.Onl,
+                        LogoUrl = EnsureHttps(dto.Ico),
+                        SiteLink = EnsureHttps(dto.Web),
+                        DiscordLink = EnsureHttps(dto.Dis),
+                        AllMcUrl = EnsureHttps(dto.Url)
+                    };
+
+                    result.Add(server);
                 }
+
+                return result.OrderByDescending(s => s.OnlinePlayers).ToList();
             }
-            catch
+            catch (Exception ex)
             {
-
-                throw;
+                Debug.WriteLine($"[ServerListService] Failed to parse JSON: {ex.Message}");
+                return new List<ServerInfo>();
             }
+        }
 
-            return new List<ServerInfo>();
+        public static string EnsureHttps(string? url)
+        {
+            if (string.IsNullOrWhiteSpace(url)) return string.Empty;
+            url = url.Trim();
+            if (url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+                url.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+            {
+                return url;
+            }
+            return "https://" + url;
         }
     }
 }

@@ -142,24 +142,7 @@ public partial class AccountsPageViewModel : ObservableObject
     {
         if (_accountService == null) return;
 
-        Func<DeviceCodeResult, Task>? deviceCodeCallback = null;
-        if (!OperatingSystem.IsWindows())
-        {
-            deviceCodeCallback = result =>
-            {
-                Dispatcher.UIThread.Post(() =>
-                {
-                    AvaloniaDialogService.Show(
-                        string.Format(LocalizationManager.GetString("Accounts.DeviceCodeHint", "Відкрийте {0} та введіть код {1}"), result.VerificationUrl, result.UserCode),
-                        LocalizationManager.GetString("Accounts.NeedAuth", "Авторизація Microsoft"),
-                        MascotEmotion.Alert);
-                });
-                WebHelper.OpenUrl(result.VerificationUrl);
-                return Task.CompletedTask;
-            };
-        }
-
-        var newProfile = await _accountService.AddMicrosoftAccountAsync(deviceCodeCallback);
+        var newProfile = await _accountService.AddMicrosoftAccountAsync();
         if (newProfile != null)
         {
             IsAddAccountDialogVisible = false;

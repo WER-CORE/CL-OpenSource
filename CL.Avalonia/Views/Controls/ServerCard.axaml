@@ -1,92 +1,146 @@
 ﻿<UserControl x:Class="CL_CLegendary_Launcher_.Avalonia.Views.Controls.ServerCard"
-              xmlns="https://github.com/avaloniaui"
-              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-              xmlns:vm="using:CL_CLegendary_Launcher_.Avalonia.ViewModels.Controls"
-              x:DataType="vm:ServerCardViewModel"
-              mc:Ignorable="d" Height="108" Width="885" Foreground="White" FontFamily="{DynamicResource AppFontFamily}">
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:ic="using:FluentIcons.Avalonia"
+             xmlns:vm="using:CL_CLegendary_Launcher_.Avalonia.ViewModels.Controls"
+             x:DataType="vm:ServerCardViewModel"
+             mc:Ignorable="d" Height="96" Width="885" Foreground="White" FontFamily="{DynamicResource AppFontFamily}">
 
-    <Grid x:Name="MainGirdItem4">
-        <Border x:Name="BG"
-                CornerRadius="15"
-                Background="{DynamicResource MainBackgroundBrushServer}"/>
+    <Border CornerRadius="14"
+            Background="{DynamicResource MainBackgroundBrushServer}"
+            BorderBrush="#20FFFFFF"
+            BorderThickness="1"
+            ClipToBounds="True">
+        <Border.Styles>
+            <Style Selector="Border:pointerover">
+                <Setter Property="BorderBrush" Value="#40FFFFFF"/>
+            </Style>
+        </Border.Styles>
 
-        <Border x:Name="BGParther"
-                BorderThickness="{Binding BorderThickness}"
-                BorderBrush="{Binding BorderBrush}"
-                BoxShadow="{Binding BoxShadow}"
-                CornerRadius="15" ClipToBounds="True">
-            <Border.Background>
-                <ImageBrush Source="{Binding BackgroundBitmap}" Stretch="UniformToFill"/>
-            </Border.Background>
-        </Border>
+        <Grid Margin="12,10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
 
-        <Border CornerRadius="15" Background="Black" Opacity="0.4" IsHitTestVisible="False"/>
+            <!-- Server Icon -->
+            <Border Grid.Column="0"
+                    Width="74" Height="74"
+                    CornerRadius="10"
+                    Background="#FF252525"
+                    BorderBrush="#25FFFFFF"
+                    BorderThickness="1"
+                    VerticalAlignment="Center"
+                    ClipToBounds="True">
+                <Image Source="{Binding Icon}"
+                       RenderOptions.BitmapInterpolationMode="MediumQuality"
+                       Stretch="UniformToFill" />
+            </Border>
 
-        <Border x:Name="FonIcon" BorderThickness="1" HorizontalAlignment="Left"
-                Height="90" Width="90" Margin="10,10,0,0" VerticalAlignment="Top"
-                Background="#FF303030" CornerRadius="6"
-                BoxShadow="0 2 5 0 #4D000000">
-            <Image x:Name="MainIcon3" Source="{Binding Icon}" RenderOptions.BitmapInterpolationMode="LowQuality" Stretch="UniformToFill"/>
-        </Border>
+            <!-- Info block: Title & Badges -->
+            <StackPanel Grid.Column="1"
+                        Margin="14,0,12,0"
+                        VerticalAlignment="Center"
+                        Spacing="6">
+                <!-- Server Name / Address -->
+                <TextBlock Text="{Binding Title}"
+                           FontSize="17"
+                           FontWeight="Bold"
+                           Foreground="{DynamicResource MainForegroundBrush}"
+                           TextTrimming="CharacterEllipsis" />
 
-        <TextBlock x:Name="TitleMain1" Text="{Binding Title}"
-                   HorizontalAlignment="Left" Margin="110,10,0,0" VerticalAlignment="Top"
-                   Width="470" Height="28"
-                   Foreground="{Binding TitleForeground}"
-                   FontSize="20" FontWeight="Bold"
-                   TextTrimming="CharacterEllipsis" />
+                <!-- Badges Row -->
+                <WrapPanel Orientation="Horizontal">
+                    <!-- Minecraft Version Badge -->
+                    <Border Background="#18FFFFFF" CornerRadius="6" Padding="7,3" Margin="0,0,8,0"
+                            ToolTip.Tip="{Binding VersionTooltip}">
+                        <StackPanel Orientation="Horizontal" Spacing="5">
+                            <ic:SymbolIcon Symbol="Cube" FontSize="13" Foreground="#B0FFFFFF" />
+                            <TextBlock Text="{Binding VersionText}" FontSize="12" Foreground="White" />
+                        </StackPanel>
+                    </Border>
 
-        <TextBlock x:Name="DescriptionMain2" Text="{Binding Description}"
-                   HorizontalAlignment="Left" Margin="110,42,0,0" VerticalAlignment="Top"
-                   Width="460" Height="56"
-                   Foreground="{DynamicResource MainForegroundBrush}"
-                   FontSize="14" TextWrapping="Wrap"
-                   TextTrimming="CharacterEllipsis" Opacity="0.9" />
+                    <!-- Online Players Badge -->
+                    <Border Background="#18FFFFFF" CornerRadius="6" Padding="7,3" Margin="0,0,8,0"
+                            ToolTip.Tip="{Binding OnlineTooltip}">
+                        <StackPanel Orientation="Horizontal" Spacing="5">
+                            <ic:SymbolIcon Symbol="People" FontSize="13" Foreground="#55FF55" />
+                            <TextBlock Text="{Binding OnlinePlayers}" FontSize="12" Foreground="White" />
+                        </StackPanel>
+                    </Border>
 
-        <Button x:Name="OpenInfoServerPanel" HorizontalAlignment="Left"
-                Height="24" Margin="581,50,0,0" VerticalAlignment="Top" Width="294"
-                Background="{DynamicResource MainBackgroundButton}" CornerRadius="6"
-                Cursor="Hand" Padding="0" Command="{Binding OpenInfoCommand}"
-                ToolTip.Tip="{Binding InfoTooltip}">
-            <TextBlock Text="{Binding VisitPageText}"
-                       HorizontalAlignment="Center" VerticalAlignment="Center"
-                       Foreground="{DynamicResource MainForegroundBrush}"
-                       FontSize="12"/>
-        </Button>
+                    <!-- Copy IP Button Badge -->
+                    <Button Background="#18FFFFFF" BorderThickness="0" CornerRadius="6" Padding="7,3" Margin="0,0,8,0"
+                            Command="{Binding CopyIpCommand}"
+                            ToolTip.Tip="{Binding CopyIpTooltip}"
+                            Cursor="Hand">
+                        <StackPanel Orientation="Horizontal" Spacing="5">
+                            <ic:SymbolIcon Symbol="Copy" FontSize="13" Foreground="#B0FFFFFF" />
+                            <TextBlock Text="{Binding IpAddress}" FontSize="12" Foreground="#D0FFFFFF"
+                                       MaxWidth="180" TextTrimming="CharacterEllipsis" />
+                        </StackPanel>
+                    </Button>
+                </WrapPanel>
+            </StackPanel>
 
-        <Border x:Name="OnlinePlayerPanel" BorderThickness="1" HorizontalAlignment="Left"
-                Height="24" Margin="581,79,0,0" VerticalAlignment="Top" Width="75"
-                Background="{DynamicResource MainBackgroundButton}" CornerRadius="6"
-                ToolTip.Tip="{Binding OnlineTooltip}">
-            <TextBlock Text="{Binding OnlinePlayers}"
-                       HorizontalAlignment="Center" VerticalAlignment="Center"
-                       Foreground="{DynamicResource MainForegroundBrush}"
-                       FontSize="12"/>
-        </Border>
+            <!-- Action buttons: Discord, Site, AllMC, Play -->
+            <StackPanel Grid.Column="2"
+                        Orientation="Horizontal"
+                        VerticalAlignment="Center"
+                        Spacing="8">
 
-        <Button x:Name="IPServerPanel" HorizontalAlignment="Left"
-                Height="24" Margin="661,79,0,0" VerticalAlignment="Top" Width="132"
-                Background="{DynamicResource MainBackgroundButton}" CornerRadius="6"
-                Cursor="Hand" Padding="0" Command="{Binding CopyIpCommand}"
-                ToolTip.Tip="{Binding CopyIpTooltip}">
-            <TextBlock Text="{Binding IpAddress}"
-                       HorizontalAlignment="Center" VerticalAlignment="Center"
-                       Foreground="{DynamicResource MainForegroundBrush}"
-                       FontSize="12" TextTrimming="CharacterEllipsis"/>
-        </Button>
+                <!-- Discord button (optional) -->
+                <Button Width="36" Height="36" CornerRadius="8"
+                        Padding="0" Cursor="Hand"
+                        Background="#20FFFFFF" BorderBrush="Transparent"
+                        Command="{Binding OpenDiscordCommand}"
+                        ToolTip.Tip="{Binding DiscordTooltip}"
+                        IsVisible="{Binding HasDiscord}">
+                    <ic:SymbolIcon Symbol="Chat" FontSize="18" Foreground="#7289DA"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Button>
 
-        <Button x:Name="PlayServerPanel1" HorizontalAlignment="Left"
-                Height="24" Margin="800,79,0,0" VerticalAlignment="Top" Width="75"
-                Background="{DynamicResource MainBackgroundButton}" CornerRadius="6"
-                Cursor="Hand" Padding="0" Command="{Binding PlayCommand}"
-                ToolTip.Tip="{Binding PlayTooltip}">
-            <TextBlock Text="{Binding PlayBtnText}"
-                       HorizontalAlignment="Center" VerticalAlignment="Center"
-                       Foreground="{DynamicResource MainForegroundBrush}"
-                       FontSize="12"/>
-        </Button>
+                <!-- Site button (optional) -->
+                <Button Width="36" Height="36" CornerRadius="8"
+                        Padding="0" Cursor="Hand"
+                        Background="#20FFFFFF" BorderBrush="Transparent"
+                        Command="{Binding OpenSiteCommand}"
+                        ToolTip.Tip="{Binding SiteTooltip}"
+                        IsVisible="{Binding HasSite}">
+                    <ic:SymbolIcon Symbol="Globe" FontSize="18" Foreground="#4BA3E3"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Button>
 
-    </Grid>
+                <!-- AllMC monitoring button -->
+                <Button Height="36" CornerRadius="8" Padding="12,0"
+                        Cursor="Hand" Background="#20FFFFFF" BorderBrush="#30FFFFFF" BorderThickness="1"
+                        Command="{Binding OpenAllMcCommand}"
+                        ToolTip.Tip="{Binding AllMcTooltip}"
+                        IsVisible="{Binding HasAllMc}">
+                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                        <ic:SymbolIcon Symbol="ArrowSquareUpRight" FontSize="15" Foreground="{DynamicResource MainForegroundBrush}" />
+                        <TextBlock Text="AllMC" FontSize="12" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource MainForegroundBrush}" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+
+                <!-- Play Button -->
+                <Button Height="36" CornerRadius="8" Padding="16,0"
+                        Cursor="Hand" Background="{DynamicResource MainBackgroundButton}"
+                        BorderThickness="0"
+                        Command="{Binding PlayCommand}"
+                        ToolTip.Tip="{Binding PlayTooltip}">
+                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                        <ic:SymbolIcon Symbol="Play" FontSize="16" Foreground="White" />
+                        <TextBlock Text="{Binding PlayBtnText}" FontSize="13" FontWeight="Bold"
+                                   Foreground="White" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+
+        </Grid>
+    </Border>
 </UserControl>

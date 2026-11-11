@@ -149,9 +149,24 @@ namespace CL.Core.Services
                 var loginHandler = new JELoginHandlerBuilder().Build();
 
                 var authenticator = loginHandler.CreateAuthenticatorWithNewAccount();
-                authenticator.AddMsalOAuth(app, msal => deviceCodeCallback == null
-                    ? msal.Interactive()
-                    : msal.DeviceCode(deviceCodeCallback));
+                authenticator.AddMsalOAuth(app, msal =>
+                {
+                    if (deviceCodeCallback != null)
+                        return msal.DeviceCode(deviceCodeCallback);
+
+                    return msal.Interactive(builder =>
+                    {
+                        builder.WithUseEmbeddedWebView(false);
+                        builder.WithSystemWebViewOptions(new SystemWebViewOptions
+                        {
+                            OpenBrowserAsync = uri =>
+                            {
+                                WebHelper.OpenUrl(uri.AbsoluteUri);
+                                return Task.CompletedTask;
+                            }
+                        });
+                    });
+                });
                 authenticator.AddXboxAuthForJE(xbox => xbox.Basic());
                 authenticator.AddForceJEAuthenticator();
 
@@ -213,6 +228,16 @@ namespace CL.Core.Services
                         LocalizationManager.GetString("Accounts.ForbiddenErrorTitle", "Доступ закрито"),
                         MascotEmotion.Alert);
                 });
+                return null;
+            }
+            catch (MsalClientException ex) when (ex.ErrorCode == MsalError.AuthenticationCanceledError)
+            {
+                Debug.WriteLine("Авторизацію скасовано користувачем у браузері.");
+                return null;
+            }
+            catch (OperationCanceledException)
+            {
+                Debug.WriteLine("Операцію авторизації скасовано.");
                 return null;
             }
             catch (Exception ex)

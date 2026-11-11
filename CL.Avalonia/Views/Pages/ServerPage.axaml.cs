@@ -48,7 +48,6 @@ public partial class ServerPage : UserControl
         {
             _boundVm.PropertyChanged -= OnViewModelPropertyChanged;
             _boundVm.ServerCards.CollectionChanged -= OnServerCardsChanged;
-            _boundVm.OnServerInfoRequested = null;
         }
 
         _boundVm = DataContext as ServersPageViewModel;
@@ -57,7 +56,6 @@ public partial class ServerPage : UserControl
         {
             _boundVm.PropertyChanged += OnViewModelPropertyChanged;
             _boundVm.ServerCards.CollectionChanged += OnServerCardsChanged;
-            _boundVm.OnServerInfoRequested = (cardVm, info) => OpenServerInfoPanel(info, cardVm.OnlinePlayers, cardVm.Icon);
         }
     }
 
@@ -85,11 +83,6 @@ public partial class ServerPage : UserControl
         if (SearchSystemTXT != null) SearchSystemTXT.PlaceholderText = LocalizationManager.GetString("Generic.SearchServers", "Пошук серверів...");
         if (Loc_RadioNormalServers != null) Loc_RadioNormalServers.Content = LocalizationManager.GetString("Servers.NormalServers", "Звичайні");
         if (Loc_RadioModdedServers != null) Loc_RadioModdedServers.Content = LocalizationManager.GetString("Servers.ModdedServers", "Модові");
-        if (OwnerButton != null) OwnerButton.Content = LocalizationManager.GetString("Servers.AddServer", "Додати свій сервер");
-        if (Loc_TxtPlayServer != null) Loc_TxtPlayServer.Text = LocalizationManager.GetString("Servers.PlayOnServer", "ГРАТИ НА СЕРВЕРІ");
-        if (DescriptionServer != null && string.IsNullOrWhiteSpace(DescriptionServer.Text))
-            DescriptionServer.Text = LocalizationManager.GetString("Servers.Description", "Опис...");
-
         if (Loc_TxtTabPublic != null) Loc_TxtTabPublic.Text = LocalizationManager.GetString("P2P.TabPublic", "Громадські сервери");
         if (Loc_TxtTabP2P != null) Loc_TxtTabP2P.Text = LocalizationManager.GetString("P2P.TabP2P", "Гра з друзями (P2P)");
         if (Loc_TxtHostTitle != null) Loc_TxtHostTitle.Text = LocalizationManager.GetString("P2P.HostTitle", "Створити спільну гру (Хост)");
@@ -155,10 +148,6 @@ public partial class ServerPage : UserControl
                 PaginationPanel.IsVisible = _boundVm.IsPaginationVisible;
                 break;
 
-            case nameof(ServersPageViewModel.SelectedServerBg):
-                BG.Source = _boundVm.SelectedServerBg;
-                BG.IsVisible = _boundVm.SelectedServerBg != null;
-                break;
         }
     }
 
@@ -192,84 +181,4 @@ public partial class ServerPage : UserControl
             _boundVm.SearchQuery = SearchSystemTXT.Text ?? string.Empty;
     }
 
-    public void OpenServerInfoPanel(ServerInfo data, string online = "-", Bitmap? iconBitmap = null)
-    {
-        AvaloniaSoundService.Click();
-
-        IPServerTXT.Text = data.Ip;
-        VersionTXT.Text = data.Version;
-        PortTXT.Text = data.Port.ToString();
-        OnlinePlayerTXT.Text = online;
-        TitleMain1.Text = data.Name;
-        DescriptionServer.Text = data.Description;
-
-        if (iconBitmap != null)
-            MainIcon3.Source = iconBitmap;
-
-        if (data.VersionsSupported is { Count: > 1 })
-        {
-            VersionSelector.ItemsSource = data.VersionsSupported;
-            VersionSelector.SelectedItem = data.Version;
-            VersionSelector.IsVisible = true;
-        }
-        else
-        {
-            VersionSelector.IsVisible = false;
-        }
-
-        if (_boundVm != null)
-            _ = _boundVm.LoadServerBackgroundAsync(data, iconBitmap);
-
-        AvaloniaAnimationService.AnimatePageTransitionExit(ServerName, 20, 0.2);
-        ServerName.IsVisible = false;
-        PanelInfoServer.IsVisible = true;
-        AvaloniaAnimationService.AnimatePageTransition(PanelInfoServer, 20, 0.3);
-    }
-
-    public void Loc_BtnCloseServerInfo_Click(object? sender, RoutedEventArgs e) => CloseServerInfoPanel();
-    public void BackMainWindow_MouseDown(object? sender, RoutedEventArgs e) => CloseServerInfoPanel();
-
-    private void CloseServerInfoPanel()
-    {
-        AvaloniaSoundService.Click();
-        AvaloniaAnimationService.AnimatePageTransitionExit(PanelInfoServer, 20, 0.2);
-        PanelInfoServer.IsVisible = false;
-        ServerName.IsVisible = true;
-        AvaloniaAnimationService.AnimatePageTransition(ServerName, 20, 0.3);
-    }
-
-    public async void PlayServer_Click(object? sender, RoutedEventArgs e)
-    {
-        if (_boundVm == null) return;
-
-        AvaloniaSoundService.Click();
-
-        string selectedVersion = (VersionSelector.IsVisible && VersionSelector.SelectedItem != null)
-            ? VersionSelector.SelectedItem.ToString()!
-            : VersionTXT.Text ?? "1.20.1";
-
-        string ip = IPServerTXT.Text ?? string.Empty;
-        int port = int.TryParse(PortTXT.Text, out var p) ? p : 25565;
-        string name = TitleMain1.Text ?? string.Empty;
-
-        await _boundVm.LaunchServerAsync(selectedVersion, ip, port, name);
-    }
-
-    public void DiscordLink_Click(object? sender, RoutedEventArgs e)
-    {
-        AvaloniaSoundService.Click();
-        _boundVm?.OpenExternalServerLink(_boundVm.SelectedServer?.DiscordLink, "Servers.ServerNoDiscord", "У цього сервера немає Discord каналу.");
-    }
-
-    public void SiteLink_Click(object? sender, RoutedEventArgs e)
-    {
-        AvaloniaSoundService.Click();
-        _boundVm?.OpenExternalServerLink(_boundVm.SelectedServer?.SiteLink, "Servers.ServerNoSite", "Сайт не вказано.");
-    }
-
-    public void DonateLink_Click(object? sender, RoutedEventArgs e)
-    {
-        AvaloniaSoundService.Click();
-        _boundVm?.OpenExternalServerLink(_boundVm.SelectedServer?.DonateLink, "Servers.ServerNoDonate", "Посилання на донат відсутнє.");
-    }
 }

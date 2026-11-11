@@ -27,7 +27,6 @@ public partial class HomePageViewModel : ObservableObject
     private readonly GameLaunchService? _gameLaunchService;
     private readonly GameSessionManager? _gameSessionManager;
     private readonly AccountService? _accountService;
-    private readonly ServerListService? _serverListService;
     private readonly LastActionService? _lastActionService;
 
     private CancellationTokenSource? _vanillaSearchCts;
@@ -62,8 +61,6 @@ public partial class HomePageViewModel : ObservableObject
     public ObservableCollection<string> OptifineMinecraftVersions { get; } = new();
     public ObservableCollection<string> OptifineModVersions { get; } = new();
     public ObservableCollection<VersionLogItem> ChangelogItems { get; } = new();
-    public ObservableCollection<PartnerServerCardViewModel> PartnerCards { get; } = new();
-    public event Action<ServerInfo>? ServerInfoRequested;
     public ObservableCollection<HistoryActionItemViewModel> RecentActions { get; } = new();
 
     [ObservableProperty]
@@ -97,7 +94,6 @@ public partial class HomePageViewModel : ObservableObject
         ResolveService<GameLaunchService>(),
         ResolveService<GameSessionManager>(),
         ResolveService<AccountService>(),
-        ResolveService<ServerListService>(),
         ResolveService<LastActionService>())
     {
     }
@@ -107,14 +103,12 @@ public partial class HomePageViewModel : ObservableObject
         GameLaunchService? gameLaunchService,
         GameSessionManager? gameSessionManager,
         AccountService? accountService,
-        ServerListService? serverListService = null,
         LastActionService? lastActionService = null)
     {
         _versionService = versionService;
         _gameLaunchService = gameLaunchService;
         _gameSessionManager = gameSessionManager;
         _accountService = accountService;
-        _serverListService = serverListService ?? ResolveService<ServerListService>();
         _lastActionService = lastActionService ?? ResolveService<LastActionService>();
 
         if (_accountService != null)
@@ -141,7 +135,6 @@ public partial class HomePageViewModel : ObservableObject
     {
         await EnsureAccountSelectedAsync();
         _ = LoadChangelogAsync();
-        _ = LoadPartnerServersAsync();
 
         if (_lastActionService != null)
         {
@@ -700,37 +693,6 @@ public partial class HomePageViewModel : ObservableObject
         foreach (var item in newItems)
         {
             collection.Add(item);
-        }
-    }
-
-    private async Task LoadPartnerServersAsync()
-    {
-        if (SettingsManager.Default.OfflineModLauncher || _serverListService == null) return;
-
-        try
-        {
-            string serverUrl = Secrets._serversUrl ?? "https://cl-launcher.app/api/servers";
-            var servers = await _serverListService.GetServersAsync(serverUrl, null).ConfigureAwait(false);
-            var partners = servers?.Where(s => s.IsPartner).OrderByDescending(s => s.Priority).ToList();
-
-            if (partners is { Count: > 0 })
-            {
-                await Dispatcher.UIThread.InvokeAsync(() =>
-                {
-                    PartnerCards.Clear();
-                    foreach (var p in partners)
-                    {
-                        PartnerCards.Add(new PartnerServerCardViewModel(
-                            p,
-                            (ver, ip, port) => _ = LaunchDirectGameAsync(LoaderType.Vanilla, ver, null, ip, port, p.Name),
-                            (cardVm, info) => ServerInfoRequested?.Invoke(info)));
-                    }
-                });
-            }
-        }
-        catch (Exception ex)
-        {
-            Debug.WriteLine($"Partner servers load error: {ex.Message}");
         }
     }
 
