@@ -52,7 +52,7 @@ modules:
         x-checker-data:
           type: json
           url: https://api.github.com/repos/WER-CORE/CL-Win-Edition--Update/releases
-          version-query: '[.[] | select(.prerelease == true)][0].tag_name | sub("^v"; "")'
+          version-query: '[.[] | select(.prerelease == false)][0].tag_name | sub("^v"; "")'
           url-query: '"https://github.com/WER-CORE/CL-Win-Edition--Update/releases/download/v" + $version + "/CLegendaryLauncher-arm64.AppImage"'
       - type: file
         path: app.clegendary.launcher.desktop
