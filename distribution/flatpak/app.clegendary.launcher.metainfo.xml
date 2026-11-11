@@ -13,22 +13,22 @@
 
   <description>
     <p>
-      CLegendary Launcher is a modern, cross-platform Minecraft launcher crafted with Avalonia UI. It provides seamless management of vanilla and modded Minecraft instances, custom skins, modpacks, server monitoring, and automated backups.
+      CLegendary Launcher is a modern, cross-platform Minecraft launcher crafted with Avalonia UI. It provides seamless management of vanilla and modded Minecraft instances, modpacks, server monitoring, and automated backups.
     </p>
     <p xml:lang="uk">
-      CLegendary Launcher — це сучасний кросплатформний лаунчер Minecraft на базі Avalonia UI. Він забезпечує зручне керування ванільними та модифікованими збірками, скінами, модпаками, моніторингом серверів та автоматичними бекапами.
+      CLegendary Launcher — це сучасний кросплатформний лаунчер Minecraft на базі Avalonia UI. Він забезпечує зручне керування ванільними та модифікованими збірками, модпаками, моніторингом серверів та автоматичними бекапами.
     </p>
     <p xml:lang="be">
-      CLegendary Launcher — гэта сучасны кросплатформенны лаўнчар Minecraft на базе Avalonia UI. Ён забяспечвае зручнае кіраванне ванільнымі і мадыфікаванымі зборкамі, скінамі, модпакамі, маніторынгам сервераў і аўтаматычнымі бэкапамі.
+      CLegendary Launcher — гэта сучасны кросплатформенны лаўнчар Minecraft на базе Avalonia UI. Ён забяспечвае зручнае кіраванне ванільнымі і мадыфікаванымі зборкамі, модпакамі, маніторынгам сервераў і аўтаматычнымі бэкапамі.
     </p>
     <p xml:lang="pl">
-      CLegendary Launcher to nowoczesny, wieloplatformowy launcher do gry Minecraft stworzony przy użyciu Avalonia UI. Zapewnia bezproblemowe zarządzanie czystymi oraz zmodyfikowanymi instancjami, skórkami, paczkami modów, monitorowaniem serwerów i automatycznymi kopiami zapasowymi.
+      CLegendary Launcher to nowoczesny, wieloplatformowy launcher do gry Minecraft stworzony przy użyciu Avalonia UI. Zapewnia bezproblemowe zarządzanie czystymi oraz zmodyfikowanymi instancjami, paczkami modów, monitorowaniem serwerów i automatycznymi kopiami zapasowymi.
     </p>
     <p xml:lang="fr">
-      CLegendary Launcher est un lanceur Minecraft multiplateforme et moderne développé avec Avalonia UI. Il offre une gestion fluide des instances vanilla et moddées, des skins personnalisés, des modpacks, de la surveillance des serveurs et des sauvegardes automatisées.
+      CLegendary Launcher est un lanceur Minecraft multiplateforme et moderne développé avec Avalonia UI. Il offre une gestion fluide des instances vanilla et moddées, des modpacks, de la surveillance des serveurs et des sauvegardes automatisées.
     </p>
     <p xml:lang="cs">
-      CLegendary Launcher je moderní multiplatformní launcher pro Minecraft vytvořený pomocí Avalonia UI. Poskytuje plynulou správu vanilkových i modovaných instancí, vlastních skinů, modpacků, sledování serverů a automatických záloh.
+      CLegendary Launcher je moderní multiplatformní launcher pro Minecraft vytvořený pomocí Avalonia UI. Poskytuje plynulou správu vanilkových i modovaných instancí, modpacků, sledování serverů a automatických záloh.
     </p>
 
     <p>Key Features:</p>
@@ -80,12 +80,12 @@
       <li xml:lang="fr">Intégration complète de Discord Rich Presence</li>
       <li xml:lang="cs">Integrace Discord Rich Presence</li>
 
-      <li>Fluid, responsive interface optimized for desktop and handheld gaming devices like Steam Deck</li>
-      <li xml:lang="uk">Плавний інтерфейс, оптимізований для комп'ютерів та портативних пристроїв (Steam Deck)</li>
-      <li xml:lang="be">Плыўны інтэрфейс, аптымізаваны для ПК і партатыўных прылад (Steam Deck)</li>
-      <li xml:lang="pl">Płynny i responsywny interfejs zoptymalizowany pod komputery oraz konsole przenośne (Steam Deck)</li>
-      <li xml:lang="fr">Interface fluide et réactive optimisée pour les PC et les consoles portables comme le Steam Deck</li>
-      <li xml:lang="cs">Plynulé a responzivní rozhraní přizpůsobené pro PC i přenosná zařízení jako Steam Deck</li>
+      <li>Fluid, responsive interface optimized for desktop and laptop computers</li>
+      <li xml:lang="uk">Плавний інтерфейс, оптимізований для комп'ютерів та ноутбуків</li>
+      <li xml:lang="be">Плыўны інтэрфейс, аптымізаваны для ПК і ноўтбукаў</li>
+      <li xml:lang="pl">Płynny i responsywny interfejs zoptymalizowany pod komputery stacjonarne i laptopy</li>
+      <li xml:lang="fr">Interface fluide et réactive optimisée pour les ordinateurs de bureau et portables</li>
+      <li xml:lang="cs">Plynulé a responzivní rozhraní přizpůsobené pro stolní počítače i notebooky</li>
     </ul>
 
     <p>Help us translate CLegendary Launcher into your language on Crowdin!</p>

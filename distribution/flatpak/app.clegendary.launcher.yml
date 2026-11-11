@@ -6,10 +6,8 @@ command: CL.Avalonia
 
 finish-args:
   - --share=network
-  - --share=ipc
   - --socket=wayland
   - --socket=x11
-  - --socket=pulseaudio
   - --device=dri
   - --filesystem=xdg-data/cl-launcher:create
   - --filesystem=xdg-data/CLMinecraft:create
@@ -30,7 +28,7 @@ modules:
       - chmod +x *.AppImage
       - ./*.AppImage --appimage-extract
       - install -d /app/bin /app/share/applications /app/share/metainfo /app/share/icons/hicolor/512x512/apps
-      - cp -r squashfs-root/* /app/bin/
+      - cp -r squashfs-root/usr/bin/* /app/bin/
       - chmod +x /app/bin/CL.Avalonia
       - install -Dm644 app.clegendary.launcher.desktop /app/share/applications/app.clegendary.launcher.desktop
       - install -Dm644 app.clegendary.launcher.metainfo.xml /app/share/metainfo/app.clegendary.launcher.metainfo.xml
@@ -38,9 +36,9 @@ modules:
     sources:
       - type: file
         only-arches: [x86_64]
-        filename: CLegendaryLauncher-x64.AppImage
+        dest-filename: CLegendaryLauncher-x64.AppImage
         url: https://github.com/WER-CORE/CL-Win-Edition--Update/releases/download/v1.1.0-preview9.6/CLegendaryLauncher-x64.AppImage
-        sha256: 6221d437ce7f7734ff585ab9d4dd9565e18ceb8a32b51d6186e27954128aa993
+        sha256: 126d9acb2b39cc927ad6f2079066cf0d58ca338ce13cd4cc6aa4c1da9d47b1b5
         x-checker-data:
           type: json
           url: https://api.github.com/repos/WER-CORE/CL-Win-Edition--Update/releases
@@ -48,9 +46,9 @@ modules:
           url-query: '"https://github.com/WER-CORE/CL-Win-Edition--Update/releases/download/v" + $version + "/CLegendaryLauncher-x64.AppImage"'
       - type: file
         only-arches: [aarch64]
-        filename: CLegendaryLauncher-arm64.AppImage
+        dest-filename: CLegendaryLauncher-arm64.AppImage
         url: https://github.com/WER-CORE/CL-Win-Edition--Update/releases/download/v1.1.0-preview9.6/CLegendaryLauncher-arm64.AppImage
-        sha256: 647ccd731132272e12bea8c848f23aa9e4c0ea2aede01dc2d662a7e02eacf42d
+        sha256: 1d22d612184754e7e73ecf35dbb766c9e836a83f6ca721868e934ca59185e1e0
         x-checker-data:
           type: json
           url: https://api.github.com/repos/WER-CORE/CL-Win-Edition--Update/releases
