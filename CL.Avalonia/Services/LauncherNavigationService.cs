@@ -51,7 +51,6 @@ public class LauncherNavigationService
         _homePage.SettingsRequested += (_, _) => NavigateToSettings();
         _homePage.NewsRequested += (_, _) => NavigateToNews();
         _homePage.ModPacksRequested += (_, showForgeTutorial) => NavigateToModPacks(showForgeTutorial);
-        _homePage.ServerRequested += (_, serverInfo) => NavigateToServers(serverInfo);
 
         return _homePage;
     }
@@ -271,11 +270,8 @@ public class LauncherNavigationService
                                            ?? vm.ServerCards.FirstOrDefault(c => c.ServerData?.Name == serverToSelect.Name);
                         if (matchingCard != null)
                         {
-                            page.OpenServerInfoPanel(serverToSelect, matchingCard.OnlinePlayers, matchingCard.Icon);
-                        }
-                        else
-                        {
-                            page.OpenServerInfoPanel(serverToSelect, "-", null);
+                            page.ServerList.SelectedItem = matchingCard;
+                            page.ServerList.ScrollIntoView(matchingCard);
                         }
                     });
                 }

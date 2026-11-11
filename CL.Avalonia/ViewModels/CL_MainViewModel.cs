@@ -328,24 +328,7 @@ public partial class CL_MainViewModel : ObservableObject
     {
         if (AccountService == null) return null;
 
-        Func<DeviceCodeResult, Task>? deviceCodeCallback = null;
-        if (!OperatingSystem.IsWindows())
-        {
-            deviceCodeCallback = result =>
-            {
-                Dispatcher.UIThread.Post(() =>
-                {
-                    AvaloniaDialogService.Show(
-                        string.Format(LocalizationManager.GetString("Accounts.DeviceCodeHint", "Відкрийте {0} та введіть код {1}"), result.VerificationUrl, result.UserCode),
-                        LocalizationManager.GetString("Accounts.NeedAuth", "Авторизація Microsoft"),
-                        MascotEmotion.Alert);
-                });
-                WebHelper.OpenUrl(result.VerificationUrl);
-                return Task.CompletedTask;
-            };
-        }
-
-        var profile = await AccountService.AddMicrosoftAccountAsync(deviceCodeCallback);
+        var profile = await AccountService.AddMicrosoftAccountAsync();
         if (profile != null)
         {
             SettingsManager.Default.MicrosoftAccount = true;

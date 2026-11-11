@@ -44,10 +44,7 @@ public partial class HomePage : UserControl
     public event EventHandler? SettingsRequested;
     public event EventHandler? NewsRequested;
     public event EventHandler<bool>? ModPacksRequested;
-    public event EventHandler<ServerInfo?>? ServerRequested;
 
-    private DispatcherTimer? _slideTimer;
-    private int _lastIndex = -1;
     private DateTime _lastVersionToggleTime = DateTime.MinValue;
     private bool _isClosingVersionMenu;
 
@@ -72,22 +69,6 @@ public partial class HomePage : UserControl
     protected override void OnDataContextChanged(EventArgs e)
     {
         base.OnDataContextChanged(e);
-        if (DataContext is HomePageViewModel vm)
-        {
-            vm.ServerInfoRequested += info => ServerRequested?.Invoke(this, info);
-            vm.PartnerCards.CollectionChanged += (_, _) =>
-            {
-                Dispatcher.UIThread.Post(() =>
-                {
-                    if (PartnerServer != null && PartnerServer.ItemCount > 0 && PartnerServer.SelectedIndex < 0)
-                    {
-                        PartnerServer.SelectedIndex = 0;
-                        _lastIndex = 0;
-                    }
-                    StartSlideTimerIfReady();
-                });
-            };
-        }
     }
 
     private void RestoreSavedLoaderIcon()
@@ -118,7 +99,6 @@ public partial class HomePage : UserControl
         }
 
         RestoreSavedLoaderIcon();
-        StartSlideTimerIfReady();
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
@@ -126,7 +106,6 @@ public partial class HomePage : UserControl
         base.OnDetachedFromVisualTree(e);
         SettingsPageViewModel.ModulesConfigurationChanged -= OnModulesChanged;
         SettingsPageViewModel.LanguageConfigurationChanged -= OnLanguageChanged;
-        _slideTimer?.Stop();
     }
 
     private void OnModulesChanged() => Dispatcher.UIThread.Post(ApplyModulesVisibility);
@@ -176,8 +155,6 @@ public partial class HomePage : UserControl
         if (Loc_FilesMenu != null) Loc_FilesMenu.Text = LocalizationManager.GetString("Sidebar.Files", "Файли та Бекапи");
         if (Loc_InfoMenu != null) Loc_InfoMenu.Text = LocalizationManager.GetString("Sidebar.Info", "Інформація");
 
-        if (Loc_PartnersTitle != null) Loc_PartnersTitle.Text = LocalizationManager.GetString("MainScreen.Partners", "Партнери");
-        if (PartherHelper != null) PartherHelper.Content = LocalizationManager.GetString("MainScreen.HowToJoin", "Як потрапити?");
         if (LatestActionsTXT != null) LatestActionsTXT.Text = LocalizationManager.GetString("MainScreen.LatestActions", "Останні дії");
         if (Loc_InstallModsTxt != null) Loc_InstallModsTxt.Text = LocalizationManager.GetString("Mods.InstallModsTxt", "Встановити...");
         if (IconSelectVersion_Copy != null) ToolTip.SetTip(IconSelectVersion_Copy, LocalizationManager.GetString("GameLaunch.PlayBtnPlay", "ГРАТИ"));
@@ -725,80 +702,4 @@ public partial class HomePage : UserControl
 
     #endregion
 
-    #region Партнерські Сервери (Карусель)
-
-    private void StartSlideTimerIfReady()
-    {
-        if (PartnerServer != null && PartnerServer.ItemCount > 1 && _slideTimer == null)
-        {
-            _slideTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
-            _slideTimer.Tick += (_, _) => NextPartnerSlide();
-            _slideTimer.Start();
-        }
-        else if (_slideTimer != null && PartnerServer != null && PartnerServer.ItemCount > 1 && !_slideTimer.IsEnabled)
-        {
-            _slideTimer.Start();
-        }
-    }
-
-    private void NextPartnerSlide()
-    {
-        if (PartnerServer == null || PartnerServer.ItemCount < 2) return;
-
-        int next = (PartnerServer.SelectedIndex + 1) % PartnerServer.ItemCount;
-        PartnerServer.SelectedIndex = next;
-        AnimateSlide(next);
-    }
-
-    private void AnimateSlide(int newIndex)
-    {
-        if (PartnerServer?.SelectedItem == null) return;
-
-        if (_lastIndex != -1 && _lastIndex != newIndex && _lastIndex < PartnerServer.ItemCount)
-        {
-            if (PartnerServer.ContainerFromIndex(_lastIndex) is ListBoxItem oldItem)
-                AnimateItemX(oldItem, 0, -300);
-        }
-
-        if (PartnerServer.ContainerFromIndex(newIndex) is ListBoxItem newItem)
-            AnimateItemX(newItem, 300, 0);
-
-        _lastIndex = newIndex;
-    }
-
-    private static void AnimateItemX(Control item, double fromX, double toX)
-    {
-        item.RenderTransform = new TranslateTransform(fromX, 0);
-
-        var anim = new Animation
-        {
-            Duration = TimeSpan.FromMilliseconds(300),
-            FillMode = FillMode.Forward,
-            Easing = new QuarticEaseOut(),
-            Children =
-            {
-                new KeyFrame
-                {
-                    Cue = new Cue(1d),
-                    Setters = { new Setter(TranslateTransform.XProperty, toX) }
-                }
-            }
-        };
-
-        _ = anim.RunAsync(item);
-    }
-
-    public void PartnerServer_PointerEntered(object? sender, PointerEventArgs e)
-    {
-        _slideTimer?.Stop();
-        PanelFooterScalePlus_PointerEntered(sender, e);
-    }
-
-    public void PartnerServer_PointerExited(object? sender, PointerEventArgs e)
-    {
-        _slideTimer?.Start();
-        PanelFooterScaleMinus_PointerExited(sender, e);
-    }
-
-    #endregion
 }

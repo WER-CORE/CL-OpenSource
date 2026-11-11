@@ -394,76 +394,9 @@
 				</Border>
 			</Grid>
 
-			<StackPanel Grid.Column="2" Orientation="Horizontal"
-                        HorizontalAlignment="Right" VerticalAlignment="Top"
-                        Margin="0,50,17,0" Height="17">
-				<ic:SymbolIcon Symbol="PeopleCommunity" FontSize="12"
-                               Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,5,0" />
-				<TextBlock x:Name="Loc_PartnersTitle" Text="Партнери"
-                           FontFamily="{DynamicResource AppFontFamily}" FontSize="10"
-                           Foreground="{DynamicResource MainForegroundBrush}" />
-			</StackPanel>
-
-			<Button x:Name="PartherHelper" Grid.Column="2"
-                    Content="Як потрапити?"
-                    HorizontalAlignment="Right" VerticalAlignment="Top"
-                    Margin="0,48,255,0"
-                    Background="{x:Null}" Foreground="{DynamicResource MainForegroundBrush}"
-                    FontFamily="{DynamicResource AppFontFamily}" FontSize="10" Cursor="Hand" BorderBrush="{x:Null}" />
-
-			<Border Grid.Column="2"
-                    BorderThickness="1"
-                    Background="{DynamicResource MainBackgroundBrushServer}"
-                    VerticalAlignment="Top"
-                    HorizontalAlignment="Right"
-                    Width="315"
-                    Margin="0,65,10,0"
-                    Height="67"
-                    CornerRadius="14"
-                    ClipToBounds="True">
-
-				<ListBox x:Name="PartnerServer"
-                         HorizontalAlignment="Center" VerticalAlignment="Center"
-                         Background="{x:Null}" Foreground="{x:Null}"
-                         BorderBrush="{x:Null}" BorderThickness="0"
-                         Cursor="Hand"
-                         ScrollViewer.VerticalScrollBarVisibility="Disabled"
-                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                         SelectedIndex="0"
-                         ItemsSource="{Binding PartnerCards}"
-                         PointerEntered="PartnerServer_PointerEntered"
-                         PointerExited="PartnerServer_PointerExited">
-
-					<ListBox.ItemsPanel>
-						<ItemsPanelTemplate>
-							<Grid />
-						</ItemsPanelTemplate>
-					</ListBox.ItemsPanel>
-
-					<ListBox.Styles>
-						<Style Selector="ListBoxItem">
-							<Setter Property="HorizontalContentAlignment" Value="Stretch" />
-							<Setter Property="VerticalContentAlignment" Value="Stretch" />
-							<Setter Property="Padding" Value="0" />
-							<Setter Property="Margin" Value="0" />
-							<Setter Property="BorderThickness" Value="0" />
-							<Setter Property="IsVisible" Value="False" />
-						</Style>
-						<Style Selector="ListBoxItem:selected">
-							<Setter Property="IsVisible" Value="True" />
-						</Style>
-					</ListBox.Styles>
-					<ListBox.ItemTemplate>
-						<DataTemplate x:DataType="controlsVm:PartnerServerCardViewModel">
-							<controls:PartnerServerCard />
-						</DataTemplate>
-					</ListBox.ItemTemplate>
-				</ListBox>
-			</Border>
-
 			<StackPanel x:Name="LatestActionsHeaderPanel" Grid.Column="2" Orientation="Horizontal"
                         HorizontalAlignment="Right" VerticalAlignment="Top"
-                        Margin="0,132,10,0" Height="14">
+                        Margin="0,50,10,0" Height="14">
 				<ic:SymbolIcon Symbol="History" FontSize="10" Foreground="{DynamicResource MainForegroundBrush}"
                                Margin="0,0,5,0" />
 				<TextBlock x:Name="LatestActionsTXT"
@@ -477,8 +410,8 @@
                     VerticalAlignment="Top"
                     HorizontalAlignment="Right"
                     Width="315"
-                    Margin="0,150,10,0"
-                    Height="64"
+                    Margin="0,68,10,0"
+                    Height="145"
                     Background="{DynamicResource MainBackgroundBrushServer}"
                     CornerRadius="12"
                     ClipToBounds="True"

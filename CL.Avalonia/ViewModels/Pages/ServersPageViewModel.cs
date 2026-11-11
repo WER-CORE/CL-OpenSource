@@ -35,8 +35,6 @@ public partial class ServersPageViewModel : ObservableObject, ITrimmablePage
 
     public void TrimMemory()
     {
-        SelectedServerBg = null;
-        IsServerInfoPanelVisible = false;
         IsNewsOverlayVisible = false;
         IsFundraiserOverlayVisible = false;
         _searchCts?.Cancel();
@@ -69,14 +67,10 @@ public partial class ServersPageViewModel : ObservableObject, ITrimmablePage
     public ObservableCollection<ServerInfo> AllServers { get; } = new();
     public ObservableCollection<ServerInfo> DisplayedServers { get; } = new();
     public ObservableCollection<ServerCardViewModel> ServerCards { get; } = new();
-    public ObservableCollection<ServerInfo> PartnerServers { get; } = new();
     public ObservableCollection<FundraiserData3rd> Fundraisers { get; } = new();
     public ObservableCollection<NewsItem> NewsItems { get; } = new();
-    public ObservableCollection<string> SelectedServerVersions { get; } = new();
 
     public ObservableCollection<ServerInfo> CurrentPageServers => DisplayedServers;
-
-    public Action<ServerCardViewModel, ServerInfo>? OnServerInfoRequested { get; set; }
 
     [ObservableProperty] private string _searchQuery = string.Empty;
     [ObservableProperty] private int _currentPage = 1;
@@ -94,15 +88,9 @@ public partial class ServersPageViewModel : ObservableObject, ITrimmablePage
 
     public bool IsLoading => IsServersLoading;
 
-    [ObservableProperty] private ServerInfo? _selectedServer;
-    [ObservableProperty] private bool _isServerInfoPanelVisible;
-    [ObservableProperty] private string _selectedServerVersion = string.Empty;
-    [ObservableProperty] private Bitmap? _selectedServerBg;
-
     [ObservableProperty] private bool _isFundraiserOverlayVisible;
     [ObservableProperty] private bool _isNewsOverlayVisible;
     [ObservableProperty] private NewsItem? _selectedNewsItem;
-    public ObservableCollection<PartnerServerCardViewModel> PartnerServerCards { get; } = new();
     public ObservableCollection<NewsCardViewModel> NewsCards { get; } = new();
     private readonly P2PManagerService _p2pManager;
 
@@ -248,13 +236,11 @@ public partial class ServersPageViewModel : ObservableObject, ITrimmablePage
             await Dispatcher.UIThread.InvokeAsync(() =>
             {
                 AllServers.Clear();
-                PartnerServers.Clear();
 
                 if (serversData is { Count: > 0 })
                 {
-                    foreach (var s in serversData.OrderByDescending(x => x.Priority))
+                    foreach (var s in serversData)
                     {
-                        if (s.IsPartner) PartnerServers.Add(s);
                         AllServers.Add(s);
                     }
                     CurrentPage = 1;
@@ -288,23 +274,22 @@ public partial class ServersPageViewModel : ObservableObject, ITrimmablePage
 
     private void UpdateDisplayedServers()
     {
-        DisplayedServers.Clear();
-        ServerCards.Clear();
         string query = SearchQuery?.Trim() ?? string.Empty;
 
         var filtered = string.IsNullOrEmpty(query)
             ? AllServers.ToList()
             : AllServers.Where(s =>
                 (s.Name != null && s.Name.Contains(query, StringComparison.OrdinalIgnoreCase)) ||
-                (s.Description != null && s.Description.Contains(query, StringComparison.OrdinalIgnoreCase)) ||
-                (s.Ip != null && s.Ip.Contains(query, StringComparison.OrdinalIgnoreCase))
+                (s.Ip != null && s.Ip.Contains(query, StringComparison.OrdinalIgnoreCase)) ||
+                (s.Version != null && s.Version.Contains(query, StringComparison.OrdinalIgnoreCase))
             ).ToList();
 
         TotalPages = Math.Max(1, (int)Math.Ceiling((double)filtered.Count / ItemsPerPage));
         CurrentPage = Math.Clamp(CurrentPage, 1, TotalPages);
-        DisplayedServers.Clear();
+
         foreach (var card in ServerCards) card.Dispose();
         ServerCards.Clear();
+        DisplayedServers.Clear();
 
         var pageItems = filtered.Skip((CurrentPage - 1) * ItemsPerPage).Take(ItemsPerPage);
         foreach (var item in pageItems)
@@ -313,12 +298,7 @@ public partial class ServersPageViewModel : ObservableObject, ITrimmablePage
 
             var cardVm = new ServerCardViewModel(
                 item,
-                async (ver, ip, port) => await LaunchServerAsync(ver, ip, port, item.Name),
-                (card, data) =>
-                {
-                    OnServerInfoRequested?.Invoke(card, data);
-                    _ = LoadServerBackgroundAsync(data, card.Icon);
-                });
+                async (ver, ip, port) => await LaunchServerAsync(ver, ip, port, item.Name));
 
             ServerCards.Add(cardVm);
         }
@@ -350,61 +330,10 @@ public partial class ServersPageViewModel : ObservableObject, ITrimmablePage
     }
 
     [RelayCommand]
-    public void SelectServer(ServerInfo? server)
+    private void OpenAllMcSite()
     {
-        if (server == null) return;
-        SelectedServer = server;
-        SelectedServerVersions.Clear();
-
-        if (server.VersionsSupported is { Count: > 0 })
-        {
-            foreach (var v in server.VersionsSupported) SelectedServerVersions.Add(v);
-            SelectedServerVersion = SelectedServerVersions[0];
-        }
-        else
-        {
-            SelectedServerVersion = server.Version;
-        }
-
-        IsServerInfoPanelVisible = true;
-    }
-
-    public async Task LoadServerBackgroundAsync(ServerInfo data, Bitmap? fallbackIcon)
-    {
-        SelectServer(data);
-        SelectedServerBg = null;
-
-        if (data.Priority > 0 && !string.IsNullOrEmpty(data.BgUrl))
-        {
-            try
-            {
-                var bgImg = await AvaloniaImageHelper.LoadOptimizedImageAsync(data.BgUrl, 400).ConfigureAwait(false);
-                await Dispatcher.UIThread.InvokeAsync(() => SelectedServerBg = bgImg ?? fallbackIcon);
-            }
-            catch
-            {
-                SelectedServerBg = fallbackIcon;
-            }
-        }
-        else
-        {
-            SelectedServerBg = fallbackIcon;
-        }
-    }
-
-    [RelayCommand]
-    public void CloseServerInfo()
-    {
-        IsServerInfoPanelVisible = false;
-        SelectedServer = null;
-    }
-
-    [RelayCommand]
-    public async Task PlayServerAsync(ServerInfo? server)
-    {
-        if (server == null) return;
-        string targetVersion = SelectedServerVersions.Any() ? SelectedServerVersion : server.Version;
-        await LaunchServerAsync(targetVersion, server.Ip, server.Port, server.Name);
+        AvaloniaSoundService.Click();
+        WebHelper.OpenUrl("https://allmc.in.ua/");
     }
 
     public async Task LaunchServerAsync(string version, string ip, int port, string serverName)
@@ -485,15 +414,6 @@ public partial class ServersPageViewModel : ObservableObject, ITrimmablePage
     {
         switch (type)
         {
-            case "discord":
-                OpenExternalServerLink(SelectedServer?.DiscordLink, "Servers.ServerNoDiscord", "У цього сервера немає Discord каналу.");
-                break;
-            case "site":
-                OpenExternalServerLink(SelectedServer?.SiteLink, "Servers.ServerNoSite", "Сайт не вказано.");
-                break;
-            case "donate":
-                OpenExternalServerLink(SelectedServer?.DonateLink, "Servers.ServerNoDonate", "Посилання на донат відсутнє.");
-                break;
             case "bug":
                 WebHelper.OpenUrl("https://discord.com/channels/1195118159187939458/1195494058571866172");
                 break;

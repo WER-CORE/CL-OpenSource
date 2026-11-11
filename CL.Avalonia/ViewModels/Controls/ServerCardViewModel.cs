@@ -1,7 +1,6 @@
+using Avalonia.Input.Platform;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Input.Platform;
-using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using CL.Core.Models;
 using CL.Core.Services;
@@ -16,37 +15,33 @@ namespace CL_CLegendary_Launcher_.Avalonia.ViewModels.Controls;
 public partial class ServerCardViewModel : ObservableObject, IDisposable
 {
     private readonly Action<string, string, int>? _onPlayClick;
-    private readonly Action<ServerCardViewModel, ServerInfo>? _onInfoClick;
 
     public ServerInfo? ServerData { get; }
 
     public event EventHandler? PlayClicked;
-    public event EventHandler? InfoClicked;
 
     [ObservableProperty] private string _title = string.Empty;
-    [ObservableProperty] private string _description = string.Empty;
     [ObservableProperty] private string _ipAddress = string.Empty;
+    [ObservableProperty] private string _versionText = string.Empty;
     [ObservableProperty] private string _onlinePlayers = "-";
     [ObservableProperty] private Bitmap? _icon;
-    [ObservableProperty] private Bitmap? _backgroundBitmap;
 
-    public void Dispose()
-    {
-        Icon = null;
-        BackgroundBitmap = null;
-    }
+    [ObservableProperty] private bool _hasAllMc;
+    [ObservableProperty] private bool _hasSite;
+    [ObservableProperty] private bool _hasDiscord;
 
-    [ObservableProperty] private IBrush? _borderBrush;
-    [ObservableProperty] private Thickness _borderThickness = new(0);
-    [ObservableProperty] private BoxShadows _boxShadow;
-    [ObservableProperty] private IBrush _titleForeground = Brushes.White;
-
-    [ObservableProperty] private string _visitPageText = "Перейти на сторінку";
-    [ObservableProperty] private string _infoTooltip = "Інформація про сервер";
-    [ObservableProperty] private string _onlineTooltip = "Онлайн";
-    [ObservableProperty] private string _copyIpTooltip = "Натисніть щоб скопіювати";
-    [ObservableProperty] private string _playTooltip = "Натисніть щоб почати грати";
     [ObservableProperty] private string _playBtnText = "Грати";
+    [ObservableProperty] private string _playTooltip = "Натисніть щоб почати грати";
+    [ObservableProperty] private string _allMcTooltip = "Перейти на сторінку сервера на AllMC.in.ua";
+    [ObservableProperty] private string _siteTooltip = "Офіційний сайт сервера";
+    [ObservableProperty] private string _discordTooltip = "Discord спільнота сервера";
+    [ObservableProperty] private string _copyIpTooltip = "Натисніть щоб скопіювати адресу";
+    [ObservableProperty] private string _onlineTooltip = "Гравців онлайн";
+    [ObservableProperty] private string _versionTooltip = "Версія Minecraft";
+
+    public string FullAddress => (ServerData != null && ServerData.Port != 25565)
+        ? $"{ServerData.Ip}:{ServerData.Port}"
+        : (ServerData?.Ip ?? string.Empty);
 
     public ServerCardViewModel()
     {
@@ -55,82 +50,46 @@ public partial class ServerCardViewModel : ObservableObject, IDisposable
 
     public ServerCardViewModel(
         ServerInfo serverData,
-        Action<string, string, int>? onPlayClick = null,
-        Action<ServerCardViewModel, ServerInfo>? onInfoClick = null) : this()
+        Action<string, string, int>? onPlayClick = null) : this()
     {
         ServerData = serverData;
         _onPlayClick = onPlayClick;
-        _onInfoClick = onInfoClick;
 
         Title = string.IsNullOrEmpty(serverData.Name)
             ? LocalizationManager.GetString("Servers.UnknownServer", "Невідомий сервер")
             : serverData.Name;
 
-        Description = string.Format(
-            LocalizationManager.GetString("Servers.TypeVersionFormat", "Тип: {0}\nВерсія: {1}"),
-            serverData.Type,
-            serverData.Version);
+        IpAddress = FullAddress;
+        VersionText = string.IsNullOrEmpty(serverData.Version) ? "-" : serverData.Version;
+        OnlinePlayers = serverData.OnlinePlayers > 0 ? serverData.OnlinePlayers.ToString() : "-";
 
-        IpAddress = serverData.Ip;
-
-        ApplyServerStyling(serverData);
+        HasAllMc = !string.IsNullOrWhiteSpace(serverData.AllMcUrl);
+        HasSite = !string.IsNullOrWhiteSpace(serverData.SiteLink);
+        HasDiscord = !string.IsNullOrWhiteSpace(serverData.DiscordLink);
 
         _ = LoadAssetsAsync(serverData);
         _ = PingServerAsync(serverData.Ip, serverData.Port);
     }
 
-    public void ApplyLocalization()
+    public void Dispose()
     {
-        InfoTooltip = LocalizationManager.GetString("Servers.ServerItemInfoTooltip", "Інформація про сервер");
-        VisitPageText = LocalizationManager.GetString("Servers.ServerPageBtn", "Перейти на сторінку");
-        OnlineTooltip = LocalizationManager.GetString("Servers.ServerOnlineTooltip", "Онлайн");
-        CopyIpTooltip = LocalizationManager.GetString("Servers.ServerCopyIpTooltip", "Натисніть щоб скопіювати");
-        PlayTooltip = LocalizationManager.GetString("Servers.ServerPlayBtn", "Натисніть щоб почати грати");
-        PlayBtnText = LocalizationManager.GetString("Servers.ServerPlayBtn", "Грати");
-
-        if (ServerData != null)
-        {
-            if (string.IsNullOrEmpty(ServerData.Name))
-                Title = LocalizationManager.GetString("Servers.UnknownServer", "Невідомий сервер");
-
-            Description = string.Format(
-                LocalizationManager.GetString("Servers.TypeVersionFormat", "Тип: {0}\nВерсія: {1}"),
-                ServerData.Type,
-                ServerData.Version);
-        }
+        Icon = null;
     }
 
-    private void ApplyServerStyling(ServerInfo serverData)
+    public void ApplyLocalization()
     {
-        if (serverData.Priority >= 100 && serverData.NeonEffect && !string.IsNullOrEmpty(serverData.BorderColorHex))
+        PlayBtnText = LocalizationManager.GetString("Servers.ServerPlayBtn", "Грати");
+        PlayTooltip = LocalizationManager.GetString("Servers.ServerPlayTooltip", "Натисніть щоб почати грати");
+        AllMcTooltip = LocalizationManager.GetString("Servers.ServerAllMcTooltip", "Перейти на сторінку сервера на AllMC.in.ua");
+        SiteTooltip = LocalizationManager.GetString("Servers.ServerSiteTooltip", "Офіційний сайт сервера");
+        DiscordTooltip = LocalizationManager.GetString("Servers.ServerDiscordTooltip", "Discord спільнота сервера");
+        CopyIpTooltip = LocalizationManager.GetString("Servers.ServerCopyIpTooltip", "Натисніть щоб скопіювати адресу");
+        OnlineTooltip = LocalizationManager.GetString("Servers.ServerOnlineTooltip", "Гравців онлайн");
+        VersionTooltip = LocalizationManager.GetString("Servers.ServerVersionTooltip", "Версія Minecraft");
+
+        if (ServerData != null && string.IsNullOrEmpty(ServerData.Name))
         {
-            var hex = serverData.BorderColorHex.StartsWith('#')
-                ? serverData.BorderColorHex
-                : "#" + serverData.BorderColorHex;
-
-            if (Color.TryParse(hex, out var glowColor))
-            {
-                BorderThickness = new Thickness(2);
-                BorderBrush = new SolidColorBrush(glowColor);
-                BoxShadow = new BoxShadows(new BoxShadow
-                {
-                    Color = glowColor,
-                    Blur = 15,
-                    Spread = 0
-                });
-            }
-        }
-
-        if (serverData.Priority >= 20 && !string.IsNullOrEmpty(serverData.TextColorHex))
-        {
-            var hex = serverData.TextColorHex.StartsWith('#')
-                ? serverData.TextColorHex
-                : "#" + serverData.TextColorHex;
-
-            if (Color.TryParse(hex, out var textColor))
-            {
-                TitleForeground = new SolidColorBrush(textColor);
-            }
+            Title = LocalizationManager.GetString("Servers.UnknownServer", "Невідомий сервер");
         }
     }
 
@@ -138,41 +97,29 @@ public partial class ServerCardViewModel : ObservableObject, IDisposable
     {
         if (!string.IsNullOrEmpty(serverData.LogoUrl))
         {
-            Icon = await AvaloniaImageHelper.LoadOptimizedImageAsync(serverData.LogoUrl, 90);
-        }
-
-        if (serverData.Priority > 0 && !string.IsNullOrEmpty(serverData.BgUrl))
-        {
-            BackgroundBitmap = await AvaloniaImageHelper.LoadOptimizedImageAsync(serverData.BgUrl, 300);
+            Icon = await AvaloniaImageHelper.LoadOptimizedImageAsync(serverData.LogoUrl, 80);
         }
     }
 
     private async Task PingServerAsync(string ip, int port)
     {
-        OnlinePlayers = await Task.Run(() =>
+        var status = await Task.Run(() =>
         {
             try
             {
                 var serverStatus = new MCQuery.MCServer(ip, port);
-                var status = serverStatus.Status(500);
-                return $"{status.Players.Online}/{status.Players.Max}";
+                return serverStatus.Status(500);
             }
             catch
             {
-                return "-";
+                return null;
             }
         });
-    }
 
-    [RelayCommand]
-    private void OpenInfo()
-    {
-        AvaloniaSoundService.Click();
-        if (ServerData != null)
+        if (status?.Players != null)
         {
-            _onInfoClick?.Invoke(this, ServerData);
+            OnlinePlayers = $"{status.Players.Online}/{status.Players.Max}";
         }
-        InfoClicked?.Invoke(this, EventArgs.Empty);
     }
 
     [RelayCommand]
@@ -183,12 +130,11 @@ public partial class ServerCardViewModel : ObservableObject, IDisposable
         {
             if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime { MainWindow.Clipboard: { } clipboard })
             {
-                await clipboard.SetTextAsync(IpAddress);
+                await clipboard.SetTextAsync(FullAddress);
             }
         }
         catch
         {
-
         }
     }
 
@@ -201,5 +147,34 @@ public partial class ServerCardViewModel : ObservableObject, IDisposable
             _onPlayClick?.Invoke(ServerData.Version, ServerData.Ip, ServerData.Port);
         }
         PlayClicked?.Invoke(this, EventArgs.Empty);
+    }
+
+    [RelayCommand]
+    private void OpenAllMc()
+    {
+        SafeOpenUrl(ServerData?.AllMcUrl);
+    }
+
+    [RelayCommand]
+    private void OpenSite()
+    {
+        SafeOpenUrl(ServerData?.SiteLink);
+    }
+
+    [RelayCommand]
+    private void OpenDiscord()
+    {
+        SafeOpenUrl(ServerData?.DiscordLink);
+    }
+
+    private static void SafeOpenUrl(string? url)
+    {
+        if (string.IsNullOrWhiteSpace(url)) return;
+        if (Uri.TryCreate(url, UriKind.Absolute, out var uri) &&
+            (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps))
+        {
+            AvaloniaSoundService.Click();
+            WebHelper.OpenUrl(uri.AbsoluteUri);
+        }
     }
 }
