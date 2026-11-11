@@ -251,6 +251,11 @@ public partial class CL_Main : Window
         base.OnPropertyChanged(change);
         if (change.Property == WindowStateProperty)
         {
+            if (WindowState == WindowState.Normal)
+            {
+                Width = 960;
+                Height = 542;
+            }
             ApplyCurrentUiScale();
         }
     }

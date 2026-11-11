@@ -9,10 +9,24 @@ namespace CL_CLegendary_Launcher_.Avalonia.Services;
 
 public class AvaloniaWindowController : IMainWindowController
 {
+    private global::Avalonia.Controls.WindowState _previousWindowState = global::Avalonia.Controls.WindowState.Normal;
+    private double _previousWidth = 960;
+    private double _previousHeight = 542;
+
     public void Minimize()
     {
         if (global::Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow != null)
         {
+            if (desktop.MainWindow.WindowState != global::Avalonia.Controls.WindowState.Minimized)
+            {
+                _previousWindowState = desktop.MainWindow.WindowState;
+                if (_previousWindowState == global::Avalonia.Controls.WindowState.Normal)
+                {
+                    _previousWidth = desktop.MainWindow.Width > 0 ? desktop.MainWindow.Width : 960;
+                    _previousHeight = desktop.MainWindow.Height > 0 ? desktop.MainWindow.Height : 542;
+                }
+            }
+
             desktop.MainWindow.WindowState = global::Avalonia.Controls.WindowState.Minimized;
             if (OperatingSystem.IsLinux())
             {
@@ -52,7 +66,14 @@ public class AvaloniaWindowController : IMainWindowController
             {
                 desktop.MainWindow.Show();
             }
-            desktop.MainWindow.WindowState = global::Avalonia.Controls.WindowState.Normal;
+
+            if (_previousWindowState == global::Avalonia.Controls.WindowState.Normal)
+            {
+                desktop.MainWindow.Width = _previousWidth > 0 ? _previousWidth : 960;
+                desktop.MainWindow.Height = _previousHeight > 0 ? _previousHeight : 542;
+            }
+
+            desktop.MainWindow.WindowState = _previousWindowState;
             desktop.MainWindow.Activate();
         }
     }
