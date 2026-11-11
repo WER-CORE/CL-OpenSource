@@ -1394,7 +1394,8 @@ public partial class SettingsPageViewModel : ObservableObject
             else
             {
                 var updateService = new UpdateService();
-                var info = await updateService.CheckForUpdateAsync(Secrets.updateInfoUrl);
+                var info = await updateService.CheckForUpdateFromGitHubAsync("WER-CORE/CL-Win-Edition--Update", isPrerelease)
+                           ?? await updateService.CheckForUpdateAsync(Secrets.updateInfoUrl);
                 string localVer = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "0.0.0";
                 if (info != null && updateService.IsUpdateAvailable(info.Version, localVer))
                 {

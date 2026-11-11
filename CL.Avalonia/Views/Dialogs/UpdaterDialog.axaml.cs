@@ -108,7 +108,9 @@ namespace CL_CLegendary_Launcher_.Avalonia.Views.Windows
             try
             {
                 StatusText.Text = LocalizationManager.GetString("Updater.CheckingData", "Перевірка даних...");
-                var info = await _updateService.CheckForUpdateAsync(Secrets.updateInfoUrl);
+                bool isPreview = string.Equals(SettingsManager.Default.UpdateChannel, "Preview", StringComparison.OrdinalIgnoreCase);
+                var info = await _updateService.CheckForUpdateFromGitHubAsync("WER-CORE/CL-Win-Edition--Update", isPreview)
+                           ?? await _updateService.CheckForUpdateAsync(Secrets.updateInfoUrl);
 
                 if (info == null || string.IsNullOrEmpty(info.Version))
                 {
