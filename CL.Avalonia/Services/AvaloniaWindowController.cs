@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using Avalonia.Controls.ApplicationLifetimes;
 using CL.Core.Interfaces;
+using CL.Core.Services;
 using FluentAvalonia.UI.Controls;
 
 namespace CL_CLegendary_Launcher_.Avalonia.Services;
@@ -100,6 +101,12 @@ public class AvaloniaWindowController : IMainWindowController
     {
         var gameLog = new Views.Dialogs.GameLogWindow();
         gameLog.Show();
+
+        if (!string.IsNullOrWhiteSpace(HistoricalLaunchCompatibilityService.LastDiagnosticSummary))
+        {
+            gameLog.AppendTextToLog(HistoricalLaunchCompatibilityService.LastDiagnosticSummary);
+            HistoricalLaunchCompatibilityService.LastDiagnosticSummary = null;
+        }
 
         process.StartInfo.UseShellExecute = false;
         process.StartInfo.RedirectStandardOutput = true;

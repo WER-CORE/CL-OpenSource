@@ -17,5 +17,6 @@ namespace CL.Core.Models
         public int ServerPort { get; set; }
         public bool JoinServer { get; set; }
         public bool AllowOfflineLan { get; set; } = true;
+        public string? JavaPath { get; set; }
     }
 }
