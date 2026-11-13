@@ -114,6 +114,8 @@ public partial class ServersPageViewModel : ObservableObject, ITrimmablePage
     [ObservableProperty] private bool _requireApproval;
     [ObservableProperty] private bool _allowOfflinePlayers = true;
     [ObservableProperty] private bool _isHostBusy;
+    [ObservableProperty] private string _p2pDiagnosticLogText = string.Empty;
+    private readonly System.Collections.Generic.Queue<string> _p2pLogLines = new();
     public ObservableCollection<P2PPlayer> ConnectedPlayers { get; } = new();
 
     [ObservableProperty] private string _inputRoomCode = string.Empty;
@@ -160,8 +162,30 @@ public partial class ServersPageViewModel : ObservableObject, ITrimmablePage
         _p2pManager.SessionStateChanged -= OnP2PSessionStateChanged;
         _p2pManager.SessionStateChanged += OnP2PSessionStateChanged;
 
+        _p2pManager.DiagnosticLogged -= OnP2PDiagnosticLogged;
+        _p2pManager.DiagnosticLogged += OnP2PDiagnosticLogged;
+
         _p2pManager.ApprovalRequested = OnP2PApprovalRequested;
         SettingsPageViewModel.LanguageConfigurationChanged += OnLanguageConfigurationChanged;
+    }
+
+    private void OnP2PDiagnosticLogged(string message)
+    {
+        string line = $"[{DateTime.Now:HH:mm:ss}] {message}";
+        Dispatcher.UIThread.Post(() =>
+        {
+            if (_p2pLogLines.Count >= 150)
+                _p2pLogLines.Dequeue();
+            _p2pLogLines.Enqueue(line);
+            P2pDiagnosticLogText = string.Join(Environment.NewLine, _p2pLogLines);
+        });
+    }
+
+    [RelayCommand]
+    private void ClearP2PLogs()
+    {
+        _p2pLogLines.Clear();
+        P2pDiagnosticLogText = string.Empty;
     }
 
     private void OnLanguageConfigurationChanged()

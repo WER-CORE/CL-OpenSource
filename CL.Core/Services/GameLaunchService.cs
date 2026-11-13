@@ -556,6 +556,11 @@ namespace CL.Core.Services
                         mockServer.Start();
                         if (mockServer.IsRunning && mockServer.Port > 0)
                         {
+                            if (config.Session != null && !string.IsNullOrWhiteSpace(config.Session.Username))
+                            {
+                                mockServer.RegisterProfile(config.Session.UUID, config.Session.Username);
+                            }
+
                             var jvmArgs = baseOptions.ExtraJvmArguments != null
                                 ? baseOptions.ExtraJvmArguments.ToList()
                                 : new List<MArgument>();
@@ -604,17 +609,17 @@ namespace CL.Core.Services
         public static string GetProxyPort(string version)
         {
             if (string.IsNullOrWhiteSpace(version)) return null;
-            version = version.ToLower();
+            version = version.Trim().ToLowerInvariant();
             if (version.StartsWith("rd-") || version.StartsWith("c0.0") || version.StartsWith("c0.2") || version.StartsWith("c0.30"))
                 return "11701";
 
             if (version.StartsWith("in-") || version.StartsWith("inf-") || version.StartsWith("a1.0") || version.StartsWith("a1.1"))
                 return "11702";
 
-            if (version.StartsWith("a1.2") || version.StartsWith("b1.3") || version.StartsWith("b1.4") || version.StartsWith("b1.5") || version.StartsWith("b1.6") || version.StartsWith("b1.7") || version.StartsWith("b1.8"))
+            if (version.StartsWith("a1.2") || Regex.IsMatch(version, @"^b1\.[0-8](?:$|[^0-9])"))
                 return "11705";
 
-            if (version.StartsWith("1.0") || version.StartsWith("1.1") || version.StartsWith("1.2") || version.StartsWith("1.3") || version.StartsWith("1.4") || version.StartsWith("1.5"))
+            if (Regex.IsMatch(version, @"^1\.[0-5](?:$|[^0-9])"))
                 return "11707";
             return null;
         }

@@ -45,6 +45,7 @@ public class E4mcTunnelService : IAsyncDisposable, IDisposable
 
     public event Action<string>? DomainAssigned;
     public event Action? TunnelClosed;
+    public event Action<string>? DiagnosticLogged;
 
     public async Task<string> StartTunnelAsync(int localProxyPort, CancellationToken token = default)
     {
@@ -58,6 +59,7 @@ public class E4mcTunnelService : IAsyncDisposable, IDisposable
         _cts = CancellationTokenSource.CreateLinkedTokenSource(token);
 
         var relay = await ResolveBestRelayAsync(_cts.Token).ConfigureAwait(false);
+        LogDiagnostic($"Creating e4mc tunnel via relay {relay.Id} ({relay.Host}:{relay.Port}) -> proxy port {localProxyPort}");
 
         var ipAddresses = await Dns.GetHostAddressesAsync(relay.Host, _cts.Token).ConfigureAwait(false);
         if (ipAddresses.Length == 0)
@@ -104,6 +106,7 @@ public class E4mcTunnelService : IAsyncDisposable, IDisposable
         }
 
         AssignedDomain = await domainTcs.Task.ConfigureAwait(false);
+        LogDiagnostic($"Assigned e4mc public domain: {AssignedDomain}");
         DomainAssigned?.Invoke(AssignedDomain);
 
         _acceptTask = Task.Run(() => AcceptInboundStreamsLoopAsync(localProxyPort, _cts.Token), _cts.Token);
@@ -166,6 +169,18 @@ public class E4mcTunnelService : IAsyncDisposable, IDisposable
         }
     }
 
+    private void LogDiagnostic(string message)
+    {
+        try
+        {
+            System.Diagnostics.Trace.WriteLine($"[P2P.Tunnel] {message}");
+            DiagnosticLogged?.Invoke(message);
+        }
+        catch
+        {
+        }
+    }
+
     private async Task AcceptInboundStreamsLoopAsync(int localProxyPort, CancellationToken token)
     {
         while (!token.IsCancellationRequested && _quicConnection != null)
@@ -179,15 +194,16 @@ public class E4mcTunnelService : IAsyncDisposable, IDisposable
             {
                 break;
             }
-            catch
+            catch (Exception ex)
             {
                 if (token.IsCancellationRequested) break;
+                LogDiagnostic($"Inbound QUIC accept error ({ex.GetType().Name}): {ex.Message}");
                 await Task.Delay(200, token).ConfigureAwait(false);
             }
         }
     }
 
-    private static async Task HandleInboundPlayerStreamAsync(QuicStream quicStream, int localProxyPort, CancellationToken token)
+    private async Task HandleInboundPlayerStreamAsync(QuicStream quicStream, int localProxyPort, CancellationToken token)
     {
         TcpClient? localTcp = null;
         try
@@ -202,8 +218,12 @@ public class E4mcTunnelService : IAsyncDisposable, IDisposable
 
             await Task.WhenAny(quicToTcp, tcpToQuic).ConfigureAwait(false);
         }
-        catch
+        catch (OperationCanceledException) when (token.IsCancellationRequested)
         {
+        }
+        catch (Exception ex)
+        {
+            LogDiagnostic($"Inbound stream forwarding error ({ex.GetType().Name}): {ex.Message}");
         }
         finally
         {

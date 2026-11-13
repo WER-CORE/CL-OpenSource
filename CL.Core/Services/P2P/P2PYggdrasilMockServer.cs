@@ -1,8 +1,10 @@
 using System;
+using System.Collections.Concurrent;
 using System.IO;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,9 +20,29 @@ public class P2PYggdrasilMockServer : IDisposable
     private CancellationTokenSource? _cts;
     private Task? _listenTask;
     private readonly object _lock = new();
+    private readonly ConcurrentDictionary<string, string> _profiles = new(StringComparer.OrdinalIgnoreCase);
 
     public int Port { get; private set; }
     public bool IsRunning => _listener != null && _listener.IsListening;
+
+    public void RegisterProfile(string? uuid, string? username)
+    {
+        if (string.IsNullOrWhiteSpace(username))
+        {
+            return;
+        }
+
+        string normalizedUuid = string.IsNullOrWhiteSpace(uuid)
+            ? GenerateOfflineUuid(username)
+            : NormalizeUuid(uuid);
+
+        if (string.IsNullOrEmpty(normalizedUuid))
+        {
+            return;
+        }
+
+        _profiles[normalizedUuid] = username;
+    }
 
     public void Start()
     {
@@ -150,7 +172,17 @@ public class P2PYggdrasilMockServer : IDisposable
                 }
 
                 string uuid = GenerateOfflineUuid(username);
-                string profileJson = $"{{\"id\":\"{uuid}\",\"name\":\"{username}\",\"properties\":[]}}";
+                if (match.Success && !string.IsNullOrWhiteSpace(username))
+                {
+                    _profiles[uuid] = username;
+                }
+
+                string profileJson = JsonSerializer.Serialize(new
+                {
+                    id = uuid,
+                    name = username,
+                    properties = Array.Empty<object>()
+                });
                 await WriteJsonAsync(res, profileJson, 200).ConfigureAwait(false);
                 return;
             }
@@ -158,8 +190,22 @@ public class P2PYggdrasilMockServer : IDisposable
             if (path.Contains("/session/minecraft/profile/", StringComparison.OrdinalIgnoreCase))
             {
                 string lastPart = path.Substring(path.LastIndexOf('/') + 1);
-                string profileJson = $"{{\"id\":\"{lastPart}\",\"name\":\"Player\",\"properties\":[]}}";
-                await WriteJsonAsync(res, profileJson, 200).ConfigureAwait(false);
+                string normalizedUuid = NormalizeUuid(lastPart);
+
+                if (!string.IsNullOrEmpty(normalizedUuid) && _profiles.TryGetValue(normalizedUuid, out string? username))
+                {
+                    string profileJson = JsonSerializer.Serialize(new
+                    {
+                        id = normalizedUuid,
+                        name = username,
+                        properties = Array.Empty<object>()
+                    });
+                    await WriteJsonAsync(res, profileJson, 200).ConfigureAwait(false);
+                    return;
+                }
+
+                res.StatusCode = 204;
+                res.Close();
                 return;
             }
 
@@ -180,6 +226,11 @@ public class P2PYggdrasilMockServer : IDisposable
         res.ContentLength64 = bytes.Length;
         await res.OutputStream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
         res.OutputStream.Close();
+    }
+
+    private static string NormalizeUuid(string uuid)
+    {
+        return uuid.Trim().Replace("-", string.Empty).ToLowerInvariant();
     }
 
     private static string GenerateOfflineUuid(string username)

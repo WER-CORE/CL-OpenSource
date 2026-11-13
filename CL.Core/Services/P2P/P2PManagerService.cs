@@ -29,6 +29,7 @@ public class P2PManagerService : IAsyncDisposable, IDisposable
     public event Action<P2PPlayer>? PlayerConnected;
     public event Action<P2PPlayer>? PlayerDisconnected;
     public event Action<P2PRoomSession?>? SessionStateChanged;
+    public event Action<string>? DiagnosticLogged;
     public Func<P2PPlayer, Task<bool>>? ApprovalRequested { get; set; }
 
     public P2PManagerService()
@@ -36,6 +37,8 @@ public class P2PManagerService : IAsyncDisposable, IDisposable
         _discovery.WorldDiscovered += world => WorldDiscovered?.Invoke(world);
         _proxy.PlayerConnected += player => PlayerConnected?.Invoke(player);
         _proxy.PlayerDisconnected += player => PlayerDisconnected?.Invoke(player);
+        _proxy.DiagnosticLogged += msg => DiagnosticLogged?.Invoke(msg);
+        _tunnelService.DiagnosticLogged += msg => DiagnosticLogged?.Invoke(msg);
         _proxy.ApprovalRequested = async player =>
         {
             if (ApprovalRequested != null)
@@ -89,11 +92,14 @@ public class P2PManagerService : IAsyncDisposable, IDisposable
 
         try
         {
+            LogDiagnostic($"Starting P2P hosting for {gameVersion} ({loaderType}) LAN:{localPort} -> proxy:{proxyListenPort}");
             publicDomain = await _tunnelService.StartTunnelAsync(proxyListenPort, token).ConfigureAwait(false);
             hostAddress = publicDomain;
+            LogDiagnostic($"Tunnel active: domain={publicDomain}, publicPort={publicPort}");
         }
-        catch
+        catch (Exception ex)
         {
+            LogDiagnostic($"e4mc tunnel failed ({ex.GetType().Name}: {ex.Message}); falling back to UPnP.");
             bool upnpSuccess = await _portMapper.OpenPortAsync(proxyListenPort, publicPort, token).ConfigureAwait(false);
             string? externalIp = await _portMapper.GetExternalIpAsync(token).ConfigureAwait(false);
             hostAddress = !string.IsNullOrEmpty(externalIp) ? externalIp : "127.0.0.1";
@@ -101,6 +107,7 @@ public class P2PManagerService : IAsyncDisposable, IDisposable
             {
                 publicPort = proxyListenPort;
             }
+            LogDiagnostic($"Fallback hosting endpoint: publicPort={publicPort}, upnp={upnpSuccess}");
         }
 
         var payload = new P2PRoomPayload
@@ -139,6 +146,18 @@ public class P2PManagerService : IAsyncDisposable, IDisposable
 
         SessionStateChanged?.Invoke(_currentSession);
         return _currentSession;
+    }
+
+    private void LogDiagnostic(string message)
+    {
+        try
+        {
+            System.Diagnostics.Trace.WriteLine($"[P2P.Manager] {message}");
+            DiagnosticLogged?.Invoke(message);
+        }
+        catch
+        {
+        }
     }
 
     public async Task StopHostingAsync()
