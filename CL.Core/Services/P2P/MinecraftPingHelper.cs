@@ -71,44 +71,99 @@ public static class MinecraftPingHelper
             }
 
             string jsonStr = Encoding.UTF8.GetString(jsonBuffer, 0, readTotal);
-            var parsed = JObject.Parse(jsonStr);
-
-            string? verName = parsed["version"]?["name"]?.ToString();
-            if (string.IsNullOrWhiteSpace(verName)) return null;
-
-            string loader = "Vanilla";
-            if (verName.Contains("Fabric", StringComparison.OrdinalIgnoreCase)) loader = "Fabric";
-            else if (verName.Contains("NeoForge", StringComparison.OrdinalIgnoreCase)) loader = "NeoForge";
-            else if (verName.Contains("Forge", StringComparison.OrdinalIgnoreCase)) loader = "Forge";
-            else if (verName.Contains("Quilt", StringComparison.OrdinalIgnoreCase)) loader = "Quilt";
-
-            string cleanVersion = verName;
-            var parts = verName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            foreach (var part in parts)
-            {
-                if (char.IsDigit(part[0]) && part.Contains('.'))
-                {
-                    cleanVersion = part;
-                    break;
-                }
-            }
-
-            string motd = string.Empty;
-            var descToken = parsed["description"];
-            if (descToken != null)
-            {
-                if (descToken is JValue jVal) motd = jVal.ToString();
-                else if (descToken is JObject jObj) motd = jObj["text"]?.ToString() ?? string.Empty;
-                motd = System.Text.RegularExpressions.Regex.Replace(motd, @"§[0-9a-fk-or]", string.Empty).Trim();
-            }
-
-            return (cleanVersion, loader, motd);
+            return ParseStatusJson(jsonStr);
         }
         catch
         {
         }
 
         return await TryGetLegacyServerInfoAsync(port, token).ConfigureAwait(false);
+    }
+
+    internal static (string Version, string Loader, string Motd)? ParseStatusJson(string jsonStr)
+    {
+        if (string.IsNullOrWhiteSpace(jsonStr))
+            return null;
+
+        var parsed = JObject.Parse(jsonStr);
+
+        string? verName = parsed["version"]?["name"]?.ToString();
+        if (string.IsNullOrWhiteSpace(verName))
+            return null;
+
+        string loader = DetectLoaderFromStatusJson(parsed, verName);
+
+        string cleanVersion = verName;
+        var parts = verName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        foreach (var part in parts)
+        {
+            if (char.IsDigit(part[0]) && part.Contains('.'))
+            {
+                cleanVersion = part;
+                break;
+            }
+        }
+
+        string motd = string.Empty;
+        var descToken = parsed["description"];
+        if (descToken != null)
+        {
+            if (descToken is JValue jVal) motd = jVal.ToString();
+            else if (descToken is JObject jObj) motd = jObj["text"]?.ToString() ?? string.Empty;
+            motd = System.Text.RegularExpressions.Regex.Replace(motd, @"§[0-9a-fk-or]", string.Empty).Trim();
+        }
+
+        return (cleanVersion, loader, motd);
+    }
+
+    internal static string DetectLoaderFromStatusJson(JObject parsed, string verName)
+    {
+        if (verName.Contains("Fabric", StringComparison.OrdinalIgnoreCase)) return "Fabric";
+        if (verName.Contains("NeoForge", StringComparison.OrdinalIgnoreCase)) return "NeoForge";
+        if (verName.Contains("Forge", StringComparison.OrdinalIgnoreCase)) return "Forge";
+        if (verName.Contains("Quilt", StringComparison.OrdinalIgnoreCase)) return "Quilt";
+
+        var forgeData = parsed["forgeData"] as JObject;
+        if (forgeData != null)
+        {
+            if (ContainsNeoForgeMarker(forgeData))
+                return "NeoForge";
+
+            return "Forge";
+        }
+
+        if (parsed["modinfo"] != null)
+            return "Forge";
+
+        if (parsed["isModded"]?.Value<bool>() == true)
+            return "NeoForge";
+
+        return "Vanilla";
+    }
+
+    private static bool ContainsNeoForgeMarker(JObject forgeData)
+    {
+        if (forgeData["mods"] is JArray mods)
+        {
+            foreach (var mod in mods)
+            {
+                string? modId = mod?["modId"]?.ToString();
+                if (string.Equals(modId, "neoforge", StringComparison.OrdinalIgnoreCase))
+                    return true;
+            }
+        }
+
+        if (forgeData["channels"] is JArray channels)
+        {
+            foreach (var ch in channels)
+            {
+                string? res = ch?["res"]?.ToString();
+                if (!string.IsNullOrEmpty(res) && res.StartsWith("neoforge:", StringComparison.OrdinalIgnoreCase))
+                    return true;
+            }
+        }
+
+        return false;
     }
 
     private static async Task<(string Version, string Loader, string Motd)?> TryGetLegacyServerInfoAsync(int port, CancellationToken token)

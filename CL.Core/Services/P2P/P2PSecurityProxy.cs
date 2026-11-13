@@ -32,6 +32,7 @@ public class P2PSecurityProxy : IAsyncDisposable, IDisposable
 
     public event Action<P2PPlayer>? PlayerConnected;
     public event Action<P2PPlayer>? PlayerDisconnected;
+    public event Action<string>? DiagnosticLogged;
     public Func<P2PPlayer, Task<bool>>? ApprovalRequested { get; set; }
 
     public IReadOnlyCollection<P2PPlayer> ConnectedPlayers
@@ -51,12 +52,14 @@ public class P2PSecurityProxy : IAsyncDisposable, IDisposable
     {
         StopAsync().GetAwaiter().GetResult();
 
-        BoundPort = listenPort;
         TargetLocalPort = targetLocalPort;
         _cts = CancellationTokenSource.CreateLinkedTokenSource(token);
 
         _listener = new TcpListener(IPAddress.Any, listenPort);
         _listener.Start();
+        BoundPort = ((IPEndPoint)_listener.LocalEndpoint).Port;
+
+        LogDiagnostic($"Proxy listener started on port {BoundPort} -> 127.0.0.1:{TargetLocalPort}");
 
         _acceptTask = Task.Run(() => AcceptLoopAsync(_cts.Token), _cts.Token);
         return Task.CompletedTask;
@@ -87,6 +90,7 @@ public class P2PSecurityProxy : IAsyncDisposable, IDisposable
     private async Task HandleClientAsync(TcpClient client, CancellationToken token)
     {
         string connectionId = Guid.NewGuid().ToString("N");
+        string shortId = connectionId[..8];
         NetworkStream? clientStream = null;
         TcpClient? server = null;
         NetworkStream? serverStream = null;
@@ -94,21 +98,24 @@ public class P2PSecurityProxy : IAsyncDisposable, IDisposable
 
         try
         {
+            LogDiagnostic($"[{shortId}] Accepted TCP connection.");
             clientStream = client.GetStream();
 
             using var handshakeCts = CancellationTokenSource.CreateLinkedTokenSource(token);
             handshakeCts.CancelAfter(TimeSpan.FromSeconds(10));
             var hToken = handshakeCts.Token;
 
-            int firstByte = clientStream.ReadByte();
+            int firstByte = await ReadByteAsync(clientStream, hToken).ConfigureAwait(false);
             if (firstByte == -1)
             {
+                LogDiagnostic($"[{shortId}] Closed before sending handshake.");
                 CloseQuietly(client);
                 return;
             }
 
             if (firstByte == 0xFE)
             {
+                LogDiagnostic($"[{shortId}] Legacy 0xFE ping received; connecting to 127.0.0.1:{TargetLocalPort}.");
                 server = new TcpClient();
                 server.NoDelay = true;
                 await server.ConnectAsync(IPAddress.Loopback, TargetLocalPort, token).ConfigureAwait(false);
@@ -129,17 +136,28 @@ public class P2PSecurityProxy : IAsyncDisposable, IDisposable
                 int shift = 7;
                 while (true)
                 {
-                    int b = clientStream.ReadByte();
-                    if (b == -1) { CloseQuietly(client); return; }
+                    int b = await ReadByteAsync(clientStream, hToken).ConfigureAwait(false);
+                    if (b == -1)
+                    {
+                        LogDiagnostic($"[{shortId}] EOF while reading handshake length.");
+                        CloseQuietly(client);
+                        return;
+                    }
                     packetLength |= (b & 0x7F) << shift;
                     shift += 7;
-                    if (shift > 35) { CloseQuietly(client); return; }
+                    if (shift > 35)
+                    {
+                        LogDiagnostic($"[{shortId}] Invalid handshake VarInt length.");
+                        CloseQuietly(client);
+                        return;
+                    }
                     if ((b & 0x80) == 0) break;
                 }
             }
 
             if (packetLength <= 0 || packetLength > 2048)
             {
+                LogDiagnostic($"[{shortId}] Rejected handshake with length {packetLength}.");
                 CloseQuietly(client);
                 return;
             }
@@ -149,35 +167,40 @@ public class P2PSecurityProxy : IAsyncDisposable, IDisposable
             while (readBytes < packetLength)
             {
                 int r = await clientStream.ReadAsync(packetBuffer.AsMemory(readBytes, packetLength - readBytes), hToken).ConfigureAwait(false);
-                if (r <= 0) { CloseQuietly(client); return; }
+                if (r <= 0)
+                {
+                    LogDiagnostic($"[{shortId}] EOF while reading handshake payload.");
+                    CloseQuietly(client);
+                    return;
+                }
                 readBytes += r;
             }
 
-            using var packetMs = new MemoryStream(packetBuffer, false);
-            if (!TryReadVarInt(packetMs, out int packetId) || packetId != 0x00)
+            if (!TryRewriteHandshakePayload(packetBuffer, TargetLocalPort, out var handshake))
             {
+                LogDiagnostic($"[{shortId}] Invalid or non-0x00 handshake packet.");
                 CloseQuietly(client);
                 return;
             }
 
-            if (!TryReadVarInt(packetMs, out int protocolVersion)) { CloseQuietly(client); return; }
-            string serverAddress = ReadMinecraftString(packetMs);
-            if (packetMs.Position + 2 > packetMs.Length) { CloseQuietly(client); return; }
-            int port = (packetMs.ReadByte() << 8) | packetMs.ReadByte();
-            if (!TryReadVarInt(packetMs, out int nextState)) { CloseQuietly(client); return; }
+            LogDiagnostic(
+                $"[{shortId}] Handshake: protocol={handshake.ProtocolVersion}, nextState={FormatNextState(handshake.NextState)}, ext={(handshake.ProtocolExtension ?? "none")}, target=127.0.0.1:{TargetLocalPort}");
 
             server = new TcpClient();
             server.NoDelay = true;
             await server.ConnectAsync(IPAddress.Loopback, TargetLocalPort, token).ConfigureAwait(false);
             serverStream = server.GetStream();
+            LogDiagnostic($"[{shortId}] Connected to local LAN server 127.0.0.1:{TargetLocalPort}.");
 
-            byte[] normalizedHandshake = CreateHandshakePacket(protocolVersion, "127.0.0.1", TargetLocalPort, nextState);
-            await serverStream.WriteAsync(normalizedHandshake, token).ConfigureAwait(false);
+            await serverStream.WriteAsync(handshake.RewrittenPacket, token).ConfigureAwait(false);
+            await serverStream.FlushAsync(token).ConfigureAwait(false);
 
-            if (nextState == 2)
+            if (handshake.NextState == 2)
             {
-                if (!TryReadVarInt(clientStream, out int loginLen) || loginLen <= 0 || loginLen > 2048)
+                var (loginLenOk, loginLen) = await TryReadVarIntAsync(clientStream, hToken).ConfigureAwait(false);
+                if (!loginLenOk || loginLen <= 0 || loginLen > 2048)
                 {
+                    LogDiagnostic($"[{shortId}] Invalid login start packet length ({loginLen}).");
                     CloseQuietly(client, server);
                     return;
                 }
@@ -187,13 +210,19 @@ public class P2PSecurityProxy : IAsyncDisposable, IDisposable
                 while (loginRead < loginLen)
                 {
                     int r = await clientStream.ReadAsync(loginBuffer.AsMemory(loginRead, loginLen - loginRead), hToken).ConfigureAwait(false);
-                    if (r <= 0) { CloseQuietly(client, server); return; }
+                    if (r <= 0)
+                    {
+                        LogDiagnostic($"[{shortId}] EOF while reading login start packet.");
+                        CloseQuietly(client, server);
+                        return;
+                    }
                     loginRead += r;
                 }
 
                 using var loginMs = new MemoryStream(loginBuffer, false);
                 if (!TryReadVarInt(loginMs, out int loginPacketId) || loginPacketId != 0x00)
                 {
+                    LogDiagnostic($"[{shortId}] Expected login start packet 0x00, got 0x{loginPacketId:X2}.");
                     CloseQuietly(client, server);
                     return;
                 }
@@ -201,6 +230,7 @@ public class P2PSecurityProxy : IAsyncDisposable, IDisposable
                 string username = ReadMinecraftString(loginMs);
                 if (!await ValidateAndApproveAsync(username, clientStream, hToken).ConfigureAwait(false))
                 {
+                    LogDiagnostic($"[{shortId}] Connection rejected during validation/approval.");
                     CloseQuietly(client, server);
                     return;
                 }
@@ -214,6 +244,7 @@ public class P2PSecurityProxy : IAsyncDisposable, IDisposable
 
                 await WriteVarIntAsync(serverStream, loginLen, token).ConfigureAwait(false);
                 await serverStream.WriteAsync(loginBuffer.AsMemory(0, loginLen), token).ConfigureAwait(false);
+                await serverStream.FlushAsync(token).ConfigureAwait(false);
 
                 _activeConnections[connectionId] = (client, server, player);
                 PlayerConnected?.Invoke(player);
@@ -224,8 +255,13 @@ public class P2PSecurityProxy : IAsyncDisposable, IDisposable
 
             await Task.WhenAny(clientToServerNetty, serverToClientNetty).ConfigureAwait(false);
         }
-        catch
+        catch (OperationCanceledException) when (token.IsCancellationRequested)
         {
+            LogDiagnostic($"[{shortId}] Connection closed due to proxy shutdown.");
+        }
+        catch (Exception ex)
+        {
+            LogDiagnostic($"[{shortId}] Connection error ({ex.GetType().Name}): {ex.Message}");
         }
         finally
         {
@@ -417,6 +453,159 @@ public class P2PSecurityProxy : IAsyncDisposable, IDisposable
             value = (int)((uint)value >> 7);
         }
         await stream.WriteAsync(new[] { (byte)value }.AsMemory(0, 1), token).ConfigureAwait(false);
+    }
+
+    private void LogDiagnostic(string message)
+    {
+        try
+        {
+            System.Diagnostics.Trace.WriteLine($"[P2P.Proxy] {message}");
+            DiagnosticLogged?.Invoke(message);
+        }
+        catch
+        {
+        }
+    }
+
+    internal readonly record struct HandshakeRewriteResult(
+        int ProtocolVersion,
+        string OriginalServerAddress,
+        string ForwardedServerAddress,
+        int OriginalPort,
+        int TargetPort,
+        int NextState,
+        string? ProtocolExtension,
+        byte[] RewrittenPacket);
+
+    internal static bool TryRewriteHandshakePayload(byte[] packetPayload, int targetLocalPort, out HandshakeRewriteResult result)
+    {
+        result = default;
+        if (packetPayload == null || packetPayload.Length == 0)
+            return false;
+
+        using var packetMs = new MemoryStream(packetPayload, false);
+        if (!TryReadVarInt(packetMs, out int packetId) || packetId != 0x00)
+            return false;
+
+        if (!TryReadVarInt(packetMs, out int protocolVersion))
+            return false;
+
+        if (!TryReadMinecraftString(packetMs, out string serverAddress))
+            return false;
+
+        if (packetMs.Position + 2 > packetMs.Length)
+            return false;
+
+        int originalPort = (packetMs.ReadByte() << 8) | packetMs.ReadByte();
+        if (!TryReadVarInt(packetMs, out int nextState))
+            return false;
+
+        string forwardedAddress = BuildForwardedHandshakeAddress(serverAddress);
+        string? extension = DescribeProtocolExtension(serverAddress);
+        byte[] rewrittenPacket = CreateHandshakePacket(protocolVersion, forwardedAddress, targetLocalPort, nextState);
+
+        result = new HandshakeRewriteResult(
+            protocolVersion,
+            serverAddress,
+            forwardedAddress,
+            originalPort,
+            targetLocalPort,
+            nextState,
+            extension,
+            rewrittenPacket);
+        return true;
+    }
+
+    internal static string BuildForwardedHandshakeAddress(string originalServerAddress)
+    {
+        if (string.IsNullOrEmpty(originalServerAddress))
+            return "127.0.0.1";
+
+        int nulIndex = originalServerAddress.IndexOf('\0');
+        return nulIndex >= 0
+            ? "127.0.0.1" + originalServerAddress.Substring(nulIndex)
+            : "127.0.0.1";
+    }
+
+    internal static string? DescribeProtocolExtension(string serverAddress)
+    {
+        if (string.IsNullOrEmpty(serverAddress))
+            return null;
+
+        int nulIndex = serverAddress.IndexOf('\0');
+        if (nulIndex < 0)
+            return null;
+
+        string suffix = serverAddress.Substring(nulIndex + 1);
+        int nextNul = suffix.IndexOf('\0');
+        string firstSegment = nextNul >= 0 ? suffix.Substring(0, nextNul) : suffix;
+        if (string.IsNullOrWhiteSpace(firstSegment))
+            return "NUL_MARKER";
+
+        var sb = new StringBuilder(Math.Min(firstSegment.Length, 24));
+        foreach (char ch in firstSegment)
+        {
+            if (sb.Length >= 24) break;
+            sb.Append(char.IsLetterOrDigit(ch) || ch is '_' or '-' or '.' ? ch : '?');
+        }
+        return sb.Length > 0 ? sb.ToString() : "NUL_MARKER";
+    }
+
+    private static string FormatNextState(int nextState) => nextState switch
+    {
+        1 => "Status(1)",
+        2 => "Login(2)",
+        3 => "Transfer(3)",
+        _ => $"Unknown({nextState})"
+    };
+
+    private static async Task<int> ReadByteAsync(Stream stream, CancellationToken token)
+    {
+        byte[] singleByte = new byte[1];
+        int read = await stream.ReadAsync(singleByte.AsMemory(0, 1), token).ConfigureAwait(false);
+        return read == 1 ? singleByte[0] : -1;
+    }
+
+    private static async Task<(bool Success, int Value)> TryReadVarIntAsync(Stream stream, CancellationToken token)
+    {
+        int result = 0;
+        int numRead = 0;
+        byte[] singleByte = new byte[1];
+
+        while (true)
+        {
+            int r = await stream.ReadAsync(singleByte.AsMemory(0, 1), token).ConfigureAwait(false);
+            if (r <= 0) return (false, 0);
+
+            int b = singleByte[0];
+            result |= (b & 0x7F) << (7 * numRead);
+            numRead++;
+            if (numRead > 5) return (false, 0);
+            if ((b & 0x80) == 0) break;
+        }
+
+        return (true, result);
+    }
+
+    private static bool TryReadMinecraftString(Stream stream, out string value)
+    {
+        value = string.Empty;
+        if (!TryReadVarInt(stream, out int length) || length < 0 || length > 32767)
+            return false;
+
+        if (length == 0)
+            return true;
+
+        if (stream.Position + length > stream.Length)
+            return false;
+
+        byte[] buffer = new byte[length];
+        int read = stream.Read(buffer, 0, length);
+        if (read < length)
+            return false;
+
+        value = Encoding.UTF8.GetString(buffer, 0, read);
+        return true;
     }
 
     private static string ReadMinecraftString(Stream stream)

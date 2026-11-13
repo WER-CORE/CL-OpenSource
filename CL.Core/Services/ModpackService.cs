@@ -307,6 +307,11 @@ namespace CL.Core.Services
                             mockServer.Start();
                             if (mockServer.IsRunning && mockServer.Port > 0)
                             {
+                                if (config.Session != null && !string.IsNullOrWhiteSpace(config.Session.Username))
+                                {
+                                    mockServer.RegisterProfile(config.Session.UUID, config.Session.Username);
+                                }
+
                                 activeJvmArgs.Add($@"-javaagent:{jarPath}=http://127.0.0.1:{mockServer.Port}/api/yggdrasil");
                             }
                         }

@@ -250,14 +250,9 @@
                             BorderBrush="#25FFFFFF">
                         <ScrollViewer VerticalScrollBarVisibility="Auto">
                             <StackPanel Spacing="16">
-                                <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
-                                    <Border Width="36" Height="36" CornerRadius="10" Background="#20FFFFFF">
-                                        <ic:SymbolIcon Symbol="Desktop" FontSize="20" Foreground="White" />
-                                    </Border>
-                                    <StackPanel>
-                                        <TextBlock x:Name="Loc_TxtHostTitle" Text="Створити спільну гру (Хост)" FontSize="16" FontWeight="Bold" Foreground="White" />
-                                        <TextBlock x:Name="Loc_TxtHostSubtitle" Text="Трансляція вашого LAN-світу друзям" FontSize="11" Foreground="#99FFFFFF" />
-                                    </StackPanel>
+                                <StackPanel>
+                                    <TextBlock x:Name="Loc_TxtHostTitle" Text="Створити спільну гру (Хост)" FontSize="16" FontWeight="Bold" Foreground="White" />
+                                    <TextBlock x:Name="Loc_TxtHostSubtitle" Text="Трансляція вашого LAN-світу друзям" FontSize="11" Foreground="#99FFFFFF" />
                                 </StackPanel>
                                 <StackPanel Spacing="14" IsVisible="{Binding !IsHostingActive}">
                                     <Border Background="#10FFFFFF" CornerRadius="10" Padding="12">
@@ -270,10 +265,7 @@
                                                         Command="{Binding RefreshDiscoveryCommand}"
                                                         x:Name="Loc_BtnRefreshDiscovery" ToolTip.Tip="Оновити пошук світів"
                                                         Padding="6,4">
-                                                    <StackPanel Orientation="Horizontal" Spacing="4">
-                                                        <ic:SymbolIcon Symbol="ArrowSync" FontSize="13" Foreground="#99FFFFFF" />
-                                                        <TextBlock x:Name="Loc_TxtRefreshBtn" Text="Оновити" FontSize="11" Foreground="#99FFFFFF" />
-                                                    </StackPanel>
+                                                    <TextBlock x:Name="Loc_TxtRefreshBtn" Text="Оновити" FontSize="11" Foreground="#99FFFFFF" />
                                                 </Button>
                                             </Grid>
                                             <ComboBox ItemsSource="{Binding DiscoveredLanWorlds}"
@@ -285,11 +277,10 @@
                                                       Foreground="White">
                                                 <ComboBox.ItemTemplate>
                                                     <DataTemplate>
-                                                        <StackPanel Orientation="Horizontal" Spacing="10">
-                                                            <ic:SymbolIcon Symbol="Cube" FontSize="16" Foreground="#4CAF50" />
-                                                            <TextBlock Text="{Binding DisplayTitle}" FontWeight="SemiBold" Foreground="White" />
-                                                            <TextBlock Text="{Binding Port, StringFormat='(Порт: {0})'}" Foreground="#88FFFFFF" FontSize="12" />
-                                                        </StackPanel>
+                                                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                                            <TextBlock Grid.Column="0" Text="{Binding DisplayTitle}" FontWeight="SemiBold" Foreground="White" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                                            <TextBlock Grid.Column="1" Text="{Binding Port, StringFormat='(Порт: {0})'}" Foreground="#88FFFFFF" FontSize="12" VerticalAlignment="Center" />
+                                                        </Grid>
                                                     </DataTemplate>
                                                 </ComboBox.ItemTemplate>
                                             </ComboBox>
@@ -304,6 +295,9 @@
                                                 <TextBox Grid.Column="0"
                                                          Text="{Binding ManualPortInput}"
                                                          x:Name="Loc_TxtManualPortInput" PlaceholderText="Або вкажіть порт LAN вручну (наприклад 54321)..."
+                                                         MinHeight="36"
+                                                         VerticalAlignment="Stretch"
+                                                         VerticalContentAlignment="Center"
                                                          CornerRadius="8,0,0,8"
                                                          Background="{DynamicResource MainBackgroundButton}"
                                                          Foreground="White"
@@ -311,12 +305,16 @@
                                                 <Button Grid.Column="1"
                                                         Command="{Binding AddManualPortCommand}"
                                                         x:Name="Loc_BtnAddManualPort" Content="Додати"
+                                                        MinHeight="36"
+                                                        VerticalAlignment="Stretch"
+                                                        VerticalContentAlignment="Center"
+                                                        HorizontalContentAlignment="Center"
                                                         CornerRadius="0,8,8,0"
                                                         Background="{DynamicResource AccentBrush}"
                                                         Foreground="White"
                                                         FontWeight="SemiBold"
                                                         FontSize="12"
-                                                        Padding="12,0" />
+                                                        Padding="14,0" />
                                             </Grid>
                                             <TextBlock x:Name="Loc_TxtLanHint" Text="Порада: увійдіть у світ Minecraft, відкрийте меню паузи і натисніть «Відкрити для LAN»."
                                                        FontSize="11" Foreground="#88FFFFFF" TextWrapping="Wrap" Margin="0,4,0,0" />
@@ -363,10 +361,7 @@
                                             Background="{DynamicResource MainBackgroundButton}"
                                             Foreground="White"
                                             Cursor="Hand">
-                                        <StackPanel Orientation="Horizontal" Spacing="8">
-                                            <ic:SymbolIcon Symbol="Play" FontSize="18" />
-                                            <TextBlock x:Name="Loc_TxtStartHostingBtn" Text="Почати спільну гру" FontWeight="Bold" FontSize="14" />
-                                        </StackPanel>
+                                        <TextBlock x:Name="Loc_TxtStartHostingBtn" Text="Почати спільну гру" FontWeight="Bold" FontSize="14" />
                                     </Button>
                                 </StackPanel>
                                 <StackPanel Spacing="14" IsVisible="{Binding IsHostingActive}">
@@ -394,10 +389,7 @@
                                                         Background="{DynamicResource MainBackgroundButton}"
                                                         Foreground="White"
                                                         Cursor="Hand">
-                                                    <StackPanel Orientation="Horizontal" Spacing="6">
-                                                        <ic:SymbolIcon Symbol="Document" FontSize="16" />
-                                                        <TextBlock x:Name="Loc_TxtCopyBtn" Text="Копіювати код CL" FontSize="12" FontWeight="SemiBold" />
-                                                    </StackPanel>
+                                                    <TextBlock x:Name="Loc_TxtCopyBtn" Text="Копіювати код CL" FontSize="12" FontWeight="SemiBold" />
                                                 </Button>
                                             </Grid>
                                             <Border IsVisible="{Binding HasDirectAddress}"
@@ -421,10 +413,7 @@
                                                             Foreground="White"
                                                             Cursor="Hand"
                                                             VerticalAlignment="Center">
-                                                        <StackPanel Orientation="Horizontal" Spacing="6">
-                                                            <ic:SymbolIcon Symbol="Link" FontSize="15" />
-                                                            <TextBlock Text="Скопіювати IP" FontSize="11" FontWeight="SemiBold" />
-                                                        </StackPanel>
+                                                        <TextBlock Text="Скопіювати IP" FontSize="11" FontWeight="SemiBold" />
                                                     </Button>
                                                 </Grid>
                                             </Border>
@@ -443,10 +432,9 @@
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>
                                                         <Border Background="#15FFFFFF" CornerRadius="8" Padding="10,6" Margin="0,2">
-                                                            <Grid ColumnDefinitions="Auto,*,Auto">
-                                                                <ic:SymbolIcon Grid.Column="0" Symbol="Person" FontSize="16" Foreground="White" Margin="0,0,8,0" />
-                                                                <TextBlock Grid.Column="1" Text="{Binding PlayerName}" FontWeight="SemiBold" Foreground="White" VerticalAlignment="Center" />
-                                                                <Button Grid.Column="2"
+                                                            <Grid ColumnDefinitions="*,Auto">
+                                                                <TextBlock Grid.Column="0" Text="{Binding PlayerName}" FontWeight="SemiBold" Foreground="White" VerticalAlignment="Center" />
+                                                                <Button Grid.Column="1"
                                                                         Command="{Binding $parent[UserControl].DataContext.KickPlayerCommand}"
                                                                         CommandParameter="{Binding}"
                                                                         ToolTip.Tip="Відключити гравця"
@@ -469,6 +457,34 @@
                                                        IsVisible="{Binding !ConnectedPlayers.Count}" />
                                         </StackPanel>
                                     </Border>
+                                    <Border Background="#18FFFFFF" CornerRadius="10" Padding="14">
+                                        <StackPanel Spacing="8">
+                                            <Grid ColumnDefinitions="*,Auto">
+                                                <TextBlock Grid.Column="0" Text="Логи P2P" FontWeight="SemiBold" FontSize="13" Foreground="White" VerticalAlignment="Center" />
+                                                <Button Grid.Column="1"
+                                                        Command="{Binding ClearP2PLogsCommand}"
+                                                        Content="Очистити"
+                                                        Padding="10,4"
+                                                        FontSize="11"
+                                                        CornerRadius="6"
+                                                        Background="#26FFFFFF"
+                                                        Foreground="White"
+                                                        Cursor="Hand" />
+                                            </Grid>
+                                            <TextBox Text="{Binding P2pDiagnosticLogText}"
+                                                     IsReadOnly="True"
+                                                     AcceptsReturn="True"
+                                                     TextWrapping="Wrap"
+                                                     Height="130"
+                                                     FontFamily="Consolas, monospace"
+                                                     FontSize="11"
+                                                     Watermark="Діагностичні логи P2P з'являться тут..."
+                                                     Background="#24000000"
+                                                     Foreground="#CCFFFFFF"
+                                                     BorderBrush="#24FFFFFF"
+                                                     CornerRadius="6" />
+                                        </StackPanel>
+                                    </Border>
                                     <Button Command="{Binding StopHostingCommand}"
                                             IsEnabled="{Binding !IsHostBusy}"
                                             Height="42"
@@ -479,10 +495,7 @@
                                             Background="#80C42B1C"
                                             Foreground="White"
                                             Cursor="Hand">
-                                        <StackPanel Orientation="Horizontal" Spacing="8">
-                                            <ic:SymbolIcon Symbol="Dismiss" FontSize="18" />
-                                            <TextBlock x:Name="Loc_TxtStopHostingBtn" Text="Зупинити спільний доступ" FontWeight="Bold" FontSize="13" />
-                                        </StackPanel>
+                                        <TextBlock x:Name="Loc_TxtStopHostingBtn" Text="Зупинити спільний доступ" FontWeight="Bold" FontSize="13" />
                                     </Button>
                                 </StackPanel>
                             </StackPanel>
@@ -496,14 +509,9 @@
                             BorderBrush="#25FFFFFF">
                         <ScrollViewer VerticalScrollBarVisibility="Auto">
                             <StackPanel Spacing="16">
-                                <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
-                                    <Border Width="36" Height="36" CornerRadius="10" Background="#20FFFFFF">
-                                        <ic:SymbolIcon Symbol="Globe" FontSize="20" Foreground="White" />
-                                    </Border>
-                                    <StackPanel>
-                                        <TextBlock x:Name="Loc_TxtGuestTitle" Text="Приєднатися до гри (Гість)" FontSize="16" FontWeight="Bold" Foreground="White" />
-                                        <TextBlock x:Name="Loc_TxtGuestSubtitle" Text="Підключення за унікальним кодом кімнати" FontSize="11" Foreground="#99FFFFFF" />
-                                    </StackPanel>
+                                <StackPanel>
+                                    <TextBlock x:Name="Loc_TxtGuestTitle" Text="Приєднатися до гри (Гість)" FontSize="16" FontWeight="Bold" Foreground="White" />
+                                    <TextBlock x:Name="Loc_TxtGuestSubtitle" Text="Підключення за унікальним кодом кімнати" FontSize="11" Foreground="#99FFFFFF" />
                                 </StackPanel>
                                 <TextBlock x:Name="Loc_TxtGuestHint" Text="Введіть код кімнати, наданий хостом, щоб перевірити версію та підключитися:"
                                            FontSize="12"
@@ -531,10 +539,7 @@
                                             Background="{DynamicResource MainBackgroundButton}"
                                             Foreground="White"
                                             Cursor="Hand">
-                                        <StackPanel Orientation="Horizontal" Spacing="6">
-                                            <ic:SymbolIcon Symbol="Search" FontSize="16" />
-                                            <TextBlock x:Name="Loc_TxtSearchRoomBtn" Text="Знайти" FontWeight="Bold" FontSize="13" />
-                                        </StackPanel>
+                                        <TextBlock x:Name="Loc_TxtSearchRoomBtn" Text="Знайти" FontWeight="Bold" FontSize="13" />
                                     </Button>
                                 </Grid>
                                 <ProgressBar IsIndeterminate="True"
@@ -575,10 +580,7 @@
                                                 Foreground="White"
                                                 Cursor="Hand"
                                                 Margin="0,6,0,0">
-                                            <StackPanel Orientation="Horizontal" Spacing="8">
-                                                <ic:SymbolIcon Symbol="Play" FontSize="20" />
-                                                <TextBlock x:Name="Loc_TxtJoinAndPlayBtn" Text="ПРИЄДНАТИСЯ ТА ГРАТИ" FontWeight="Bold" FontSize="14" />
-                                            </StackPanel>
+                                            <TextBlock x:Name="Loc_TxtJoinAndPlayBtn" Text="ПРИЄДНАТИСЯ ТА ГРАТИ" FontWeight="Bold" FontSize="14" />
                                         </Button>
                                     </StackPanel>
                                 </Border>
