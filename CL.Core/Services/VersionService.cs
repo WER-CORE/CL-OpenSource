@@ -16,10 +16,17 @@ namespace CL.Core.Services
     public class VersionService
     {
         private readonly MinecraftLauncher _launcher;
+        private readonly HistoricalVersionCatalogService _historicalCatalogService;
 
         public VersionService(string launcherPath)
+            : this(launcherPath, new HistoricalVersionCatalogService())
+        {
+        }
+
+        public VersionService(string launcherPath, HistoricalVersionCatalogService historicalCatalogService)
         {
             _launcher = new MinecraftLauncher(new MinecraftPath(launcherPath));
+            _historicalCatalogService = historicalCatalogService ?? new HistoricalVersionCatalogService();
         }
         public async Task<List<string>> GetLoaderVersionsAsync(int loaderType, string mcVersion)
         {
@@ -32,15 +39,39 @@ namespace CL.Core.Services
         }
         public async Task<List<string>> GetFilteredVersionsAsync(string searchText, bool rel, bool snap, bool beta, bool alpha)
         {
-            var versions = await _launcher.GetAllVersionsAsync();
+            var filteredEntries = await GetFilteredCatalogEntriesAsync(searchText, rel, snap, beta, alpha).ConfigureAwait(false);
+            return filteredEntries.Select(v => v.Id).ToList();
+        }
+
+        public async Task<IReadOnlyList<CatalogVersionEntry>> GetFilteredCatalogEntriesAsync(string searchText, bool rel, bool snap, bool beta, bool alpha)
+        {
+            var versions = await _launcher.GetAllVersionsAsync().ConfigureAwait(false);
+            var baseEntries = versions.Select(v =>
+            {
+                string rawType = v.Type ?? string.Empty;
+                DateTimeOffset? releaseTime = v.ReleaseTime;
+                var era = HistoricalVersionCatalogService.ClassifyEra(v.Name, rawType, releaseTime);
+                string normalizedType = HistoricalVersionCatalogService.NormalizeFilterType(era, rawType);
+                return new CatalogVersionEntry(
+                    Id: v.Name,
+                    RawType: rawType,
+                    NormalizedFilterType: normalizedType,
+                    Era: era,
+                    Source: VersionCatalogSource.Mojang,
+                    ReleaseTime: releaseTime);
+            });
+
+            var merged = await _historicalCatalogService
+                .GetMergedCatalogAsync(baseEntries)
+                .ConfigureAwait(false);
+
             var regex = new Regex(string.IsNullOrEmpty(searchText) ? ".*" : Regex.Escape(searchText).Replace(@"\*", ".*"), RegexOptions.IgnoreCase);
 
-            return versions
-                .Where(v => ((v.Type == "release" && rel) ||
-                             (v.Type == "snapshot" && snap) ||
-                             (v.Type == "old_beta" && beta) ||
-                             (v.Type == "old_alpha" && alpha)) && regex.IsMatch(v.Name))
-                .Select(v => v.Name)
+            return merged.Versions
+                .Where(v => ((v.NormalizedFilterType == "release" && rel) ||
+                             (v.NormalizedFilterType == "snapshot" && snap) ||
+                             (v.NormalizedFilterType == "old_beta" && beta) ||
+                             (v.NormalizedFilterType == "old_alpha" && alpha)) && regex.IsMatch(v.Id))
                 .ToList();
         }
         public async Task<List<string>> GetOptifineVersionsAsync(string mcVersion)
