@@ -49,6 +49,8 @@ namespace CL.Core.Services
         public static Process? ActiveProcess { get; set; }
 
         private readonly LastActionService _lastActionService;
+        private readonly HistoricalVersionCatalogService _historicalCatalogService = new();
+        private readonly HistoricalVersionInstallerService _historicalInstallerService = new();
 
         private CancellationTokenSource _cts;
 
@@ -169,8 +171,7 @@ namespace CL.Core.Services
                 if (config.IsOffline)
                 {
                     versionName = GetOfflineVersionName(loaderType, minecraftVersion, loaderVersion);
-                    string versionDir = Path.Combine(path.Versions, versionName);
-                    if (!Directory.Exists(versionDir))
+                    if (!HistoricalVersionInstallerService.IsVersionInstalled(versionName, path))
                     {
                         ServiceLocator.Current.GetService<IDialogService>().ShowMessage(
                             LocalizationManager.GetString("GameLaunch.LaunchNeedInternetDesc", "Ой! Схоже, у вас немає інтернету, а ця версія ще жодного разу не запускалася.\n\nЩоб грати без мережі, спочатку завантажте цю версію онлайн!"),
@@ -192,25 +193,129 @@ namespace CL.Core.Services
                     }
                 }
                 var launchOption = CreateLaunchOptions(config, versionName);
+                string versionJsonPath = Path.Combine(path.Versions, versionName, $"{versionName}.json");
+                bool isHistorical = HistoricalLaunchCompatibilityService.IsHistoricalVersion(versionName, versionJsonPath);
+                HistoricalLaunchCompatibilityService.LastDiagnosticSummary = null;
+                JavaInstallation? selectedHistoricalJava = null;
+                string? historicalGameDir = null;
+                if (isHistorical)
+                {
+                    historicalGameDir = HistoricalLaunchCompatibilityService.ResolveHistoricalGameDirectory(path.BasePath, versionName);
+                    if (HistoricalLaunchCompatibilityService.DetectModernOptionsConflict(path.BasePath))
+                    {
+                        System.Diagnostics.Trace.WriteLine($"[LegacyLaunch] Виявлено сучасний options.txt у {path.BasePath}; історичні налаштування ізольовано в {historicalGameDir}");
+                    }
+
+                    var javaReq = HistoricalLaunchCompatibilityService.ReadJavaRequirement(versionJsonPath, path.Library);
+                    var currentOs = HistoricalLaunchCompatibilityService.GetCurrentOSPlatform();
+                    var currentArch = System.Runtime.InteropServices.RuntimeInformation.OSArchitecture;
+                    bool rosettaAvailable = HistoricalLaunchCompatibilityService.IsRosetta2Installed();
+                    string runtimeSource = "auto";
+
+                    if (!string.IsNullOrWhiteSpace(config.JavaPath))
+                    {
+                        runtimeSource = "user";
+                        var explicitJava = JavaLocator.Inspect(config.JavaPath, "user")
+                                           ?? new JavaInstallation { Executable = config.JavaPath, MajorVersion = javaReq.MajorVersion, Source = "user" };
+                        var explicitCheck = HistoricalLaunchCompatibilityService.ValidateExplicitJavaChoice(
+                            explicitJava, javaReq, currentOs, currentArch, rosettaAvailable);
+                        if (!explicitCheck.Success && !string.IsNullOrWhiteSpace(explicitCheck.DiagnosticMessage))
+                        {
+                            ServiceLocator.Current.GetService<IDialogService>().ShowMessage(
+                                explicitCheck.DiagnosticMessage,
+                                LocalizationManager.GetString("GameLaunch.LaunchErrorTitle", "Помилка запуску"),
+                                MascotEmotion.Sad);
+                            return;
+                        }
+
+                        selectedHistoricalJava = explicitCheck.Selected;
+                        launchOption.JavaPath = config.JavaPath;
+                        if (!string.IsNullOrWhiteSpace(explicitCheck.DiagnosticMessage))
+                        {
+                            System.Diagnostics.Trace.WriteLine($"[LegacyLaunch] {explicitCheck.DiagnosticMessage}");
+                        }
+                    }
+                    else
+                    {
+                        var detectedJavas = JavaLocator.Detect(path.BasePath);
+                        if (detectedJavas.Count > 0)
+                        {
+                            var javaSelection = HistoricalLaunchCompatibilityService.SelectCompatibleJava(
+                                detectedJavas,
+                                javaReq,
+                                currentOs,
+                                currentArch,
+                                rosettaAvailable);
+
+                            if (!javaSelection.Success && !string.IsNullOrWhiteSpace(javaSelection.DiagnosticMessage))
+                            {
+                                ServiceLocator.Current.GetService<IDialogService>().ShowMessage(
+                                    javaSelection.DiagnosticMessage,
+                                    LocalizationManager.GetString("GameLaunch.LaunchErrorTitle", "Помилка запуску"),
+                                    MascotEmotion.Sad);
+                                return;
+                            }
+
+                            if (javaSelection.Selected != null)
+                            {
+                                selectedHistoricalJava = javaSelection.Selected;
+                                launchOption.JavaPath = javaSelection.Selected.Executable;
+                                if (!string.IsNullOrWhiteSpace(javaSelection.DiagnosticMessage))
+                                {
+                                    System.Diagnostics.Trace.WriteLine($"[LegacyLaunch] {javaSelection.DiagnosticMessage}");
+                                }
+                            }
+                        }
+                    }
+
+                    bool? nativeCompatible = null;
+                    if (selectedHistoricalJava != null && File.Exists(versionJsonPath))
+                    {
+                        var preLaunchCheck = HistoricalLaunchCompatibilityService.ValidatePreLaunchPlatformCompatibility(
+                            versionName,
+                            versionJsonPath,
+                            path,
+                            selectedHistoricalJava,
+                            currentOs,
+                            currentArch);
+                        nativeCompatible = preLaunchCheck.IsCompatible;
+                        if (!preLaunchCheck.IsCompatible && !string.IsNullOrWhiteSpace(preLaunchCheck.DiagnosticMessage))
+                        {
+                            ServiceLocator.Current.GetService<IDialogService>().ShowMessage(
+                                preLaunchCheck.DiagnosticMessage,
+                                LocalizationManager.GetString("GameLaunch.LaunchErrorTitle", "Помилка запуску"),
+                                MascotEmotion.Sad);
+                            return;
+                        }
+                    }
+
+                    System.Diagnostics.Trace.WriteLine(HistoricalLaunchCompatibilityService.BuildSafeDiagnosticSummary(
+                        versionName,
+                        selectedHistoricalJava,
+                        historicalGameDir,
+                        GetProxyPort(versionName),
+                        runtimeSource,
+                        nativeCompatible));
+                }
                 if (SettingsManager.Default.EnableAutoBackup && SettingsManager.Default.EnableSubFiles_Backups)
                 {
                     ServiceLocator.Current.GetService<IMainWindowController>().SetPlayButtonText(LocalizationManager.GetString("GameLaunch.LaunchBackupWorlds", "БЕКАП СВІТІВ..."));
-                    string gameDir = path.BasePath;
-                    string savesPath = Path.Combine(gameDir, "saves");
-                    if (Directory.Exists(savesPath))
+                    var backupSavesDirs = HistoricalLaunchCompatibilityService.GetWorldBackupDirectories(path.BasePath, historicalGameDir);
+                    if (backupSavesDirs.Count > 0)
                     {
                         await Task.Run(async () =>
                         {
-
                             try
                             {
-                                var worlds = Directory.GetDirectories(savesPath);
-                                foreach (var world in worlds)
+                                foreach (var savesDir in backupSavesDirs)
                                 {
-                                    await WorldBackupService.AutoBackupWorldAsync(world);
+                                    var worlds = Directory.GetDirectories(savesDir);
+                                    foreach (var world in worlds)
+                                    {
+                                        await WorldBackupService.AutoBackupWorldAsync(world);
+                                    }
                                 }
                             }
-
                             catch (Exception ex)
                             {
                                 ServiceLocator.Current.GetService<IMainWindowController>().ShowSnackbar(
@@ -226,7 +331,7 @@ namespace CL.Core.Services
 
                 Process process;
 
-                if (config.IsOffline)
+                if (config.IsOffline || HistoricalVersionInstallerService.IsVersionInstalled(versionName, path))
                 {
                     process = await launcher.BuildProcessAsync(versionName, launchOption);
 
@@ -244,6 +349,15 @@ namespace CL.Core.Services
                         EnsureServerConnectionArguments(process, config.ServerIp, config.ServerPort, minecraftVersion);
                     }
                 }
+
+                if (isHistorical)
+                {
+                    HistoricalLaunchCompatibilityService.ApplyHistoricalProcessFixes(
+                        process.StartInfo,
+                        versionName,
+                        $"Minecraft {versionName}",
+                        historicalGameDirectory: historicalGameDir);
+                }
                 ServiceLocator.Current.GetService<IDispatcherService>().Invoke(() =>
                 {
                     if (dowloadProgress.IsLoaded) dowloadProgress.CloseProgressWindow();
@@ -258,6 +372,8 @@ namespace CL.Core.Services
                 }
                 else
                 {
+                    process.StartInfo.RedirectStandardOutput = false;
+                    process.StartInfo.RedirectStandardError = false;
                     process.Start();
                 }
                 ActiveProcess = process;
@@ -480,8 +596,22 @@ namespace CL.Core.Services
                         return await liteLoaderInstaller.Install(loaderToInstall, await launcher.GetVersionAsync(mcVersion), launcher.MinecraftPath);
                     }
                 default:
-                    await launcher.InstallAsync($"{mcVersion}", token);
-                    return mcVersion;
+                    {
+                        var catalog = await _historicalCatalogService.GetMergedCatalogAsync(token: token);
+                        var betaCraftEntry = catalog.Versions.FirstOrDefault(v =>
+                            string.Equals(v.Id, mcVersion, StringComparison.OrdinalIgnoreCase) &&
+                            v.Source == VersionCatalogSource.BetaCraft);
+
+                        if (betaCraftEntry != null)
+                        {
+                            await _historicalInstallerService.InstallAsync(betaCraftEntry, launcher, token);
+                        }
+                        else
+                        {
+                            await launcher.InstallAsync($"{mcVersion}", token);
+                        }
+                        return mcVersion;
+                    }
             }
         }
 
@@ -543,7 +673,13 @@ namespace CL.Core.Services
                 ServerIp = config.ServerIp,
                 ServerPort = config.ServerPort,
             };
-            if (config.AccountType != AccountType.LittleSkin && config.AllowOfflineLan && (config.AccountType == AccountType.Offline || config.JoinServer))
+            if (!string.IsNullOrWhiteSpace(config.JavaPath))
+            {
+                baseOptions.JavaPath = config.JavaPath;
+            }
+            bool isHistoricalOffline = config.AccountType == AccountType.Offline &&
+                                       HistoricalLaunchCompatibilityService.IsHistoricalVersion(versionName);
+            if (!isHistoricalOffline && config.AccountType != AccountType.LittleSkin && config.AllowOfflineLan && (config.AccountType == AccountType.Offline || config.JoinServer))
             {
 
                 try
@@ -597,13 +733,22 @@ namespace CL.Core.Services
                     var argsList = baseOptions.ExtraJvmArguments != null
                         ? baseOptions.ExtraJvmArguments.ToList()
                         : new List<MArgument>();
-                    argsList.Add(new MArgument("-Dhttp.proxyHost=betacraft.uk"));
-                    argsList.Add(new MArgument($"-Dhttp.proxyPort={proxyPort}"));
-                    argsList.Add(new MArgument("-Djava.util.Arrays.useLegacyMergeSort=true"));
+                    AddUniqueJvmArg(argsList, "-Dhttp.proxyHost=betacraft.uk");
+                    AddUniqueJvmArg(argsList, $"-Dhttp.proxyPort={proxyPort}");
+                    AddUniqueJvmArg(argsList, $"-Dhttp.nonProxyHosts={HistoricalLaunchCompatibilityService.DefaultBetaCraftNonProxyHosts}");
+                    AddUniqueJvmArg(argsList, "-Djava.util.Arrays.useLegacyMergeSort=true");
                     baseOptions.ExtraJvmArguments = argsList;
                 }
             }
             return baseOptions;
+        }
+
+        private static void AddUniqueJvmArg(List<MArgument> argsList, string value)
+        {
+            if (!argsList.Any(a => a.Values != null && a.Values.Contains(value, StringComparer.Ordinal)))
+            {
+                argsList.Add(new MArgument(value));
+            }
         }
 
         public static string GetProxyPort(string version)

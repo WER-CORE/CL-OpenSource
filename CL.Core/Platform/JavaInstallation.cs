@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace CL.Core.Services
 {
@@ -6,9 +6,15 @@ namespace CL.Core.Services
     {
         public string Executable { get; init; } = string.Empty;
         public int MajorVersion { get; init; }
+        public int MinorVersion { get; init; }
+        public int UpdateVersion { get; init; }
+        public int BuildNumber { get; init; }
+        public string? FullVersion { get; init; }
         public string? Vendor { get; init; }
         public string? Architecture { get; init; }
         public string Source { get; init; } = "system";
+
+        public bool IsJava8Update401OrNewer => MajorVersion == 8 && UpdateVersion >= 401;
 
         public string Id => $"java-{MajorVersion}-{ShortHash(Executable)}";
 

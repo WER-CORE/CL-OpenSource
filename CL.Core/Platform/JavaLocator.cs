@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -43,6 +43,10 @@ namespace CL.Core.Services
 
             return found
                 .OrderByDescending(j => j.MajorVersion)
+                .ThenByDescending(j => string.Equals(j.Architecture, "x64", StringComparison.OrdinalIgnoreCase) ||
+                                       string.Equals(j.Architecture, "arm64", StringComparison.OrdinalIgnoreCase))
+                .ThenByDescending(j => j.UpdateVersion)
+                .ThenByDescending(j => j.BuildNumber)
                 .ThenBy(j => j.Executable, StringComparer.Ordinal)
                 .ToList();
         }
@@ -59,14 +63,18 @@ namespace CL.Core.Services
             if (output == null)
                 return null;
 
-            int? major = ParseMajorVersion(output);
-            if (major == null)
+            var parsed = ParseVersionDetails(output);
+            if (parsed == null)
                 return null;
 
             return new JavaInstallation
             {
                 Executable = executable,
-                MajorVersion = major.Value,
+                MajorVersion = parsed.Value.Major,
+                MinorVersion = parsed.Value.Minor,
+                UpdateVersion = parsed.Value.Update,
+                BuildNumber = parsed.Value.Build,
+                FullVersion = parsed.Value.FullVersion,
                 Vendor = ParseVendor(output),
                 Architecture = ParseArchitecture(output) ?? ProbeArchitecture(executable),
                 Source = source
@@ -74,6 +82,9 @@ namespace CL.Core.Services
         }
 
         private static string? RunJava(string executable, params string[] args)
+            => RunProcessWithTimeout(executable, 5000, args);
+
+        internal static string? RunProcessWithTimeout(string executable, int timeoutMs, params string[] args)
         {
             try
             {
@@ -92,14 +103,19 @@ namespace CL.Core.Services
                 if (process == null)
                     return null;
 
-                string stderr = process.StandardError.ReadToEnd();
-                string stdout = process.StandardOutput.ReadToEnd();
+                var stderrTask = process.StandardError.ReadToEndAsync();
+                var stdoutTask = process.StandardOutput.ReadToEndAsync();
 
-                if (!process.WaitForExit(5000))
+                if (!process.WaitForExit(timeoutMs))
                 {
-                    try { process.Kill(true); } catch { }
+                    try { process.Kill(entireProcessTree: true); } catch { }
                     return null;
                 }
+
+                System.Threading.Tasks.Task.WaitAll(new System.Threading.Tasks.Task[] { stderrTask, stdoutTask }, 1000);
+
+                string stderr = stderrTask.IsCompletedSuccessfully ? stderrTask.Result : string.Empty;
+                string stdout = stdoutTask.IsCompletedSuccessfully ? stdoutTask.Result : string.Empty;
 
                 return string.IsNullOrWhiteSpace(stderr) ? stdout : stderr;
             }
@@ -134,27 +150,106 @@ namespace CL.Core.Services
         };
 
         internal static int? ParseMajorVersion(string text)
+            => ParseVersionDetails(text)?.Major;
+
+        internal static (int Major, int Minor, int Update, int Build, string FullVersion)? ParseVersionDetails(string text)
         {
-            string? line = text.Split('\n').FirstOrDefault(l => l.Contains("version", StringComparison.Ordinal));
-            if (line == null)
+            if (string.IsNullOrWhiteSpace(text))
                 return null;
 
-            int start = line.IndexOf('"');
-            if (start < 0)
+            string? rawVersion = null;
+            foreach (var rawLine in text.Split('\n'))
+            {
+                if (!rawLine.Contains("version", StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                int start = rawLine.IndexOf('"');
+                if (start >= 0)
+                {
+                    int end = rawLine.IndexOf('"', start + 1);
+                    if (end > start)
+                    {
+                        rawVersion = rawLine.Substring(start + 1, end - start - 1).Trim();
+                        break;
+                    }
+                }
+            }
+
+            if (string.IsNullOrEmpty(rawVersion) && LooksLikeJavaOutput(text))
+            {
+                var bareMatch = System.Text.RegularExpressions.Regex.Match(
+                    text,
+                    @"\b(?:1\.8\.0(?:_\d+)?(?:-b\d+)?|8u\d+(?:-b\d+)?|\d+\.\d+\.\d+(?:[._+]\d+)?)\b",
+                    System.Text.RegularExpressions.RegexOptions.CultureInvariant);
+                if (bareMatch.Success)
+                    rawVersion = bareMatch.Value;
+            }
+
+            if (string.IsNullOrEmpty(rawVersion))
                 return null;
 
-            int end = line.IndexOf('"', start + 1);
-            if (end < 0)
-                return null;
+            int build = ParseBuildNumber(text, rawVersion);
 
-            var parts = line.Substring(start + 1, end - start - 1).Split('.');
-            if (parts.Length == 0 || !int.TryParse(parts[0], out int first))
-                return null;
+            var shortJava8 = System.Text.RegularExpressions.Regex.Match(
+                rawVersion,
+                @"^8u(\d+)",
+                System.Text.RegularExpressions.RegexOptions.CultureInvariant);
+            if (shortJava8.Success && int.TryParse(shortJava8.Groups[1].Value, out int u8))
+            {
+                return (8, 0, u8, build, rawVersion);
+            }
 
-            if (first != 1)
-                return first;
+            var legacyMatch = System.Text.RegularExpressions.Regex.Match(
+                rawVersion,
+                @"^1\.(\d+)\.(\d+)(?:_(\d+))?",
+                System.Text.RegularExpressions.RegexOptions.CultureInvariant);
+            if (legacyMatch.Success && int.TryParse(legacyMatch.Groups[1].Value, out int legacyMajor))
+            {
+                int.TryParse(legacyMatch.Groups[2].Value, out int legacyMinor);
+                int legacyUpdate = 0;
+                if (legacyMatch.Groups[3].Success)
+                    int.TryParse(legacyMatch.Groups[3].Value, out legacyUpdate);
+                return (legacyMajor, legacyMinor, legacyUpdate, build, rawVersion);
+            }
 
-            return parts.Length > 1 && int.TryParse(parts[1], out int second) ? second : null;
+            var modernMatch = System.Text.RegularExpressions.Regex.Match(
+                rawVersion,
+                @"^(\d+)(?:\.(\d+))?(?:\.(\d+))?",
+                System.Text.RegularExpressions.RegexOptions.CultureInvariant);
+            if (modernMatch.Success && int.TryParse(modernMatch.Groups[1].Value, out int major))
+            {
+                int minor = modernMatch.Groups[2].Success && int.TryParse(modernMatch.Groups[2].Value, out int m) ? m : 0;
+                int update = modernMatch.Groups[3].Success && int.TryParse(modernMatch.Groups[3].Value, out int u) ? u : 0;
+                return (major, minor, update, build, rawVersion);
+            }
+
+            return null;
+        }
+
+        private static int ParseBuildNumber(string fullOutput, string rawVersion)
+        {
+            var m = System.Text.RegularExpressions.Regex.Match(
+                rawVersion,
+                @"-b(\d+)",
+                System.Text.RegularExpressions.RegexOptions.CultureInvariant);
+            if (m.Success && int.TryParse(m.Groups[1].Value, out int b1))
+                return b1;
+
+            var lineMatch = System.Text.RegularExpressions.Regex.Match(
+                fullOutput,
+                @"\(build\s+[^)]*-b(\d+)",
+                System.Text.RegularExpressions.RegexOptions.CultureInvariant | System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            if (lineMatch.Success && int.TryParse(lineMatch.Groups[1].Value, out int b2))
+                return b2;
+
+            var plusMatch = System.Text.RegularExpressions.Regex.Match(
+                fullOutput,
+                @"\+(\d+)\b",
+                System.Text.RegularExpressions.RegexOptions.CultureInvariant);
+            if (plusMatch.Success && int.TryParse(plusMatch.Groups[1].Value, out int b3))
+                return b3;
+
+            return 0;
         }
 
         internal static string? ParseVendor(string text)
@@ -276,44 +371,54 @@ namespace CL.Core.Services
             yield return Path.Combine(home, ".jdks");
         }
 
+        private static bool LooksLikeJavaOutput(string text)
+        {
+            return text.Contains("java", StringComparison.OrdinalIgnoreCase) ||
+                   text.Contains("openjdk", StringComparison.OrdinalIgnoreCase) ||
+                   text.Contains("Runtime Environment", StringComparison.OrdinalIgnoreCase) ||
+                   text.Contains("Server VM", StringComparison.OrdinalIgnoreCase) ||
+                   text.Contains("Client VM", StringComparison.OrdinalIgnoreCase) ||
+                   text.Contains("HotSpot", StringComparison.OrdinalIgnoreCase) ||
+                   text.Contains("Corretto", StringComparison.OrdinalIgnoreCase) ||
+                   text.Contains("Temurin", StringComparison.OrdinalIgnoreCase) ||
+                   text.Contains("GraalVM", StringComparison.OrdinalIgnoreCase) ||
+                   text.Contains("Zulu", StringComparison.OrdinalIgnoreCase);
+        }
+
         private static void CollectCandidates(string root, SortedSet<string> output)
         {
             if (!Directory.Exists(root))
                 return;
 
-            string[] directories;
+            CollectCandidatesRecursive(root, output, currentDepth: 0, maxDepth: 4);
+        }
+
+        private static void CollectCandidatesRecursive(string directory, SortedSet<string> output, int currentDepth, int maxDepth)
+        {
+            string binCandidate = Path.Combine(directory, "bin", ExecutableName);
+            if (File.Exists(binCandidate))
+                output.Add(binCandidate);
+
+            string macCandidate = Path.Combine(directory, "Contents", "Home", "bin", ExecutableName);
+            if (File.Exists(macCandidate))
+                output.Add(macCandidate);
+
+            if (currentDepth >= maxDepth)
+                return;
+
+            string[] subdirectories;
             try
             {
-                directories = Directory.GetDirectories(root);
+                subdirectories = Directory.GetDirectories(directory);
             }
             catch
             {
                 return;
             }
 
-            foreach (var dir in directories)
+            foreach (var sub in subdirectories)
             {
-                Add(Path.Combine(dir, "bin", ExecutableName));
-
-                Add(Path.Combine(dir, "Contents", "Home", "bin", ExecutableName));
-
-                try
-                {
-                    foreach (var nested in Directory.GetDirectories(dir))
-                    {
-                        Add(Path.Combine(nested, "bin", ExecutableName));
-                        Add(Path.Combine(nested, "Contents", "Home", "bin", ExecutableName));
-                    }
-                }
-                catch
-                {
-                }
-            }
-
-            void Add(string candidate)
-            {
-                if (File.Exists(candidate))
-                    output.Add(candidate);
+                CollectCandidatesRecursive(sub, output, currentDepth + 1, maxDepth);
             }
         }
     }

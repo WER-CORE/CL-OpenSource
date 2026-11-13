@@ -35,6 +35,7 @@
 * ⚡ **Оптимізація:** Легкий та швидкий, споживає мінімум ресурсів системи.
 * 📦 **Менеджер модів:** Інтеграція з **CurseForge** та **Modrinth**.
 * 🛠 **Завантажувачі:** Підтримка Forge, Fabric, Quilt, NeoForge, OptiFine та LiteLoader.
+* 🕰️ **Історичні версії Minecraft:** Підтримка версій епох **Pre-Classic**, **Classic**, **Indev**, **Infdev**, **Alpha** та **Beta** завдяки інтеграції з проєктом [BetaCraft](https://betacraft.uk/) (історичні метадані та інструменти сумісності). Коректна робота всіх старих версій Minecraft не гарантується і залежить від операційної системи та середовища Java.
 * 🎨 **Кастомізація:** Сучасний інтерфейс (WPF UI), теми та налаштування прозорості (Mica/Acrylic).
 * ...
 
@@ -86,6 +87,7 @@ This project uses assets and libraries from various sources. We are grateful to 
 * **Icons:** Google Fonts, Material Icons, Fluent System Icons.
 * **Services:** CurseForge, Modrinth, LittleSkin.
 * **Loaders:** NeoForge, Fabric, Quilt, Forge, OptiFine, LiteLoader.
+* **BetaCraft:** Окрема подяка команді [BetaCraft](https://betacraft.uk/) ([GitHub](https://github.com/betacraftuk)) за збереження історичних версій Minecraft, розробку інструментів сумісності та підтримку відповідної інфраструктури. Завдяки інтеграції з BetaCraft у Clegendary Launcher реалізовано підтримку історичних версій Minecraft. *(Clegendary Launcher є незалежним проєктом і не має офіційної афіліації з BetaCraft.)*
 * **Code Signing:** Free code signing provided by [SignPath.io](https://signpath.io), certificate by [SignPath Foundation](https://signpath.org).
 
 *Detailed credits and licenses are available in the application and in the `LICENSE`, [PRIVACY.md](PRIVACY.md) and `CREDITS` files.*
