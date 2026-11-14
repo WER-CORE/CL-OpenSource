@@ -33,3 +33,19 @@ jobs:
 
       - name: Test
         run: dotnet test CL.Crossplatform.sln -c Release --no-build --verbosity normal
+
+      - name: Publish Windows x64
+        run: dotnet publish CL.Avalonia/CL.Avalonia.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=false -o ./publish/win-x64
+
+      - name: Create ZIP archive
+        shell: pwsh
+        run: |
+          Compress-Archive -Path ./publish/win-x64/* -DestinationPath ./CLegendaryLauncher-win-x64.zip -Force
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CLegendaryLauncher-win-x64
+          path: ./CLegendaryLauncher-win-x64.zip
+          if-no-files-found: error
+          retention-days: 30
