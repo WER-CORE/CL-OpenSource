@@ -80,37 +80,52 @@ public partial class DownloadProgressViewModel : ObservableObject
 
     public void DowloadProgressBarVersion(int progress, object version)
     {
-        Dispatcher.UIThread.Post(() =>
+        void Apply()
         {
             VersionTXT = string.Format(LocalizationManager.GetString("DownloadManager.DownloadingVersion", "Завантажується версія {0}"), version);
             ProgressDowloadVersion = progress;
             ProgressDowloadTXT = progress + "%";
-        });
+        }
+
+        if (Dispatcher.UIThread.CheckAccess()) Apply();
+        else Dispatcher.UIThread.Post(Apply);
     }
 
     public void DowloadProgressBarFileTask(int filedowload, int filetotaldowload, string namefile)
     {
-        Dispatcher.UIThread.Post(() =>
+        void Apply()
         {
             FileTXTName = $"{namefile}";
             FileTXT = string.Format(LocalizationManager.GetString("DownloadManager.DownloadedFilesCount", "Завантажено {0} з {1} файлів"), filetotaldowload, filedowload);
-        });
+        }
+
+        if (Dispatcher.UIThread.CheckAccess()) Apply();
+        else Dispatcher.UIThread.Post(Apply);
     }
 
     public void DowloadProgressBarFile(int progress)
     {
-        Dispatcher.UIThread.Post(() =>
+        void Apply()
         {
             ProgressDowloadFile = progress;
             ProgressFileDowloadTXT = progress + "%";
-        });
+        }
+
+        if (Dispatcher.UIThread.CheckAccess()) Apply();
+        else Dispatcher.UIThread.Post(Apply);
     }
 
     [RelayCommand]
     private void CancelDownload()
     {
         AvaloniaSoundService.Click();
-        CTS?.Cancel();
+        try
+        {
+            CTS?.Cancel();
+        }
+        catch (ObjectDisposedException)
+        {
+        }
         CloseAction?.Invoke();
     }
 

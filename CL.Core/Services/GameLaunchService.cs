@@ -146,24 +146,18 @@ namespace CL.Core.Services
 
                 var launcher = new MinecraftLauncher(parameters);
 
+                string versionLabel = string.IsNullOrEmpty(loaderVersion) ? minecraftVersion : $"{minecraftVersion} ({loaderVersion})";
                 launcher.FileProgressChanged += (sender, args) =>
                 {
-                    ServiceLocator.Current.GetService<IDispatcherService>().Invoke(() =>
-                    {
-                        int fileProgress = args.TotalTasks > 0 ? (int)((double)args.ProgressedTasks / args.TotalTasks * 100) : 0;
-                        dowloadProgress.UpdateFileTaskProgress(args.TotalTasks, args.ProgressedTasks, args.Name);
-                        string versionLabel = string.IsNullOrEmpty(loaderVersion) ? minecraftVersion : $"{minecraftVersion} ({loaderVersion})";
-                        dowloadProgress.UpdateVersionProgress(fileProgress, versionLabel);
-                    });
+                    int fileProgress = args.TotalTasks > 0 ? (int)((double)args.ProgressedTasks / args.TotalTasks * 100) : 0;
+                    dowloadProgress.UpdateFileTaskProgress(args.TotalTasks, args.ProgressedTasks, args.Name);
+                    dowloadProgress.UpdateVersionProgress(fileProgress, versionLabel);
                 };
 
                 launcher.ByteProgressChanged += (sender, args) =>
                 {
-                    ServiceLocator.Current.GetService<IDispatcherService>().Invoke(() =>
-                    {
-                        int byteProgress = args.TotalBytes > 0 ? (int)((double)args.ProgressedBytes / args.TotalBytes * 100) : 0;
-                        dowloadProgress.UpdateFileProgress(byteProgress);
-                    });
+                    int byteProgress = args.TotalBytes > 0 ? (int)((double)args.ProgressedBytes / args.TotalBytes * 100) : 0;
+                    dowloadProgress.UpdateFileProgress(byteProgress);
                 };
 
                 string versionName = "";
@@ -360,7 +354,7 @@ namespace CL.Core.Services
                 }
                 ServiceLocator.Current.GetService<IDispatcherService>().Invoke(() =>
                 {
-                    if (dowloadProgress.IsLoaded) dowloadProgress.CloseProgressWindow();
+                    if (dowloadProgress.IsLoaded) dowloadProgress.CloseProgressWindow(launchCts);
                     ServiceLocator.Current.GetService<IMainWindowController>().Minimize();
                 });
 
@@ -500,7 +494,7 @@ namespace CL.Core.Services
                     {
                         ServiceLocator.Current.GetService<IMainWindowController>().SetPlayButtonText(string.Format(LocalizationManager.GetString("GameLaunch.PlayBtnPlayIn", "ГРАТИ В ({0})"), SettingsManager.Default.LastSelectedVersion));
                     }
-                    if (dowloadProgress.IsLoaded) dowloadProgress.CloseProgressWindow();
+                    if (dowloadProgress.IsLoaded) dowloadProgress.CloseProgressWindow(launchCts);
                 });
                 launchCts.Dispose();
             }
