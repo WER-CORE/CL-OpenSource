@@ -216,6 +216,126 @@ namespace CL.Core.Tests
         public void Constructor_RejectsNonPositiveLimit()
         {
             Assert.Throws<ArgumentOutOfRangeException>(() => new GameLogBuffer(0));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new GameLogBuffer(100, 0));
+        }
+
+        [Fact]
+        public void FullText_IsBoundedByMaxFullChars_AndKeepsNewestLines()
+        {
+            var buffer = new GameLogBuffer(maxDisplayChars: 200, maxFullChars: 1_000);
+            for (int i = 0; i < 200; i++)
+            {
+                buffer.Append(Line(i));
+            }
+
+            string full = buffer.GetFullText();
+
+            Assert.True(buffer.IsFullHistoryTruncated);
+            Assert.True(buffer.FullLength <= 1_000);
+            Assert.Equal(buffer.FullLength, full.Length);
+            Assert.EndsWith(Line(199) + Environment.NewLine, full);
+            Assert.DoesNotContain(Line(0), full);
+        }
+
+        [Fact]
+        public void FullText_SingleMessageLargerThanMaxFullChars_KeepsTailWithoutSplittingSurrogates()
+        {
+            var buffer = new GameLogBuffer(maxDisplayChars: 50, maxFullChars: 100);
+            string huge = new string('x', 3) + string.Concat(Enumerable.Repeat("🎮", 200)) + "_END";
+
+            buffer.Append(huge);
+            string full = buffer.GetFullText();
+
+            Assert.True(buffer.IsFullHistoryTruncated);
+            Assert.True(full.Length <= 100);
+            Assert.Contains("_END", full);
+            Assert.False(char.IsLowSurrogate(full[0]));
+            _ = new UTF32Encoding(false, false, true).GetBytes(full);
+        }
+
+        [Fact]
+        public void Clear_ResetsFullHistoryTruncationState()
+        {
+            var buffer = new GameLogBuffer(maxDisplayChars: 100, maxFullChars: 250);
+            for (int i = 0; i < 50; i++)
+            {
+                buffer.Append(Line(i));
+            }
+
+            Assert.True(buffer.IsFullHistoryTruncated);
+            buffer.Clear();
+
+            Assert.False(buffer.IsFullHistoryTruncated);
+            Assert.Equal(0, buffer.FullLength);
+            Assert.Equal(string.Empty, buffer.GetFullText());
+        }
+
+        [Fact]
+        public void FullText_HeaderPlus512KiBMultilineLogPlusFooter_PreservesTailAndFooter()
+        {
+            var buffer = new GameLogBuffer();
+            buffer.Append("[Система]: Читання посмертного логу (latest.log)...");
+
+            var sb = new StringBuilder();
+            for (int i = 0; i < 6_500; i++)
+            {
+                sb.Append($"[{i:D5}] [main/INFO]: Crash log payload line with enough text to exceed 512 KiB");
+                sb.Append(i % 2 == 0 ? "\r\n" : "\n");
+            }
+
+            buffer.Append(sb.ToString());
+            buffer.Append("\n[Система]: --- КІНЕЦЬ ЛОГУ ---");
+
+            string full = buffer.GetFullText();
+
+            Assert.True(buffer.IsFullHistoryTruncated);
+            Assert.True(buffer.FullLength <= GameLogBuffer.DefaultMaxFullChars);
+            Assert.Contains("[06499]", full);
+            Assert.Contains("[Система]: --- КІНЕЦЬ ЛОГУ ---", full);
+            Assert.DoesNotContain("[00000]", full);
+        }
+
+        [Fact]
+        public void FullText_SingleLineOverLimitThenFooter_PreservesFooter()
+        {
+            var buffer = new GameLogBuffer(maxDisplayChars: 50, maxFullChars: 100);
+            buffer.Append(new string('A', 250));
+            buffer.Append("FOOTER");
+
+            string full = buffer.GetFullText();
+
+            Assert.True(buffer.IsFullHistoryTruncated);
+            Assert.True(full.Length <= 100);
+            Assert.Contains("FOOTER", full);
+        }
+
+        [Fact]
+        public async Task Close_ConcurrentWithAppend_BlocksLateAppendsAndLeavesBufferEmpty()
+        {
+            var buffer = new GameLogBuffer();
+            using var startGate = new System.Threading.ManualResetEventSlim(false);
+
+            var writers = Enumerable.Range(0, 4).Select(_ => Task.Run(() =>
+            {
+                startGate.Wait();
+                for (int i = 0; i < 500; i++)
+                {
+                    buffer.Append("concurrent log line");
+                }
+            })).ToArray();
+
+            var closer = Task.Run(() =>
+            {
+                startGate.Wait();
+                buffer.Close();
+            });
+
+            startGate.Set();
+            await Task.WhenAll(writers.Append(closer));
+
+            Assert.False(buffer.Append("late line after close"));
+            Assert.Equal(string.Empty, buffer.GetFullText());
+            Assert.False(buffer.HasContent);
         }
     }
 }

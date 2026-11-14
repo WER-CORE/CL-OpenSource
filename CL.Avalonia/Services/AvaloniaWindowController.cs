@@ -113,8 +113,7 @@ public class AvaloniaWindowController : IMainWindowController
         process.StartInfo.RedirectStandardError = true;
         process.StartInfo.CreateNoWindow = true;
 
-        process.OutputDataReceived += gameLog.MinecraftProcess_OutputDataReceived;
-        process.ErrorDataReceived += gameLog.MinecraftProcess_ErrorDataReceived;
+        gameLog.AttachProcess(process);
 
         process.Start();
         process.BeginOutputReadLine();

@@ -228,11 +228,19 @@ public partial class GameLogViewModel : ObservableObject, IDisposable
 
             AppendLog(LocalizationManager.GetString("GameLog.ReadingCrashLog", "[Система]: Читання посмертного логу (latest.log)...\n"));
 
-            using var fileStream = new FileStream(logFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-            using var reader = new StreamReader(fileStream, Encoding.UTF8);
+            var tailResult = await LogFileTailReader.ReadTailAsync(logFilePath, trimTrailingNewLines: true).ConfigureAwait(false);
+            if (tailResult.IsTruncated)
+            {
+                AppendLog(string.Format(
+                    LocalizationManager.GetString("GameLog.TruncatedNotice", "[Система]: Показано останні {0} КБ файлу логу (повний розмір: {1:F1} МБ).\n"),
+                    LogFileTailReader.DefaultMaxTailBytes / 1024,
+                    tailResult.TotalBytes / (1024.0 * 1024.0)));
+            }
 
-            string allLogs = await reader.ReadToEndAsync();
-            AppendLog(allLogs);
+            if (!string.IsNullOrEmpty(tailResult.Content))
+            {
+                AppendLog(tailResult.Content);
+            }
             AppendLog(LocalizationManager.GetString("GameLog.EndOfLog", "\n[Система]: --- КІНЕЦЬ ЛОГУ ---"));
         }
         catch (Exception ex)
@@ -391,7 +399,7 @@ public partial class GameLogViewModel : ObservableObject, IDisposable
     {
         SettingsPageViewModel.LanguageConfigurationChanged -= OnLanguageChanged;
         _isDisposed = true;
-        _logBuffer.Clear();
+        _logBuffer.Close();
         LogText = string.Empty;
     }
 }
