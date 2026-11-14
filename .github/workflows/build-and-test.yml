@@ -1,0 +1,35 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [ dev, main ]
+  pull_request:
+    branches: [ dev, main ]
+
+jobs:
+  test:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+          dotnet-quality: 'preview'
+
+      - name: Restore dependencies
+        run: dotnet restore CL.Crossplatform.sln
+
+      - name: Build
+        run: dotnet build CL.Crossplatform.sln -c Release --no-restore
+
+      - name: Test
+        run: dotnet test CL.Crossplatform.sln -c Release --no-build --verbosity normal
