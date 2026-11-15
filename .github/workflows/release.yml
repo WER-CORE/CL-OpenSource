@@ -166,10 +166,31 @@ jobs:
                    --packVersion "${{ env.RELEASE_VERSION }}" `
                    --packDir "./publish/win-x64" `
                    --mainExe "CL(CLegendary Launcher).exe" `
-                   --icon "CL.Avalonia/Icon/IconCL(Halloween).ico" `
-                   --packTitle "CLegendary Launcher" `
+                   --icon "CL.Avalonia/Icon/IconCL(Common).ico" `
+                   --packTitle "Clegendary Launcher" `
                    --packAuthors "WER-CORE" `
                    --outputDir "./release_output"
+
+      - name: Ensure WPF-compatible root stub in Portable ZIP
+        shell: pwsh
+        run: |
+          if (Test-Path "./release_output/CLegendaryLauncher-win-Portable.zip") {
+            $portableTemp = "./portable-wpf-compat"
+            if (Test-Path $portableTemp) { Remove-Item -Path $portableTemp -Recurse -Force }
+            Expand-Archive -Path "./release_output/CLegendaryLauncher-win-Portable.zip" -DestinationPath $portableTemp -Force
+
+            $rootStub = Get-ChildItem -Path $portableTemp -Filter "*.exe" -File |
+              Where-Object { $_.Name -ne "Update.exe" -and $_.Name -ne "CL(CLegendary Launcher).exe" } |
+              Select-Object -First 1
+            if ($rootStub) {
+              Rename-Item -Path $rootStub.FullName -NewName "CL(CLegendary Launcher).exe" -Force
+            }
+
+            Remove-Item -Path "./release_output/CLegendaryLauncher-win-Portable.zip" -Force
+            Add-Type -AssemblyName System.IO.Compression.FileSystem
+            [System.IO.Compression.ZipFile]::CreateFromDirectory((Convert-Path $portableTemp), [System.IO.Path]::GetFullPath("./release_output/CLegendaryLauncher-win-Portable.zip"))
+            Remove-Item -Path $portableTemp -Recurse -Force
+          }
 
       - name: Sign installer and portable binaries via SignPath
         if: env.SIGNPATH_API_TOKEN != ''
@@ -348,8 +369,8 @@ jobs:
                    --packVersion "${{ env.RELEASE_VERSION }}" \
                    --packDir "./publish/linux-x64" \
                    --mainExe "CL.Avalonia" \
-                   --icon "CL.Avalonia/Icon/IconCL(Halloween).png" \
-                   --packTitle "CLegendary Launcher" \
+                   --icon "CL.Avalonia/Icon/IconCL(Common).png" \
+                   --packTitle "Clegendary Launcher" \
                    --packAuthors "WER-CORE" \
                    --channel "linux" \
                    --runtime "linux-x64" \
@@ -362,8 +383,8 @@ jobs:
                    --packVersion "${{ env.RELEASE_VERSION }}" \
                    --packDir "./publish/linux-arm64" \
                    --mainExe "CL.Avalonia" \
-                   --icon "CL.Avalonia/Icon/IconCL(Halloween).png" \
-                   --packTitle "CLegendary Launcher" \
+                   --icon "CL.Avalonia/Icon/IconCL(Common).png" \
+                   --packTitle "Clegendary Launcher" \
                    --packAuthors "WER-CORE" \
                    --channel "linux-arm64" \
                    --runtime "linux-arm64" \
@@ -391,20 +412,20 @@ jobs:
           
           finish-args:
             - --share=network
-            - --share=ipc
             - --socket=wayland
-            - --socket=fallback-x11
-            - --socket=pulseaudio
+            - --socket=x11
             - --device=dri
             - --filesystem=xdg-data/cl-launcher:create
             - --filesystem=xdg-data/CLMinecraft:create
             - --filesystem=~/.clminecraft:create
-            - --filesystem=~/.minecraft:ro
+            - --filesystem=~/.minecraft:create
+            - --filesystem=xdg-run/pipewire-0
             - --filesystem=xdg-run/discord-ipc-0
             - --talk-name=org.freedesktop.Notifications
             - --talk-name=org.freedesktop.portal.OpenURI
             - --talk-name=org.freedesktop.portal.Desktop
             - --talk-name=org.freedesktop.FileManager1
+            - --talk-name=org.freedesktop.Flatpak
           
           modules:
             - name: clegendary-launcher
@@ -519,16 +540,16 @@ jobs:
       - name: Generate macOS ICNS icon
         run: |
           mkdir -p icon.iconset
-          sips -z 16 16     "CL.Avalonia/Icon/IconCL(Halloween).png" --out icon.iconset/icon_16x16.png
-          sips -z 32 32     "CL.Avalonia/Icon/IconCL(Halloween).png" --out icon.iconset/icon_16x16@2x.png
-          sips -z 32 32     "CL.Avalonia/Icon/IconCL(Halloween).png" --out icon.iconset/icon_32x32.png
-          sips -z 64 64     "CL.Avalonia/Icon/IconCL(Halloween).png" --out icon.iconset/icon_32x32@2x.png
-          sips -z 128 128   "CL.Avalonia/Icon/IconCL(Halloween).png" --out icon.iconset/icon_128x128.png
-          sips -z 256 256   "CL.Avalonia/Icon/IconCL(Halloween).png" --out icon.iconset/icon_128x128@2x.png
-          sips -z 256 256   "CL.Avalonia/Icon/IconCL(Halloween).png" --out icon.iconset/icon_256x256.png
-          sips -z 512 512   "CL.Avalonia/Icon/IconCL(Halloween).png" --out icon.iconset/icon_256x256@2x.png
-          sips -z 512 512   "CL.Avalonia/Icon/IconCL(Halloween).png" --out icon.iconset/icon_512x512.png
-          sips -z 1024 1024 "CL.Avalonia/Icon/IconCL(Halloween).png" --out icon.iconset/icon_512x512@2x.png
+          sips -z 16 16     "CL.Avalonia/Icon/IconCL(Common).png" --out icon.iconset/icon_16x16.png
+          sips -z 32 32     "CL.Avalonia/Icon/IconCL(Common).png" --out icon.iconset/icon_16x16@2x.png
+          sips -z 32 32     "CL.Avalonia/Icon/IconCL(Common).png" --out icon.iconset/icon_32x32.png
+          sips -z 64 64     "CL.Avalonia/Icon/IconCL(Common).png" --out icon.iconset/icon_32x32@2x.png
+          sips -z 128 128   "CL.Avalonia/Icon/IconCL(Common).png" --out icon.iconset/icon_128x128.png
+          sips -z 256 256   "CL.Avalonia/Icon/IconCL(Common).png" --out icon.iconset/icon_128x128@2x.png
+          sips -z 256 256   "CL.Avalonia/Icon/IconCL(Common).png" --out icon.iconset/icon_256x256.png
+          sips -z 512 512   "CL.Avalonia/Icon/IconCL(Common).png" --out icon.iconset/icon_256x256@2x.png
+          sips -z 512 512   "CL.Avalonia/Icon/IconCL(Common).png" --out icon.iconset/icon_512x512.png
+          sips -z 1024 1024 "CL.Avalonia/Icon/IconCL(Common).png" --out icon.iconset/icon_512x512@2x.png
           iconutil -c icns icon.iconset -o icon.icns
 
       - name: Install Velopack CLI
@@ -542,7 +563,7 @@ jobs:
                    --packDir "./publish/osx-arm64" \
                    --mainExe "CL.Avalonia" \
                    --icon "icon.icns" \
-                   --packTitle "CLegendary Launcher" \
+                   --packTitle "Clegendary Launcher" \
                    --packAuthors "WER-CORE" \
                    --channel "osx-arm64" \
                    --outputDir "./macos_artifacts_arm64"
@@ -555,7 +576,7 @@ jobs:
                    --packDir "./publish/osx-x64" \
                    --mainExe "CL.Avalonia" \
                    --icon "icon.icns" \
-                   --packTitle "CLegendary Launcher" \
+                   --packTitle "Clegendary Launcher" \
                    --packAuthors "WER-CORE" \
                    --channel "osx-x64" \
                    --outputDir "./macos_artifacts_x64"
