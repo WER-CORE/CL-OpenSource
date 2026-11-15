@@ -43,7 +43,7 @@
 
 <img width="750" alt="Інтерфейс Clegendary Launcher — скриншот 1" src="https://github.com/user-attachments/assets/4f4696dd-031d-4d5f-b564-2b5225a62ace" />
 
-<img width="750" alt="Інтерфейс Clegendary Launcher — скриншот 2" src="https://github.com/user-attachments/assets/fe144e5a-4ade-4e12-9dab-f16649d1ccde" />
+<img width="750" alt="Інтерфейс Clegendary Launcher — скриншот 2" src="https://github.com/user-attachments/assets/6d77eea0-c810-4a59-a42f-980b633d2ff1" />
 
 <sub>Скриншоти попередньої версії інтерфейсу. Актуальний вигляд може відрізнятися.</sub>
 
