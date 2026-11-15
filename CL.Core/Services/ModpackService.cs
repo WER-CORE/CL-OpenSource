@@ -127,7 +127,9 @@ namespace CL.Core.Services
             var token = cts.Token;
             Process? launchedProcess = null;
 
-            bool isOffline = SettingsManager.Default.OfflineModLauncher || !System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable();
+            bool isOffline = config.IsOffline ||
+                             SettingsManager.Default.OfflineModLauncher ||
+                             !System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable();
 
             var versionDownloadWindow = ServiceLocator.Current.GetService<ITaskProgressService>();
             versionDownloadWindow.CTS = cts;
@@ -377,20 +379,11 @@ namespace CL.Core.Services
 
                     if (string.IsNullOrEmpty(versionName))
                     {
-                        if (version.ToLower().Contains(loader.ToLower()) || version.ToLower().Contains("optifine"))
+                        if (version.ToLower().Contains(loader.ToLower()))
                             versionName = version;
                         else
                         {
-                            switch (loaderType)
-                            {
-                                case LoaderType.Fabric: versionName = $"fabric-loader-{versionMod}-{version}"; break;
-                                case LoaderType.Forge: versionName = $"{version}-forge-{versionMod}"; break;
-                                case LoaderType.NeoForge: versionName = $"neoforge-{versionMod}"; break;
-                                case LoaderType.Quilt: versionName = $"quilt-loader-{versionMod}-{version}"; break;
-                                case LoaderType.Optifine: versionName = $"{version}-OptiFine_{versionMod?.Replace("OptiFine_", "")}"; break;
-                                case LoaderType.LiteLoader: versionName = $"{version}-LiteLoader{version}"; break;
-                                default: versionName = version; break;
-                            }
+                            versionName = GameLaunchService.ResolveLoaderVersionName(loaderType, version, versionMod);
                         }
                     }
                 }
@@ -401,23 +394,18 @@ namespace CL.Core.Services
 
                 token.ThrowIfCancellationRequested();
 
-                Process process;
-                if (isOffline)
-                {
-                    process = await launcher.BuildProcessAsync(versionName, mLaunch);
-                }
-                else
-                {
-                    process = await launcher.InstallAndBuildProcessAsync(versionName, mLaunch, token);
-                }
-                launchedProcess = process;
-
                 string? effectiveServerIp = !string.IsNullOrEmpty(config.ServerIp) ? config.ServerIp : mLaunch.ServerIp;
                 int effectiveServerPort = config.ServerPort > 0 ? config.ServerPort : mLaunch.ServerPort;
-                if (!string.IsNullOrEmpty(effectiveServerIp))
-                {
-                    GameLaunchService.EnsureServerConnectionArguments(process, effectiveServerIp, effectiveServerPort, version);
-                }
+                Process process = await GameLaunchService.BuildGameProcessAsync(
+                    launcher,
+                    versionName,
+                    mLaunch,
+                    effectiveServerIp,
+                    effectiveServerPort,
+                    version,
+                    isVersionValidated: !isOffline,
+                    cancellationToken: token);
+                launchedProcess = process;
 
                 if (SettingsManager.Default.EnableMod_Statistics) { _gameSessionManager.StartGameSession("mod"); }
 

@@ -65,35 +65,100 @@ namespace CL.Core.Services
             return SettingsManager.Default.OfflineModLauncher || !NetworkInterface.GetIsNetworkAvailable();
         }
 
-        private string GetOfflineVersionName(LoaderType loaderType, string mcVersion, string? loaderVersion)
+        private static bool IsAutoLoaderVersion(string? loaderVersion)
         {
-            if (mcVersion.ToLower().Contains("optifine") ||
-                mcVersion.ToLower().Contains("forge") ||
-                mcVersion.ToLower().Contains("fabric"))
+            return string.IsNullOrWhiteSpace(loaderVersion) ||
+                   loaderVersion.Equals("Unknown", StringComparison.OrdinalIgnoreCase) ||
+                   loaderVersion.Equals("Auto", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private string? TryGetPreinstalledVersionName(LoaderType loaderType, string mcVersion, string? loaderVersion, MinecraftPath path)
+        {
+            bool canPredictName = loaderType is LoaderType.Vanilla or LoaderType.LiteLoader ||
+                                  !IsAutoLoaderVersion(loaderVersion) ||
+                                  mcVersion.Contains("optifine", StringComparison.OrdinalIgnoreCase) ||
+                                  mcVersion.Contains("forge", StringComparison.OrdinalIgnoreCase) ||
+                                  mcVersion.Contains("fabric", StringComparison.OrdinalIgnoreCase) ||
+                                  mcVersion.Contains("quilt", StringComparison.OrdinalIgnoreCase) ||
+                                  mcVersion.Contains("liteloader", StringComparison.OrdinalIgnoreCase);
+            if (!canPredictName)
+            {
+                return null;
+            }
+
+            string candidate = GetOfflineVersionName(loaderType, mcVersion, loaderVersion);
+            return HistoricalVersionInstallerService.IsVersionInstalled(candidate, path) ? candidate : null;
+        }
+
+        private string GetOfflineVersionName(LoaderType loaderType, string mcVersion, string? loaderVersion)
+            => ResolveLoaderVersionName(loaderType, mcVersion, loaderVersion);
+
+        public static string ResolveLoaderVersionName(LoaderType loaderType, string mcVersion, string? loaderVersion)
+        {
+            if (mcVersion.Contains("optifine", StringComparison.OrdinalIgnoreCase) ||
+                mcVersion.Contains("forge", StringComparison.OrdinalIgnoreCase) ||
+                mcVersion.Contains("fabric", StringComparison.OrdinalIgnoreCase) ||
+                mcVersion.Contains("quilt", StringComparison.OrdinalIgnoreCase) ||
+                mcVersion.Contains("liteloader", StringComparison.OrdinalIgnoreCase))
             {
                 return mcVersion;
             }
+
+            string rawLoader = loaderVersion?.Trim() ?? string.Empty;
             switch (loaderType)
             {
                 case LoaderType.Vanilla:
                     return mcVersion;
 
                 case LoaderType.Optifine:
-                    string cleanLoader = loaderVersion?.Replace("OptiFine_", "");
-                    return $"{mcVersion}-OptiFine_{cleanLoader}";
+                    string cleanOptifine = rawLoader;
+                    if (cleanOptifine.StartsWith($"{mcVersion}-", StringComparison.OrdinalIgnoreCase))
+                    {
+                        cleanOptifine = cleanOptifine[(mcVersion.Length + 1)..];
+                    }
+                    if (cleanOptifine.StartsWith("OptiFine_", StringComparison.OrdinalIgnoreCase))
+                    {
+                        cleanOptifine = cleanOptifine["OptiFine_".Length..];
+                    }
+                    if (cleanOptifine.StartsWith($"{mcVersion}_", StringComparison.OrdinalIgnoreCase))
+                    {
+                        cleanOptifine = cleanOptifine[(mcVersion.Length + 1)..];
+                    }
+                    return $"{mcVersion}-OptiFine_{cleanOptifine}";
 
                 case LoaderType.Fabric:
-                    return $"fabric-loader-{loaderVersion}-{mcVersion}";
+                    return $"fabric-loader-{rawLoader}-{mcVersion}";
 
                 case LoaderType.Quilt:
-                    return $"quilt-loader-{loaderVersion}-{mcVersion}";
+                    return $"quilt-loader-{rawLoader}-{mcVersion}";
+
                 case LoaderType.Forge:
-                    return $"{mcVersion}-forge-{loaderVersion}";
+                    string cleanForge = rawLoader;
+                    if (cleanForge.StartsWith($"{mcVersion}-forge-", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return cleanForge;
+                    }
+                    if (cleanForge.StartsWith($"{mcVersion}-", StringComparison.OrdinalIgnoreCase))
+                    {
+                        cleanForge = cleanForge[(mcVersion.Length + 1)..];
+                    }
+                    if (cleanForge.StartsWith("forge-", StringComparison.OrdinalIgnoreCase))
+                    {
+                        cleanForge = cleanForge["forge-".Length..];
+                    }
+                    return $"{mcVersion}-forge-{cleanForge}";
 
                 case LoaderType.NeoForge:
-                    return $"neoforge-{loaderVersion}";
+                    string cleanNeoForge = rawLoader;
+                    if (cleanNeoForge.StartsWith("neoforge-", StringComparison.OrdinalIgnoreCase))
+                    {
+                        cleanNeoForge = cleanNeoForge["neoforge-".Length..];
+                    }
+                    return $"neoforge-{cleanNeoForge}";
+
                 case LoaderType.LiteLoader:
                     return $"{mcVersion}-LiteLoader{mcVersion}";
+
                 default:
                     return mcVersion;
             }
@@ -323,26 +388,15 @@ namespace CL.Core.Services
 
                 ServiceLocator.Current.GetService<IMainWindowController>().SetPlayButtonText(LocalizationManager.GetString("GameLaunch.LaunchStarting", "ЗАПУСК..."));
 
-                Process process;
-
-                if (config.IsOffline || HistoricalVersionInstallerService.IsVersionInstalled(versionName, path))
-                {
-                    process = await launcher.BuildProcessAsync(versionName, launchOption);
-
-                    if (!string.IsNullOrEmpty(config.ServerIp))
-                    {
-                        EnsureServerConnectionArguments(process, config.ServerIp, config.ServerPort, minecraftVersion);
-                    }
-                }
-                else
-                {
-                    process = await launcher.InstallAndBuildProcessAsync(versionName, launchOption, token);
-
-                    if (!string.IsNullOrEmpty(config.ServerIp))
-                    {
-                        EnsureServerConnectionArguments(process, config.ServerIp, config.ServerPort, minecraftVersion);
-                    }
-                }
+                Process process = await BuildGameProcessAsync(
+                    launcher,
+                    versionName,
+                    launchOption,
+                    config.ServerIp,
+                    config.ServerPort,
+                    minecraftVersion,
+                    isVersionValidated: true,
+                    cancellationToken: token);
 
                 if (isHistorical)
                 {
@@ -512,49 +566,149 @@ namespace CL.Core.Services
             ActiveProcess = null;
         }
 
-        public async Task<string> InstallVersionAsync(LoaderType loaderType, string mcVersion, string loaderVersion, MinecraftLauncher launcher, CancellationToken token)
+        public static async Task<Process> BuildGameProcessAsync(
+            MinecraftLauncher launcher,
+            string versionName,
+            MLaunchOption launchOption,
+            string? serverIp,
+            int serverPort,
+            string? minecraftVersion,
+            bool isVersionValidated = false,
+            CancellationToken cancellationToken = default)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+            MinecraftLauncher processLauncher = launcher;
+            if (launcher.Versions == null &&
+                launcher.VersionLoader is not CmlLib.Core.VersionLoader.LocalJsonVersionLoader &&
+                (isVersionValidated || HistoricalVersionInstallerService.IsVersionInstalled(versionName, launcher.MinecraftPath)))
+            {
+                var localParams = MinecraftLauncherParameters.CreateDefault(launcher.MinecraftPath);
+                localParams.VersionLoader = new CmlLib.Core.VersionLoader.LocalJsonVersionLoader(launcher.MinecraftPath);
+                localParams.JavaPathResolver = launcher.JavaPathResolver;
+                localParams.FileExtractors = launcher.FileExtractors;
+                localParams.GameInstaller = launcher.GameInstaller;
+                localParams.NativeLibraryExtractor = launcher.NativeLibraryExtractor;
+                localParams.RulesEvaluator = launcher.RulesEvaluator;
+                processLauncher = new MinecraftLauncher(localParams)
+                {
+                    RulesContext = launcher.RulesContext
+                };
+            }
+
+            var process = await processLauncher.BuildProcessAsync(versionName, launchOption, cancellationToken);
+            if (!string.IsNullOrEmpty(serverIp))
+            {
+                EnsureServerConnectionArguments(process, serverIp, serverPort, minecraftVersion);
+            }
+            return process;
+        }
+
+        private static async Task EnsureVersionFilesInstalledAsync(string versionName, MinecraftLauncher launcher, CancellationToken token)
+        {
+            if (!HistoricalVersionInstallerService.IsVersionInstalled(versionName, launcher.MinecraftPath))
+            {
+                await launcher.InstallAsync(versionName, token);
+            }
+        }
+
+        private static async Task<string?> ResolveAutoLoaderVersionAsync(string? loaderVersion, string metadataUrl, CancellationToken token)
+        {
+            if (!IsAutoLoaderVersion(loaderVersion))
+            {
+                return loaderVersion;
+            }
+
+            try
+            {
+                string json = await WebHelper.Client.GetStringAsync(metadataUrl, token);
+                var arr = Newtonsoft.Json.Linq.JArray.Parse(json);
+                var firstVer = arr.FirstOrDefault()?["loader"]?["version"]?.ToString();
+                if (!string.IsNullOrEmpty(firstVer))
+                {
+                    return firstVer;
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch { }
+
+            return loaderVersion;
+        }
+
+        private static async Task<string> InstallProfileLoaderAsync(
+            string mcVersion,
+            string? loaderVersion,
+            string profilePrefix,
+            string metadataUrl,
+            Func<string, string, MinecraftPath, Task<string>> installProfileAsync,
+            MinecraftLauncher launcher,
+            CancellationToken token)
+        {
+            bool wasAuto = IsAutoLoaderVersion(loaderVersion);
+            string? resolvedLoader = await ResolveAutoLoaderVersionAsync(loaderVersion, metadataUrl, token);
+            if (wasAuto && !IsAutoLoaderVersion(resolvedLoader))
+            {
+                string expectedName = $"{profilePrefix}-{resolvedLoader}-{mcVersion}";
+                if (HistoricalVersionInstallerService.IsVersionInstalled(expectedName, launcher.MinecraftPath))
+                {
+                    return expectedName;
+                }
+            }
+
+            token.ThrowIfCancellationRequested();
+            string installedName = await installProfileAsync(mcVersion, $"{resolvedLoader}", launcher.MinecraftPath);
+            token.ThrowIfCancellationRequested();
+            await launcher.InstallAsync(installedName, token);
+            return installedName;
+        }
+
+        public async Task<string> InstallVersionAsync(LoaderType loaderType, string mcVersion, string? loaderVersion, MinecraftLauncher launcher, CancellationToken token)
+        {
+            token.ThrowIfCancellationRequested();
+
+            string? preinstalled = TryGetPreinstalledVersionName(loaderType, mcVersion, loaderVersion, launcher.MinecraftPath);
+            if (!string.IsNullOrEmpty(preinstalled))
+            {
+                return preinstalled;
+            }
+
             switch (loaderType)
             {
                 case LoaderType.Forge:
                     var forge = new NoAdForgeInstaller(launcher);
-                    return await forge.Install(mcVersion, loaderVersion, new CmlLib.Core.Installer.Forge.ForgeInstallOptions { CancellationToken = token });
+                    string forgeVersionName = await forge.Install(mcVersion, loaderVersion, new CmlLib.Core.Installer.Forge.ForgeInstallOptions { CancellationToken = token });
+                    await EnsureVersionFilesInstalledAsync(forgeVersionName, launcher, token);
+                    return forgeVersionName;
 
                 case LoaderType.Fabric:
                     var fabricInstaller = new FabricInstaller(WebHelper.Client);
-                    if (string.IsNullOrWhiteSpace(loaderVersion) || loaderVersion.Equals("Unknown", StringComparison.OrdinalIgnoreCase) || loaderVersion.Equals("Auto", StringComparison.OrdinalIgnoreCase))
-                    {
-
-                        try
-                        {
-                            string json = await WebHelper.Client.GetStringAsync($"https://meta.fabricmc.net/v2/versions/loader/{mcVersion}", token);
-                            var arr = Newtonsoft.Json.Linq.JArray.Parse(json);
-                            var firstVer = arr.FirstOrDefault()?["loader"]?["version"]?.ToString();
-                            if (!string.IsNullOrEmpty(firstVer)) loaderVersion = firstVer;
-                        }
-                        catch { }
-                    }
-                    return await fabricInstaller.Install($"{mcVersion}", $"{loaderVersion}", launcher.MinecraftPath);
+                    return await InstallProfileLoaderAsync(
+                        mcVersion,
+                        loaderVersion,
+                        "fabric-loader",
+                        $"https://meta.fabricmc.net/v2/versions/loader/{mcVersion}",
+                        (mc, loader, path) => fabricInstaller.Install(mc, loader, path),
+                        launcher,
+                        token);
 
                 case LoaderType.Quilt:
                     var quiltInstaller = new QuiltInstaller(WebHelper.Client);
-                    if (string.IsNullOrWhiteSpace(loaderVersion) || loaderVersion.Equals("Unknown", StringComparison.OrdinalIgnoreCase) || loaderVersion.Equals("Auto", StringComparison.OrdinalIgnoreCase))
-                    {
-
-                        try
-                        {
-                            string json = await WebHelper.Client.GetStringAsync($"https://meta.quiltmc.org/v3/versions/loader/{mcVersion}", token);
-                            var arr = Newtonsoft.Json.Linq.JArray.Parse(json);
-                            var firstVer = arr.FirstOrDefault()?["loader"]?["version"]?.ToString();
-                            if (!string.IsNullOrEmpty(firstVer)) loaderVersion = firstVer;
-                        }
-                        catch { }
-                    }
-                    return await quiltInstaller.Install($"{mcVersion}", $"{loaderVersion}", launcher.MinecraftPath);
+                    return await InstallProfileLoaderAsync(
+                        mcVersion,
+                        loaderVersion,
+                        "quilt-loader",
+                        $"https://meta.quiltmc.org/v3/versions/loader/{mcVersion}",
+                        (mc, loader, path) => quiltInstaller.Install(mc, loader, path),
+                        launcher,
+                        token);
 
                 case LoaderType.NeoForge:
                     var neoForge = new NoAdNeoForgeInstaller(launcher);
-                    return await neoForge.Install(mcVersion, loaderVersion, new CmlLib.Core.Installer.NeoForge.Installers.NeoForgeInstallOptions { CancellationToken = token });
+                    string neoForgeVersionName = await neoForge.Install(mcVersion, loaderVersion, new CmlLib.Core.Installer.NeoForge.Installers.NeoForgeInstallOptions { CancellationToken = token });
+                    await EnsureVersionFilesInstalledAsync(neoForgeVersionName, launcher, token);
+                    return neoForgeVersionName;
 
                 case LoaderType.Optifine:
                     {
@@ -563,23 +717,37 @@ namespace CL.Core.Services
                         var selectedVersion = versions.FirstOrDefault(x => x.Version == loaderVersion);
                         if (selectedVersion == null)
                             throw new Exception(LocalizationManager.GetString("GameLaunch.OptifineNotFound", "Обрана версія Optifine не знайдена."));
-                        await launcher.InstallAsync(selectedVersion.MinecraftVersion, token);
+
                         var optifineVersionName = $"{selectedVersion.MinecraftVersion}-OptiFine_{selectedVersion.OptifineEdition}";
                         var optifineDir = Path.Combine(launcher.MinecraftPath.Versions, optifineVersionName);
                         var jarPath = Path.Combine(optifineDir, $"{optifineVersionName}.jar");
-                        string finalVersionName = optifineVersionName;
-                        if (!File.Exists(jarPath))
+                        bool hasOptifineJar = File.Exists(jarPath) && new FileInfo(jarPath).Length > 0;
+
+                        if (IsAutoLoaderVersion(loaderVersion) &&
+                            hasOptifineJar &&
+                            HistoricalVersionInstallerService.IsVersionInstalled(optifineVersionName, launcher.MinecraftPath))
                         {
+                            return optifineVersionName;
+                        }
+
+                        await EnsureVersionFilesInstalledAsync(selectedVersion.MinecraftVersion, launcher, token);
+
+                        string finalVersionName = optifineVersionName;
+                        if (!hasOptifineJar)
+                        {
+                            token.ThrowIfCancellationRequested();
                             finalVersionName = await loader.InstallOptifineAsync(launcher.MinecraftPath.BasePath, selectedVersion);
-                            if (!File.Exists(jarPath))
+                            if (!File.Exists(jarPath) || new FileInfo(jarPath).Length == 0)
                             {
-                                await Task.Delay(2000);
-                                if (!File.Exists(jarPath))
+                                await Task.Delay(2000, token);
+                                if (!File.Exists(jarPath) || new FileInfo(jarPath).Length == 0)
                                 {
                                     throw new Exception(LocalizationManager.GetString("GameLaunch.OptifineJarMissing", "Інсталятор Optifine завершився, але .jar файл не знайдено."));
                                 }
                             }
                         }
+
+                        await launcher.InstallAsync(finalVersionName, token);
                         return finalVersionName;
                     }
                 case LoaderType.LiteLoader:
@@ -587,7 +755,11 @@ namespace CL.Core.Services
                         var liteLoaderInstaller = new LiteLoaderInstaller(WebHelper.Client);
                         var loaders = await liteLoaderInstaller.GetAllLiteLoaders();
                         var loaderToInstall = loaders.First(loader => loader.BaseVersion == mcVersion);
-                        return await liteLoaderInstaller.Install(loaderToInstall, await launcher.GetVersionAsync(mcVersion), launcher.MinecraftPath);
+                        token.ThrowIfCancellationRequested();
+                        string liteVersionName = await liteLoaderInstaller.Install(loaderToInstall, await launcher.GetVersionAsync(mcVersion), launcher.MinecraftPath);
+                        token.ThrowIfCancellationRequested();
+                        await EnsureVersionFilesInstalledAsync(liteVersionName, launcher, token);
+                        return liteVersionName;
                     }
                 default:
                     {
