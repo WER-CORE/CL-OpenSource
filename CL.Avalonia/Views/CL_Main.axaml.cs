@@ -25,6 +25,7 @@ public partial class CL_Main : Window
     private readonly AvaloniaThemeService? _themeService;
     private readonly TutorialOverlayService _tutorialService;
     private readonly TutorialTourManager _tourManager;
+    private readonly FirstRunCoordinator _firstRunCoordinator = new();
     private Control? _activeTabBorder;
     private bool _isProfilesLoaded;
     private DateTime _lastAccountToggleTime = DateTime.MinValue;
@@ -94,10 +95,7 @@ public partial class CL_Main : Window
                 _ = RefreshProfilesUIAsync(selectSavedProfile: true);
             }
 
-            if (!SettingsManager.Default.TutorialComplete)
-            {
-                TutorialGrid.IsVisible = true;
-            }
+            _ = _firstRunCoordinator.RunAsync(this);
         };
 
         Closed += (_, _) =>
@@ -653,6 +651,7 @@ public partial class CL_Main : Window
     public void NoQuestionTutorialButton_MouseDown(object? sender, RoutedEventArgs e)
     {
         SettingsManager.Default.TutorialComplete = true;
+        SettingsManager.Default.OnboardingTourCompleted = true;
         SettingsManager.Save();
         TutorialGrid.IsVisible = false;
         ShowDocsTutorial();
@@ -749,6 +748,20 @@ public partial class CL_Main : Window
     public void CloseTutorial()
     {
         _tutorialService.CloseTutorial();
+    }
+
+    public async Task RefreshAfterLegacyImportAsync()
+    {
+        SettingsManager.Load();
+        ApplyModulesVisibility();
+        ApplyLocalization();
+        ApplyCurrentUiScale();
+        _themeService?.InitializeSavedTheme();
+        await RefreshProfilesUIAsync(selectSavedProfile: true);
+        if (PageHost.Content is HomePage { DataContext: HomePageViewModel homeVm })
+        {
+            homeVm.RestoreSavedVersionState();
+        }
     }
 
     #endregion

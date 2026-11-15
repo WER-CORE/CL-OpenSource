@@ -281,5 +281,128 @@ namespace CL.Core.Tests
                     Directory.Delete(tempDir, true);
             }
         }
+
+        [Fact]
+        public void InspectLegacyDataFolder_DetectsValidParentFolderConflictsAndCorruptedJson()
+        {
+            string runId = Guid.NewGuid().ToString("N");
+            string root = Path.Combine(Path.GetTempPath(), "cl_inspect_test_" + runId);
+            string launcherRoot = Path.Combine(root, "CL_Launcher_v1.0.0.6");
+            string sourceData = Path.Combine(launcherRoot, "Data");
+            string targetData = Path.Combine(root, "TargetData");
+            Directory.CreateDirectory(sourceData);
+            Directory.CreateDirectory(targetData);
+
+            try
+            {
+                File.WriteAllText(Path.Combine(sourceData, "UserSaves.json"), """{"width":960,"height":542,"Them":"Dark"}""");
+                File.WriteAllText(Path.Combine(sourceData, "installed_modpacks.json"), "[]");
+                File.WriteAllText(Path.Combine(targetData, "UserSaves.json"), """{"width":800,"height":600}""");
+
+                var inspection = LegacyMigrationService.InspectLegacyDataFolder(launcherRoot, targetData);
+                Assert.True(inspection.IsValid);
+                Assert.Equal(sourceData, inspection.ResolvedDataPath);
+                Assert.True(inspection.HasSettings);
+                Assert.Empty(inspection.CorruptedFiles);
+                Assert.Contains("UserSaves.json", inspection.Conflicts);
+
+                File.WriteAllText(Path.Combine(sourceData, "UserSaves.json"), "{ invalid json");
+                var corrupted = LegacyMigrationService.InspectLegacyDataFolder(launcherRoot, targetData);
+                Assert.True(corrupted.IsValid);
+                Assert.Contains("UserSaves.json", corrupted.CorruptedFiles);
+
+                var failedImport = LegacyMigrationService.ImportSupportedDataSafely(launcherRoot, targetData);
+                Assert.False(failedImport.Success);
+                Assert.Contains("\"width\":800", File.ReadAllText(Path.Combine(targetData, "UserSaves.json")));
+            }
+            finally
+            {
+                if (Directory.Exists(root))
+                    Directory.Delete(root, true);
+            }
+        }
+
+        [Fact]
+        public void ImportSupportedDataSafely_PreservesOriginalAndExcludesArbitraryFiles()
+        {
+            string runId = Guid.NewGuid().ToString("N");
+            string root = Path.Combine(Path.GetTempPath(), "cl_safe_import_" + runId);
+            string sourceData = Path.Combine(root, "SourceData");
+            string targetData = Path.Combine(root, "TargetData");
+            Directory.CreateDirectory(sourceData);
+            Directory.CreateDirectory(targetData);
+
+            string? originalFolder = SettingsManager.FolderPath;
+            var originalDefault = SettingsManager.Default;
+
+            try
+            {
+                SettingsManager.FolderPath = targetData;
+                SettingsManager.Default = new CL.Core.Models.AppSettings();
+
+                File.WriteAllText(Path.Combine(sourceData, "UserSaves.json"), """{"width":1280,"height":720,"Them":"Forest"}""");
+                File.WriteAllText(Path.Combine(sourceData, "arbitrary_unrelated.txt"), "should not be copied");
+
+                var result = LegacyMigrationService.ImportSupportedDataSafely(sourceData, targetData);
+                Assert.True(result.Success);
+                Assert.True(File.Exists(Path.Combine(targetData, "UserSaves.json")));
+                Assert.False(File.Exists(Path.Combine(targetData, "arbitrary_unrelated.txt")));
+                Assert.True(File.Exists(Path.Combine(sourceData, "UserSaves.json")));
+                Assert.True(File.Exists(Path.Combine(sourceData, "arbitrary_unrelated.txt")));
+            }
+            finally
+            {
+                SettingsManager.FolderPath = originalFolder;
+                SettingsManager.Default = originalDefault;
+                if (Directory.Exists(root))
+                    Directory.Delete(root, true);
+            }
+        }
+
+        [Fact]
+        public void ImportSupportedDataSafely_WpfTutorialCompleteDoesNotSuppressAvaloniaTour()
+        {
+            string runId = Guid.NewGuid().ToString("N");
+            string root = Path.Combine(Path.GetTempPath(), "cl_tour_import_" + runId);
+            string sourceData = Path.Combine(root, "WpfData");
+            string targetData = Path.Combine(root, "AvaloniaData");
+            Directory.CreateDirectory(sourceData);
+            Directory.CreateDirectory(targetData);
+
+            string? originalFolder = SettingsManager.FolderPath;
+            var originalDefault = SettingsManager.Default;
+
+            try
+            {
+                SettingsManager.FolderPath = targetData;
+                SettingsManager.Default = new CL.Core.Models.AppSettings
+                {
+                    TutorialComplete = false,
+                    OnboardingTourCompleted = false
+                };
+
+                File.WriteAllText(Path.Combine(sourceData, "UserSaves.json"), """{"width":1280,"height":720,"TutorialComplete":true}""");
+
+                var result = LegacyMigrationService.ImportSupportedDataSafely(sourceData, targetData);
+                Assert.True(result.Success);
+                Assert.False(SettingsManager.Default.TutorialComplete);
+                Assert.False(SettingsManager.Default.OnboardingTourCompleted);
+
+                SettingsManager.Default.OnboardingTourCompleted = true;
+                SettingsManager.Default.TutorialComplete = true;
+
+                var secondResult = LegacyMigrationService.ImportSupportedDataSafely(sourceData, targetData);
+                Assert.True(secondResult.Success);
+                Assert.True(SettingsManager.Default.TutorialComplete);
+                Assert.True(SettingsManager.Default.OnboardingTourCompleted);
+            }
+            finally
+            {
+                SettingsManager.FolderPath = originalFolder;
+                SettingsManager.Default = originalDefault;
+                if (Directory.Exists(root))
+                    Directory.Delete(root, true);
+            }
+        }
     }
 }

@@ -39,6 +39,7 @@ namespace CL.Core.Models
         public DateTime EulaAcceptedDate { get; set; } = DateTime.MinValue;
         public bool IsDocsTutorialShown { get; set; } = false;
         public bool OnboardingTourCompleted { get; set; } = false;
+        public bool WpfImportPromptHandled { get; set; } = false;
         public string LoadScreenBackground { get; set; } = "";
         public string LoadScreenBarColor { get; set; } = "";
         public int SelectIndexAccount { get; set; } = -1;
