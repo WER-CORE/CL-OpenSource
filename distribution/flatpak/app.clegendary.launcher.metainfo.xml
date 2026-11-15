@@ -115,9 +115,9 @@
   </screenshots>
 
   <releases>
-    <release version="1.1.0-preview9.6" date="2026-11-08">
+    <release version="1.1.0-preview9.8" date="2026-11-15">
       <description>
-        <p>Preview 9.6: Improved modpack export cancellation, P2P discovery timeout, UI thread safety, enhanced localization, and official Flatpak packaging.</p>
+        <p>Preview 9.8: WPF data import dialog and onboarding tour integration, unified application icons, Velopack update compatibility, and localization updates.</p>
       </description>
     </release>
   </releases>

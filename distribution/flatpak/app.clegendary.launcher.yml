@@ -37,18 +37,18 @@ modules:
       - type: file
         only-arches: [x86_64]
         dest-filename: CLegendaryLauncher-x64.AppImage
-        url: https://github.com/WER-CORE/CL-Win-Edition--Update/releases/download/v1.1.0-preview9.7/CLegendaryLauncher-x64.AppImage
-        sha256: 11fe094d1d6b03cb744eb46721a63be516e53494c5b6c357f136d5a4b3b1e577
+        url: https://github.com/WER-CORE/CL-Win-Edition--Update/releases/download/v1.1.0-preview9.8/CLegendaryLauncher-x64.AppImage
+        sha256: eb929821f385f16753b1127f2cb32a641e0948d1d975841114eb768634b6980a
         x-checker-data:
           type: json
           url: https://api.github.com/repos/WER-CORE/CL-Win-Edition--Update/releases
-          version-query: '[.[] | select(.prerelease == true)][0].tag_name | sub("^v"; "")'
+          version-query: '[.[] | select(.prerelease == false)][0].tag_name | sub("^v"; "")'
           url-query: '"https://github.com/WER-CORE/CL-Win-Edition--Update/releases/download/v" + $version + "/CLegendaryLauncher-x64.AppImage"'
       - type: file
         only-arches: [aarch64]
         dest-filename: CLegendaryLauncher-arm64.AppImage
-        url: https://github.com/WER-CORE/CL-Win-Edition--Update/releases/download/v1.1.0-preview9.7/CLegendaryLauncher-arm64.AppImage
-        sha256: 882b4c6a101f7f65331260f49dfde82085ab0e087a87ed1a992af63c66346442
+        url: https://github.com/WER-CORE/CL-Win-Edition--Update/releases/download/v1.1.0-preview9.8/CLegendaryLauncher-arm64.AppImage
+        sha256: 79c43b7156e67bbbbbe3bb955fa40a3b8787676e72b2a71ae50195b846ea9c50
         x-checker-data:
           type: json
           url: https://api.github.com/repos/WER-CORE/CL-Win-Edition--Update/releases
