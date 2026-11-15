@@ -1,9 +1,74 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:suki="clr-namespace:SukiUI;assembly=SukiUI"
+             xmlns:sty="using:FluentAvalonia.Styling"
+             xmlns:converters="using:CL_CLegendary_Launcher_.Avalonia.Converters"
+             xmlns:chrome="using:Avalonia.Controls.Chrome"
              x:Class="CL_CLegendary_Launcher_.Avalonia.App"
              RequestedThemeVariant="Dark">
-	<Application.Styles>
-		<suki:SukiTheme ThemeColor="Blue" />
-	</Application.Styles>
+    <Application.Styles>
+        <sty:FluentAvaloniaTheme />
+        <StyleInclude Source="avares://AvaloniaProgressRing/Styles/ProgressRing.xaml"/>
+        <Style Selector="chrome|WindowDrawnDecorations">
+            <Setter Property="Template" Value="{x:Null}" />
+        </Style>
+        <Style Selector="chrome|WindowDrawnDecorations /template/ Button">
+            <Setter Property="IsVisible" Value="False" />
+        </Style>
+        <Style Selector="chrome|WindowDrawnDecorations /template/ Panel">
+            <Setter Property="IsVisible" Value="False" />
+        </Style>
+        <Style Selector="Window">
+            <Setter Property="Icon" Value="avares://CL.Avalonia/Icon/IconCL(Common).webp" />
+            <Setter Property="TransparencyBackgroundFallback" Value="Transparent" />
+        </Style>
+        <Style Selector="ToggleSwitch">
+            <Setter Property="OnContent" Value="{x:Null}" />
+            <Setter Property="OffContent" Value="{x:Null}" />
+        </Style>
+        <Style Selector="CheckBox:checked /template/ Border#NormalRectangle">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="{DynamicResource CheckBoxCheckStrokeBorderBrushUnchecked}" />
+        </Style>
+        <Style Selector="CheckBox:checked:pointerover /template/ Border#NormalRectangle">
+            <Setter Property="Background" Value="#15FFFFFF" />
+            <Setter Property="BorderBrush" Value="{DynamicResource CheckBoxCheckStrokeBorderBrushUncheckedPointerOver}" />
+        </Style>
+        <Style Selector="CheckBox:checked:pressed /template/ Border#NormalRectangle">
+            <Setter Property="Background" Value="#25FFFFFF" />
+            <Setter Property="BorderBrush" Value="{DynamicResource CheckBoxCheckStrokeBorderBrushUncheckedPressed}" />
+        </Style>
+        <Style Selector="CheckBox:indeterminate /template/ Border#NormalRectangle">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="{DynamicResource CheckBoxCheckStrokeBorderBrushUnchecked}" />
+        </Style>
+        <Style Selector="CheckBox:checked /template/ Path#CheckGlyph">
+            <Setter Property="Fill" Value="{DynamicResource MainForegroundBrush}" />
+        </Style>
+        <Style Selector="CheckBox:checked:pointerover /template/ Path#CheckGlyph">
+            <Setter Property="Fill" Value="{DynamicResource MainForegroundBrush}" />
+        </Style>
+        <Style Selector="CheckBox:checked:pressed /template/ Path#CheckGlyph">
+            <Setter Property="Fill" Value="{DynamicResource MainForegroundBrush}" />
+        </Style>
+    </Application.Styles>
+
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://CL.Avalonia/Themes/Colors.axaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <ControlTheme x:Key="{x:Type chrome:WindowDrawnDecorations}" TargetType="chrome:WindowDrawnDecorations">
+                <Setter Property="Template" Value="{x:Null}" />
+            </ControlTheme>
+            <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillChecked" Color="Transparent" />
+            <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillCheckedPointerOver" Color="#15FFFFFF" />
+            <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillCheckedPressed" Color="#25FFFFFF" />
+            <SolidColorBrush x:Key="CheckBoxCheckGlyphForegroundChecked" Color="#EFEFEF" />
+            <SolidColorBrush x:Key="CheckBoxCheckGlyphForegroundCheckedPointerOver" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="CheckBoxCheckGlyphForegroundCheckedPressed" Color="#EFEFEF" />
+            <converters:BitmapAssetValueConverter x:Key="BitmapConverter" />
+            <converters:IntEqualityConverter x:Key="EqualityConverter" />
+            <converters:IntInequalityConverter x:Key="InequalityConverter" />
+        </ResourceDictionary>
+    </Application.Resources>
 </Application>

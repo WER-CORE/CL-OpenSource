@@ -19,7 +19,6 @@ using System.Threading.Tasks;
 using CL.Core.Platform;
 using CL.Core.Interfaces;
 
-
 using Path = System.IO.Path;
 
 namespace CL.Core.Services
@@ -45,12 +44,12 @@ namespace CL.Core.Services
 
     public static class ModpackPaths
     {
-        public static string DataDirectory => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data");
+        public static string DataDirectory => PlatformPaths.DataFolder();
         public static string InstalledModpacksJson => Path.Combine(DataDirectory, "installed_modpacks.json");
     }
     public class ModpackService
     {
-        
+
         private readonly GameSessionManager _gameSessionManager;
         private readonly GameLaunchService _gameLaunchService;
         private readonly ModDownloadService _modDownloadService;
@@ -60,7 +59,7 @@ namespace CL.Core.Services
 
         public ModpackService(GameSessionManager gameSessionManager, GameLaunchService gameLaunchService, ModDownloadService modDownloadService)
         {
-            
+
             _gameSessionManager = gameSessionManager;
             _gameLaunchService = gameLaunchService;
             _modDownloadService = modDownloadService;
@@ -68,7 +67,7 @@ namespace CL.Core.Services
         private async Task<ApiClient> GetCfClientAsync() => await CurseForgeClientProvider.GetClientAsync();
         public List<InstalledModpack> LoadInstalledModpacks()
         {
-            string jsonPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "installed_modpacks.json");
+            string jsonPath = ModpackPaths.InstalledModpacksJson;
             if (!File.Exists(jsonPath)) return new List<InstalledModpack>();
 
             string json = File.ReadAllText(jsonPath);
@@ -77,7 +76,7 @@ namespace CL.Core.Services
 
         public void DeleteModpack(string modpackName)
         {
-            string pathToJson = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "installed_modpacks.json");
+            string pathToJson = ModpackPaths.InstalledModpacksJson;
             if (!File.Exists(pathToJson)) return;
 
             var jsonText = File.ReadAllText(pathToJson);
@@ -123,12 +122,14 @@ namespace CL.Core.Services
         }
         public async void PlayModPack(string version, string versionMod, string loader, string nameModPack, string pathModPack, string pathJson, string typeSite, string javaPath, LaunchConfiguration config)
         {
-            
 
             var cts = new CancellationTokenSource();
             var token = cts.Token;
+            Process? launchedProcess = null;
 
-            bool isOffline = SettingsManager.Default.OfflineModLauncher || !System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable();
+            bool isOffline = config.IsOffline ||
+                             SettingsManager.Default.OfflineModLauncher ||
+                             !System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable();
 
             var versionDownloadWindow = ServiceLocator.Current.GetService<ITaskProgressService>();
             versionDownloadWindow.CTS = cts;
@@ -237,6 +238,8 @@ namespace CL.Core.Services
                     }
                 }
 
+                token.ThrowIfCancellationRequested();
+
                 var installedModpack = LoadInstalledModpacks().FirstOrDefault(m => m.Name.Equals(nameModPack, StringComparison.OrdinalIgnoreCase));
                 if (installedModpack == null) throw new Exception(LocalizationManager.GetString("Modpacks.MissingSettings", "Не вдалося знайти збережені налаштування збірки."));
 
@@ -269,12 +272,12 @@ namespace CL.Core.Services
                 };
                 launcher.FileProgressChanged += (sender, args) =>
                 {
-                    int fileProgress = args.TotalTasks > 0 ? (int)((double)args.ProgressedTasks / args.TotalTasks * 100) : 0;
-                    if (!isOffline && versionDownloadWindow.IsLoaded) ServiceLocator.Current.GetService<IDispatcherService>().Invoke(() =>
+                    if (!isOffline && versionDownloadWindow.IsLoaded)
                     {
+                        int fileProgress = args.TotalTasks > 0 ? (int)((double)args.ProgressedTasks / args.TotalTasks * 100) : 0;
                         versionDownloadWindow.UpdateFileTaskProgress(args.TotalTasks, args.ProgressedTasks, args.Name);
                         versionDownloadWindow.UpdateVersionProgress(fileProgress, version);
-                    });
+                    }
                 };
 
                 MLaunchOption mLaunch = new MLaunchOption
@@ -284,18 +287,48 @@ namespace CL.Core.Services
                     Session = config.Session,
                     ScreenWidth = installedModpack.Wdith,
                     ScreenHeight = installedModpack.Height,
-                    ServerIp = (installedModpack.EnterInServer && !string.IsNullOrWhiteSpace(installedModpack.ServerIP)) ? installedModpack.ServerIP.Split(':')[0] : null,
-                    ServerPort = (installedModpack.EnterInServer && !string.IsNullOrWhiteSpace(installedModpack.ServerIP) && installedModpack.ServerIP.Contains(':') && int.TryParse(installedModpack.ServerIP.Split(':')[1], out int port)) ? port : 0,
+                    ServerIp = !string.IsNullOrEmpty(config.ServerIp)
+                        ? config.ServerIp
+                        : ((installedModpack.EnterInServer && !string.IsNullOrWhiteSpace(installedModpack.ServerIP)) ? installedModpack.ServerIP.Split(':')[0] : null),
+                    ServerPort = config.ServerPort > 0
+                        ? config.ServerPort
+                        : ((installedModpack.EnterInServer && !string.IsNullOrWhiteSpace(installedModpack.ServerIP) && installedModpack.ServerIP.Contains(':') && int.TryParse(installedModpack.ServerIP.Split(':')[1], out int port)) ? port : 0),
 
                     JavaPath = !string.IsNullOrWhiteSpace(javaPath)
                                 ? javaPath
                                 : (!string.IsNullOrWhiteSpace(installedModpack.JavaPath) ? installedModpack.JavaPath : null)
-                }; 
+                };
                 var activeJvmArgs = new List<string>();
+
+                if (config.AccountType != AccountType.LittleSkin && (config.AllowOfflineLan || config.JoinServer || config.AccountType == AccountType.Offline))
+                {
+                    try
+                    {
+                        AuthlibInjectorHelper.EnsureDownloaded();
+                        string jarPath = AuthlibInjectorHelper.GetJarPath();
+                        if (File.Exists(jarPath))
+                        {
+                            var mockServer = CL.Core.Services.P2P.P2PYggdrasilMockServer.Instance;
+                            mockServer.Start();
+                            if (mockServer.IsRunning && mockServer.Port > 0)
+                            {
+                                if (config.Session != null && !string.IsNullOrWhiteSpace(config.Session.Username))
+                                {
+                                    mockServer.RegisterProfile(config.Session.UUID, config.Session.Username);
+                                }
+
+                                activeJvmArgs.Add($@"-javaagent:{jarPath}=http://127.0.0.1:{mockServer.Port}/api/yggdrasil");
+                            }
+                        }
+                    }
+                    catch { }
+                }
 
                 if (config.AccountType == AccountType.LittleSkin)
                 {
-                    activeJvmArgs.Add($@"-javaagent:{AppContext.BaseDirectory}authlib-injector-1.2.8.jar=https://littleskin.cn/api/yggdrasil");
+                    AuthlibInjectorHelper.EnsureDownloaded();
+                    string jarPath = AuthlibInjectorHelper.GetJarPath();
+                    activeJvmArgs.Add($@"-javaagent:{jarPath}=https://littleskin.cn/api/yggdrasil");
                 }
 
                 if (activeJvmArgs.Count > 0)
@@ -327,22 +360,30 @@ namespace CL.Core.Services
                         loaderType = LoaderType.Vanilla;
                 }
 
-                string versionName;
+                string versionName = null;
                 if (isOffline)
                 {
-                    if (version.ToLower().Contains(loader.ToLower()) || version.ToLower().Contains("optifine"))
-                        versionName = version;
-                    else
+                    if (string.IsNullOrWhiteSpace(versionMod) || versionMod.Equals("Unknown", StringComparison.OrdinalIgnoreCase))
                     {
-                        switch (loaderType)
+                        try
                         {
-                            case LoaderType.Fabric: versionName = $"fabric-loader-{versionMod}-{version}"; break;
-                            case LoaderType.Forge: versionName = $"{version}-forge-{versionMod}"; break;
-                            case LoaderType.NeoForge: versionName = $"neoforge-{versionMod}"; break;
-                            case LoaderType.Quilt: versionName = $"quilt-loader-{versionMod}-{version}"; break;
-                            case LoaderType.Optifine: versionName = $"{version}-OptiFine_{versionMod?.Replace("OptiFine_", "")}"; break;
-                            case LoaderType.LiteLoader: versionName = $"{version}-LiteLoader{version}"; break;
-                            default: versionName = version; break;
+                            if (Directory.Exists(path.Versions))
+                            {
+                                var localDirs = Directory.GetDirectories(path.Versions).Select(Path.GetFileName).Where(n => !string.IsNullOrEmpty(n));
+                                var matched = localDirs.FirstOrDefault(d => d.Contains(version, StringComparison.OrdinalIgnoreCase) && d.Contains(loader, StringComparison.OrdinalIgnoreCase));
+                                if (!string.IsNullOrEmpty(matched)) versionName = matched;
+                            }
+                        }
+                        catch { }
+                    }
+
+                    if (string.IsNullOrEmpty(versionName))
+                    {
+                        if (version.ToLower().Contains(loader.ToLower()))
+                            versionName = version;
+                        else
+                        {
+                            versionName = GameLaunchService.ResolveLoaderVersionName(loaderType, version, versionMod);
                         }
                     }
                 }
@@ -351,30 +392,43 @@ namespace CL.Core.Services
                     versionName = await _gameLaunchService.InstallVersionAsync(loaderType, version, versionMod, launcher, token);
                 }
 
-                Process process;
-                if (isOffline)
-                {
-                    process = await launcher.BuildProcessAsync(versionName, mLaunch);
-                }
-                else
-                {
-                    process = await launcher.InstallAndBuildProcessAsync(versionName, mLaunch, token);
-                }
+                token.ThrowIfCancellationRequested();
+
+                string? effectiveServerIp = !string.IsNullOrEmpty(config.ServerIp) ? config.ServerIp : mLaunch.ServerIp;
+                int effectiveServerPort = config.ServerPort > 0 ? config.ServerPort : mLaunch.ServerPort;
+                Process process = await GameLaunchService.BuildGameProcessAsync(
+                    launcher,
+                    versionName,
+                    mLaunch,
+                    effectiveServerIp,
+                    effectiveServerPort,
+                    version,
+                    isVersionValidated: !isOffline,
+                    cancellationToken: token);
+                launchedProcess = process;
 
                 if (SettingsManager.Default.EnableMod_Statistics) { _gameSessionManager.StartGameSession("mod"); }
 
                 ServiceLocator.Current.GetService<IDispatcherService>().Invoke(() =>
                 {
-                    if (versionDownloadWindow.IsLoaded) versionDownloadWindow.CloseProgressWindow();
+                    if (versionDownloadWindow.IsLoaded) versionDownloadWindow.CloseProgressWindow(cts);
                     ServiceLocator.Current.GetService<IMainWindowController>().Minimize();
                 });
 
-                await DiscordController.UpdatePresence(string.Format(LocalizationManager.GetString("DiscordRPC.PlayingModpack", "Грає в мод-збірку {0}"), nameModPack));
+                await DiscordController.UpdatePresence(string.Format(LocalizationManager.GetString("DiscordRPC.PlayingModpack", "Грає в мод-збірку {0}"), nameModPack), resetTimer: true);
 
-                if (installedModpack.IsConsoleLogOpened)
-                    ServiceLocator.Current.GetService<IMainWindowController>().ShowGameLog(process);
-                else
-                    process.Start();
+                StartModpackProcess(
+                    process,
+                    installedModpack.IsConsoleLogOpened,
+                    ServiceLocator.Current.GetService<IMainWindowController>());
+
+                GameLaunchService.ActiveMinecraftVersion = version;
+                GameLaunchService.ActiveLoaderType = loaderType;
+                GameLaunchService.ActiveLoaderVersion = versionMod;
+                GameLaunchService.ActiveModpackName = nameModPack;
+                GameLaunchService.ActiveModpackTypeSite = installedModpack.TypeSite ?? typeSite;
+                GameLaunchService.ActiveGamePath = finalModPath;
+                GameLaunchService.ActiveProcess = process;
 
                 if (SettingsManager.Default.CloseLaucnher)
                 {
@@ -382,7 +436,13 @@ namespace CL.Core.Services
                 }
                 await MemoryCleaner.FlushMemoryAsync(trimWorkingSet: true);
                 await process.WaitForExitAsync();
+                GameLaunchService.ClearActiveProcessState(process);
                 int exitCode = process.ExitCode;
+
+                if (!SettingsManager.Default.CloseLaucnher)
+                {
+                    _ = DiscordController.UpdatePresence(LocalizationManager.GetString("DiscordRPC.InHome", "В головному вікні"), resetTimer: true);
+                }
 
                 if (exitCode != 0)
                 {
@@ -408,11 +468,22 @@ namespace CL.Core.Services
                     {
                         ServiceLocator.Current.GetService<IDispatcherService>().Invoke(() => Environment.Exit(0));
                     }
+                    else
+                    {
+                        ServiceLocator.Current.GetService<IDispatcherService>().Invoke(() =>
+                        {
+                            ServiceLocator.Current.GetService<IMainWindowController>().Restore();
+                        });
+                    }
                 }
             }
             catch (OperationCanceledException)
             {
-                ServiceLocator.Current.GetService<IDispatcherService>().Invoke(() => { if (versionDownloadWindow.IsLoaded) versionDownloadWindow.CloseProgressWindow(); });
+                ServiceLocator.Current.GetService<IDispatcherService>().Invoke(() =>
+                {
+                    if (versionDownloadWindow.IsLoaded) versionDownloadWindow.CloseProgressWindow(cts);
+                    ServiceLocator.Current.GetService<IMainWindowController>().Restore();
+                });
                 ServiceLocator.Current.GetService<IDialogService>().ShowMessage(
                     LocalizationManager.GetString("Modpacks.LaunchCancelledDesc", "Добре, я зупинила завантаження модпаку.\nСпробуємо іншим разом!"),
                     LocalizationManager.GetString("GameLaunch.LaunchCancelledTitle", "Скасовано"),
@@ -420,7 +491,11 @@ namespace CL.Core.Services
             }
             catch (Exception ex)
             {
-                ServiceLocator.Current.GetService<IDispatcherService>().Invoke(() => { if (versionDownloadWindow.IsLoaded) versionDownloadWindow.CloseProgressWindow(); });
+                ServiceLocator.Current.GetService<IDispatcherService>().Invoke(() =>
+                {
+                    if (versionDownloadWindow.IsLoaded) versionDownloadWindow.CloseProgressWindow(cts);
+                    ServiceLocator.Current.GetService<IMainWindowController>().Restore();
+                });
                 ServiceLocator.Current.GetService<IDialogService>().ShowMessage(
                     string.Format(LocalizationManager.GetString("Modpacks.LaunchCrashDesc", "Біда! Щось зламалося під час запуску модпаку.\n\nДеталі: {0}"), ex.Message),
                     LocalizationManager.GetString("Modpacks.ConfigCorruptedTitle", "Помилка"),
@@ -429,12 +504,38 @@ namespace CL.Core.Services
             finally
             {
                 _gameSessionManager.StopGameSession();
+                CleanupModpackProcess(ref launchedProcess);
                 ServiceLocator.Current.GetService<IDispatcherService>().Invoke(() =>
                 {
                     ServiceLocator.Current.GetService<IMainWindowController>().SetInstallVersionOnPlay(false);
                     ServiceLocator.Current.GetService<IMainWindowController>().SetPlayButtonText(LocalizationManager.GetString("GameLaunch.PlayBtnSelect", "ОБЕРІТЬ ВЕРСІЮ"));
+                    if (versionDownloadWindow.IsLoaded) versionDownloadWindow.CloseProgressWindow(cts);
                 });
+                cts.Dispose();
             }
+        }
+
+        internal static void StartModpackProcess(Process process, bool isConsoleLogOpened, IMainWindowController windowController)
+        {
+            if (isConsoleLogOpened)
+            {
+                windowController.ShowGameLog(process);
+            }
+            else
+            {
+                process.StartInfo.RedirectStandardOutput = false;
+                process.StartInfo.RedirectStandardError = false;
+                process.Start();
+            }
+        }
+
+        internal static void CleanupModpackProcess(ref Process? launchedProcess)
+        {
+            if (launchedProcess == null) return;
+
+            GameLaunchService.ClearActiveProcessState(launchedProcess);
+            launchedProcess.Dispose();
+            launchedProcess = null;
         }
         private async Task<bool> DownloadModsFromManifestJsonAsync(string pathJson, string packFolder, ITaskProgressService progress, CancellationToken token)
         {
@@ -490,11 +591,11 @@ namespace CL.Core.Services
                             else
                             {
                                 await Task.Delay(150, token);
-                                try 
-                                { 
-                                    var file = await cfApi.GetModFileAsync(projectId, fileId); 
+                                try
+                                {
+                                    var file = await cfApi.GetModFileAsync(projectId, fileId);
                                     data = file?.Data;
-                                } 
+                                }
                                 catch { }
                             }
 
@@ -539,7 +640,7 @@ namespace CL.Core.Services
 
                                     progress.UpdateFileTaskProgress(total, completed, "");
                                     bool success = await DownloadFileWithProgress(downloadUrl, fullPath, progress, token, activeItem);
-                                    
+
                                     progress.RemoveActiveDownload(activeItem);
                                     if (!success) await HandleManualDownloadPrompt(downloadUrl, fullPath, fileName);
                                 }
@@ -617,7 +718,7 @@ namespace CL.Core.Services
 
                                     progress.UpdateFileTaskProgress(total, completed, "");
                                     bool success = await DownloadFileWithProgress(downloadUrl, fullPath, progress, token, activeItem);
-                                    
+
                                     progress.RemoveActiveDownload(activeItem);
                                     if (!success) await HandleManualDownloadPrompt(downloadUrl, fullPath, fileName);
                                 }
@@ -980,11 +1081,7 @@ namespace CL.Core.Services
             {
                 try
                 {
-                    Process.Start(new ProcessStartInfo
-                    {
-                        FileName = url,
-                        UseShellExecute = true
-                    });
+                    UrlOpener.Open(url);
 
                     ServiceLocator.Current.GetService<IDialogService>().ShowMessage(
                                     string.Format(LocalizationManager.GetString("DownloadManager.ManualDownloadInstructionDesc", "Я відкрила посилання. Будь ласка, збережи файл ось сюди:\n{0}"), fullPath),
@@ -1049,14 +1146,19 @@ namespace CL.Core.Services
             {
                 if (!Directory.Exists(folder)) continue;
 
-                foreach (var name in commonNames)
+                try
                 {
-                    string fullPath = Path.Combine(folder, name);
-                    if (File.Exists(fullPath))
+                    var files = Directory.GetFiles(folder);
+                    foreach (var name in commonNames)
                     {
-                        return fullPath;
+                        var match = Array.Find(files, f => string.Equals(Path.GetFileName(f), name, StringComparison.OrdinalIgnoreCase));
+                        if (match != null)
+                        {
+                            return match;
+                        }
                     }
                 }
+                catch { }
             }
 
             foreach (var folder in foldersToCheck)
@@ -1081,18 +1183,31 @@ namespace CL.Core.Services
 
             return null;
         }
-        public async Task<InstalledModpack> ImportModpackFromFileAsync(string zipFilePath)
+        public async Task<InstalledModpack> ImportModpackFromFileAsync(string zipFilePath, bool overwrite = false)
         {
             string originalPackName = Path.GetFileNameWithoutExtension(zipFilePath);
             string packName = originalPackName;
             string extractPath = Path.Combine(SettingsManager.Default.PathLacunher, "CLModpack", packName);
 
-            int counter = 1;
-            while (Directory.Exists(extractPath))
+            var existingPacks = LoadInstalledModpacks();
+            bool isAlreadyRegistered = existingPacks.Any(p => string.Equals(p.Name, originalPackName, StringComparison.OrdinalIgnoreCase));
+
+            if (Directory.Exists(extractPath))
             {
-                packName = $"{originalPackName} ({counter})";
-                extractPath = Path.Combine(SettingsManager.Default.PathLacunher, "CLModpack", packName);
-                counter++;
+                if (overwrite || !isAlreadyRegistered)
+                {
+                    try { Directory.Delete(extractPath, true); } catch { }
+                }
+                else
+                {
+                    int counter = 1;
+                    while (Directory.Exists(extractPath))
+                    {
+                        packName = $"{originalPackName} ({counter})";
+                        extractPath = Path.Combine(SettingsManager.Default.PathLacunher, "CLModpack", packName);
+                        counter++;
+                    }
+                }
             }
 
             Directory.CreateDirectory(extractPath);
@@ -1172,7 +1287,7 @@ namespace CL.Core.Services
                 foundIconPath = FindIconInFolder(extractPath);
             }
 
-            string finalIconUrl = foundIconPath ?? "pack://application:,,,/Icon/IconCL(Common).png";
+            string finalIconUrl = foundIconPath ?? $"{CL.Core.Platform.UIConfig.AssetScheme}/Icon/IconCL(Common).png";
 
             if (File.Exists(modrinthPath))
             {
@@ -1246,8 +1361,10 @@ namespace CL.Core.Services
                 else
                 {
                     var modList = JsonConvert.DeserializeObject<List<ModInfo>>(json);
-                    string ver = (modList != null && modList.Count > 0) ? modList[0].Version : "Unknown";
-                    string lType = (modList != null && modList.Count > 0 && modList[0].Type == "metadata") ? modList[0].LoaderType : "Unknown";
+                    string ver = modList?.FirstOrDefault(m => !string.IsNullOrEmpty(m.Version))?.Version ?? "Unknown";
+                    string lType = modList?.FirstOrDefault(m => !string.IsNullOrEmpty(m.Loader))?.Loader
+                        ?? modList?.FirstOrDefault(m => !string.IsNullOrEmpty(m.LoaderType))?.LoaderType
+                        ?? "Forge";
 
                     newPack = new InstalledModpack
                     {
@@ -1279,6 +1396,244 @@ namespace CL.Core.Services
 
             AddModpack(newPack);
             return newPack;
+        }
+
+        public async Task<InstalledModpack?> AutoDownloadAndInstallModpackAsync(
+            string packName,
+            string gameVersion,
+            string loaderType,
+            Action<string, double>? progressCallback = null,
+            CancellationToken token = default,
+            string? typeSite = null)
+        {
+            if (string.Equals(typeSite, "Custom", StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
+            }
+
+            string baseDir = SettingsManager.Default.PathLacunher;
+            if (string.IsNullOrWhiteSpace(baseDir)) baseDir = PlatformPaths.DefaultLauncherPath();
+
+            progressCallback?.Invoke($"Пошук «{packName}»...", 0.05);
+
+            string? downloadUrl = null;
+            string? fileName = null;
+            string? iconUrl = null;
+            string site = "Modrinth";
+
+            bool allowModrinth = string.IsNullOrEmpty(typeSite) || string.Equals(typeSite, "Modrinth", StringComparison.OrdinalIgnoreCase);
+            bool allowCurseForge = string.IsNullOrEmpty(typeSite) || string.Equals(typeSite, "CurseForge", StringComparison.OrdinalIgnoreCase);
+
+            if (allowModrinth)
+            {
+                try
+                {
+                    string safeSearch = Uri.EscapeDataString(packName);
+                    string safeLoader = loaderType?.ToLowerInvariant() ?? "fabric";
+                    string safeVersion = gameVersion ?? "";
+
+                    string searchUrl = $"https://api.modrinth.com/v2/search?query={safeSearch}&limit=5&sort=relevance";
+                    string responseStr = await WebHelper.Client.GetStringAsync(searchUrl, token).ConfigureAwait(false);
+                    var searchObj = JObject.Parse(responseStr);
+
+                    if (searchObj["hits"] is JArray hits && hits.Count > 0)
+                    {
+                        JToken? matchedHit = hits.FirstOrDefault(h =>
+                            string.Equals(h["title"]?.ToString(), packName, StringComparison.OrdinalIgnoreCase) ||
+                            string.Equals(h["slug"]?.ToString(), packName, StringComparison.OrdinalIgnoreCase));
+
+                        if (matchedHit != null)
+                        {
+                            string? projectId = matchedHit["project_id"]?.ToString();
+                            iconUrl = matchedHit["icon_url"]?.ToString();
+
+                            if (!string.IsNullOrEmpty(projectId))
+                            {
+                                string versionsUrl = $"https://api.modrinth.com/v2/project/{projectId}/version";
+                                string verResponse = await WebHelper.Client.GetStringAsync(versionsUrl, token).ConfigureAwait(false);
+                                var versions = JArray.Parse(verResponse);
+
+                                foreach (var ver in versions)
+                                {
+                                    var gVers = ver["game_versions"]?.ToObject<List<string>>() ?? new();
+                                    var loaders = ver["loaders"]?.ToObject<List<string>>() ?? new();
+
+                                    bool versionMatches = string.IsNullOrEmpty(safeVersion) || gVers.Contains(safeVersion);
+                                    bool loaderMatches = string.IsNullOrEmpty(safeLoader) || loaders.Contains(safeLoader);
+
+                                    if (versionMatches && loaderMatches)
+                                    {
+                                        if (ver["files"] is JArray files)
+                                        {
+                                            foreach (var file in files)
+                                            {
+                                                string fName = file["filename"]?.ToString() ?? "";
+                                                bool isPrimary = file["primary"]?.ToObject<bool>() == true;
+                                                if (isPrimary || fName.EndsWith(".mrpack", StringComparison.OrdinalIgnoreCase))
+                                                {
+                                                    downloadUrl = file["url"]?.ToString();
+                                                    fileName = fName;
+                                                    site = "Modrinth";
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                        if (!string.IsNullOrEmpty(downloadUrl)) break;
+                                    }
+                                }
+
+                                if (string.IsNullOrEmpty(downloadUrl) && versions.Count > 0)
+                                {
+                                    var firstVer = versions.FirstOrDefault(v =>
+                                        v["game_versions"]?.ToObject<List<string>>()?.Contains(safeVersion) == true)
+                                        ?? versions.First();
+
+                                    if (firstVer["files"] is JArray files)
+                                    {
+                                        foreach (var file in files)
+                                        {
+                                            string fName = file["filename"]?.ToString() ?? "";
+                                            if (fName.EndsWith(".mrpack", StringComparison.OrdinalIgnoreCase) || file["primary"]?.ToObject<bool>() == true)
+                                            {
+                                                downloadUrl = file["url"]?.ToString();
+                                                fileName = fName;
+                                                site = "Modrinth";
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"[ModpackService] Modrinth search error: {ex.Message}");
+                }
+            }
+
+            if (string.IsNullOrEmpty(downloadUrl) && allowCurseForge)
+            {
+                try
+                {
+                    var cfClient = await GetCfClientAsync().ConfigureAwait(false);
+                    if (cfClient != null)
+                    {
+                        var modLoaderType = (loaderType?.ToLowerInvariant()) switch
+                        {
+                            "forge" => CurseForge.APIClient.Models.Mods.ModLoaderType.Forge,
+                            "fabric" => CurseForge.APIClient.Models.Mods.ModLoaderType.Fabric,
+                            "quilt" => CurseForge.APIClient.Models.Mods.ModLoaderType.Quilt,
+                            "neoforge" => CurseForge.APIClient.Models.Mods.ModLoaderType.NeoForge,
+                            _ => CurseForge.APIClient.Models.Mods.ModLoaderType.Any
+                        };
+
+                        var cfSearch = await cfClient.SearchModsAsync(
+                            gameId: 432,
+                            searchFilter: packName,
+                            classId: 4471,
+                            pageSize: 5,
+                            modLoaderType: modLoaderType,
+                            gameVersion: gameVersion
+                        ).ConfigureAwait(false);
+
+                        if (cfSearch?.Data != null && cfSearch.Data.Count > 0)
+                        {
+                            var matchedMod = cfSearch.Data.FirstOrDefault(m =>
+                                string.Equals(m.Name, packName, StringComparison.OrdinalIgnoreCase) ||
+                                string.Equals(m.Slug, packName, StringComparison.OrdinalIgnoreCase));
+
+                            if (matchedMod != null)
+                            {
+                                iconUrl = matchedMod.Logo?.Url;
+                                var filesResponse = await cfClient.GetModFilesAsync(matchedMod.Id, pageSize: 20).ConfigureAwait(false);
+                                if (filesResponse?.Data != null && filesResponse.Data.Count > 0)
+                                {
+                                    var matchingFile = filesResponse.Data.FirstOrDefault(f =>
+                                        (string.IsNullOrEmpty(gameVersion) || f.GameVersions.Contains(gameVersion)) &&
+                                        !string.IsNullOrEmpty(f.DownloadUrl))
+                                        ?? filesResponse.Data.FirstOrDefault(f => !string.IsNullOrEmpty(f.DownloadUrl));
+
+                                    if (matchingFile != null)
+                                    {
+                                        downloadUrl = matchingFile.DownloadUrl;
+                                        fileName = matchingFile.FileName;
+                                        site = "CurseForge";
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"[ModpackService] CurseForge search error: {ex.Message}");
+                }
+            }
+
+            if (string.IsNullOrEmpty(downloadUrl))
+            {
+                return null;
+            }
+
+            progressCallback?.Invoke($"Завантаження «{packName}»...", 0.15);
+
+            string tempFolder = Path.Combine(baseDir, "CLModpack", $"{packName}_TempDownload");
+            Directory.CreateDirectory(tempFolder);
+            string zipName = string.IsNullOrWhiteSpace(fileName) ? $"{packName}.zip" : fileName;
+            string zipFilePath = Path.Combine(tempFolder, zipName);
+
+            try
+            {
+                using (var response = await WebHelper.Client.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false))
+                {
+                    response.EnsureSuccessStatusCode();
+                    long? totalBytes = response.Content.Headers.ContentLength;
+                    await using var contentStream = await response.Content.ReadAsStreamAsync(token).ConfigureAwait(false);
+                    await using var fileStream = new FileStream(zipFilePath, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
+
+                    var buffer = new byte[8192];
+                    long totalRead = 0;
+                    int read;
+
+                    while ((read = await contentStream.ReadAsync(buffer, token).ConfigureAwait(false)) > 0)
+                    {
+                        await fileStream.WriteAsync(buffer.AsMemory(0, read), token).ConfigureAwait(false);
+                        totalRead += read;
+
+                        if (totalBytes is > 0)
+                        {
+                            double fraction = (double)totalRead / totalBytes.Value;
+                            progressCallback?.Invoke($"Завантаження: {(int)(fraction * 100)}%", 0.15 + (fraction * 0.45));
+                        }
+                    }
+                }
+
+                progressCallback?.Invoke("Розпакування збірки...", 0.65);
+                var installedPack = await ImportModpackFromFileAsync(zipFilePath, overwrite: true).ConfigureAwait(false);
+
+                if (installedPack != null && !string.IsNullOrEmpty(iconUrl) &&
+                    (string.IsNullOrEmpty(installedPack.UrlImage) || installedPack.UrlImage.Contains("IconCL(Common)")))
+                {
+                    try
+                    {
+                        string iconPath = Path.Combine(installedPack.Path, "icon.png");
+                        byte[] imgBytes = await WebHelper.Client.GetByteArrayAsync(iconUrl, token).ConfigureAwait(false);
+                        await File.WriteAllBytesAsync(iconPath, imgBytes, token).ConfigureAwait(false);
+                        installedPack.UrlImage = iconPath;
+                        AddModpack(installedPack);
+                    }
+                    catch { }
+                }
+
+                progressCallback?.Invoke("Збірку встановлено!", 1.0);
+                return installedPack;
+            }
+            finally
+            {
+                try { if (Directory.Exists(tempFolder)) Directory.Delete(tempFolder, true); } catch { }
+            }
         }
     }
 }

@@ -20,7 +20,7 @@ namespace CL.Core.Services
 
         public LastActionService()
         {
-            _lastActionsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "last_actions.json");
+            _lastActionsPath = Path.Combine(PlatformPaths.DataFolder(), "last_actions.json");
         }
 
         public async Task LoadLastActionsFromJsonAsync()

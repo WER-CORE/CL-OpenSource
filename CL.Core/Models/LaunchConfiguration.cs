@@ -13,7 +13,10 @@ namespace CL.Core.Models
         public AccountType AccountType { get; set; }
         public bool IsFullscreen { get; set; }
         public string ServerIp { get; set; }
+        public string ServerName { get; set; }
         public int ServerPort { get; set; }
         public bool JoinServer { get; set; }
+        public bool AllowOfflineLan { get; set; } = true;
+        public string? JavaPath { get; set; }
     }
 }

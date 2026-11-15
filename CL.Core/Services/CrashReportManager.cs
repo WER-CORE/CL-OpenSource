@@ -6,7 +6,7 @@ namespace CL.Core.Services
     {
         public static void Enable()
         {
-            if (SentrySdk.IsEnabled) return;
+            if (SentrySdk.IsEnabled || string.IsNullOrWhiteSpace(Secrets.DNS_KEY_AutoReport)) return;
 
             SentrySdk.Init(o =>
             {

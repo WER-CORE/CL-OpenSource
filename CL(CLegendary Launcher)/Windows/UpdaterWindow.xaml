@@ -35,10 +35,10 @@
             <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="10">
 
                 <TextBlock x:Name="TxtNewVersion" Text="Доступна нова версія!" FontSize="24" FontWeight="Bold" Margin="0,0,0,5"
-                           FontFamily="Inter" Foreground="{DynamicResource MainForegroundBrush}"/>
+                           FontFamily="{DynamicResource AppFontFamily}" Foreground="{DynamicResource MainForegroundBrush}"/>
 
                 <TextBlock x:Name="VersionText" Text="Перевірка..." FontSize="16" Margin="0,0,0,20" 
-                           Foreground="{DynamicResource MainForegroundBrush}" FontFamily="Inter" Opacity="0.8"/>
+                           Foreground="{DynamicResource MainForegroundBrush}" FontFamily="{DynamicResource AppFontFamily}" Opacity="0.8"/>
 
                 <StackPanel x:Name="PathSelectionPanel" Margin="0,0,0,15" Visibility="Collapsed">
                     <TextBlock x:Name="TxtPathSelection" Text="Шлях встановлення:" FontSize="14" Margin="0,0,0,5" Foreground="{DynamicResource MainForegroundBrush}"/>
@@ -47,7 +47,7 @@
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <TextBox x:Name="PathTextBox" IsReadOnly="True" Height="35" VerticalContentAlignment="Center" Background="{DynamicResource MainBackgroundBrushServer}" Foreground="{DynamicResource MainForegroundBrush}" SelectionBrush="{x:Null}" SelectionTextBrush="{x:Null}" BorderBrush="{x:Null}" FontFamily="Inter 18pt 18pt"/>
+                        <TextBox x:Name="PathTextBox" IsReadOnly="True" Height="35" VerticalContentAlignment="Center" Background="{DynamicResource MainBackgroundBrushServer}" Foreground="{DynamicResource MainForegroundBrush}" SelectionBrush="{x:Null}" SelectionTextBrush="{x:Null}" BorderBrush="{x:Null}" FontFamily="{DynamicResource AppFontFamily}"/>
                         <ui:Button Grid.Column="1" Content="..." Width="40" Height="35" Margin="5,0,0,0" Click="SelectPath_Click" Background="{DynamicResource MainBackgroundButton}" BorderBrush="{x:Null}" Foreground="{DynamicResource MainForegroundBrush}" Appearance="Secondary"/>
                     </Grid>
                 </StackPanel>
@@ -55,7 +55,7 @@
                 <ui:Card Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,0,15">
                     <StackPanel>
                         <Grid Margin="0,0,0,5">
-                            <TextBlock x:Name="StatusText" Text="Ініціалізація..." HorizontalAlignment="Left" FontFamily="Inter" Foreground="{DynamicResource MainForegroundBrush}"/>
+                            <TextBlock x:Name="StatusText" Text="Ініціалізація..." HorizontalAlignment="Left" FontFamily="{DynamicResource AppFontFamily}" Foreground="{DynamicResource MainForegroundBrush}"/>
                             <TextBlock x:Name="SizeText" Text="" HorizontalAlignment="Right" Opacity="0.7" Foreground="{DynamicResource MainForegroundBrush}"/>
                         </Grid>
                         <ProgressBar x:Name="ProgreesBarDowload" Height="6" Value="0" Maximum="100" Foreground="{DynamicResource MainBackgroundProgressBar}" BorderBrush="{x:Null}" Background="{DynamicResource MainBackgroundBrushServer}"/>

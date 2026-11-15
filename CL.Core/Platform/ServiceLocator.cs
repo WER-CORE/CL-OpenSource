@@ -1,3 +1,5 @@
+﻿using CL.Core.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 
@@ -12,12 +14,19 @@ namespace CL.Core.Platform
 
         private ServiceLocator() { }
 
-        public void Register<TInterface, TImplementation>(TImplementation implementation) 
+        public void Register<TInterface, TImplementation>(TImplementation implementation)
             where TImplementation : TInterface
         {
             _services[typeof(TInterface)] = implementation;
         }
-
+        public void Initialize(IServiceProvider provider)
+        {
+            Register<IDialogService, IDialogService>(provider.GetRequiredService<IDialogService>());
+            Register<IDispatcherService, IDispatcherService>(provider.GetRequiredService<IDispatcherService>());
+            Register<IMainWindowController, IMainWindowController>(provider.GetRequiredService<IMainWindowController>());
+            Register<ISoundService, ISoundService>(provider.GetRequiredService<ISoundService>());
+            Register<ITaskProgressService, ITaskProgressService>(provider.GetRequiredService<ITaskProgressService>());
+        }
         public T GetService<T>()
         {
             if (_services.TryGetValue(typeof(T), out var service))

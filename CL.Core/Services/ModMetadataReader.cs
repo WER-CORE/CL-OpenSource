@@ -1,4 +1,4 @@
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
 using System;
 using System.IO;
 using System.IO.Compression;
@@ -41,7 +41,7 @@ namespace CL.Core.Services
                                     var jobj = JObject.Parse(json);
                                     metadata.Name = jobj["name"]?.ToString();
                                     metadata.Description = jobj["description"]?.ToString();
-                                    
+
                                     var iconToken = jobj["icon"];
                                     if (iconToken != null)
                                     {
@@ -85,7 +85,7 @@ namespace CL.Core.Services
                                 {
                                     JToken root = JToken.Parse(json);
                                     JObject modObj = null;
-                                    
+
                                     if (root is JArray arr && arr.Count > 0)
                                     {
                                         modObj = arr[0] as JObject;
@@ -133,7 +133,7 @@ namespace CL.Core.Services
                         if (!string.IsNullOrEmpty(iconPath))
                         {
                             if (iconPath.StartsWith("/")) iconPath = iconPath.Substring(1);
-                            
+
                             var iconEntry = archive.GetEntry(iconPath);
                             if (iconEntry != null)
                             {

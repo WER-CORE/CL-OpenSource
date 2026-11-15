@@ -1,0 +1,68 @@
+<UserControl x:Class="CL_CLegendary_Launcher_.Avalonia.Views.Controls.ModSearchCard"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:vm="using:CL_CLegendary_Launcher_.Avalonia.ViewModels.Controls"
+             xmlns:fluentIcons="using:FluentIcons.Avalonia"
+             x:DataType="vm:ModSearchCardViewModel"
+             mc:Ignorable="d"
+             Height="40"
+             Foreground="{DynamicResource MainForegroundBrush}">
+    <UserControl.Styles>
+        <Style Selector="Button.card-action-btn">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Foreground" Value="{DynamicResource MainForegroundBrush}" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="Button.card-action-btn:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#25FFFFFF" />
+            <Setter Property="Foreground" Value="{DynamicResource MainForegroundBrush}" />
+        </Style>
+        <Style Selector="Button.card-action-btn:pressed /template/ ContentPresenter">
+            <Setter Property="Background" Value="#40FFFFFF" />
+            <Setter Property="Foreground" Value="{DynamicResource MainForegroundBrush}" />
+        </Style>
+    </UserControl.Styles>
+
+    <Border x:Name="Border" BorderThickness="1"
+            Background="{DynamicResource MainBackgroundBrushServer}"
+            CornerRadius="8" Margin="0,0,0,5">
+
+        <Grid Margin="10,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <Image x:Name="IconModPack" Grid.Column="0"
+                   RenderOptions.BitmapInterpolationMode="HighQuality"
+                   Height="20" Width="20" VerticalAlignment="Center"
+                   Source="{Binding Icon}" />
+
+            <TextBlock x:Name="ModPackName" Grid.Column="1"
+                       Text="{Binding Name, FallbackValue='Mod Name Example'}"
+                       VerticalAlignment="Center" Margin="10,0"
+                       FontSize="12" FontFamily="{DynamicResource AppFontFamily}"
+                       Foreground="{DynamicResource MainForegroundBrush}"
+                       TextTrimming="CharacterEllipsis" />
+
+            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                <Button x:Name="DetailsModPackBtn" Classes="card-action-btn"
+                        Width="32" Height="32" Margin="0,0,4,0"
+                        ToolTip.Tip="Докладніше" Command="{Binding DetailsCommand}">
+                    <fluentIcons:SymbolIcon Symbol="Open" FontSize="18" />
+                </Button>
+                <Button x:Name="AddModInModPack" Classes="card-action-btn"
+                        Width="32" Height="32"
+                        ToolTip.Tip="Додати" Command="{Binding AddModCommand}">
+                    <fluentIcons:SymbolIcon Symbol="Add" FontSize="18" />
+                </Button>
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>

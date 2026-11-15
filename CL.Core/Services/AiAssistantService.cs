@@ -23,7 +23,7 @@ namespace CL.Core.Services
         private List<KnownIssue> _knowledgeBase;
         private static readonly HttpClient _client = new HttpClient();
 
-        private readonly string _localKbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "knowledge_base.json");
+        private readonly string _localKbPath = Path.Combine(PlatformPaths.AppDataDirectory(), "knowledge_base.json");
         private const string OLLAMA_URL = "http://localhost:11434/api/generate";
 
         public async Task InitializeAsync()
@@ -150,7 +150,11 @@ namespace CL.Core.Services
                 switch (provider)
                 {
                     case AiProvider.Gemini:
-                        string activeApiKey = string.IsNullOrWhiteSpace(customApiKey) ? Secrets.API_KEY_Gemini : customApiKey;
+                        string activeApiKey = !string.IsNullOrWhiteSpace(customApiKey)
+                            ? customApiKey
+                            : (!string.IsNullOrWhiteSpace(SecretsProvider.GeminiDirectApiKey)
+                                ? SecretsProvider.GeminiDirectApiKey
+                                : Secrets.API_KEY_Gemini);
                         answer = await AskGeminiAsync(fullPrompt, activeApiKey);
                         break;
 
@@ -199,9 +203,19 @@ namespace CL.Core.Services
                 return geminiResponse?.Candidates?.FirstOrDefault()?.Content?.Parts?.FirstOrDefault()?.Text;
             }
 
+            if (string.IsNullOrWhiteSpace(Secrets.API_KEY_Gemini))
+            {
+                return LocalizationManager.GetString("AI.NoApiKey", "API-ключ або проксі не налаштовано. Налаштуйте UserSecrets у Visual Studio.");
+            }
+
             var vercelRequestBody = new { prompt = prompt };
             string vercelJsonContent = JsonConvert.SerializeObject(vercelRequestBody);
             using var vercelHttpContent = new StringContent(vercelJsonContent, Encoding.UTF8, "application/json");
+
+            if (!string.IsNullOrWhiteSpace(Secrets.LauncherSecret))
+            {
+                vercelHttpContent.Headers.TryAddWithoutValidation("x-launcher-secret", Secrets.LauncherSecret);
+            }
 
             var vercelResponse = await _client.PostAsync(Secrets.API_KEY_Gemini, vercelHttpContent);
             string vercelResponseString = await vercelResponse.Content.ReadAsStringAsync();

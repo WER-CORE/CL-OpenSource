@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.IO.Compression;
 using System.Linq;
 
@@ -40,7 +40,7 @@ namespace CL.Core.Helpers
                     File.Delete(zipPath);
                 }
             }
-            catch 
+            catch
             {
             }
         }

@@ -196,7 +196,7 @@ namespace CL_CLegendary_Launcher_.Windows
 
             try
             {
-                updateAvailable = false; // CheckForUpdatesAsync();
+                updateAvailable = await CheckForUpdatesAsync();
             }
             catch (Exception)
             {

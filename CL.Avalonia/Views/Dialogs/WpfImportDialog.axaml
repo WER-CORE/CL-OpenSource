@@ -1,0 +1,117 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="CL_CLegendary_Launcher_.Avalonia.Views.Dialogs.WpfImportDialog"
+        Title="Імпорт даних"
+        Icon="avares://CL.Avalonia/Icon/IconCL(Common).webp"
+        Width="560"
+        MinHeight="380"
+        SizeToContent="Height"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False"
+        WindowDecorations="None"
+        Background="Transparent"
+        TransparencyLevelHint="Transparent">
+
+    <Border Background="#18181B"
+            BorderBrush="#33FFFFFF"
+            BorderThickness="1"
+            CornerRadius="14"
+            Padding="24">
+        <StackPanel Spacing="14">
+            <TextBlock x:Name="TitleText"
+                       Text="Бажаєте імпортувати дані з попередньої версії Clegendary Launcher?"
+                       FontSize="17"
+                       FontWeight="Bold"
+                       Foreground="White"
+                       TextWrapping="Wrap" />
+
+            <TextBlock x:Name="SubtitleText"
+                       Text="Ви можете перенести налаштування та інші підтримувані дані зі старого CL. Оригінальні файли залишаться без змін."
+                       FontSize="13"
+                       Foreground="#B4B4BE"
+                       TextWrapping="Wrap" />
+
+            <Border Background="#222228"
+                    BorderBrush="#2AFFFFFF"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Padding="12">
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                    <TextBlock x:Name="SelectedPathText"
+                               Grid.Column="0"
+                               VerticalAlignment="Center"
+                               Foreground="#E2E2EA"
+                               FontSize="12"
+                               TextTrimming="CharacterEllipsis"
+                               Text="Папку не вибрано" />
+                    <Button x:Name="BrowseFolderBtn"
+                            Grid.Column="1"
+                            Content="Обрати папку..."
+                            Click="BrowseFolderBtn_Click"
+                            Padding="12,6"
+                            CornerRadius="6"
+                            Background="#2E2E38"
+                            Foreground="White" />
+                </Grid>
+            </Border>
+
+            <Border x:Name="PreviewBox"
+                    Background="#1F242B"
+                    BorderBrush="#2AFFFFFF"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Padding="12"
+                    IsVisible="False">
+                <StackPanel Spacing="6">
+                    <TextBlock x:Name="PreviewHeaderText"
+                               Text="Попередній перегляд даних:"
+                               FontSize="12"
+                               FontWeight="SemiBold"
+                               Foreground="#93C5FD" />
+                    <TextBlock x:Name="PreviewDetailsText"
+                               FontSize="12"
+                               Foreground="#D4D4DC"
+                               TextWrapping="Wrap" />
+                    <TextBlock x:Name="WarningText"
+                               FontSize="12"
+                               Foreground="#FBBF24"
+                               TextWrapping="Wrap"
+                               IsVisible="False" />
+                    <CheckBox x:Name="ConfirmOverwriteCheckBox"
+                              Content="Підтверджую перезапис наявних файлів (перед імпортом буде створено резервну копію)"
+                              FontSize="12"
+                              Foreground="#FDE68A"
+                              IsVisible="False"
+                              IsCheckedChanged="ConfirmOverwriteCheckBox_Changed" />
+                </StackPanel>
+            </Border>
+
+            <TextBlock x:Name="ErrorText"
+                       FontSize="12"
+                       Foreground="#F87171"
+                       TextWrapping="Wrap"
+                       IsVisible="False" />
+
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        Spacing="10"
+                        Margin="0,6,0,0">
+                <Button x:Name="DeclineBtn"
+                        Content="Ні, дякую"
+                        Click="DeclineBtn_Click"
+                        Padding="16,8"
+                        CornerRadius="8"
+                        Background="#2A2A32"
+                        Foreground="#E4E4EA" />
+                <Button x:Name="ImportBtn"
+                        Content="Імпортувати"
+                        Click="ImportBtn_Click"
+                        Padding="18,8"
+                        CornerRadius="8"
+                        Background="#22C55E"
+                        Foreground="White"
+                        FontWeight="SemiBold" />
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</Window>

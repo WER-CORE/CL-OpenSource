@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.IO.Compression;
 using System.Net.Http;
@@ -37,17 +37,173 @@ namespace CL.Core.Services
             }
         }
 
+        public async Task<UpdateInfo> CheckForUpdateFromGitHubAsync(string repoOwnerAndName, bool isPreview)
+        {
+            try
+            {
+                string url = $"https://api.github.com/repos/{repoOwnerAndName}/releases";
+                string json = await WebHelper.Client.GetStringAsync(url);
+                using var doc = JsonDocument.Parse(json);
+                if (doc.RootElement.ValueKind != JsonValueKind.Array) return null;
+
+                foreach (var rel in doc.RootElement.EnumerateArray())
+                {
+                    bool isPre = rel.TryGetProperty("prerelease", out var preProp) && preProp.GetBoolean();
+                    if (!isPreview && isPre) continue;
+
+                    string tagName = rel.TryGetProperty("tag_name", out var tagProp) ? tagProp.GetString() ?? "" : "";
+                    if (string.IsNullOrWhiteSpace(tagName)) continue;
+
+                    var updateInfo = new UpdateInfo
+                    {
+                        Version = tagName.TrimStart('v', 'V')
+                    };
+
+                    if (rel.TryGetProperty("assets", out var assets) && assets.ValueKind == JsonValueKind.Array)
+                    {
+                        foreach (var asset in assets.EnumerateArray())
+                        {
+                            string name = asset.TryGetProperty("name", out var nameProp) ? nameProp.GetString() ?? "" : "";
+                            string downloadUrl = asset.TryGetProperty("browser_download_url", out var dlProp) ? dlProp.GetString() ?? "" : "";
+
+                            if (name.EndsWith("-x64.AppImage", StringComparison.OrdinalIgnoreCase))
+                                updateInfo.UrlLinuxX64 = downloadUrl;
+                            else if (name.EndsWith("-arm64.AppImage", StringComparison.OrdinalIgnoreCase))
+                                updateInfo.UrlLinuxArm64 = downloadUrl;
+                            else if (name.Contains("Windows") || name.EndsWith("win-x64.zip", StringComparison.OrdinalIgnoreCase))
+                                updateInfo.UrlDefault = downloadUrl;
+                            else if (name.Contains("osx-arm64") || name.Contains("mac-arm64"))
+                                updateInfo.UrlOsxArm64 = downloadUrl;
+                            else if (name.Contains("osx-x64") || name.Contains("mac-x64"))
+                                updateInfo.UrlOsxX64 = downloadUrl;
+                        }
+                    }
+
+                    if (string.IsNullOrEmpty(updateInfo.UrlDefault) && rel.TryGetProperty("html_url", out var htmlProp))
+                    {
+                        updateInfo.UrlDefault = htmlProp.GetString() ?? "";
+                    }
+
+                    return updateInfo;
+                }
+
+                return null;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        public static string GetCurrentLauncherVersion(Assembly? assembly = null)
+        {
+            assembly ??= Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly();
+            try
+            {
+                var infoVerAttr = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
+                if (!string.IsNullOrWhiteSpace(infoVerAttr?.InformationalVersion))
+                {
+                    string infoVer = infoVerAttr.InformationalVersion.Split('+')[0].Trim().TrimStart('v', 'V');
+                    if (!string.IsNullOrEmpty(infoVer)) return infoVer;
+                }
+            }
+            catch { }
+
+            var ver = assembly.GetName().Version;
+            return ver != null ? ver.ToString() : "1.1.0";
+        }
+
         public bool IsUpdateAvailable(string newVersion, string currentVersion)
         {
             if (string.IsNullOrEmpty(newVersion) || string.IsNullOrEmpty(currentVersion)) return false;
 
-            string cleanNew = newVersion.Replace("v", "").Replace("R", "").Trim();
-            string cleanCurrent = currentVersion.Replace("v", "").Replace("R", "").Trim();
+            string cleanNew = newVersion.TrimStart('v', 'V').TrimEnd('r', 'R').Trim();
+            string cleanCurrent = currentVersion.TrimStart('v', 'V').TrimEnd('r', 'R').Trim();
+
+            if (TryComparePreviewVersions(cleanNew, cleanCurrent, out int cmp))
+            {
+                return cmp > 0;
+            }
 
             bool v1Success = Version.TryParse(cleanNew, out Version vRemote);
             bool v2Success = Version.TryParse(cleanCurrent, out Version vLocal);
 
             return v1Success && v2Success ? vRemote > vLocal : !string.Equals(cleanNew, cleanCurrent, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static bool TryComparePreviewVersions(string v1, string v2, out int result)
+        {
+            result = 0;
+            try
+            {
+                var p1 = ParseVersionWithPreview(v1);
+                var p2 = ParseVersionWithPreview(v2);
+
+                for (int i = 0; i < Math.Max(p1.main.Length, p2.main.Length); i++)
+                {
+                    int num1 = i < p1.main.Length ? p1.main[i] : 0;
+                    int num2 = i < p2.main.Length ? p2.main[i] : 0;
+                    if (num1 != num2)
+                    {
+                        result = num1.CompareTo(num2);
+                        return true;
+                    }
+                }
+
+                if (p1.isRelease != p2.isRelease)
+                {
+                    result = p1.isRelease ? 1 : -1;
+                    return true;
+                }
+
+                for (int i = 0; i < Math.Max(p1.previewParts.Length, p2.previewParts.Length); i++)
+                {
+                    int num1 = i < p1.previewParts.Length ? p1.previewParts[i] : 0;
+                    int num2 = i < p2.previewParts.Length ? p2.previewParts[i] : 0;
+                    if (num1 != num2)
+                    {
+                        result = num1.CompareTo(num2);
+                        return true;
+                    }
+                }
+
+                result = 0;
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private static (int[] main, bool isRelease, int[] previewParts) ParseVersionWithPreview(string v)
+        {
+            int idx = v.IndexOf("-preview", StringComparison.OrdinalIgnoreCase);
+            if (idx >= 0)
+            {
+                string mainStr = v.Substring(0, idx);
+                string prevStr = v.Substring(idx + 8);
+                int[] nums = ParseIntArray(mainStr);
+                int[] prevParts = ParseIntArray(prevStr);
+                return (nums, false, prevParts);
+            }
+            else
+            {
+                int[] nums = ParseIntArray(v);
+                return (nums, true, Array.Empty<int>());
+            }
+        }
+
+        private static int[] ParseIntArray(string s)
+        {
+            if (string.IsNullOrWhiteSpace(s)) return Array.Empty<int>();
+            string[] raw = s.Split(new[] { '.', '-', '_' }, StringSplitOptions.RemoveEmptyEntries);
+            var list = new System.Collections.Generic.List<int>();
+            foreach (var r in raw)
+            {
+                if (int.TryParse(r, out int n)) list.Add(n);
+            }
+            return list.ToArray();
         }
 
         public string GetCorrectDownloadUrl(UpdateInfo info)
@@ -92,14 +248,14 @@ namespace CL.Core.Services
             var buffer = new byte[8192];
             long totalRead = 0;
             int read;
-            
+
             long lastReportTime = 0;
-            
+
             while ((read = await contentStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
             {
                 await fileStream.WriteAsync(buffer, 0, read);
                 totalRead += read;
-                
+
                 long now = Environment.TickCount64;
                 if (totalBytes > 0 && (now - lastReportTime > 50 || totalRead == totalBytes))
                 {
@@ -114,7 +270,7 @@ namespace CL.Core.Services
         public void ExtractUpdate(string destination)
         {
             if (!Directory.Exists(destination)) Directory.CreateDirectory(destination);
-            
+
             if (File.Exists(_tempZipPath))
             {
                 ZipFile.ExtractToDirectory(_tempZipPath, destination, true);

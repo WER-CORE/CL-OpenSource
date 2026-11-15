@@ -53,14 +53,14 @@
 
                     <TextBlock x:Name="Title" 
                                Text="{Binding Title, FallbackValue='Mod Name'}" 
-                               FontFamily="Inter" FontWeight="Bold" FontSize="16" 
+                               FontFamily="{DynamicResource AppFontFamily}" FontWeight="Bold" FontSize="16" 
                                Foreground="{DynamicResource MainForegroundBrush}" 
                                TextTrimming="CharacterEllipsis" 
                                VerticalAlignment="Top" Margin="0,5,0,0"/>
 
                     <TextBlock Grid.Row="1" x:Name="Description" 
                                Text="{Binding Description, FallbackValue='Mod description goes here...'}" 
-                               FontSize="11" Foreground="Gray" FontFamily="Inter"
+                               FontSize="11" Foreground="Gray" FontFamily="{DynamicResource AppFontFamily}"
                                TextWrapping="Wrap" TextTrimming="CharacterEllipsis" 
                                VerticalAlignment="Top" Margin="0,5,0,0"/>
                 </Grid>
@@ -69,7 +69,7 @@
 
                     <ui:ToggleSwitch x:Name="IsOnOffSwitch" 
                  Height="24" Width="54" 
-                 FontFamily="Inter 18pt 18pt"
+                 FontFamily="{DynamicResource AppFontFamily}"
                  Click="Off_OnMods_Click"/>
                     <Border x:Name="DeleteMod" 
                             Height="26" Width="90" 

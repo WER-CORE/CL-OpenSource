@@ -1,0 +1,51 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="CL_CLegendary_Launcher_.Avalonia.Views.Controls.ServerCardSkeleton"
+             Height="108" Width="885"
+             HorizontalAlignment="Center">
+    <Border Background="{DynamicResource MainBackgroundBrushServer}"
+            Height="108" Width="885"
+            CornerRadius="15" Padding="10" Margin="0,4"
+            BorderBrush="#10FFFFFF" BorderThickness="1">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0"
+                    Width="90" Height="90"
+                    CornerRadius="6"
+                    Background="{DynamicResource MainBackgroundBrush}"
+                    VerticalAlignment="Center"
+                    Margin="0,0,15,0" />
+
+            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                <Border Height="24" Width="200" CornerRadius="4"
+                        Background="{DynamicResource MainBackgroundBrush}"
+                        HorizontalAlignment="Left" Margin="0,0,0,10" />
+                <Border Height="14" Width="280" CornerRadius="3"
+                        Background="{DynamicResource MainBackgroundBrush}"
+                        HorizontalAlignment="Left" Margin="0,0,0,6" />
+                <Border Height="14" Width="180" CornerRadius="3"
+                        Background="{DynamicResource MainBackgroundBrush}"
+                        HorizontalAlignment="Left" />
+            </StackPanel>
+
+            <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,10,0">
+                <Border Height="24" Width="294" CornerRadius="6"
+                        Background="{DynamicResource MainBackgroundBrush}"
+                        Margin="0,0,0,8" HorizontalAlignment="Right" />
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Border Height="24" Width="75" CornerRadius="6"
+                            Background="{DynamicResource MainBackgroundBrush}" Margin="0,0,5,0" />
+                    <Border Height="24" Width="132" CornerRadius="6"
+                            Background="{DynamicResource MainBackgroundBrush}" Margin="0,0,5,0" />
+                    <Border Height="24" Width="75" CornerRadius="6"
+                            Background="{DynamicResource MainBackgroundBrush}" />
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>

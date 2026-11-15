@@ -38,6 +38,8 @@ namespace CL.Core.Models
         public string LastSelectedModVersion { get; set; } = "";
         public DateTime EulaAcceptedDate { get; set; } = DateTime.MinValue;
         public bool IsDocsTutorialShown { get; set; } = false;
+        public bool OnboardingTourCompleted { get; set; } = false;
+        public bool WpfImportPromptHandled { get; set; } = false;
         public string LoadScreenBackground { get; set; } = "";
         public string LoadScreenBarColor { get; set; } = "";
         public int SelectIndexAccount { get; set; } = -1;
@@ -63,6 +65,9 @@ namespace CL.Core.Models
         public bool EnableMod_Statistics { get; set; } = true;
         public bool EnableSound { get; set; } = true;
         public double UIScale { get; set; } = 1.0;
+        public string UpdateChannel { get; set; } = "Stable";
+        public string SkippedUpdateVersion { get; set; } = "";
+        public string SelectedFont { get; set; } = "Inter";
         public object this[string propertyName]
         {
             get

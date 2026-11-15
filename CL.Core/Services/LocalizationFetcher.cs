@@ -10,7 +10,7 @@ namespace CL.Core.Services
 {
     public static class LocalizationFetcher
     {
-        public static string LocalesFolder => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Locales");
+        public static string LocalesFolder => PlatformPaths.LocalesFolder();
 
         public static async Task<List<LanguageItem>> GetAvailableLanguagesAsync()
         {
@@ -19,7 +19,8 @@ namespace CL.Core.Services
                 if (!Directory.Exists(LocalesFolder))
                     Directory.CreateDirectory(LocalesFolder);
 
-                string json = await WebHelper.Client.GetStringAsync($"{Secrets.LocalizationURL}?v={DateTime.Now.Ticks}");
+                string url = Secrets.LocalizationURL;
+                string json = await WebHelper.Client.GetStringAsync(url);
                 return JsonConvert.DeserializeObject<List<LanguageItem>>(json) ?? GetFallbackLanguages();
             }
             catch (Exception ex)
@@ -36,8 +37,34 @@ namespace CL.Core.Services
                 if (!Directory.Exists(LocalesFolder))
                     Directory.CreateDirectory(LocalesFolder);
 
-                string jsonContent = await WebHelper.Client.GetStringAsync($"{lang.DownloadUrl}?v={DateTime.Now.Ticks}");
+                string url = string.IsNullOrWhiteSpace(lang.DownloadUrl)
+                    ? $"https://raw.githubusercontent.com/WER-CORE/CL-Win-Edition--Update/main/Locales/{lang.Code}.json"
+                    : lang.DownloadUrl;
+
+                string separator = url.Contains("?") ? "&" : "?";
+                string jsonContent = await WebHelper.Client.GetStringAsync($"{url}{separator}v={DateTime.Now.Ticks}");
+
+                if (string.IsNullOrWhiteSpace(jsonContent) || !jsonContent.TrimStart().StartsWith("{"))
+                {
+                    return false;
+                }
+
                 string filePath = Path.Combine(LocalesFolder, $"{lang.Code}.json");
+                if (File.Exists(filePath))
+                {
+                    try
+                    {
+                        var localObj = Newtonsoft.Json.Linq.JObject.Parse(File.ReadAllText(filePath));
+                        var remoteObj = Newtonsoft.Json.Linq.JObject.Parse(jsonContent);
+                        localObj.Merge(remoteObj, new Newtonsoft.Json.Linq.JsonMergeSettings
+                        {
+                            MergeArrayHandling = Newtonsoft.Json.Linq.MergeArrayHandling.Replace,
+                            MergeNullValueHandling = Newtonsoft.Json.Linq.MergeNullValueHandling.Ignore
+                        });
+                        jsonContent = localObj.ToString(Formatting.Indented);
+                    }
+                    catch { }
+                }
                 File.WriteAllText(filePath, jsonContent);
 
                 return true;

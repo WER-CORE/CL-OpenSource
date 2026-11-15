@@ -24,12 +24,23 @@ namespace CL_CLegendary_Launcher_.PlatformImpl
             catch (Exception) { }
         }
 
+        private static readonly object _clickLock = new object();
+        private static long _lastClickTimestamp;
+        public const int ClickDebounceMs = 150;
+
         public void PlaySound(string resourceName)
         {
             if (!SettingsManager.Default.EnableSound) return;
             
             if (resourceName == "click" && _clickPlayer != null)
             {
+                lock (_clickLock)
+                {
+                    long now = Environment.TickCount64;
+                    if (now - _lastClickTimestamp < ClickDebounceMs) return;
+                    _lastClickTimestamp = now;
+                }
+
                 try { _clickPlayer.Play(); } catch { }
             }
         }

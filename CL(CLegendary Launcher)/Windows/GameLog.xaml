@@ -11,7 +11,7 @@
     Title="CL - GameLog" Height="565" Width="879"
     WindowStyle="None" Background="{x:Null}"
     Foreground="{DynamicResource MainForegroundBrush}"
-    FontFamily="Inter 18pt 18pt"
+    FontFamily="{DynamicResource AppFontFamily}"
     ResizeMode="CanResize"
     ExtendsContentIntoTitleBar="True"
     WindowBackdropType="Mica" Icon="/Icon/IconCL(Common).png">
@@ -137,11 +137,11 @@
                                                   BorderBrush="#33FFFFFF">
                                             <ComboBoxItem x:Name="CboItemGemini"
                                                           Content="Google Gemini 2.5 Flash(Хмарне ядро)"
-                                                          FontFamily="Inter 18pt 18pt"
+                                                          FontFamily="{DynamicResource AppFontFamily}"
                                                           Foreground="{DynamicResource MainForegroundBrush}" />
                                             <ComboBoxItem x:Name="CboItemOllama" Content="Ollama (Локальне ядро)"
                                                           Foreground="{DynamicResource MainForegroundBrush}"
-                                                          FontFamily="Inter 18pt 18pt" />
+                                                          FontFamily="{DynamicResource AppFontFamily}" />
                                         </ComboBox>
                                     </StackPanel>
                                 </Border>
@@ -323,7 +323,7 @@
                                 Background="{DynamicResource MainBackgroundBrush}" CornerRadius="8" Padding="10">
                             <ScrollViewer x:Name="ResultScrollArea">
                                 <TextBlock x:Name="AiResponseText" Text="Аналіз завершено..." TextWrapping="Wrap"
-                                           FontSize="14" LineHeight="22" FontFamily="Inter" />
+                                           FontSize="14" LineHeight="22" FontFamily="{DynamicResource AppFontFamily}" />
                             </ScrollViewer>
                         </Border>
                     </Grid>

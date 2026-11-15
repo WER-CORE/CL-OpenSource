@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using CL.Core.Models;
 
@@ -11,8 +11,9 @@ namespace CL.Core.Interfaces
 
         bool AskQuestion(string message, string title = null, MascotEmotion emotion = MascotEmotion.Normal);
         Task<bool> AskQuestionAsync(string message, string title = null, MascotEmotion emotion = MascotEmotion.Normal);
-        
+
         Task<string> OpenFileDialogAsync(string title, string filter);
+        Task<string> SaveFileDialogAsync(string title, string defaultFileName, string extension);
         Task<string> OpenFolderDialogAsync(string title);
     }
 }

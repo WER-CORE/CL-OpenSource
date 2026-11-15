@@ -8,7 +8,7 @@
         mc:Ignorable="d"
         Title="CL - Backup Manager" Height="600" Width="900"
         WindowStartupLocation="CenterScreen" ResizeMode="NoResize" WindowStyle="None"
-        Background="Transparent" FontFamily="Inter" ExtendsContentIntoTitleBar="True"
+        Background="Transparent" FontFamily="{DynamicResource AppFontFamily}" ExtendsContentIntoTitleBar="True"
         WindowBackdropType="Mica" Foreground="{DynamicResource MainForegroundBrush}" Icon="/Icon/IconCL(Common).png">
 
     <ui:FluentWindow.Resources>

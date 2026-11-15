@@ -23,7 +23,7 @@
                        Text="Mod Name" 
                        VerticalAlignment="Center" Margin="10,0"
                        Foreground="{DynamicResource MainForegroundBrush}"
-                       FontSize="12" FontFamily="Inter"
+                       FontSize="12" FontFamily="{DynamicResource AppFontFamily}"
                        TextWrapping="NoWrap"
                        TextTrimming="CharacterEllipsis"/>
 

@@ -13,7 +13,7 @@ namespace CL.Core.Services
 
         public static void LoadLanguage(string langCode)
         {
-            string localesFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Locales");
+            string localesFolder = PlatformPaths.LocalesFolder();
             string filePath = Path.Combine(localesFolder, $"{langCode}.json");
 
             if (!File.Exists(filePath))
@@ -81,7 +81,7 @@ namespace CL.Core.Services
 
         public static bool IsLanguageFileExists(string langCode)
         {
-            string filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Locales", $"{langCode}.json");
+            string filePath = Path.Combine(PlatformPaths.LocalesFolder(), $"{langCode}.json");
             return File.Exists(filePath);
         }
     }

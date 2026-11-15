@@ -12,7 +12,7 @@
         ResizeMode="NoResize" 
         WindowStartupLocation="CenterScreen" 
         WindowStyle="None" 
-        FontFamily="Inter">
+        FontFamily="{DynamicResource AppFontFamily}">
 
     <Window.Resources>
         <Style TargetType="ProgressBar">

@@ -29,7 +29,7 @@
         <TextBlock x:Name="TitleMain1" Text="Title" 
                    HorizontalAlignment="Left" Margin="48,0,0,0" VerticalAlignment="Center" 
                    Foreground="{DynamicResource MainForegroundBrush}" 
-                   FontFamily="Inter" FontWeight="Bold" FontSize="14"
+                   FontFamily="{DynamicResource AppFontFamily}" FontWeight="Bold" FontSize="14"
                    TextTrimming="CharacterEllipsis" MaxWidth="110">
             <TextBlock.Effect>
                 <DropShadowEffect ShadowDepth="1" BlurRadius="2" Opacity="0.8" Color="Black"/>
@@ -43,7 +43,7 @@
             <TextBlock x:Name="OpenInfoServerTXT" Text="Перейти на сторінку" 
                        HorizontalAlignment="Center" VerticalAlignment="Center"
                        Foreground="{DynamicResource MainForegroundBrush}" 
-                       FontSize="10" FontFamily="Inter"/>
+                       FontSize="10" FontFamily="{DynamicResource AppFontFamily}"/>
         </Border>
 
         <Border x:Name="OnlinePlayerPanel" BorderThickness="1" HorizontalAlignment="Left" 
@@ -53,7 +53,7 @@
             <TextBlock x:Name="OnlinePlayerTXT" Text="5/50" 
                        HorizontalAlignment="Center" VerticalAlignment="Center"
                        Foreground="{DynamicResource MainForegroundBrush}" 
-                       FontSize="10" FontFamily="Inter"/>
+                       FontSize="10" FontFamily="{DynamicResource AppFontFamily}"/>
         </Border>
 
         <Border x:Name="IPServerPanel" BorderThickness="1" HorizontalAlignment="Left" 
@@ -63,7 +63,7 @@
             <TextBlock x:Name="IPServerTXT" Text="bober.fun" 
                        HorizontalAlignment="Center" VerticalAlignment="Center"
                        Foreground="{DynamicResource MainForegroundBrush}" 
-                       FontSize="10" FontFamily="Inter" TextTrimming="CharacterEllipsis"/>
+                       FontSize="10" FontFamily="{DynamicResource AppFontFamily}" TextTrimming="CharacterEllipsis"/>
         </Border>
 
         <Border x:Name="PlayServerPanel1" BorderThickness="1" HorizontalAlignment="Left" 
@@ -73,7 +73,7 @@
             <TextBlock x:Name="PlayServerTXT1" Text="Грати" 
                        HorizontalAlignment="Center" VerticalAlignment="Center"
                        Foreground="{DynamicResource MainForegroundBrush}" 
-                       FontSize="10" FontFamily="Inter"/>
+                       FontSize="10" FontFamily="{DynamicResource AppFontFamily}"/>
         </Border>
 
     </Grid>

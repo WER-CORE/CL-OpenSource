@@ -3,6 +3,8 @@ using CmlLib.Core.Installer.Forge;
 using CmlLib.Core.Installer.Forge.Versions;
 using CmlLib.Core.Installer.NeoForge.Installers;
 using CmlLib.Core.Installer.NeoForge.Versions;
+using NeoForgeVersion = CmlLib.Core.Installer.NeoForge.Versions.NeoForgeVersion;
+using NeoForgeVersionLoader = CmlLib.Core.Installer.NeoForge.Versions.NeoForgeVersionLoader;
 using CmlLib.Core.Version;
 using System;
 using System.Collections.Generic;
@@ -58,8 +60,19 @@ namespace CL.Core.Services
         {
             var versions = await _versionLoader.GetForgeVersions(mcVersion);
 
-            var foundVersion = versions.FirstOrDefault(v => v.ForgeVersionName == forgeVersion) ??
-                throw new InvalidOperationException("Cannot find version name " + forgeVersion);
+            ForgeVersion foundVersion = null;
+            if (!string.IsNullOrWhiteSpace(forgeVersion) &&
+                !forgeVersion.Equals("Unknown", StringComparison.OrdinalIgnoreCase) &&
+                !forgeVersion.Equals("Auto", StringComparison.OrdinalIgnoreCase))
+            {
+                foundVersion = versions.FirstOrDefault(v => v.ForgeVersionName == forgeVersion);
+            }
+
+            foundVersion ??= versions.FirstOrDefault(v => v.IsRecommendedVersion) ??
+                             versions.FirstOrDefault(v => v.IsLatestVersion) ??
+                             versions.FirstOrDefault() ??
+                             throw new InvalidOperationException("Cannot find any version");
+
             return await Install(foundVersion, options);
         }
 
@@ -151,7 +164,17 @@ namespace CL.Core.Services
         public async Task<string> Install(string mcVersion, string neoForgeVersion, NeoForgeInstallOptions options)
         {
             var versions = await _versionLoader.GetNeoForgeVersions(mcVersion);
-            NeoForgeVersion foundVersion = versions.LastOrDefault(v => v.VersionName == neoForgeVersion) ?? throw new InvalidOperationException("Cannot find version name " + neoForgeVersion);
+            NeoForgeVersion foundVersion = null;
+            if (!string.IsNullOrWhiteSpace(neoForgeVersion) &&
+                !neoForgeVersion.Equals("Unknown", StringComparison.OrdinalIgnoreCase) &&
+                !neoForgeVersion.Equals("Auto", StringComparison.OrdinalIgnoreCase))
+            {
+                foundVersion = versions.LastOrDefault(v => v.VersionName == neoForgeVersion);
+            }
+
+            foundVersion ??= versions.FirstOrDefault() ??
+                             throw new InvalidOperationException("Cannot find any version");
+
             return await Install(foundVersion, options);
         }
 

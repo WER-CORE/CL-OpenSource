@@ -8,7 +8,8 @@ namespace CL.Core.Interfaces
     {
         void ShowProgressWindow();
         void CloseProgressWindow();
-        
+        void CloseProgressWindow(CancellationTokenSource? ownerCts) => CloseProgressWindow();
+
         void UpdateVersionProgress(int progress, object version);
         void UpdateFileTaskProgress(int totalFiles, int downloadedFiles, string fileName);
         void UpdateFileProgress(int progress);

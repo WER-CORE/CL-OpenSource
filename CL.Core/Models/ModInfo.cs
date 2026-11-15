@@ -18,7 +18,7 @@ namespace CL.Core.Services
         public string LoaderType { get; set; }
         public string Version { get; set; }
         public string Url { get; set; }
-        public string Type { get; set; } 
+        public string Type { get; set; }
         public string Slug { get; set; }
         public string FileName { get; set; }
     }

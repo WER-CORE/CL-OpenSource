@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -167,21 +167,9 @@ namespace CL.Core.Services
         {
             try
             {
-                string url = $"https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl={targetLang}&dt=t&q={Uri.EscapeDataString(text)}";
-                string response = await WebHelper.Client.GetStringAsync(url);
-
-                using var doc = JsonDocument.Parse(response);
-                var root = doc.RootElement;
-                string result = "";
-
-                if (root.ValueKind == JsonValueKind.Array && root.GetArrayLength() > 0)
-                {
-                    foreach (var item in root[0].EnumerateArray())
-                    {
-                        result += item[0].GetString();
-                    }
-                }
-                return string.IsNullOrEmpty(result) ? text : result;
+                var translator = new GTranslate.Translators.AggregateTranslator();
+                var result = await translator.TranslateAsync(text, targetLang, "en");
+                return string.IsNullOrEmpty(result.Translation) ? text : result.Translation;
             }
             catch { return text; }
         }

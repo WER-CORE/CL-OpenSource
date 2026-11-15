@@ -316,8 +316,8 @@ namespace CL_CLegendary_Launcher_.Windows
                 {
                     var path = new MinecraftPath(SettingsManager.Default.PathLacunher);
                     var launcher = new MinecraftLauncher(path);
-                    var versionLoader = new NeoForgeInstaller(launcher);
-                    var neoForgeList = await versionLoader.GetForgeVersions(mcVersion);
+                    var versionLoader = new NoAdNeoForgeInstaller(launcher);
+                    var neoForgeList = await versionLoader.GetNeoForgeVersions(mcVersion);
                     foreach (var neo in neoForgeList)
                         versions.Add(neo.VersionName);
                 }

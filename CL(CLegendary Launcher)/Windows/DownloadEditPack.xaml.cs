@@ -165,11 +165,21 @@ namespace CL_CLegendary_Launcher_.Windows
                 if (SiteDowload == "Modrinth")
                 {
                     int offset = _currentPage * PageSize;
+                    string mcVer = VersionVanil.SelectedItem?.ToString() ?? "";
+                    string verFacet = !string.IsNullOrWhiteSpace(mcVer) ? $",[%22versions:{mcVer.Trim()}%22]" : "";
+                    string loaderLower = (LoderNow ?? "").ToLower();
+                    string loaderFacet = "";
+                    if (!loaderLower.Equals("vanilla") && !loaderLower.Equals("vanila") && !string.IsNullOrEmpty(loaderLower))
+                    {
+                        if (loaderLower == "quilt") loaderFacet = "[%22categories:quilt%22,%22categories:fabric%22]";
+                        else if (loaderLower == "neoforge") loaderFacet = "[%22categories:neoforge%22,%22categories:forge%22]";
+                        else loaderFacet = $"[%22categories:{loaderLower}%22]";
+                    }
                     var urls = new[] {
-                        $"https://api.modrinth.com/v2/search?query={SearchSystem.Text}&facets=[[%22categories:{LoderNow.ToLower()}%22],[%22project_type:mod%22]]&limit={PageSize}&offset={offset}",
-                        $"https://api.modrinth.com/v2/search?query={SearchSystem.Text}&facets=[[%22project_type:resourcepack%22]]&limit={PageSize}&offset={offset}",
-                        $"https://api.modrinth.com/v2/search?query={SearchSystem.Text}&facets=[[%22project_type:shader%22]]&limit={PageSize}&offset={offset}",
-                        $"https://api.modrinth.com/v2/search?query={SearchSystem.Text}&facets=[[%22project_type:modpack%22]]&limit={PageSize}&offset={offset}",
+                        $"https://api.modrinth.com/v2/search?query={Uri.EscapeDataString(SearchSystem.Text ?? "")}&facets=[{loaderFacet},[%22project_type:mod%22]{verFacet}]&limit={PageSize}&offset={offset}",
+                        $"https://api.modrinth.com/v2/search?query={Uri.EscapeDataString(SearchSystem.Text ?? "")}&facets=[[%22project_type:resourcepack%22]{verFacet}]&limit={PageSize}&offset={offset}",
+                        $"https://api.modrinth.com/v2/search?query={Uri.EscapeDataString(SearchSystem.Text ?? "")}&facets=[[%22project_type:shader%22]{verFacet}]&limit={PageSize}&offset={offset}",
+                        $"https://api.modrinth.com/v2/search?query={Uri.EscapeDataString(SearchSystem.Text ?? "")}&facets=[[%22project_type:modpack%22]{verFacet}]&limit={PageSize}&offset={offset}",
                     };
 
                     var response = await WebHelper.Client.GetStringAsync(urls[SelectMod]);
