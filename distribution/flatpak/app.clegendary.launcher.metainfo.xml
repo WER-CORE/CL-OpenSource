@@ -97,9 +97,9 @@
   </description>
 
   <launchable type="desktop-id">app.clegendary.launcher.desktop</launchable>
-  <url type="homepage">https://github.com/WER-CORE/CL-OpenSource</url>
+  <url type="homepage">https://cl-launcher.app/</url>
   <url type="bugtracker">https://github.com/WER-CORE/CL-OpenSource/issues</url>
-  <url type="vcs-browser">https://cl-launcher.app/</url>
+  <url type="vcs-browser">https://github.com/WER-CORE/CL-OpenSource</url>
   <url type="translate">https://uk.crowdin.com/project/clegendary-launcher</url>
 
   <developer id="io.github.wer_core">
