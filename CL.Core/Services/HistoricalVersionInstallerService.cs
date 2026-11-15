@@ -238,6 +238,16 @@ namespace CL.Core.Services
 
         public static bool TryValidateInstallation(string versionId, MinecraftPath path, out string? errorReason)
         {
+            var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            return TryValidateInstallationCore(versionId, path, visited, out errorReason);
+        }
+
+        private static bool TryValidateInstallationCore(
+            string versionId,
+            MinecraftPath path,
+            HashSet<string> visited,
+            out string? errorReason)
+        {
             errorReason = null;
 
             if (!IsSafeVersionId(versionId))
@@ -249,6 +259,12 @@ namespace CL.Core.Services
             if (path == null)
             {
                 errorReason = "не вказано шлях MinecraftPath";
+                return false;
+            }
+
+            if (!visited.Add(versionId))
+            {
+                errorReason = $"виявлено циклічне успадкування inheritsFrom ('{versionId}')";
                 return false;
             }
 
@@ -271,10 +287,12 @@ namespace CL.Core.Services
                 return false;
             }
 
-            string? inheritsFrom = root["inheritsFrom"]?.ToString();
-            bool hasClientSection = root["downloads"]?["client"] != null;
-            if (string.IsNullOrWhiteSpace(inheritsFrom))
+            string? inheritsFrom = root["inheritsFrom"]?.ToString()?.Trim();
+            bool requiresOwnJar = string.IsNullOrWhiteSpace(inheritsFrom) ||
+                                  versionId.Contains("optifine", StringComparison.OrdinalIgnoreCase);
+            if (requiresOwnJar)
             {
+                bool hasClientSection = root["downloads"]?["client"] != null;
                 string jarPath = Path.Combine(versionDir, $"{versionId}.jar");
                 if (!File.Exists(jarPath))
                 {
@@ -305,12 +323,17 @@ namespace CL.Core.Services
                 foreach (var libToken in libs)
                 {
                     if (libToken is not JObject libObj) continue;
+                    if (libObj["clientreq"]?.Value<bool?>() == false) continue;
                     if (!IsLibraryAllowedForCurrentOs(libObj["rules"] as JArray)) continue;
 
-                    string? artifactRelPath = libObj["downloads"]?["artifact"]?["path"]?.ToString();
+                    var artifactObj = libObj["downloads"]?["artifact"] as JObject;
+                    var classifiersObj = libObj["downloads"]?["classifiers"] as JObject;
+                    var nativesObj = libObj["natives"] as JObject;
                     string? libName = libObj["name"]?.ToString();
 
-                    if (string.IsNullOrWhiteSpace(artifactRelPath) && libObj["downloads"]?["artifact"] != null)
+                    string? artifactRelPath = artifactObj?["path"]?.ToString();
+                    if (string.IsNullOrWhiteSpace(artifactRelPath) &&
+                        (artifactObj != null || (nativesObj == null && classifiersObj == null)))
                     {
                         artifactRelPath = TryMavenNameToRelativePath(libName);
                     }
@@ -318,10 +341,66 @@ namespace CL.Core.Services
                     if (!string.IsNullOrWhiteSpace(artifactRelPath))
                     {
                         string fullLibPath = Path.Combine(path.Library, artifactRelPath.Replace('/', Path.DirectorySeparatorChar));
-                        if (!File.Exists(fullLibPath) || new FileInfo(fullLibPath).Length == 0)
+                        if (!File.Exists(fullLibPath))
                         {
                             errorReason = $"відсутня обов'язкова бібліотека '{libName ?? artifactRelPath}'";
                             return false;
+                        }
+
+                        var libInfo = new FileInfo(fullLibPath);
+                        if (libInfo.Length == 0)
+                        {
+                            errorReason = $"пошкоджена (порожня) бібліотека '{libName ?? artifactRelPath}'";
+                            return false;
+                        }
+
+                        long? expectedLibSize = artifactObj?["size"]?.Value<long?>();
+                        if (expectedLibSize.HasValue && expectedLibSize.Value > 0 && libInfo.Length != expectedLibSize.Value)
+                        {
+                            errorReason = $"розмір бібліотеки '{libName ?? artifactRelPath}' ({libInfo.Length}) не збігається з очікуваним ({expectedLibSize.Value})";
+                            return false;
+                        }
+                    }
+
+                    if (nativesObj != null)
+                    {
+                        string currentOsKey = GetCurrentMojangOsName();
+                        string? nativeClassifier = nativesObj[currentOsKey]?.ToString();
+                        if (!string.IsNullOrWhiteSpace(nativeClassifier))
+                        {
+                            string archBits = Environment.Is64BitOperatingSystem ? "64" : "32";
+                            nativeClassifier = nativeClassifier.Replace("${arch}", archBits, StringComparison.OrdinalIgnoreCase);
+
+                            var nativeObj = classifiersObj?[nativeClassifier] as JObject;
+                            string? nativeRelPath = nativeObj?["path"]?.ToString();
+                            if (string.IsNullOrWhiteSpace(nativeRelPath))
+                            {
+                                nativeRelPath = TryMavenNameToRelativePath(libName, nativeClassifier);
+                            }
+
+                            if (!string.IsNullOrWhiteSpace(nativeRelPath))
+                            {
+                                string fullNativePath = Path.Combine(path.Library, nativeRelPath.Replace('/', Path.DirectorySeparatorChar));
+                                if (!File.Exists(fullNativePath))
+                                {
+                                    errorReason = $"відсутній native-архів '{libName ?? nativeRelPath}'";
+                                    return false;
+                                }
+
+                                var nativeInfo = new FileInfo(fullNativePath);
+                                if (nativeInfo.Length == 0)
+                                {
+                                    errorReason = $"пошкоджений native-архів '{libName ?? nativeRelPath}'";
+                                    return false;
+                                }
+
+                                long? expectedNativeSize = nativeObj?["size"]?.Value<long?>();
+                                if (expectedNativeSize.HasValue && expectedNativeSize.Value > 0 && nativeInfo.Length != expectedNativeSize.Value)
+                                {
+                                    errorReason = $"розмір native-архіву '{libName ?? nativeRelPath}' не збігається з очікуваним";
+                                    return false;
+                                }
+                            }
                         }
                     }
                 }
@@ -348,9 +427,23 @@ namespace CL.Core.Services
                             if (string.IsNullOrWhiteSpace(hash) || hash.Length < 2) continue;
 
                             string objPath = Path.Combine(path.Assets, "objects", hash[..2], hash);
-                            if (!File.Exists(objPath) || new FileInfo(objPath).Length == 0)
+                            if (!File.Exists(objPath))
                             {
                                 errorReason = $"відсутній ресурс '{prop.Name}' ({hash})";
+                                return false;
+                            }
+
+                            var objInfo = new FileInfo(objPath);
+                            if (objInfo.Length == 0)
+                            {
+                                errorReason = $"пошкоджений ресурс '{prop.Name}' ({hash})";
+                                return false;
+                            }
+
+                            long? expectedObjSize = prop.Value?["size"]?.Value<long?>();
+                            if (expectedObjSize.HasValue && expectedObjSize.Value > 0 && objInfo.Length != expectedObjSize.Value)
+                            {
+                                errorReason = $"розмір ресурсу '{prop.Name}' ({objInfo.Length}) не збігається з очікуваним ({expectedObjSize.Value})";
                                 return false;
                             }
                         }
@@ -359,6 +452,14 @@ namespace CL.Core.Services
                 catch (Exception ex)
                 {
                     errorReason = $"пошкоджений індекс ресурсів '{indexPath}': {ex.Message}";
+                    return false;
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(inheritsFrom))
+            {
+                if (!TryValidateInstallationCore(inheritsFrom, path, visited, out errorReason))
+                {
                     return false;
                 }
             }
@@ -504,15 +605,35 @@ namespace CL.Core.Services
                    ex.Message.Contains("404", StringComparison.Ordinal);
         }
 
-        private static bool IsLibraryAllowedForCurrentOs(JArray? rules)
+        private static string GetCurrentMojangOsName()
         {
-            if (rules == null || rules.Count == 0) return true;
-
-            string currentOs = OperatingSystem.IsWindows()
+            return OperatingSystem.IsWindows()
                 ? "windows"
                 : OperatingSystem.IsMacOS()
                     ? "osx"
                     : "linux";
+        }
+
+        private static bool MatchesCurrentArchitecture(string? arch)
+        {
+            if (string.IsNullOrWhiteSpace(arch)) return true;
+
+            string normalized = arch.Trim().ToLowerInvariant();
+            return RuntimeInformation.OSArchitecture switch
+            {
+                Architecture.X64 => normalized is "x86_64" or "amd64" or "x64",
+                Architecture.X86 => normalized is "x86",
+                Architecture.Arm64 => normalized is "arm64" or "aarch64",
+                Architecture.Arm => normalized is "arm" or "arm32",
+                _ => false
+            };
+        }
+
+        private static bool IsLibraryAllowedForCurrentOs(JArray? rules)
+        {
+            if (rules == null || rules.Count == 0) return true;
+
+            string currentOs = GetCurrentMojangOsName();
 
             bool allowed = false;
             foreach (var r in rules)
@@ -520,10 +641,12 @@ namespace CL.Core.Services
                 if (r is not JObject ruleObj) continue;
                 string? action = ruleObj["action"]?.ToString();
                 string? osName = ruleObj["os"]?["name"]?.ToString();
+                string? osArch = ruleObj["os"]?["arch"]?.ToString();
 
-                bool applies = string.IsNullOrWhiteSpace(osName) ||
-                               string.Equals(osName, currentOs, StringComparison.OrdinalIgnoreCase);
-                if (applies)
+                bool osMatches = string.IsNullOrWhiteSpace(osName) ||
+                                 string.Equals(osName, currentOs, StringComparison.OrdinalIgnoreCase);
+                bool archMatches = MatchesCurrentArchitecture(osArch);
+                if (osMatches && archMatches)
                 {
                     allowed = string.Equals(action, "allow", StringComparison.OrdinalIgnoreCase);
                 }
@@ -532,17 +655,35 @@ namespace CL.Core.Services
             return allowed;
         }
 
-        private static string? TryMavenNameToRelativePath(string? mavenName)
+        private static string? TryMavenNameToRelativePath(string? mavenName, string? classifierOverride = null)
         {
             if (string.IsNullOrWhiteSpace(mavenName)) return null;
-            var parts = mavenName.Split(':');
+
+            string extension = "jar";
+            string coord = mavenName.Trim();
+            int atIdx = coord.IndexOf('@');
+            if (atIdx >= 0)
+            {
+                if (atIdx < coord.Length - 1)
+                {
+                    extension = coord[(atIdx + 1)..];
+                }
+                coord = coord[..atIdx];
+            }
+
+            var parts = coord.Split(':');
             if (parts.Length < 3) return null;
 
             string groupPath = parts[0].Replace('.', '/');
             string artifact = parts[1];
             string version = parts[2];
-            string classifier = parts.Length >= 4 ? $"-{parts[3]}" : string.Empty;
-            return $"{groupPath}/{artifact}/{version}/{artifact}-{version}{classifier}.jar";
+            string rawClassifier = !string.IsNullOrWhiteSpace(classifierOverride)
+                ? classifierOverride.Trim()
+                : (parts.Length >= 4 ? parts[3] : string.Empty);
+            string classifier = !string.IsNullOrWhiteSpace(rawClassifier)
+                ? $"-{rawClassifier}"
+                : string.Empty;
+            return $"{groupPath}/{artifact}/{version}/{artifact}-{version}{classifier}.{extension}";
         }
 
         private static string ComputeSha1Hex(byte[] data)

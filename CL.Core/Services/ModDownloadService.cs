@@ -195,7 +195,7 @@ namespace CL.Core.Services
             }
             finally
             {
-                ServiceLocator.Current.GetService<IDispatcherService>().Invoke(() => progressWindow?.CloseProgressWindow());
+                ServiceLocator.Current.GetService<IDispatcherService>().Invoke(() => progressWindow?.CloseProgressWindow(cts));
                 cts.Dispose();
             }
         }

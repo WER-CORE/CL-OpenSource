@@ -125,8 +125,11 @@ namespace CL.Core.Services
 
             var cts = new CancellationTokenSource();
             var token = cts.Token;
+            Process? launchedProcess = null;
 
-            bool isOffline = SettingsManager.Default.OfflineModLauncher || !System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable();
+            bool isOffline = config.IsOffline ||
+                             SettingsManager.Default.OfflineModLauncher ||
+                             !System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable();
 
             var versionDownloadWindow = ServiceLocator.Current.GetService<ITaskProgressService>();
             versionDownloadWindow.CTS = cts;
@@ -235,6 +238,8 @@ namespace CL.Core.Services
                     }
                 }
 
+                token.ThrowIfCancellationRequested();
+
                 var installedModpack = LoadInstalledModpacks().FirstOrDefault(m => m.Name.Equals(nameModPack, StringComparison.OrdinalIgnoreCase));
                 if (installedModpack == null) throw new Exception(LocalizationManager.GetString("Modpacks.MissingSettings", "Не вдалося знайти збережені налаштування збірки."));
 
@@ -267,12 +272,12 @@ namespace CL.Core.Services
                 };
                 launcher.FileProgressChanged += (sender, args) =>
                 {
-                    int fileProgress = args.TotalTasks > 0 ? (int)((double)args.ProgressedTasks / args.TotalTasks * 100) : 0;
-                    if (!isOffline && versionDownloadWindow.IsLoaded) ServiceLocator.Current.GetService<IDispatcherService>().Invoke(() =>
+                    if (!isOffline && versionDownloadWindow.IsLoaded)
                     {
+                        int fileProgress = args.TotalTasks > 0 ? (int)((double)args.ProgressedTasks / args.TotalTasks * 100) : 0;
                         versionDownloadWindow.UpdateFileTaskProgress(args.TotalTasks, args.ProgressedTasks, args.Name);
                         versionDownloadWindow.UpdateVersionProgress(fileProgress, version);
-                    });
+                    }
                 };
 
                 MLaunchOption mLaunch = new MLaunchOption
@@ -374,20 +379,11 @@ namespace CL.Core.Services
 
                     if (string.IsNullOrEmpty(versionName))
                     {
-                        if (version.ToLower().Contains(loader.ToLower()) || version.ToLower().Contains("optifine"))
+                        if (version.ToLower().Contains(loader.ToLower()))
                             versionName = version;
                         else
                         {
-                            switch (loaderType)
-                            {
-                                case LoaderType.Fabric: versionName = $"fabric-loader-{versionMod}-{version}"; break;
-                                case LoaderType.Forge: versionName = $"{version}-forge-{versionMod}"; break;
-                                case LoaderType.NeoForge: versionName = $"neoforge-{versionMod}"; break;
-                                case LoaderType.Quilt: versionName = $"quilt-loader-{versionMod}-{version}"; break;
-                                case LoaderType.Optifine: versionName = $"{version}-OptiFine_{versionMod?.Replace("OptiFine_", "")}"; break;
-                                case LoaderType.LiteLoader: versionName = $"{version}-LiteLoader{version}"; break;
-                                default: versionName = version; break;
-                            }
+                            versionName = GameLaunchService.ResolveLoaderVersionName(loaderType, version, versionMod);
                         }
                     }
                 }
@@ -396,37 +392,35 @@ namespace CL.Core.Services
                     versionName = await _gameLaunchService.InstallVersionAsync(loaderType, version, versionMod, launcher, token);
                 }
 
-                Process process;
-                if (isOffline)
-                {
-                    process = await launcher.BuildProcessAsync(versionName, mLaunch);
-                }
-                else
-                {
-                    process = await launcher.InstallAndBuildProcessAsync(versionName, mLaunch, token);
-                }
+                token.ThrowIfCancellationRequested();
 
                 string? effectiveServerIp = !string.IsNullOrEmpty(config.ServerIp) ? config.ServerIp : mLaunch.ServerIp;
                 int effectiveServerPort = config.ServerPort > 0 ? config.ServerPort : mLaunch.ServerPort;
-                if (!string.IsNullOrEmpty(effectiveServerIp))
-                {
-                    GameLaunchService.EnsureServerConnectionArguments(process, effectiveServerIp, effectiveServerPort, version);
-                }
+                Process process = await GameLaunchService.BuildGameProcessAsync(
+                    launcher,
+                    versionName,
+                    mLaunch,
+                    effectiveServerIp,
+                    effectiveServerPort,
+                    version,
+                    isVersionValidated: !isOffline,
+                    cancellationToken: token);
+                launchedProcess = process;
 
                 if (SettingsManager.Default.EnableMod_Statistics) { _gameSessionManager.StartGameSession("mod"); }
 
                 ServiceLocator.Current.GetService<IDispatcherService>().Invoke(() =>
                 {
-                    if (versionDownloadWindow.IsLoaded) versionDownloadWindow.CloseProgressWindow();
+                    if (versionDownloadWindow.IsLoaded) versionDownloadWindow.CloseProgressWindow(cts);
                     ServiceLocator.Current.GetService<IMainWindowController>().Minimize();
                 });
 
                 await DiscordController.UpdatePresence(string.Format(LocalizationManager.GetString("DiscordRPC.PlayingModpack", "Грає в мод-збірку {0}"), nameModPack), resetTimer: true);
 
-                if (installedModpack.IsConsoleLogOpened)
-                    ServiceLocator.Current.GetService<IMainWindowController>().ShowGameLog(process);
-                else
-                    process.Start();
+                StartModpackProcess(
+                    process,
+                    installedModpack.IsConsoleLogOpened,
+                    ServiceLocator.Current.GetService<IMainWindowController>());
 
                 GameLaunchService.ActiveMinecraftVersion = version;
                 GameLaunchService.ActiveLoaderType = loaderType;
@@ -442,16 +436,7 @@ namespace CL.Core.Services
                 }
                 await MemoryCleaner.FlushMemoryAsync(trimWorkingSet: true);
                 await process.WaitForExitAsync();
-                if (GameLaunchService.ActiveProcess == process)
-                {
-                    GameLaunchService.ActiveMinecraftVersion = null;
-                    GameLaunchService.ActiveLoaderType = LoaderType.Vanilla;
-                    GameLaunchService.ActiveLoaderVersion = null;
-                    GameLaunchService.ActiveModpackName = null;
-                    GameLaunchService.ActiveModpackTypeSite = null;
-                    GameLaunchService.ActiveGamePath = null;
-                    GameLaunchService.ActiveProcess = null;
-                }
+                GameLaunchService.ClearActiveProcessState(process);
                 int exitCode = process.ExitCode;
 
                 if (!SettingsManager.Default.CloseLaucnher)
@@ -496,7 +481,7 @@ namespace CL.Core.Services
             {
                 ServiceLocator.Current.GetService<IDispatcherService>().Invoke(() =>
                 {
-                    if (versionDownloadWindow.IsLoaded) versionDownloadWindow.CloseProgressWindow();
+                    if (versionDownloadWindow.IsLoaded) versionDownloadWindow.CloseProgressWindow(cts);
                     ServiceLocator.Current.GetService<IMainWindowController>().Restore();
                 });
                 ServiceLocator.Current.GetService<IDialogService>().ShowMessage(
@@ -508,7 +493,7 @@ namespace CL.Core.Services
             {
                 ServiceLocator.Current.GetService<IDispatcherService>().Invoke(() =>
                 {
-                    if (versionDownloadWindow.IsLoaded) versionDownloadWindow.CloseProgressWindow();
+                    if (versionDownloadWindow.IsLoaded) versionDownloadWindow.CloseProgressWindow(cts);
                     ServiceLocator.Current.GetService<IMainWindowController>().Restore();
                 });
                 ServiceLocator.Current.GetService<IDialogService>().ShowMessage(
@@ -519,12 +504,38 @@ namespace CL.Core.Services
             finally
             {
                 _gameSessionManager.StopGameSession();
+                CleanupModpackProcess(ref launchedProcess);
                 ServiceLocator.Current.GetService<IDispatcherService>().Invoke(() =>
                 {
                     ServiceLocator.Current.GetService<IMainWindowController>().SetInstallVersionOnPlay(false);
                     ServiceLocator.Current.GetService<IMainWindowController>().SetPlayButtonText(LocalizationManager.GetString("GameLaunch.PlayBtnSelect", "ОБЕРІТЬ ВЕРСІЮ"));
+                    if (versionDownloadWindow.IsLoaded) versionDownloadWindow.CloseProgressWindow(cts);
                 });
+                cts.Dispose();
             }
+        }
+
+        internal static void StartModpackProcess(Process process, bool isConsoleLogOpened, IMainWindowController windowController)
+        {
+            if (isConsoleLogOpened)
+            {
+                windowController.ShowGameLog(process);
+            }
+            else
+            {
+                process.StartInfo.RedirectStandardOutput = false;
+                process.StartInfo.RedirectStandardError = false;
+                process.Start();
+            }
+        }
+
+        internal static void CleanupModpackProcess(ref Process? launchedProcess)
+        {
+            if (launchedProcess == null) return;
+
+            GameLaunchService.ClearActiveProcessState(launchedProcess);
+            launchedProcess.Dispose();
+            launchedProcess = null;
         }
         private async Task<bool> DownloadModsFromManifestJsonAsync(string pathJson, string packFolder, ITaskProgressService progress, CancellationToken token)
         {
