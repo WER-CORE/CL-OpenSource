@@ -43,7 +43,7 @@
 
 <img width="750" alt="Інтерфейс Clegendary Launcher — скриншот 1" src="https://github.com/user-attachments/assets/4f4696dd-031d-4d5f-b564-2b5225a62ace" />
 
-<img width="750" alt="Інтерфейс Clegendary Launcher — скриншот 2" src="https://github.com/user-attachments/assets/fe144e5a-4ade-4e12-9dab-f16649d1ccde" />
+<img width="750" alt="Інтерфейс Clegendary Launcher — скриншот 2" src="https://github.com/user-attachments/assets/6d77eea0-c810-4a59-a42f-980b633d2ff1" />
 
 <sub>Скриншоти попередньої версії інтерфейсу. Актуальний вигляд може відрізнятися.</sub>
 
@@ -105,8 +105,7 @@ Clegendary Launcher використовує сторонні бібліотек
 - **Modrinth і CurseForge** — платформи поширення модифікацій і контенту Minecraft.
 - **Forge, Fabric, Quilt, NeoForge, OptiFine і LiteLoader** — екосистема завантажувачів і модифікацій.
 - **LittleSkin** — сервіс, інтегрований у підтримувані сценарії авторизації.
-- **Google Fonts, Material Icons і Fluent System Icons** — джерела іконографіки та графічних ресурсів.
-- **SignPath** — подяка за програму безкоштовного підписування коду, якщо вона застосовується до відповідного випуску: [SignPath.io](https://signpath.io) та [SignPath Foundation](https://signpath.org).
+- **Google Fonts, Material Icons і Fluent System Icons** — джерела іконографіки та графічних ресурсів.
 
 Ліцензійні умови окремих компонентів визначаються їхніми власними ліцензіями. Додаткові відомості дивіться у файлах [`LICENSE`](LICENSE), [`PRIVACY.md`](PRIVACY.md).
 
