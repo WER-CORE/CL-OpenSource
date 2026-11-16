@@ -105,8 +105,7 @@ Clegendary Launcher використовує сторонні бібліотек
 - **Modrinth і CurseForge** — платформи поширення модифікацій і контенту Minecraft.
 - **Forge, Fabric, Quilt, NeoForge, OptiFine і LiteLoader** — екосистема завантажувачів і модифікацій.
 - **LittleSkin** — сервіс, інтегрований у підтримувані сценарії авторизації.
-- **Google Fonts, Material Icons і Fluent System Icons** — джерела іконографіки та графічних ресурсів.
-- **SignPath** — подяка за програму безкоштовного підписування коду, якщо вона застосовується до відповідного випуску: [SignPath.io](https://signpath.io) та [SignPath Foundation](https://signpath.org).
+- **Google Fonts, Material Icons і Fluent System Icons** — джерела іконографіки та графічних ресурсів.
 
 Ліцензійні умови окремих компонентів визначаються їхніми власними ліцензіями. Додаткові відомості дивіться у файлах [`LICENSE`](LICENSE), [`PRIVACY.md`](PRIVACY.md).
 
