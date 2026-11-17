@@ -49,13 +49,13 @@
             <Setter Property="Background" Value="{DynamicResource MainBackgroundBrushServer}"/>
         </Style>
         <Style Selector="Button.cancelBtn:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="#22FFFFFF"/>
+            <Setter Property="Background" Value="{DynamicResource SubtleHoverBrush}"/>
         </Style>
     </Window.Styles>
 
     <Border Background="{DynamicResource MainBackgroundBrush}"
             CornerRadius="12"
-            BorderBrush="#33FFFFFF"
+            BorderBrush="{DynamicResource SubtleBorderBrush}"
             BorderThickness="1"
             Margin="10"
             ClipToBounds="True"
@@ -107,7 +107,7 @@
                 <ProgressBar Value="{Binding ProgressDowloadVersion}" Height="12" Minimum="0" Maximum="100"/>
             </StackPanel>
 
-            <Border Grid.Row="3" IsVisible="{Binding IsParallelDownloadsVisible}" Margin="25,15,25,0" MaxHeight="150" Background="#11FFFFFF" CornerRadius="8" Padding="5">
+            <Border Grid.Row="3" IsVisible="{Binding IsParallelDownloadsVisible}" Margin="25,15,25,0" MaxHeight="150" Background="{DynamicResource MainBackgroundBrushServer}" BorderBrush="{DynamicResource SubtleBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="5">
                 <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                     <ItemsControl ItemsSource="{Binding ActiveDownloads}">
                         <ItemsControl.ItemTemplate>
@@ -134,7 +134,7 @@
             <Grid Grid.Row="4" VerticalAlignment="Center">
                 <Button Height="36"
                         CornerRadius="18"
-                        BorderBrush="#33FFFFFF" BorderThickness="1"
+                        BorderBrush="{DynamicResource SubtleBorderBrush}" BorderThickness="1"
                         Cursor="Hand"
                         Classes="cancelBtn"
                         Margin="24,0,19,0"

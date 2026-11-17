@@ -12,8 +12,8 @@
         Background="Transparent"
         TransparencyLevelHint="Transparent">
 
-    <Border Background="#18181B"
-            BorderBrush="#33FFFFFF"
+    <Border Background="{DynamicResource MainBackgroundBrush}"
+            BorderBrush="{DynamicResource SubtleBorderBrush}"
             BorderThickness="1"
             CornerRadius="14"
             Padding="24">
@@ -22,17 +22,17 @@
                        Text="Бажаєте імпортувати дані з попередньої версії Clegendary Launcher?"
                        FontSize="17"
                        FontWeight="Bold"
-                       Foreground="White"
+                       Foreground="{DynamicResource MainForegroundBrush}"
                        TextWrapping="Wrap" />
 
             <TextBlock x:Name="SubtitleText"
                        Text="Ви можете перенести налаштування та інші підтримувані дані зі старого CL. Оригінальні файли залишаться без змін."
                        FontSize="13"
-                       Foreground="#B4B4BE"
+                       Foreground="{DynamicResource MutedForegroundBrush}"
                        TextWrapping="Wrap" />
 
-            <Border Background="#222228"
-                    BorderBrush="#2AFFFFFF"
+            <Border Background="{DynamicResource MainBackgroundBrushServer}"
+                    BorderBrush="{DynamicResource SubtleBorderBrush}"
                     BorderThickness="1"
                     CornerRadius="8"
                     Padding="12">
@@ -40,7 +40,7 @@
                     <TextBlock x:Name="SelectedPathText"
                                Grid.Column="0"
                                VerticalAlignment="Center"
-                               Foreground="#E2E2EA"
+                               Foreground="{DynamicResource MainForegroundBrush}"
                                FontSize="12"
                                TextTrimming="CharacterEllipsis"
                                Text="Папку не вибрано" />
@@ -50,14 +50,17 @@
                             Click="BrowseFolderBtn_Click"
                             Padding="12,6"
                             CornerRadius="6"
-                            Background="#2E2E38"
-                            Foreground="White" />
+                            BorderThickness="1"
+                            BorderBrush="{DynamicResource SubtleBorderBrush}"
+                            Background="{DynamicResource MainBackgroundButton}"
+                            Foreground="{DynamicResource MainForegroundBrush}"
+                            Cursor="Hand" />
                 </Grid>
             </Border>
 
             <Border x:Name="PreviewBox"
-                    Background="#1F242B"
-                    BorderBrush="#2AFFFFFF"
+                    Background="{DynamicResource MainBackgroundBrushServer}"
+                    BorderBrush="{DynamicResource SubtleBorderBrush}"
                     BorderThickness="1"
                     CornerRadius="8"
                     Padding="12"
@@ -67,10 +70,10 @@
                                Text="Попередній перегляд даних:"
                                FontSize="12"
                                FontWeight="SemiBold"
-                               Foreground="#93C5FD" />
+                               Foreground="{DynamicResource MainBackgroundProgressBar}" />
                     <TextBlock x:Name="PreviewDetailsText"
                                FontSize="12"
-                               Foreground="#D4D4DC"
+                               Foreground="{DynamicResource MainForegroundBrush}"
                                TextWrapping="Wrap" />
                     <TextBlock x:Name="WarningText"
                                FontSize="12"
@@ -80,7 +83,7 @@
                     <CheckBox x:Name="ConfirmOverwriteCheckBox"
                               Content="Підтверджую перезапис наявних файлів (перед імпортом буде створено резервну копію)"
                               FontSize="12"
-                              Foreground="#FDE68A"
+                              Foreground="{DynamicResource MainForegroundBrush}"
                               IsVisible="False"
                               IsCheckedChanged="ConfirmOverwriteCheckBox_Changed" />
                 </StackPanel>
@@ -101,8 +104,11 @@
                         Click="DeclineBtn_Click"
                         Padding="16,8"
                         CornerRadius="8"
-                        Background="#2A2A32"
-                        Foreground="#E4E4EA" />
+                        BorderThickness="1"
+                        BorderBrush="{DynamicResource SubtleBorderBrush}"
+                        Background="{DynamicResource MainBackgroundButton}"
+                        Foreground="{DynamicResource MainForegroundBrush}"
+                        Cursor="Hand" />
                 <Button x:Name="ImportBtn"
                         Content="Імпортувати"
                         Click="ImportBtn_Click"
@@ -110,7 +116,8 @@
                         CornerRadius="8"
                         Background="#22C55E"
                         Foreground="White"
-                        FontWeight="SemiBold" />
+                        FontWeight="SemiBold"
+                        Cursor="Hand" />
             </StackPanel>
         </StackPanel>
     </Border>

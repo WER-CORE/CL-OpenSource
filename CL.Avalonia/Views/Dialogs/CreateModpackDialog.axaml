@@ -91,7 +91,7 @@
 
                 <StackPanel Grid.Column="0" Margin="0,0,10,0">
                     <TextBlock Text="{Binding ModpackNameLabel}" FontSize="10" Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,0,5"/>
-                    <TextBox Text="{Binding ModpackName}" PlaceholderText="{Binding ModpackNamePlaceholder}" Height="38" Background="{DynamicResource MainBackgroundBrush}"/>
+                    <TextBox Classes="cl-input" Text="{Binding ModpackName}" PlaceholderText="{Binding ModpackNamePlaceholder}" Height="38"/>
                 </StackPanel>
 
                 <StackPanel Grid.Column="1" Margin="0,0,10,0">
@@ -121,27 +121,14 @@
                 <Button Content="{Binding TabMapsText}" Classes="TabButtonStyle" Command="{Binding SelectTabCommand}" CommandParameter="Maps"/>
             </StackPanel>
 
-            <TextBox Grid.Column="2" Height="32" CornerRadius="8"
+            <TextBox Grid.Column="2" Classes="search-input" Height="34"
                      Text="{Binding SearchQuery, Mode=TwoWay}"
-                     Background="Transparent"
-                     BorderThickness="0"
-                     Foreground="{DynamicResource MainForegroundBrush}"
                      VerticalContentAlignment="Center" Padding="10,0" FontSize="13"
                      PlaceholderText="{Binding SearchPlaceholder}" Margin="10,0"
                      ToolTip.Tip="{Binding SearchToolTip}">
                 <TextBox.InnerLeftContent>
                     <ic:SymbolIcon Symbol="Search" Margin="5,0" />
                 </TextBox.InnerLeftContent>
-                <TextBox.Styles>
-                    <Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
-                        <Setter Property="Background" Value="Transparent" />
-                        <Setter Property="BorderThickness" Value="0" />
-                    </Style>
-                    <Style Selector="TextBox:pointerover /template/ Border#PART_BorderElement">
-                        <Setter Property="Background" Value="Transparent" />
-                        <Setter Property="BorderThickness" Value="0" />
-                    </Style>
-                </TextBox.Styles>
             </TextBox>
 
             <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center" Spacing="10">

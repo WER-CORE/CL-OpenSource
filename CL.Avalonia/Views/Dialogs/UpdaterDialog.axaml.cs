@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Platform.Storage;
 using CL.Core.Models;
 using CL.Core.Services;
+using CL_CLegendary_Launcher_.Avalonia.Services;
 using CL_CLegendary_Launcher_.Avalonia.Views;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -21,15 +22,23 @@ namespace CL_CLegendary_Launcher_.Avalonia.Views.Windows
         private string _downloadedFolderName = "win-x64";
         private string _targetVersionString = "";
         private readonly bool _isFlatpak = File.Exists("/.flatpak-info");
+        private UpdateChannel _checkedChannel;
+        private LauncherUpdateCheckResult? _resolvedUpdate;
         private CL.Core.Models.UpdateInfo? _currentUpdateInfo;
         private Velopack.UpdateManager? _velopackManager;
         private Velopack.UpdateInfo? _velopackUpdateInfo;
 
-        public UpdaterWindow()
+        public UpdaterWindow() : this(null)
+        {
+        }
+
+        public UpdaterWindow(LauncherUpdateCheckResult? preResolvedUpdate)
         {
             InitializeComponent();
             ApplyLocalization();
             _updateService = new UpdateService();
+            _resolvedUpdate = preResolvedUpdate;
+            _checkedChannel = LauncherUpdateCoordinator.GetCurrentChannel();
 
             VersionText.Text = string.Format(LocalizationManager.GetString("Updater.CurrentVersion", "Ваша версія: {0}"), localVersion);
             installPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), $"CL_Launcher_v{localVersion}");
@@ -54,8 +63,45 @@ namespace CL_CLegendary_Launcher_.Avalonia.Views.Windows
 
         private async void UpdaterWindow_Loaded(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e)
         {
-            await Task.Delay(1000);
+            if (_resolvedUpdate != null)
+            {
+                ApplyResolvedUpdate(_resolvedUpdate);
+                return;
+            }
+
+            await Task.Delay(500);
             await CheckForUpdatesAsync();
+        }
+
+        private void ApplyResolvedUpdate(LauncherUpdateCheckResult result)
+        {
+            _resolvedUpdate = result;
+            _checkedChannel = result.Channel;
+            _targetVersionString = result.TargetVersion;
+
+            if (result.IsVelopack)
+            {
+                _velopackManager = result.VelopackManager;
+                _velopackUpdateInfo = result.VelopackUpdateInfo;
+                _currentUpdateInfo = null;
+                targetDownloadUrl = "";
+                VersionText.Text = $"Нова версія: {result.TargetVersion} (Поточна: {result.CurrentVersion})";
+                StatusText.Text = LocalizationManager.GetString("Updater.Available", "Доступне оновлення!");
+                if (UpdateActionsPanel != null) UpdateActionsPanel.IsVisible = true;
+                if (PathSelectionPanel != null) PathSelectionPanel.IsVisible = false;
+            }
+            else
+            {
+                _velopackManager = null;
+                _velopackUpdateInfo = null;
+                _currentUpdateInfo = result.FallbackInfo;
+                targetDownloadUrl = result.DownloadUrl;
+                _downloadedFolderName = result.DownloadedFolderName;
+                VersionText.Text = $"Нова версія: {result.TargetVersion} (Поточна: {result.CurrentVersion})";
+                StatusText.Text = LocalizationManager.GetString("Updater.Available", "Доступне оновлення!");
+                if (UpdateActionsPanel != null) UpdateActionsPanel.IsVisible = true;
+                if (PathSelectionPanel != null) PathSelectionPanel.IsVisible = !_isFlatpak;
+            }
         }
 
         private async void SelectPath_Click(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e)
@@ -75,60 +121,10 @@ namespace CL_CLegendary_Launcher_.Avalonia.Views.Windows
             try
             {
                 StatusText.Text = LocalizationManager.GetString("Updater.CheckingData", "Перевірка даних...");
-
-                bool isPrerelease = string.Equals(SettingsManager.Default.UpdateChannel, "Preview", StringComparison.OrdinalIgnoreCase);
-                var source = new global::Velopack.Sources.GithubSource("https://github.com/WER-CORE/CL-Win-Edition--Update", null, isPrerelease);
-                var mgr = new global::Velopack.UpdateManager(source);
-
-                if (mgr.IsInstalled)
+                var result = await LauncherUpdateCoordinator.CheckForUpdatesAsync(respectSkippedVersion: false);
+                if (result != null)
                 {
-                    var vInfo = await mgr.CheckForUpdatesAsync();
-                    if (vInfo != null && vInfo.TargetFullRelease != null)
-                    {
-                        _velopackManager = mgr;
-                        _velopackUpdateInfo = vInfo;
-                        _targetVersionString = vInfo.TargetFullRelease.Version.ToString().Trim().TrimStart('v', 'V');
-                        VersionText.Text = $"Нова версія: {vInfo.TargetFullRelease.Version} (Поточна: {mgr.CurrentVersion})";
-                        StatusText.Text = LocalizationManager.GetString("Updater.Available", "Доступне оновлення!");
-                        if (UpdateActionsPanel != null) UpdateActionsPanel.IsVisible = true;
-                        if (PathSelectionPanel != null) PathSelectionPanel.IsVisible = false;
-                        return;
-                    }
-                    else
-                    {
-                        StatusText.Text = LocalizationManager.GetString("Updater.LatestVersion", "У вас остання версія");
-                        await Task.Delay(2000);
-                        OpenMainLauncher();
-                        return;
-                    }
-                }
-            }
-            catch { }
-
-            try
-            {
-                StatusText.Text = LocalizationManager.GetString("Updater.CheckingData", "Перевірка даних...");
-                bool isPreview = string.Equals(SettingsManager.Default.UpdateChannel, "Preview", StringComparison.OrdinalIgnoreCase);
-                var info = await _updateService.CheckForUpdateFromGitHubAsync("WER-CORE/CL-Win-Edition--Update", isPreview)
-                           ?? await _updateService.CheckForUpdateAsync(Secrets.updateInfoUrl);
-
-                if (info == null || string.IsNullOrEmpty(info.Version))
-                {
-                    OpenMainLauncher();
-                    return;
-                }
-
-                _currentUpdateInfo = info;
-                _targetVersionString = info.Version.Trim().TrimStart('v', 'V');
-                targetDownloadUrl = _updateService.GetCorrectDownloadUrl(info);
-                _downloadedFolderName = _updateService.GetDownloadedFolderName();
-
-                if (_updateService.IsUpdateAvailable(info.Version, localVersion))
-                {
-                    VersionText.Text = $"Нова версія: {info.Version} (Поточна: {localVersion})";
-                    StatusText.Text = LocalizationManager.GetString("Updater.Available", "Доступне оновлення!");
-                    if (UpdateActionsPanel != null) UpdateActionsPanel.IsVisible = true;
-                    if (PathSelectionPanel != null) PathSelectionPanel.IsVisible = !_isFlatpak;
+                    ApplyResolvedUpdate(result);
                 }
                 else
                 {
@@ -157,6 +153,19 @@ namespace CL_CLegendary_Launcher_.Avalonia.Views.Windows
 
             try
             {
+                if (LauncherUpdateCoordinator.GetCurrentChannel() != _checkedChannel || _resolvedUpdate == null)
+                {
+                    StatusText.Text = LocalizationManager.GetString("Updater.CheckingData", "Перевірка даних...");
+                    var refreshed = await LauncherUpdateCoordinator.CheckForUpdatesAsync(respectSkippedVersion: false);
+                    if (refreshed == null)
+                    {
+                        StatusText.Text = LocalizationManager.GetString("Updater.LatestVersion", "У вас остання версія");
+                        await Task.Delay(1500);
+                        OpenMainLauncher();
+                        return;
+                    }
+                    ApplyResolvedUpdate(refreshed);
+                }
                 if (_velopackManager != null && _velopackUpdateInfo != null)
                 {
                     StatusText.Text = LocalizationManager.GetString("Updater.DownloadingArchive", "Завантаження оновлення...");

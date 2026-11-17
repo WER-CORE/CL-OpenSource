@@ -27,6 +27,29 @@
 		<Style Selector="Grid.footer-scale-btn:pointerover, Border.footer-scale-btn:pointerover">
 			<Setter Property="RenderTransform" Value="scale(1.03)" />
 		</Style>
+		<Style Selector="Grid.footer-scale-btn:focus-visible, Border.footer-scale-btn:focus-visible">
+			<Setter Property="RenderTransform" Value="scale(1.03)" />
+		</Style>
+		<Style Selector="Border.play-hitbox">
+			<Setter Property="Background" Value="Transparent" />
+			<Setter Property="BorderThickness" Value="1.5" />
+			<Setter Property="BorderBrush" Value="Transparent" />
+			<Setter Property="Focusable" Value="True" />
+			<Setter Property="Transitions">
+				<Transitions>
+					<BrushTransition Property="Background" Duration="0:0:0.12" />
+				</Transitions>
+			</Setter>
+		</Style>
+		<Style Selector="Border.play-hitbox:pointerover">
+			<Setter Property="Background" Value="#1EFFFFFF" />
+		</Style>
+		<Style Selector="Border.play-hitbox:pressed">
+			<Setter Property="Background" Value="#2A000000" />
+		</Style>
+		<Style Selector="Border.play-hitbox:focus-visible">
+			<Setter Property="BorderBrush" Value="#FFFFFFFF" />
+		</Style>
 	</UserControl.Styles>
 
 	<Grid>
@@ -163,6 +186,7 @@
 						<StackPanel VerticalAlignment="Top">
 
 							<Grid x:Name="SettingPanelGird" Classes="footer-scale-btn" Height="40" Margin="5,2" Cursor="Hand"
+                                  Focusable="True" KeyDown="FooterItem_KeyDown" Tag="Settings"
                                   PointerPressed="SettingPanel_PointerPressed" Background="Transparent">
 								<Border x:Name="SettingPanel" CornerRadius="12"
                                         Background="{DynamicResource MainBackgroundButton}" Opacity="0.5" />
@@ -177,6 +201,7 @@
 							</Grid>
 
 							<Grid x:Name="FilesMenuGrid" Classes="footer-scale-btn" Height="40" Margin="5,2" Cursor="Hand"
+                                  Focusable="True" KeyDown="FooterItem_KeyDown" Tag="Files"
                                   PointerPressed="FolderPanel_PointerPressed" Background="Transparent">
 								<FlyoutBase.AttachedFlyout>
 									<MenuFlyout Placement="Top">
@@ -234,19 +259,20 @@
 
 								<Border x:Name="FolderPanel" CornerRadius="12"
                                         Background="{DynamicResource MainBackgroundButton}" Opacity="0.5" />
-								<StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0">
-									<Path Width="20" Height="20" Stretch="Uniform"
+								<Grid VerticalAlignment="Center" Margin="10,0" ColumnDefinitions="Auto,*,Auto">
+									<Path Grid.Column="0" Width="20" Height="20" Stretch="Uniform"
                                           Fill="{DynamicResource MainForegroundBrush}"
                                           Data="M10,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V8C22,6.89 21.1,6 20,6H12L10,4Z" />
-									<TextBlock x:Name="Loc_FilesMenu" Text="Файли та Бекапи" FontFamily="{DynamicResource AppFontFamily}"
+									<TextBlock Grid.Column="1" x:Name="Loc_FilesMenu" Text="Файли та Бекапи" FontFamily="{DynamicResource AppFontFamily}"
                                                FontSize="16" Foreground="{DynamicResource MainForegroundBrush}"
-                                               VerticalAlignment="Center" Margin="12,0,0,0" Width="164" />
-									<TextBlock Text="▲" Margin="8,2,0,0" FontSize="10" VerticalAlignment="Center"
-                                               Opacity="0.6" Foreground="{DynamicResource MainForegroundBrush}" Width="12" />
-								</StackPanel>
+                                               VerticalAlignment="Center" Margin="12,0,6,0" TextTrimming="CharacterEllipsis" />
+									<TextBlock Grid.Column="2" Text="▲" Margin="0,2,2,0" FontSize="10" VerticalAlignment="Center"
+                                               Opacity="0.6" Foreground="{DynamicResource MainForegroundBrush}" />
+								</Grid>
 							</Grid>
 
 							<Grid x:Name="InfoPanel" Classes="footer-scale-btn" Height="40" Margin="5,2" Cursor="Hand"
+                                  Focusable="True" KeyDown="FooterItem_KeyDown" Tag="Info"
                                   PointerPressed="InfoPanel_PointerPressed" Background="Transparent" ZIndex="10">
 								<FlyoutBase.AttachedFlyout>
 									<MenuFlyout Placement="Top">
@@ -304,16 +330,16 @@
 
 								<Border x:Name="InfoLauncherPanel" CornerRadius="12"
                                         Background="{DynamicResource MainBackgroundButton}" Opacity="0.5" />
-								<StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0">
-									<Path Width="20" Height="20" Stretch="Uniform"
+								<Grid VerticalAlignment="Center" Margin="10,0" ColumnDefinitions="Auto,*,Auto">
+									<Path Grid.Column="0" Width="20" Height="20" Stretch="Uniform"
                                           Fill="{DynamicResource MainForegroundBrush}"
                                           Data="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,17H13V11H11V17Z" />
-									<TextBlock x:Name="Loc_InfoMenu" Text="Інформація" FontFamily="{DynamicResource AppFontFamily}" FontSize="16"
+									<TextBlock Grid.Column="1" x:Name="Loc_InfoMenu" Text="Інформація" FontFamily="{DynamicResource AppFontFamily}" FontSize="16"
                                                Foreground="{DynamicResource MainForegroundBrush}"
-                                               VerticalAlignment="Center" Margin="12,0,0,0" Width="163" />
-									<TextBlock Text="▲" Margin="8,2,0,0" FontSize="10" VerticalAlignment="Center"
-                                               Opacity="0.6" Foreground="{DynamicResource MainForegroundBrush}" Width="17" />
-								</StackPanel>
+                                               VerticalAlignment="Center" Margin="12,0,6,0" TextTrimming="CharacterEllipsis" />
+									<TextBlock Grid.Column="2" Text="▲" Margin="0,2,2,0" FontSize="10" VerticalAlignment="Center"
+                                               Opacity="0.6" Foreground="{DynamicResource MainForegroundBrush}" />
+								</Grid>
 							</Grid>
 						</StackPanel>
 					</Border>
@@ -335,9 +361,11 @@
 
 					<Grid ColumnDefinitions="*,Auto,Auto">
 						<Border x:Name="HitboxPlay"
+                                Classes="play-hitbox"
                                 Grid.Column="0"
-                                Background="Transparent"
+                                CornerRadius="12,0,0,12"
                                 Cursor="Hand"
+                                KeyDown="PlaySplit_KeyDown" Tag="Play"
                                 PointerPressed="PlayTXT_PointerPressed">
 							<TextBlock x:Name="PlayTXT"
                                        Text="{Binding PlayButtonText}"
@@ -361,11 +389,13 @@
                                 Background="#30000000" />
 
 						<Border x:Name="HitboxSelect"
+                                Classes="play-hitbox"
                                 Grid.Column="2"
-                                Background="Transparent"
+                                CornerRadius="0,12,12,0"
                                 Cursor="Hand"
                                 Padding="8,0,12,0"
                                 ToolTip.Tip="Обрати версію зі списку"
+                                KeyDown="PlaySplit_KeyDown" Tag="Select"
                                 PointerPressed="CheckMarkVersionSelect_PointerPressed">
 							<StackPanel Orientation="Horizontal" VerticalAlignment="Center" Spacing="6">
 								<Image x:Name="IconSelectVersion"
@@ -504,7 +534,7 @@
 					<StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="2,0,0,0">
 
 						<Border x:Name="SelectVersionVanila" Classes="footer-scale-btn"
-                                BorderThickness="1" CornerRadius="3"
+                                BorderThickness="1" BorderBrush="{DynamicResource SubtleBorderBrush}" CornerRadius="9"
                                 Background="{DynamicResource MainBackgroundBrushServer}"
                                 Width="145" Height="40" Margin="0,0,0,6"
                                 Cursor="Hand"
@@ -529,7 +559,7 @@
 						</Border>
 
 						<Border x:Name="SelectVersionOptifine" Classes="footer-scale-btn"
-                                BorderThickness="1" CornerRadius="3"
+                                BorderThickness="1" BorderBrush="{DynamicResource SubtleBorderBrush}" CornerRadius="9"
                                 Background="{DynamicResource MainBackgroundBrushServer}"
                                 Width="145" Height="40" Margin="0,0,0,6"
                                 Cursor="Hand"
@@ -554,14 +584,14 @@
 						</Border>
 
 						<Border x:Name="SelectVersionRedirect" Classes="footer-scale-btn"
-                                BorderThickness="1" CornerRadius="3"
+                                BorderThickness="1" BorderBrush="{DynamicResource SubtleBorderBrush}" CornerRadius="9"
                                 Background="{DynamicResource MainBackgroundBrushServer}"
                                 Width="145" Height="40"
                                 Cursor="Hand"
                                 PointerPressed="SelectVersionRedirect_PointerPressed">
 							<Grid>
 								<Path Data="M19.43,12.98C19.47,12.66 19.5,12.34 19.5,12C19.5,11.66 19.47,11.34 19.43,11.02L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11.02C4.53,11.34 4.5,11.66 4.5,12C4.5,12.34 4.53,12.66 4.57,12.98L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.04 4.95,18.95L7.44,17.95C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.68 16.04,18.34 16.56,17.95L19.05,18.95C19.27,19.04 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.98M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5Z"
-                                      Fill="{DynamicResource MainBackgroundBrush}"
+                                      Fill="{DynamicResource MainForegroundBrush}"
                                       Stretch="Uniform" Width="20" Height="20"
                                       HorizontalAlignment="Left" VerticalAlignment="Center" Margin="8,0,0,0" />
 								<TextBlock x:Name="Loc_InstallModsTxt" Text="Встановити..."
@@ -615,9 +645,8 @@
 
 							<StackPanel Grid.Column="1">
 								<TextBox x:Name="SearchSystemTXT1"
+                                         Classes="search-input"
                                          Height="30" CornerRadius="8"
-                                         Background="Transparent" BorderThickness="0"
-                                         Foreground="{DynamicResource MainForegroundBrush}"
                                          Text="{Binding VanillaSearchText}"
                                          FontSize="11" Padding="6,0"
                                          VerticalContentAlignment="Center"
@@ -666,10 +695,9 @@
 							</Grid.RowDefinitions>
 
 							<TextBox x:Name="SearchSystemTXT2"
+                                     Classes="search-input"
                                      Grid.Row="0" Height="30" CornerRadius="8"
-                                     Background="Transparent" BorderThickness="0"
                                      Text="{Binding OptifineSearchText}"
-                                     Foreground="{DynamicResource MainForegroundBrush}"
                                      FontSize="11" Padding="6,0"
                                      VerticalContentAlignment="Center"
                                      PlaceholderText="Шукайте ванільну версію..." FontFamily="{DynamicResource AppFontFamily}">

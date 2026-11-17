@@ -50,6 +50,101 @@
         <Style Selector="CheckBox:checked:pressed /template/ Path#CheckGlyph">
             <Setter Property="Fill" Value="{DynamicResource MainForegroundBrush}" />
         </Style>
+
+        <!-- Уніфіковані поля пошуку та вводу для Light/Dark та кастомних тем -->
+        <Style Selector="TextBox.search-input, TextBox.cl-input">
+            <Setter Property="Background" Value="{DynamicResource InputBackgroundBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource InputBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="9" />
+            <Setter Property="Foreground" Value="{DynamicResource MainForegroundBrush}" />
+            <Setter Property="CaretBrush" Value="{DynamicResource MainForegroundBrush}" />
+            <Setter Property="SelectionBrush" Value="{DynamicResource MainBackgroundProgressBar}" />
+        </Style>
+        <Style Selector="TextBox.search-input /template/ Border#PART_BorderElement, TextBox.cl-input /template/ Border#PART_BorderElement">
+            <Setter Property="Background" Value="{DynamicResource InputBackgroundBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource InputBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="9" />
+        </Style>
+        <Style Selector="TextBox.search-input:pointerover /template/ Border#PART_BorderElement, TextBox.cl-input:pointerover /template/ Border#PART_BorderElement">
+            <Setter Property="Background" Value="{DynamicResource InputBackgroundBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource MainForegroundBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+        </Style>
+        <Style Selector="TextBox.search-input:focus /template/ Border#PART_BorderElement, TextBox.cl-input:focus /template/ Border#PART_BorderElement">
+            <Setter Property="Background" Value="{DynamicResource InputBackgroundBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource MainBackgroundProgressBar}" />
+            <Setter Property="BorderThickness" Value="1.5" />
+        </Style>
+        <Style Selector="TextBox.search-input:disabled, TextBox.cl-input:disabled">
+            <Setter Property="Opacity" Value="0.5" />
+        </Style>
+
+        <!-- Спільні стилі ToolTip, ProgressBar та ComboBox -->
+        <Style Selector="ToolTip">
+            <Setter Property="Background" Value="{DynamicResource MainBackgroundBrushServer}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource SubtleBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="{DynamicResource MainForegroundBrush}" />
+            <Setter Property="CornerRadius" Value="8" />
+        </Style>
+        <Style Selector="ProgressBar">
+            <Setter Property="CornerRadius" Value="4" />
+        </Style>
+        <Style Selector="ComboBox:focus-visible">
+            <Setter Property="BorderBrush" Value="{DynamicResource MainBackgroundProgressBar}" />
+        </Style>
+        <Style Selector="ComboBox:disabled">
+            <Setter Property="Opacity" Value="0.5" />
+        </Style>
+
+        <!-- Спільний стиль інтерактивних кнопок із hover/pressed/focus-visible/disabled -->
+        <Style Selector="Button.subtle-action">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="Foreground" Value="{DynamicResource MainForegroundBrush}" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Focusable" Value="True" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.12" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Button.subtle-action /template/ ContentPresenter">
+            <Setter Property="Background" Value="{TemplateBinding Background}" />
+            <Setter Property="CornerRadius" Value="{TemplateBinding CornerRadius}" />
+        </Style>
+        <Style Selector="Button.subtle-action:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource SubtleHoverBrush}" />
+        </Style>
+        <Style Selector="Button.subtle-action:pressed /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource SubtlePressedBrush}" />
+        </Style>
+        <Style Selector="Button.subtle-action:focus-visible">
+            <Setter Property="BorderBrush" Value="{DynamicResource MainBackgroundProgressBar}" />
+        </Style>
+        <Style Selector="Button.subtle-action:disabled">
+            <Setter Property="Opacity" Value="0.45" />
+        </Style>
+
+        <Style Selector="Button.primary-cta">
+            <Setter Property="Background" Value="{DynamicResource MainBackgroundProgressBar}" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="Button.primary-cta:focus-visible">
+            <Setter Property="BorderThickness" Value="1.5" />
+            <Setter Property="BorderBrush" Value="{DynamicResource MainForegroundBrush}" />
+        </Style>
+        <Style Selector="Button.primary-cta:disabled">
+            <Setter Property="Opacity" Value="0.45" />
+        </Style>
     </Application.Styles>
 
     <Application.Resources>

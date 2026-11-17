@@ -198,6 +198,32 @@ public partial class HomePage : UserControl
 
     #region Навігація та Меню Файлів
 
+    private void FooterItem_KeyDown(object? sender, global::Avalonia.Input.KeyEventArgs e)
+    {
+        if (e.Key is not (global::Avalonia.Input.Key.Enter or global::Avalonia.Input.Key.Space)) return;
+        if (sender is not Control { Tag: string tag }) return;
+
+        e.Handled = true;
+        switch (tag)
+        {
+            case "Settings": SettingPanel_PointerPressed(sender, null!); break;
+            case "Files": FolderPanel_PointerPressed(sender, null!); break;
+            case "Info": InfoPanel_PointerPressed(sender, null!); break;
+        }
+    }
+
+    private void PlaySplit_KeyDown(object? sender, global::Avalonia.Input.KeyEventArgs e)
+    {
+        if (e.Key is not (global::Avalonia.Input.Key.Enter or global::Avalonia.Input.Key.Space)) return;
+        if (sender is not Control { Tag: string tag }) return;
+
+        e.Handled = true;
+        if (tag == "Play")
+            PlayTXT_PointerPressed(sender, null!);
+        else if (tag == "Select")
+            CheckMarkVersionSelect_PointerPressed(sender, null!);
+    }
+
     public void SettingPanel_PointerPressed(object? sender, PointerPressedEventArgs e)
     {
         AvaloniaSoundService.Click();

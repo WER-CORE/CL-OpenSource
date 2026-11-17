@@ -27,6 +27,7 @@ public partial class ModPacksPage : UserControl
     public ModPacksPage()
     {
         InitializeComponent();
+        SizeChanged += (_, _) => ModsDowloadList1?.InvalidateMeasure();
     }
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)

@@ -38,7 +38,7 @@
     </Window.Styles>
 
     <Grid>
-        <Border x:Name="MainBorder" CornerRadius="15" Background="{DynamicResource MainBackgroundBrushServer}" BorderThickness="1" BorderBrush="#33FFFFFF" ClipToBounds="True" PointerPressed="MainBorder_PointerPressed">
+        <Border x:Name="MainBorder" CornerRadius="15" Background="{DynamicResource MainBackgroundBrushServer}" BorderThickness="1" BorderBrush="{DynamicResource SubtleBorderBrush}" ClipToBounds="True" PointerPressed="MainBorder_PointerPressed">
             <Border.BoxShadow>
                 <BoxShadows>0 5 20 0 #80000000</BoxShadows>
             </Border.BoxShadow>
@@ -78,22 +78,22 @@
                     <StackPanel Orientation="Horizontal" Grid.Row="2" HorizontalAlignment="Right" Spacing="15">
                         <Button x:Name="BtnCancel" Content="Ні, чекай"
                                 Click="BtnCancel_Click"
-                                Width="100" Height="35" Cursor="Hand" Foreground="White">
+                                Width="100" Height="35" Cursor="Hand" Foreground="{DynamicResource MainForegroundBrush}">
                             <Button.Styles>
                                 <Style Selector="Button">
                                     <Setter Property="CornerRadius" Value="8"/>
                                     <Setter Property="BorderThickness" Value="1"/>
-                                    <Setter Property="BorderBrush" Value="#66FFFFFF"/>
+                                    <Setter Property="BorderBrush" Value="{DynamicResource SubtleBorderBrush}"/>
                                     <Setter Property="Background" Value="{DynamicResource MainBackgroundButton}"/>
                                     <Setter Property="HorizontalContentAlignment" Value="Center"/>
                                     <Setter Property="VerticalContentAlignment" Value="Center"/>
                                 </Style>
                                 <Style Selector="Button:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-                                    <Setter Property="Background" Value="#33FFFFFF"/>
-                                    <Setter Property="TextBlock.Foreground" Value="White"/>
+                                    <Setter Property="Background" Value="{DynamicResource SubtleHoverBrush}"/>
+                                    <Setter Property="TextBlock.Foreground" Value="{DynamicResource MainForegroundBrush}"/>
                                 </Style>
                                 <Style Selector="Button:pressed /template/ ContentPresenter#PART_ContentPresenter">
-                                    <Setter Property="Background" Value="#1AFFFFFF"/>
+                                    <Setter Property="Background" Value="{DynamicResource SubtlePressedBrush}"/>
                                 </Style>
                             </Button.Styles>
                         </Button>

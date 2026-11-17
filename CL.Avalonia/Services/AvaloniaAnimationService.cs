@@ -351,17 +351,11 @@ namespace CL_CLegendary_Launcher_.Avalonia.Services
 
             _ = opacityAnim.RunAsync(element, cts.Token).ContinueWith(_ =>
             {
-                if (!cts.IsCancellationRequested)
-                {
-                    Dispatcher.UIThread.Post(() => element.Opacity = 1d);
-                }
+                Dispatcher.UIThread.Post(() => element.Opacity = 1d);
             });
             _ = slideAnim.RunAsync(element, cts.Token).ContinueWith(_ =>
             {
-                if (!cts.IsCancellationRequested)
-                {
-                    Dispatcher.UIThread.Post(() => transform.Y = 0d);
-                }
+                Dispatcher.UIThread.Post(() => transform.Y = 0d);
             });
         }
 

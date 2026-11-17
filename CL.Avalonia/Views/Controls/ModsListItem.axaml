@@ -7,10 +7,10 @@
              xmlns:fluentIcons="using:FluentIcons.Avalonia"
              x:DataType="vm:ModsListItemViewModel"
              mc:Ignorable="d"
-             Height="108" Width="740">
+             MinHeight="108" HorizontalAlignment="Stretch">
 
     <Grid x:Name="GirdMain">
-        <Border x:Name="Border" BorderThickness="1" Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="15">
+        <Border x:Name="Border" BorderThickness="1" BorderBrush="{DynamicResource SubtleBorderBrush}" Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="15">
             <Grid Margin="10">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -18,7 +18,7 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <Border Grid.Column="0" x:Name="BorderImage" BorderThickness="1"
+                <Border Grid.Column="0" x:Name="BorderImage" BorderThickness="1" BorderBrush="{DynamicResource SubtleBorderBrush}"
                         Height="86" Width="86"
                         Background="{DynamicResource MainBackgroundBrush}" CornerRadius="6"
                         ClipToBounds="True">
@@ -39,9 +39,9 @@
 
                     <TextBlock Grid.Row="1" x:Name="Description"
                                Text="{Binding ModDescription}"
-                               FontFamily="{DynamicResource AppFontFamily}" FontSize="12" Foreground="Gray"
+                               FontFamily="{DynamicResource AppFontFamily}" FontSize="12" Foreground="{DynamicResource MutedForegroundBrush}"
                                TextWrapping="Wrap" TextTrimming="CharacterEllipsis"
-                               Margin="0,5,0,5" Opacity="0.8"/>
+                               Margin="0,5,0,5"/>
 
                     <StackPanel Grid.Row="2" Orientation="Horizontal">
 
@@ -75,23 +75,28 @@
                 <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="0,0,0,0">
 
                     <Button x:Name="DowloadMod"
-                            Height="30" Width="100" Padding="0"
-                            CornerRadius="6" Cursor="Hand" Margin="0,0,0,8" Background="{DynamicResource MainBackgroundButton}" Command="{Binding InstallCommand}">
+                            Height="30" Width="106" Padding="0"
+                            CornerRadius="8" Cursor="Hand" Margin="0,0,0,8"
+                            Background="{DynamicResource MainBackgroundProgressBar}"
+                            BorderThickness="0"
+                            Command="{Binding InstallCommand}">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                             <Path Data="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z"
-                                  Fill="{DynamicResource MainForegroundBrush}"
+                                  Fill="White"
                                   Width="14" Height="14" Stretch="Uniform" Margin="0,0,6,0"
                                   VerticalAlignment="Center"/>
                             <TextBlock x:Name="TxtInstall" Text="Встановити"
-                                       Foreground="{DynamicResource MainForegroundBrush}"
+                                       Foreground="White"
                                        FontFamily="{DynamicResource AppFontFamily}" FontWeight="Bold" FontSize="12"
                                        VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
 
                     <Button x:Name="DetailsMod"
-                            Height="30" Width="100" Padding="0"
-                            CornerRadius="6" Cursor="Hand" BorderThickness="1" Background="{DynamicResource MainBackgroundButton}" Command="{Binding DetailsCommand}">
+                            Height="30" Width="106" Padding="0"
+                            CornerRadius="8" Cursor="Hand" BorderThickness="1"
+                            BorderBrush="{DynamicResource SubtleBorderBrush}"
+                            Background="{DynamicResource MainBackgroundButton}" Command="{Binding DetailsCommand}">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                             <fluentIcons:SymbolIcon Symbol="Open" FontSize="14" Foreground="{DynamicResource MainForegroundBrush}" Margin="0,0,5,0" />
                             <TextBlock x:Name="TxtDetails" Text="Докладніше"

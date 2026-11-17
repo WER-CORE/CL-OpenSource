@@ -29,11 +29,11 @@
             <Setter Property="Background" Value="#0067C0"/>
         </Style>
         <Style Selector="ListBox#WorldsListBox ListBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="#11FFFFFF"/>
+            <Setter Property="Background" Value="{DynamicResource SubtleHoverBrush}"/>
         </Style>
     </Window.Styles>
 
-    <Border Background="{DynamicResource MainBackgroundBrush}" CornerRadius="12" BorderThickness="1" BorderBrush="#333" BoxShadow="0 5 20 0 #99000000" ClipToBounds="True">
+    <Border Background="{DynamicResource MainBackgroundBrush}" CornerRadius="12" BorderThickness="1" BorderBrush="{DynamicResource SubtleBorderBrush}" BoxShadow="0 5 20 0 #99000000" ClipToBounds="True">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="35"/>
@@ -63,7 +63,7 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <Border Grid.Column="0" Background="{DynamicResource MainBackgroundBrushServer}" BorderThickness="0,1,1,0" BorderBrush="#333" CornerRadius="0,0,0,10">
+                <Border Grid.Column="0" Background="{DynamicResource MainBackgroundBrushServer}" BorderThickness="0,1,1,0" BorderBrush="{DynamicResource SubtleBorderBrush}" CornerRadius="0,0,0,10">
                     <Grid Margin="10">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>

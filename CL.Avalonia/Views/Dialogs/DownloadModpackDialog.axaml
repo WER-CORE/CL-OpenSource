@@ -110,28 +110,15 @@
                     </StackPanel>
                 </Button>
 
-                <TextBox Grid.Column="1" Height="32" CornerRadius="8"
+                <TextBox Grid.Column="1" Classes="search-input" Height="34"
                          Text="{Binding SearchQuery, Mode=TwoWay}"
                          IsEnabled="{Binding CanInteract}"
-                         Background="Transparent"
-                         BorderThickness="0"
-                         Foreground="{DynamicResource MainForegroundBrush}"
                          VerticalContentAlignment="Center" Padding="10,0" FontSize="13"
                          PlaceholderText="{Binding SearchPlaceholder}"
                          ToolTip.Tip="{Binding SearchTooltip}">
                     <TextBox.InnerLeftContent>
                         <fluentIcons:SymbolIcon Symbol="Search" Margin="5,0" />
                     </TextBox.InnerLeftContent>
-                    <TextBox.Styles>
-                        <Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
-                            <Setter Property="Background" Value="Transparent" />
-                            <Setter Property="BorderThickness" Value="0" />
-                        </Style>
-                        <Style Selector="TextBox:pointerover /template/ Border#PART_BorderElement">
-                            <Setter Property="Background" Value="Transparent" />
-                            <Setter Property="BorderThickness" Value="0" />
-                        </Style>
-                    </TextBox.Styles>
                 </TextBox>
 
                 <Border Grid.Column="2" Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="8" Padding="6,0" Margin="10,0,0,0"
