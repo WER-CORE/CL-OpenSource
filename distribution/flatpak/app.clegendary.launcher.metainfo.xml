@@ -109,12 +109,21 @@
 
   <screenshots>
     <screenshot type="default">
-      <image>https://raw.githubusercontent.com/WER-CORE/CL-OpenSource/dev/distribution/flatpak/screen.png</image>
+      <image>https://raw.githubusercontent.com/WER-CORE/CL-OpenSource/main/distribution/flatpak/screen_2.png</image>
+      <caption>CLegendary Launcher Main Screen</caption>
+    </screenshot>
+    <screenshot type="default">
+      <image>https://raw.githubusercontent.com/WER-CORE/CL-OpenSource/main/distribution/flatpak/screen.png</image>
       <caption>CLegendary Launcher Main Screen</caption>
     </screenshot>
   </screenshots>
 
   <releases>
+    <release version="1.1.1" date="2026-11-18">
+      <description>
+        <p>Update 1.1.1: Strict Stable/Testing update channel isolation, unified update coordinator, macOS Portable ZIP selection fix, Velopack fallback protection, FullScreen-to-Normal layout fix, and UI/UX polish.</p>
+      </description>
+    </release>
     <release version="1.1.0-preview9.8" date="2026-11-15">
       <description>
         <p>Preview 9.8: WPF data import dialog and onboarding tour integration, unified application icons, Velopack update compatibility, and localization updates.</p>
