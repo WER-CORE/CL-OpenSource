@@ -25,7 +25,7 @@
     </Window.Styles>
 
     <Grid>
-        <Border CornerRadius="12" Background="#1A1A1A" BorderBrush="#333333" BorderThickness="1" Margin="10" ClipToBounds="True">
+        <Border CornerRadius="12" Background="{DynamicResource MainBackgroundBrush}" BorderBrush="{DynamicResource SubtleBorderBrush}" BorderThickness="1" Margin="10" ClipToBounds="True">
             <Border.BoxShadow>
                 <BoxShadows>0 10 30 0 #80000000</BoxShadows>
             </Border.BoxShadow>
@@ -58,32 +58,32 @@
 
                     <TextBlock x:Name="TxtMascotRole"
                                Text="Головний адміністратор"
-                               Foreground="Gray"
+                               Foreground="{DynamicResource MutedForegroundBrush}"
                                FontSize="14" HorizontalAlignment="Center" Margin="0,5,0,0" TextWrapping="Wrap" TextAlignment="Center"/>
                 </StackPanel>
 
                 <Grid Grid.Column="1" Margin="20,0,0,0" RowDefinitions="Auto, *, Auto, Auto">
 
-                    <Border Grid.Row="0" Background="#2B2B2B" CornerRadius="0,15,15,15" Margin="0,0,0,15" Padding="15">
+                    <Border Grid.Row="0" Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="0,15,15,15" Margin="0,0,0,15" Padding="15" BorderBrush="{DynamicResource SubtleBorderBrush}" BorderThickness="1">
                         <TextBlock x:Name="MascotMessageText"
                                    Text="Привіт! Тут мають бути важливі правила..."
                                    Foreground="{DynamicResource MainForegroundBrush}" TextWrapping="Wrap" FontSize="15"/>
                     </Border>
 
-                    <Border Grid.Row="1" Background="#222222" CornerRadius="10" BorderBrush="#333333" BorderThickness="1">
-                        <ScrollViewer Margin="10,10,-1,10">
+                    <Border Grid.Row="1" Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="10" BorderBrush="{DynamicResource SubtleBorderBrush}" BorderThickness="1">
+                        <ScrollViewer Margin="10,10,4,10" HorizontalScrollBarVisibility="Disabled">
                             <TextBlock x:Name="EulaContentText"
                                        Foreground="{DynamicResource MainForegroundBrush}" FontSize="13" TextWrapping="Wrap"
-                                       FontFamily="Consolas, Segoe UI" Width="503"/>
+                                       FontFamily="{DynamicResource AppFontFamily}"/>
                         </ScrollViewer>
                     </Border>
 
-                    <Border Grid.Row="2" Background="#2B2B2B" CornerRadius="8" Margin="0,15,0,0" Padding="10,8">
+                    <Border Grid.Row="2" Background="{DynamicResource MainBackgroundBrushServer}" BorderBrush="{DynamicResource SubtleBorderBrush}" BorderThickness="1" CornerRadius="8" Margin="0,15,0,0" Padding="10,8">
                         <CheckBox x:Name="ChkAllowCrashReports" IsChecked="True" Cursor="Hand" Background="Transparent" Foreground="{DynamicResource MainForegroundBrush}">
                             <TextBlock Foreground="{DynamicResource MainForegroundBrush}" TextWrapping="Wrap">
                                 <Run x:Name="RunCrashTitle" FontWeight="SemiBold" Text="Дозволити анонімну відправку звітів про помилки."/>
                                 <LineBreak/>
-                                <Run x:Name="RunCrashDesc" FontSize="11" Foreground="Gray" Text="Це допоможе нам швидше виправляти баги. Жодні особисті дані не збираються."/>
+                                <Run x:Name="RunCrashDesc" FontSize="11" Foreground="{DynamicResource MutedForegroundBrush}" Text="Це допоможе нам швидше виправляти баги. Жодні особисті дані не збираються."/>
                             </TextBlock>
                         </CheckBox>
                     </Border>
@@ -93,7 +93,7 @@
                                   Width="160" Height="40"
                                   VerticalContentAlignment="Center" HorizontalContentAlignment="Stretch"
                                   SelectionChanged="LanguageComboBox_SelectionChanged"
-                                  Background="#2B2B2B" Foreground="{DynamicResource MainForegroundBrush}" BorderBrush="#333333" Cursor="Hand">
+                                  Background="{DynamicResource MainBackgroundButton}" Foreground="{DynamicResource MainForegroundBrush}" BorderBrush="{DynamicResource SubtleBorderBrush}" Cursor="Hand">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate x:DataType="models:LanguageItem">
                                     <StackPanel Orientation="Horizontal" Margin="2" Background="Transparent">
@@ -101,7 +101,7 @@
 
                                             <Image Source="{Binding FlagUrl, Converter={StaticResource BitmapConverter}}" Stretch="UniformToFill" />
                                         </Border>
-                                        <TextBlock Text="{Binding Name}" FontWeight="Medium" VerticalAlignment="Center" Foreground="White"/>
+                                        <TextBlock Text="{Binding Name}" FontWeight="Medium" VerticalAlignment="Center" Foreground="{DynamicResource MainForegroundBrush}"/>
                                     </StackPanel>
                                 </DataTemplate>
                             </ComboBox.ItemTemplate>

@@ -19,16 +19,17 @@
             <Setter Property="Cursor" Value="Hand" />
         </Style>
         <Style Selector="Button.card-action-btn:pointerover /template/ ContentPresenter">
-            <Setter Property="Background" Value="#25FFFFFF" />
+            <Setter Property="Background" Value="{DynamicResource SubtleHoverBrush}" />
             <Setter Property="Foreground" Value="{DynamicResource MainForegroundBrush}" />
         </Style>
         <Style Selector="Button.card-action-btn:pressed /template/ ContentPresenter">
-            <Setter Property="Background" Value="#40FFFFFF" />
+            <Setter Property="Background" Value="{DynamicResource SubtlePressedBrush}" />
             <Setter Property="Foreground" Value="{DynamicResource MainForegroundBrush}" />
         </Style>
     </UserControl.Styles>
 
     <Border x:Name="Border" BorderThickness="1"
+            BorderBrush="{DynamicResource SubtleBorderBrush}"
             Background="{DynamicResource MainBackgroundBrushServer}"
             CornerRadius="8" Margin="0,0,0,5">
 

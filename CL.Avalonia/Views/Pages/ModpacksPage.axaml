@@ -10,9 +10,9 @@
              mc:Ignorable="d" d:DesignWidth="960" d:DesignHeight="540"
              x:Class="CL_CLegendary_Launcher_.Avalonia.Views.Pages.ModPacksPage"
              x:CompileBindings="False">
-    <Grid>
+    <Grid ClipToBounds="True">
         <Grid x:Name="ListModsBuild"
-              Background="Transparent" IsVisible="True">
+              Background="Transparent" IsVisible="True" ClipToBounds="True">
 
             <Border IsVisible="{DynamicResource GlassVisibility}">
                 <Border.Background>
@@ -24,12 +24,10 @@
             </Border>
             <Border CornerRadius="12" Background="{DynamicResource GlassTintBrush}" />
 
-            <Border Background="{DynamicResource GlassTintBrush}" Opacity="0.6" />
-
-            <Grid Margin="10,10,110,10">
+            <Grid Margin="24,88,24,20">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" MinWidth="108.25" />
-                            <ColumnDefinition />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
 
                         <Grid x:Name="FilterGird"
@@ -39,6 +37,7 @@
 
                             <Border x:Name="BorderFilter"
                             BorderThickness="1"
+                            BorderBrush="{DynamicResource SubtleBorderBrush}"
                             Background="{DynamicResource MainBackgroundBrushServer}"
                             CornerRadius="12" />
 
@@ -51,9 +50,9 @@
                         </Grid>
 
                         <Grid Grid.Column="1"
-                      HorizontalAlignment="Center"
-                      Width="650"
-                      Margin="0,75,0,0">
+                      HorizontalAlignment="Stretch"
+                      MaxWidth="780"
+                      Margin="0">
 
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
@@ -62,12 +61,9 @@
                             </Grid.RowDefinitions>
 
                             <TextBox x:Name="SearchSystemModsTXT1"
+                                     Classes="search-input"
                                      Grid.Row="0"
                                      Height="38"
-                                     CornerRadius="8"
-                                     Background="Transparent"
-                                     BorderThickness="0"
-                                     Foreground="{DynamicResource MainForegroundBrush}"
                                      VerticalContentAlignment="Center"
                                      Padding="10,0"
                                      FontSize="13"
@@ -77,16 +73,6 @@
                                 <TextBox.InnerLeftContent>
                                     <ic:SymbolIcon Symbol="Search" Margin="8,0,4,0" />
                                 </TextBox.InnerLeftContent>
-                                <TextBox.Styles>
-                                    <Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
-                                        <Setter Property="Background" Value="Transparent" />
-                                        <Setter Property="BorderThickness" Value="0" />
-                                    </Style>
-                                    <Style Selector="TextBox:pointerover /template/ Border#PART_BorderElement">
-                                        <Setter Property="Background" Value="Transparent" />
-                                        <Setter Property="BorderThickness" Value="0" />
-                                    </Style>
-                                </TextBox.Styles>
                             </TextBox>
 
                             <Grid Grid.Row="1" Margin="0,0,0,15" Height="40">
@@ -97,22 +83,12 @@
                                 </Grid.ColumnDefinitions>
 
                                 <Border x:Name="BorderFonPackMinecraft"
-                                BorderBrush="Black"
+                                BorderBrush="{DynamicResource SubtleBorderBrush}"
                                 BorderThickness="1"
                                 Grid.ColumnSpan="3"
                                 Margin="-4,-4,-6,-4"
-                                RenderTransformOrigin="50%,50%"
                                 Background="{DynamicResource MainBackgroundBrushServer}"
-                                CornerRadius="8">
-                                    <Border.RenderTransform>
-                                        <TransformGroup>
-                                            <ScaleTransform ScaleY="-1" />
-                                            <SkewTransform />
-                                            <RotateTransform />
-                                            <TranslateTransform />
-                                        </TransformGroup>
-                                    </Border.RenderTransform>
-                                </Border>
+                                CornerRadius="8" />
 
                                 <Border x:Name="ImportModPacks"
                                 Grid.Column="0"
@@ -170,7 +146,9 @@
                                  Background="Transparent"
                                  BorderBrush="{x:Null}"
                                  BorderThickness="0"
-                                 Foreground="White"
+                                 Foreground="{DynamicResource MainForegroundBrush}"
+                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                 ScrollViewer.VerticalScrollBarVisibility="Auto"
                                  ItemsSource="{Binding ModpackCards}">
                                 <ListBox.Styles>
                                     <Style Selector="ListBox">
@@ -185,7 +163,7 @@
                                         <Setter Property="Background" Value="Transparent" />
                                     </Style>
                                     <Style Selector="ListBoxItem">
-                                        <Setter Property="HorizontalContentAlignment" Value="Center" />
+                                        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
                                         <Setter Property="Padding" Value="0" />
                                         <Setter Property="Margin" Value="0,6" />
                                         <Setter Property="Background" Value="Transparent" />

@@ -26,6 +26,7 @@ public class AvaloniaThemeService
 
     public event Action<MainThemeConfig>? ThemeChanged;
     public event Action<Bitmap?>? BackgroundBitmapChanged;
+    public event Action<bool>? GlassEffectChanged;
 
     public string CurrentTheme { get; private set; } = "Dark";
     public MainThemeConfig? CurrentConfig { get; private set; }
@@ -187,6 +188,29 @@ public class AvaloniaThemeService
         UpdateResource(resources, "MainBorderBrush", config.TextColor);
         UpdateResource(resources, "MainBackgroundButton", config.ButtonColor);
 
+        bool isLightSurface = IsColorLight(config.BackgroundColor);
+        if (Color.TryParse(NormalizeHex(config.TextColor), out var fgColor))
+        {
+            UpdateBrush(resources, "MutedForegroundBrush", fgColor, 0.68);
+        }
+        UpdateBrush(resources, "SubtleBorderBrush", isLightSurface ? Colors.Black : Colors.White, 0.16);
+        UpdateBrush(resources, "InputBorderBrush", isLightSurface ? Colors.Black : Colors.White, 0.24);
+        UpdateBrush(resources, "SubtleHoverBrush", isLightSurface ? Colors.Black : Colors.White, 0.10);
+        UpdateBrush(resources, "SubtlePressedBrush", isLightSurface ? Colors.Black : Colors.White, 0.18);
+        UpdateBrush(resources, "ModalScrimBrush", Colors.Black, isLightSurface ? 0.35 : 0.55);
+        UpdateResource(resources, "LinkForegroundBrush", isLightSurface ? "#FF1D4ED8" : "#FF60A5FA");
+
+        if (Color.TryParse(NormalizeHex(config.SectionColor), out var secColor))
+        {
+            byte offset = isLightSurface ? (byte)0 : (byte)8;
+            var inputColor = Color.FromArgb(
+                255,
+                isLightSurface ? (byte)Math.Min(255, secColor.R + 28) : (byte)Math.Max(0, secColor.R - offset),
+                isLightSurface ? (byte)Math.Min(255, secColor.G + 28) : (byte)Math.Max(0, secColor.G - offset),
+                isLightSurface ? (byte)Math.Min(255, secColor.B + 28) : (byte)Math.Max(0, secColor.B - offset));
+            UpdateBrush(resources, "InputBackgroundBrush", inputColor, 1.0);
+        }
+
         if (Color.TryParse(NormalizeHex(config.BackgroundColor), out var bgColor))
         {
             double opacity = SettingsManager.Default.DisableGlassEffect ? 1.0 : 0.6;
@@ -306,6 +330,7 @@ public class AvaloniaThemeService
         resources["GlassTintBrush"] = new SolidColorBrush(baseColor, opacity);
         resources["GlassBlurRadius"] = isGlassDisabled ? 0.0 : 20.0;
         resources["GlassVisibility"] = !isGlassDisabled;
+        GlassEffectChanged?.Invoke(isGlassDisabled);
     }
 
     public async Task<string?> PickColorAsync(string? currentHex)
@@ -497,6 +522,16 @@ public class AvaloniaThemeService
             : "Inter, Segoe UI, sans-serif";
 
         Application.Current.Resources["AppFontFamily"] = new FontFamily(targetFont);
+    }
+
+    private static void UpdateBrush(IResourceDictionary resources, string key, Color color, double opacity)
+    {
+        if (resources.TryGetResource(key, null, out var existing) && existing is SolidColorBrush scb)
+        {
+            scb.Color = color;
+            scb.Opacity = opacity;
+        }
+        resources[key] = new SolidColorBrush(color, opacity);
     }
 
     private static void UpdateResource(IResourceDictionary resources, string key, string? hexColor)

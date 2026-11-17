@@ -7,6 +7,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using CL.Core.Models;
 using CL.Core.Services;
+using CL_CLegendary_Launcher_.Avalonia.Services;
 using CL_CLegendary_Launcher_.Avalonia.ViewModels;
 using CL_CLegendary_Launcher_.Avalonia.Views.Dialogs;
 using CL_CLegendary_Launcher_.Avalonia.Views.Windows;
@@ -135,10 +136,10 @@ namespace CL_CLegendary_Launcher_.Avalonia.Views.Controls
 
             var animationTask = SimulateLoadingAnimationAsync();
 
-            bool updateAvailable = false;
+            LauncherUpdateCheckResult? updateResult = null;
             try
             {
-                updateAvailable = await CheckForUpdatesAsync();
+                updateResult = await LauncherUpdateCoordinator.CheckForUpdatesAsync(respectSkippedVersion: true);
             }
             catch (Exception)
             {
@@ -146,11 +147,11 @@ namespace CL_CLegendary_Launcher_.Avalonia.Views.Controls
                 SettingsManager.Save();
             }
 
-            if (updateAvailable)
+            if (updateResult != null)
             {
                 await Dispatcher.UIThread.InvokeAsync(() =>
                 {
-                    var updater = new UpdaterWindow();
+                    var updater = new UpdaterWindow(updateResult);
                     if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
                     {
                         desktop.MainWindow = updater;
@@ -185,53 +186,8 @@ namespace CL_CLegendary_Launcher_.Avalonia.Views.Controls
             }
         }
 
-        private async Task<bool> CheckForUpdatesAsync()
-        {
-            string skippedVersion = (SettingsManager.Default.SkippedUpdateVersion ?? "").Trim().TrimStart('v', 'V');
-            bool isPrerelease = string.Equals(SettingsManager.Default.UpdateChannel, "Preview", StringComparison.OrdinalIgnoreCase);
-
-            try
-            {
-                var source = new global::Velopack.Sources.GithubSource("https://github.com/WER-CORE/CL-Win-Edition--Update", null, isPrerelease);
-                var mgr = new global::Velopack.UpdateManager(source);
-                if (mgr.IsInstalled)
-                {
-                    var updateInfo = await mgr.CheckForUpdatesAsync();
-                    if (updateInfo != null && updateInfo.TargetFullRelease != null)
-                    {
-                        string targetVer = updateInfo.TargetFullRelease.Version.ToString().Trim().TrimStart('v', 'V');
-                        if (!string.IsNullOrEmpty(skippedVersion) && string.Equals(targetVer, skippedVersion, StringComparison.OrdinalIgnoreCase))
-                        {
-                            return false;
-                        }
-                        return true;
-                    }
-                    return false;
-                }
-            }
-            catch { }
-
-            try
-            {
-                var updateService = new UpdateService();
-                var info = await updateService.CheckForUpdateFromGitHubAsync("WER-CORE/CL-Win-Edition--Update", isPrerelease)
-                           ?? await updateService.CheckForUpdateAsync(Secrets.updateInfoUrl);
-
-                if (info != null && !string.IsNullOrEmpty(info.Version))
-                {
-                    string remoteVer = info.Version.Trim().TrimStart('v', 'V');
-                    if (!string.IsNullOrEmpty(skippedVersion) && string.Equals(remoteVer, skippedVersion, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return false;
-                    }
-
-                    return updateService.IsUpdateAvailable(info.Version, UpdateService.GetCurrentLauncherVersion());
-                }
-            }
-            catch { }
-
-            return false;
-        }
+        private Task<LauncherUpdateCheckResult?> CheckForUpdatesAsync() =>
+            LauncherUpdateCoordinator.CheckForUpdatesAsync(respectSkippedVersion: true);
 
         private async Task LoadLocalizedPhrases()
         {

@@ -26,12 +26,12 @@
 		<PackageReference Include="DiscordRichPresence" Version="1.6.1.70" />
 		<PackageReference Include="GTranslate" Version="2.4.0" />
 		<PackageReference Include="HtmlAgilityPack" Version="1.13.1" />
-		<PackageReference Include="MojangAPI" Version="1.2.1" />
+		<PackageReference Include="MojangAPI" Version="2.1.0" />
 		<PackageReference Include="Mono.Nat" Version="3.0.4" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
 		<PackageReference Include="Optifine.Installer" Version="1.0.1" />
-		<PackageReference Include="Sentry" Version="6.12.1" />
-		<PackageReference Include="SharpCompress" Version="0.50.7" />
+		<PackageReference Include="Sentry" Version="7.0.1" />
+		<PackageReference Include="SharpCompress" Version="0.50.9" />
 		<PackageReference Include="XboxAuthNet.Game.Msal" Version="0.2.0" />
 	</ItemGroup>
 

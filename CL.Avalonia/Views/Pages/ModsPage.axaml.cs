@@ -110,15 +110,22 @@ public partial class ModsPage : UserControl
     private void OnModCardsChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         ScrollModsToTop();
-        if (ModsDowloadList != null && ModsDowloadList.IsVisible)
+        if (ModsDowloadList != null && _boundVm is { IsLoading: false })
         {
-            AvaloniaAnimationService.AnimatePageTransition(ModsDowloadList, 20, 0.25);
+            ModsDowloadList.IsVisible = true;
+            ModsDowloadList.Opacity = 1;
+            ModsDowloadList.InvalidateMeasure();
         }
     }
 
     private void ModsPage_Loaded(object? sender, RoutedEventArgs e)
     {
         UpdateIndicatorPosition(animate: false);
+        SizeChanged += (_, _) =>
+        {
+            ModsDowloadList?.InvalidateMeasure();
+            UpdateIndicatorPosition(animate: false);
+        };
     }
 
     private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -133,7 +140,9 @@ public partial class ModsPage : UserControl
                 if (!_boundVm.IsLoading)
                 {
                     ScrollModsToTop();
-                    AvaloniaAnimationService.AnimatePageTransition(ModsDowloadList, 20, 0.25);
+                    ModsDowloadList.IsVisible = true;
+                    ModsDowloadList.Opacity = 1;
+                    ModsDowloadList.InvalidateMeasure();
                 }
                 else
                 {

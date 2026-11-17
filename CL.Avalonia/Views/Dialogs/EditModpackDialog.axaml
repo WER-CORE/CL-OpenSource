@@ -130,29 +130,13 @@
                           RowDefinitions="Auto,*">
 
                         <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,15">
-                            <TextBox Grid.Column="0" Text="{Binding SearchQuery, Mode=TwoWay}"
+                            <TextBox Grid.Column="0" Classes="search-input" Text="{Binding SearchQuery, Mode=TwoWay}"
                                      PlaceholderText="{Binding SearchPlaceholder}"
-                                     Background="Transparent" BorderThickness="0"
-                                     Height="40" CornerRadius="8" Margin="0,0,10,0" VerticalContentAlignment="Center"
-                                     Padding="10,0" FontSize="13"
-                                     Foreground="{DynamicResource MainForegroundBrush}">
+                                     Height="40" Margin="0,0,10,0" VerticalContentAlignment="Center"
+                                     Padding="10,0" FontSize="13">
                                 <TextBox.InnerLeftContent>
-                                    <fluentIcons:SymbolIcon Symbol="Search" FontSize="18" Margin="8,0,5,0" Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.7"/>
+                                    <fluentIcons:SymbolIcon Symbol="Search" FontSize="18" Margin="8,0,5,0" Foreground="{DynamicResource MutedForegroundBrush}"/>
                                 </TextBox.InnerLeftContent>
-                                <TextBox.Styles>
-                                    <Style Selector="TextBox /template/ Border#PART_BorderElement">
-                                        <Setter Property="Background" Value="Transparent" />
-                                        <Setter Property="BorderThickness" Value="0" />
-                                    </Style>
-                                    <Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
-                                        <Setter Property="Background" Value="Transparent" />
-                                        <Setter Property="BorderThickness" Value="0" />
-                                    </Style>
-                                    <Style Selector="TextBox:pointerover /template/ Border#PART_BorderElement">
-                                        <Setter Property="Background" Value="Transparent" />
-                                        <Setter Property="BorderThickness" Value="0" />
-                                    </Style>
-                                </TextBox.Styles>
                             </TextBox>
 
                             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="5">

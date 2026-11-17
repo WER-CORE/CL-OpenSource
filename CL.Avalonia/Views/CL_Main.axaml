@@ -18,8 +18,8 @@
         WindowStartupLocation="CenterScreen"
         WindowState="{Binding WindowState, Mode=TwoWay}"
         Background="Transparent"
-        TransparencyLevelHint="Transparent"
-        TransparencyBackgroundFallback="Transparent"
+        TransparencyLevelHint="Mica, AcrylicBlur, Blur, Transparent, None"
+        TransparencyBackgroundFallback="{DynamicResource MainBackgroundBrush}"
         WindowDecorations="None"
         ExtendClientAreaToDecorationsHint="True"
         ExtendClientAreaTitleBarHeightHint="-1">
@@ -28,14 +28,14 @@
 		<Style Selector="Border#MainRootBorder">
 			<Setter Property="CornerRadius" Value="12" />
 			<Setter Property="BorderThickness" Value="1" />
-			<Setter Property="BorderBrush" Value="#25FFFFFF" />
+			<Setter Property="BorderBrush" Value="{DynamicResource SubtleBorderBrush}" />
 		</Style>
 		<Style Selector="Window[WindowState=Maximized] Border#MainRootBorder, Window[WindowState=FullScreen] Border#MainRootBorder">
 			<Setter Property="CornerRadius" Value="0" />
 			<Setter Property="BorderThickness" Value="0" />
 		</Style>
 		<Style Selector="Button.win-control-btn:pointerover /template/ ContentPresenter">
-			<Setter Property="Background" Value="#20FFFFFF"/>
+			<Setter Property="Background" Value="{DynamicResource SubtleHoverBrush}"/>
 		</Style>
 		<Style Selector="Button.close-btn:pointerover /template/ ContentPresenter">
 			<Setter Property="Background" Value="#C42B1C"/>
@@ -44,40 +44,58 @@
 		<Style Selector="Button">
 			<Setter Property="Background" Value="{DynamicResource MainBackgroundButton}" />
 			<Setter Property="Foreground" Value="{DynamicResource MainForegroundBrush}" />
-			<Setter Property="FontFamily" Value="Inter, Arial" />
+			<Setter Property="FontFamily" Value="{DynamicResource AppFontFamily}" />
 		</Style>
 		<Style Selector="Label">
 			<Setter Property="Foreground" Value="{DynamicResource MainForegroundBrush}" />
-			<Setter Property="FontFamily" Value="Inter, Arial" />
+			<Setter Property="FontFamily" Value="{DynamicResource AppFontFamily}" />
 		</Style>
 		<Style Selector="MenuFlyoutPresenter">
 			<Setter Property="Background" Value="{DynamicResource MainBackgroundBrushServer}" />
-			<Setter Property="BorderBrush" Value="#33FFFFFF" />
+			<Setter Property="BorderBrush" Value="{DynamicResource SubtleBorderBrush}" />
 			<Setter Property="BorderThickness" Value="1" />
 			<Setter Property="CornerRadius" Value="10" />
 		</Style>
 		<Style Selector="MenuItem">
 			<Setter Property="Foreground" Value="{DynamicResource MainForegroundBrush}" />
 		</Style>
+		<Style Selector="Border.nav-pill-item">
+			<Setter Property="BorderThickness" Value="1" />
+			<Setter Property="BorderBrush" Value="Transparent" />
+			<Setter Property="Focusable" Value="True" />
+			<Setter Property="Transitions">
+				<Transitions>
+					<BrushTransition Property="Background" Duration="0:0:0.12" />
+				</Transitions>
+			</Setter>
+		</Style>
+		<Style Selector="Border.nav-pill-item:pointerover">
+			<Setter Property="Background" Value="{DynamicResource SubtleHoverBrush}" />
+		</Style>
+		<Style Selector="Border.nav-pill-item:focus-visible">
+			<Setter Property="BorderBrush" Value="{DynamicResource MainBackgroundProgressBar}" />
+		</Style>
 	</Window.Styles>
-	<LayoutTransformControl HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+	<LayoutTransformControl x:Name="RootLayoutTransform" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ClipToBounds="True">
 		<LayoutTransformControl.LayoutTransform>
 			<ScaleTransform ScaleX="{Binding UiScale}" ScaleY="{Binding UiScale}" />
 		</LayoutTransformControl.LayoutTransform>
     <Border Name="MainRootBorder" Background="{DynamicResource MainBackgroundBrush}" CornerRadius="12" ClipToBounds="True">
-    <Grid>
+    <Grid ClipToBounds="True">
 
-        <Grid Name="MainBackgroundContainer"
-              Background="{DynamicResource MainBackgroundBrush}"
-              HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-            <Image Name="Bg"
-                   HorizontalAlignment="Center"
-                   VerticalAlignment="Center"
-                   Stretch="UniformToFill"
-                   IsHitTestVisible="False" />
-        </Grid>
+        <Grid x:Name="BackdropContentLayer" ClipToBounds="True">
+            <Grid Name="MainBackgroundContainer"
+                  Background="{DynamicResource MainBackgroundBrush}"
+                  HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                  ClipToBounds="True">
+                <Image Name="Bg"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       Stretch="UniformToFill"
+                       IsHitTestVisible="False" />
+            </Grid>
 
-        <Grid Name="MainContentGrid" Background="Transparent">
+            <Grid Name="MainContentGrid" Background="Transparent" ClipToBounds="True">
             <Grid.RowDefinitions>
                 <RowDefinition />
             </Grid.RowDefinitions>
@@ -85,7 +103,7 @@
                 <ColumnDefinition />
             </Grid.ColumnDefinitions>
 
-            <ContentControl x:Name="PageHost" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+            <ContentControl x:Name="PageHost" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ClipToBounds="True" />
 
             <Grid Name="PanelSelectionAndAccount">
                 <Grid.ColumnDefinitions>
@@ -135,7 +153,7 @@
                             HorizontalAlignment="Center"
                             BorderThickness="1"
                             CornerRadius="26"
-                            BorderBrush="#15FFFFFF"
+                            BorderBrush="{DynamicResource SubtleBorderBrush}"
                             Background="Transparent"
                             ClipToBounds="True">
                         <Grid Name="SelectPanelGrid">
@@ -165,8 +183,9 @@
 
                             <StackPanel Name="TopMenuStackPanel" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="8,0">
 
-                                <Border Name="PlayBtnBorder" CornerRadius="18" Height="36" Margin="0,0,2,0" Padding="12,0"
+                                <Border Name="PlayBtnBorder" Classes="nav-pill-item" CornerRadius="18" Height="36" Margin="0,0,2,0" Padding="12,0"
                                         Background="Transparent" Cursor="Hand" PointerPressed="PlayTXTPanelSelect_MouseDown"
+                                        KeyDown="NavMenuItem_KeyDown" Tag="0"
                                         ToolTip.Tip="Головна сторінка"
                                         PointerEntered="MenuButton_MouseEnter" PointerExited="MenuButton_MouseLeave">
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"
@@ -180,8 +199,9 @@
                                     </StackPanel>
                                 </Border>
 
-                                <Border Name="ModpacksBtnBorder" CornerRadius="18" Height="36" Margin="0,0,2,0" Padding="12,0"
+                                <Border Name="ModpacksBtnBorder" Classes="nav-pill-item" CornerRadius="18" Height="36" Margin="0,0,2,0" Padding="12,0"
                                         Background="Transparent" Cursor="Hand" PointerPressed="modbuilds_MouseDown"
+                                        KeyDown="NavMenuItem_KeyDown" Tag="1"
                                         ToolTip.Tip="Створити або імпортувати збірку"
                                         PointerEntered="MenuButton_MouseEnter" PointerExited="MenuButton_MouseLeave">
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"
@@ -196,8 +216,9 @@
                                     </StackPanel>
                                 </Border>
 
-                                <Border Name="ModsBtnBorder" CornerRadius="18" Height="36" Margin="0,0,2,0" Padding="12,0"
+                                <Border Name="ModsBtnBorder" Classes="nav-pill-item" CornerRadius="18" Height="36" Margin="0,0,2,0" Padding="12,0"
                                         Background="Transparent" Cursor="Hand" PointerPressed="ModsTXTPanelSelect_MouseDown"
+                                        KeyDown="NavMenuItem_KeyDown" Tag="2"
                                         ToolTip.Tip="Завантаження модів"
                                         PointerEntered="MenuButton_MouseEnter" PointerExited="MenuButton_MouseLeave">
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"
@@ -211,8 +232,9 @@
                                     </StackPanel>
                                 </Border>
 
-                                <Border Name="ServersBtnBorder" CornerRadius="18" Height="36" Margin="0,0,2,0" Padding="12,0"
+                                <Border Name="ServersBtnBorder" Classes="nav-pill-item" CornerRadius="18" Height="36" Margin="0,0,2,0" Padding="12,0"
                                         Background="Transparent" Cursor="Hand" PointerPressed="ServerTXTPanelSelect_MouseDown"
+                                        KeyDown="NavMenuItem_KeyDown" Tag="3"
                                         ToolTip.Tip="Список серверів"
                                         PointerEntered="MenuButton_MouseEnter" PointerExited="MenuButton_MouseLeave">
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"
@@ -227,8 +249,9 @@
                                     </StackPanel>
                                 </Border>
 
-                                <Border Name="GalleryBtnBorder" CornerRadius="18" Height="36" Margin="0" Padding="12,0"
+                                <Border Name="GalleryBtnBorder" Classes="nav-pill-item" CornerRadius="18" Height="36" Margin="0" Padding="12,0"
                                         Background="Transparent" Cursor="Hand" PointerPressed="PhotoMinecraftTXT_MouseDown"
+                                        KeyDown="NavMenuItem_KeyDown" Tag="4"
                                         ToolTip.Tip="Скріншоти"
                                         PointerEntered="MenuButton_MouseEnter" PointerExited="MenuButton_MouseLeave">
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"
@@ -264,10 +287,10 @@
                     <Border Name="SelectPanelAccount"
                             BorderThickness="1"
                             CornerRadius="26"
-                            BorderBrush="#15FFFFFF"
+                            BorderBrush="{DynamicResource SubtleBorderBrush}"
                             Background="Transparent"
                             Height="52"
-                            Width="180"
+                            Width="192"
                             ClipToBounds="True">
                         <Grid>
 
@@ -288,39 +311,49 @@
 
                             <Border CornerRadius="26" Background="{DynamicResource GlassTintBrush}" />
 
-                            <Grid Cursor="Hand" PointerPressed="IconAccount_MouseDown" Background="Transparent">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto" />
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
+                            <Button Classes="subtle-action"
+                                    Click="AccountTriggerBtn_Click"
+                                    HorizontalAlignment="Stretch"
+                                    VerticalAlignment="Stretch"
+                                    HorizontalContentAlignment="Stretch"
+                                    VerticalContentAlignment="Center"
+                                    Padding="0"
+                                    CornerRadius="26"
+                                    ToolTip.Tip="{Binding CurrentAccountName}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
 
-                                <Image Name="IconAccount" Grid.Column="0"
-                                       Source="{Binding CurrentAccountAvatar}"
-                                       Width="30" Height="30"
-                                       Margin="8,0,0,0" VerticalAlignment="Center" />
+                                    <Image Name="IconAccount" Grid.Column="0"
+                                           Source="{Binding CurrentAccountAvatar}"
+                                           Width="30" Height="30"
+                                           Margin="10,0,0,0" VerticalAlignment="Center" />
 
-                                <TextBlock Name="NameNik" Grid.Column="1"
-                                           Text="{Binding CurrentAccountName}"
-                                           FontFamily="{DynamicResource AppFontFamily}" FontSize="12"
-                                           Foreground="{DynamicResource MainForegroundBrush}"
-                                           VerticalAlignment="Center" HorizontalAlignment="Left"
-                                           Margin="10,0,5,0"
-                                           TextTrimming="CharacterEllipsis" />
+                                    <TextBlock Name="NameNik" Grid.Column="1"
+                                               Text="{Binding CurrentAccountName}"
+                                               FontFamily="{DynamicResource AppFontFamily}" FontSize="12" FontWeight="Medium"
+                                               Foreground="{DynamicResource MainForegroundBrush}"
+                                               VerticalAlignment="Center" HorizontalAlignment="Left"
+                                               Margin="10,0,5,0"
+                                               TextTrimming="CharacterEllipsis" />
 
-                                <Border Name="CheckMarkAccount" Grid.Column="2"
-                                        Width="20" Height="20"
-                                        Margin="0,0,8,0" VerticalAlignment="Center"
-                                        HorizontalAlignment="Center" Background="Transparent"
-                                        RenderTransformOrigin="50%,50%">
-                                    <Border.RenderTransform>
-                                        <RotateTransform Angle="0" />
-                                    </Border.RenderTransform>
-                                    <ic:SymbolIcon Symbol="ChevronDown" FontSize="14"
-                                                   Foreground="{DynamicResource MainForegroundBrush}"
-                                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                </Border>
-                            </Grid>
+                                    <Border Name="CheckMarkAccount" Grid.Column="2"
+                                            Width="20" Height="20"
+                                            Margin="0,0,10,0" VerticalAlignment="Center"
+                                            HorizontalAlignment="Center" Background="Transparent"
+                                            RenderTransformOrigin="50%,50%">
+                                        <Border.RenderTransform>
+                                            <RotateTransform Angle="0" />
+                                        </Border.RenderTransform>
+                                        <ic:SymbolIcon Symbol="ChevronDown" FontSize="14"
+                                                       Foreground="{DynamicResource MainForegroundBrush}"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    </Border>
+                                </Grid>
+                            </Button>
                         </Grid>
                     </Border>
                 </Grid>
@@ -329,43 +362,45 @@
             <Grid Name="PanelListStats"
                   HorizontalAlignment="Right"
                   VerticalAlignment="Top"
-                  Width="206"
-                  Height="134"
-                  Margin="0,80,20,0"
+                  Width="236"
+                  MinHeight="130"
+                  MaxHeight="280"
+                  Margin="0,84,25,0"
                   ZIndex="25"
                   IsVisible="False">
 
                 <Border Name="OnllinePanel1"
                         BorderThickness="1"
                         CornerRadius="16"
-                        Background="Transparent"
-                        BorderBrush="#33FFFFFF"
-                        ClipToBounds="True">
-                    <Grid>
+                        Background="{DynamicResource MainBackgroundBrushServer}"
+                        BorderBrush="{DynamicResource SubtleBorderBrush}"
+                        BoxShadow="0 8 24 0 #4D000000" />
 
-                        <Border CornerRadius="12" IsVisible="{DynamicResource GlassVisibility}">
-                            <Border.Background>
-
-                                <VisualBrush Visual="{Binding #MainBackgroundContainer}" Stretch="None" />
-                            </Border.Background>
-                            <Border.Effect>
-                                <BlurEffect Radius="{DynamicResource GlassBlurRadius}" />
-                            </Border.Effect>
-                        </Border>
-                        <Border CornerRadius="12" Background="{DynamicResource GlassTintBrush}" />
-
-                        <Border CornerRadius="16"
-                                Background="{DynamicResource GlassTintBrush}"
-                                Opacity="0.6" />
+                <Grid Margin="12,10,12,12" RowDefinitions="Auto,Auto,*">
+                    <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,6">
+                        <ic:SymbolIcon Grid.Column="0" Symbol="DataBarVertical" FontSize="15"
+                                       Foreground="{DynamicResource MainForegroundBrush}"
+                                       VerticalAlignment="Center" Margin="0,0,8,0" />
+                        <TextBlock Grid.Column="1" x:Name="Loc_StatsPanelTitle" Text="Статистика"
+                                   FontFamily="{DynamicResource AppFontFamily}" FontSize="13" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource MainForegroundBrush}"
+                                   VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                        <Button Grid.Column="2" Classes="subtle-action" Click="CloseStatsBtn_Click"
+                                Width="24" Height="24" Padding="0" CornerRadius="6"
+                                ToolTip.Tip="Закрити">
+                            <ic:SymbolIcon Symbol="Dismiss" FontSize="12" Foreground="{DynamicResource MutedForegroundBrush}" />
+                        </Button>
                     </Grid>
-                </Border>
 
-                <Grid>
-                    <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="5">
+                    <Border Grid.Row="1" Height="1" Background="{DynamicResource SubtleBorderBrush}" Margin="0,0,0,8" />
+
+                    <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                         <TextBlock Name="TextStatsGameMinecraft"
                                    Text="Завантаження..."
                                    HorizontalAlignment="Stretch"
                                    VerticalAlignment="Top"
+                                   TextWrapping="Wrap"
+                                   LineHeight="19"
                                    FontFamily="{DynamicResource AppFontFamily}"
                                    FontSize="12"
                                    Foreground="{DynamicResource MainForegroundBrush}"
@@ -377,32 +412,20 @@
             <Grid Name="PanelManegerAccount"
                   HorizontalAlignment="Right"
                   VerticalAlignment="Top"
-                  Width="206"
-                  Margin="0,80,20,0"
+                  Width="236"
+                  Margin="0,84,25,0"
                   IsVisible="False" ZIndex="25">
 
                 <Border Name="OnllinePanel"
                         BorderThickness="1"
                         CornerRadius="16"
-                        Background="Transparent"
-                        BorderBrush="#33FFFFFF"
-                        ClipToBounds="True">
-                    <Grid>
+                        Background="{DynamicResource MainBackgroundBrushServer}"
+                        BorderBrush="{DynamicResource SubtleBorderBrush}"
+                        BoxShadow="0 8 24 0 #4D000000" />
 
-                        <Border CornerRadius="16" IsVisible="{DynamicResource GlassVisibility}">
-                            <Border.Background>
-                                <VisualBrush Visual="{Binding #MainBackgroundContainer}" Stretch="None" />
-                            </Border.Background>
-                            <Border.Effect>
-                                <BlurEffect Radius="{DynamicResource GlassBlurRadius}" />
-                            </Border.Effect>
-                        </Border>
-                        <Border CornerRadius="16" Background="{DynamicResource GlassTintBrush}" />
-                    </Grid>
-                </Border>
-
-                <Grid>
+                <Grid Margin="6">
                     <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
@@ -412,10 +435,9 @@
                              ItemsSource="{Binding AccountCards}"
                              SelectedItem="{Binding SelectedAccountCard, Mode=TwoWay}"
                              Grid.Row="0"
-                             MaxHeight="200"
+                             MaxHeight="210"
                              HorizontalAlignment="Stretch"
                              VerticalAlignment="Top"
-                             Margin="0,5,0,0"
                              Background="Transparent"
                              BorderThickness="0"
                              Foreground="{DynamicResource MainForegroundBrush}"
@@ -430,237 +452,237 @@
 
                         <ListBox.Styles>
                             <Style Selector="ListBoxItem">
-                                <Setter Property="HorizontalContentAlignment" Value="Center" />
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
                                 <Setter Property="HorizontalAlignment" Value="Stretch" />
-                                <Setter Property="Padding" Value="5" />
+                                <Setter Property="Padding" Value="2,3" />
+                                <Setter Property="CornerRadius" Value="10" />
                                 <Setter Property="Cursor" Value="Hand" />
                                 <Setter Property="Background" Value="Transparent" />
                             </Style>
 
                             <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
-                                <Setter Property="Background" Value="#20FFFFFF" />
+                                <Setter Property="Background" Value="{DynamicResource SubtleHoverBrush}" />
                             </Style>
                             <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
-                                <Setter Property="Background" Value="#40FFFFFF" />
+                                <Setter Property="Background" Value="{DynamicResource SubtlePressedBrush}" />
                             </Style>
                         </ListBox.Styles>
                     </ListBox>
 
-                    <TextBlock Name="AddProfile"
-                               PointerPressed="AddProfile_MouseDown"
-                               Grid.Row="1"
-                               Text="Додати профіль +"
-                               HorizontalAlignment="Center"
-                               FontFamily="{DynamicResource AppFontFamily}" FontSize="12"
-                               Cursor="Hand"
-                               Foreground="{DynamicResource MainForegroundBrush}"
-                               Background="Transparent"
-                               Margin="0,5,0,0" />
+                    <Border Grid.Row="1" Height="1" Background="{DynamicResource SubtleBorderBrush}" Margin="6,6,6,4" />
 
-                    <TextBlock Name="StatsTextOpen"
-                               Grid.Row="2"
-                               Text="Статистика"
-                               HorizontalAlignment="Center"
-                               FontFamily="{DynamicResource AppFontFamily}" FontSize="12"
-                               Cursor="Hand"
-                               PointerPressed="StatsTextOpen_MouseDown"
-                               Foreground="{DynamicResource MainForegroundBrush}"
-                               Background="Transparent"
-                               Margin="0,0,0,5" />
+                    <Button x:Name="AddProfileBtn"
+                            Grid.Row="2"
+                            Classes="subtle-action"
+                            Click="AddProfileBtn_Click"
+                            Height="34"
+                            CornerRadius="9"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center"
+                            Padding="10,0">
+                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                            <ic:SymbolIcon Symbol="PersonAdd" FontSize="14" Foreground="{DynamicResource MainForegroundBrush}" />
+                            <TextBlock Name="AddProfile"
+                                       Text="Додати профіль +"
+                                       FontFamily="{DynamicResource AppFontFamily}" FontSize="12" FontWeight="Medium"
+                                       Foreground="{DynamicResource MainForegroundBrush}"
+                                       VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+
+                    <Button x:Name="StatsBtn"
+                            Grid.Row="3"
+                            Classes="subtle-action"
+                            Click="StatsBtn_Click"
+                            IsVisible="{Binding #StatsTextOpen.IsVisible}"
+                            Height="32"
+                            CornerRadius="9"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center"
+                            Padding="10,0"
+                            Margin="0,2,0,0">
+                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                            <ic:SymbolIcon Symbol="DataBarVertical" FontSize="14" Foreground="{DynamicResource MutedForegroundBrush}" />
+                            <TextBlock Name="StatsTextOpen"
+                                       Text="Статистика"
+                                       FontFamily="{DynamicResource AppFontFamily}" FontSize="12"
+                                       Foreground="{DynamicResource MutedForegroundBrush}"
+                                       VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
                 </Grid>
             </Grid>
 
         </Grid>
+        </Grid>
     <Grid x:Name="GridFormAccountAdd"
-              Background="Transparent"
+              Background="{DynamicResource ModalScrimBrush}"
               Cursor="Hand"
               ToolTip.Tip="Натисніть щоб повернутись"
-              PointerPressed="GirdFormAccountAdd_MouseDown" IsVisible="False" ZIndex="9">
+              PointerPressed="GirdFormAccountAdd_MouseDown" IsVisible="False" ZIndex="9" />
 
-                    <Border IsVisible="{DynamicResource GlassVisibility}">
-                        <Border.Background>
-                            <VisualBrush Visual="{Binding #MainBackgroundContainer}" Stretch="None" />
-                        </Border.Background>
-                        <Border.Effect>
-                            <BlurEffect Radius="{DynamicResource GlassBlurRadius}" />
-                        </Border.Effect>
-                    </Border>
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="12" ZIndex="10" Margin="16">
+                    <Grid x:Name="GridSelectAccountType" HorizontalAlignment="Center"
+                          MinWidth="296" MaxWidth="360" IsVisible="False">
+                        <Border BorderThickness="1" BorderBrush="{DynamicResource SubtleBorderBrush}" Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="12" Padding="8">
+                            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="6">
+                                <Button Grid.Column="0" Classes="subtle-action" Click="MicrosoftAccountBtn_Click"
+                                        CornerRadius="8" Padding="8,6" HorizontalAlignment="Stretch"
+                                        ToolTip.Tip="Microsoft Account">
+                                    <StackPanel Spacing="4" HorizontalAlignment="Center">
+                                        <Image x:Name="MicrosoftAccount" Source="/Assets/microsoft logo.webp" Width="28" Height="28"
+                                               RenderOptions.BitmapInterpolationMode="HighQuality" HorizontalAlignment="Center" />
+                                        <TextBlock Text="Microsoft" FontSize="11" Foreground="{DynamicResource MainForegroundBrush}" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                    </StackPanel>
+                                </Button>
 
-                    <Border CornerRadius="12" Background="{DynamicResource GlassTintBrush}" />
-                </Grid>
+                                <Button Grid.Column="1" Classes="subtle-action" Click="OfflineAccountBtn_Click"
+                                        CornerRadius="8" Padding="8,6" HorizontalAlignment="Stretch"
+                                        ToolTip.Tip="Offline Account">
+                                    <StackPanel Spacing="4" HorizontalAlignment="Center">
+                                        <Image x:Name="OfflineAccount" Source="/Assets/default_steve.webp" Width="28" Height="28"
+                                               RenderOptions.BitmapInterpolationMode="HighQuality" HorizontalAlignment="Center" />
+                                        <TextBlock Text="Offline" FontSize="11" Foreground="{DynamicResource MainForegroundBrush}" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                    </StackPanel>
+                                </Button>
 
-                <Border x:Name="GridOfflineMode"
-                Width="256"
-                VerticalAlignment="Center" HorizontalAlignment="Center"
-                Background="{DynamicResource MainBackgroundBrushServer}"
-                BorderThickness="1"
-                CornerRadius="14"
-                Padding="15" IsVisible="False" ZIndex="10">
-                    <StackPanel>
-                        <TextBlock x:Name="Loc_TxtOfflineAccountTitle" Text="Офлайн акаунт"
-                           HorizontalAlignment="Center" Margin="0,0,0,15"
-                           Foreground="{DynamicResource MainForegroundBrush}"
-                           FontSize="14" FontWeight="SemiBold" />
+                                <Button Grid.Column="2" Classes="subtle-action" Click="LittleSkinAccountBtn_Click"
+                                        CornerRadius="8" Padding="8,6" HorizontalAlignment="Stretch"
+                                        ToolTip.Tip="LittleSkin Account">
+                                    <StackPanel Spacing="4" HorizontalAlignment="Center">
+                                        <Image x:Name="LittleSkinAccount" Source="/Assets/LittleSkinAccount.webp" Width="28" Height="28"
+                                               RenderOptions.BitmapInterpolationMode="HighQuality" HorizontalAlignment="Center" />
+                                        <TextBlock Text="LittleSkin" FontSize="11" Foreground="{DynamicResource MainForegroundBrush}" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                    </StackPanel>
+                                </Button>
+                            </Grid>
+                        </Border>
+                    </Grid>
 
-                        <TextBox x:Name="NameNikManeger"
-                            PlaceholderText="Нік..."
-                            Height="35" Margin="0,0,0,15"
-                            FontSize="12" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" VerticalContentAlignment="Center">
-                            <TextBox.InnerLeftContent>
-                                <ic:SymbolIcon Symbol="ContactCard" FontSize="20" Margin="10,0,0,0" />
-                            </TextBox.InnerLeftContent>
-                        </TextBox>
+                    <Border x:Name="GridOfflineMode"
+                    Width="296"
+                    HorizontalAlignment="Center"
+                    Background="{DynamicResource MainBackgroundBrushServer}"
+                    BorderBrush="{DynamicResource SubtleBorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="14"
+                    Padding="16" IsVisible="False">
+                        <StackPanel>
+                            <TextBlock x:Name="Loc_TxtOfflineAccountTitle" Text="Офлайн акаунт"
+                               HorizontalAlignment="Center" Margin="0,0,0,15"
+                               Foreground="{DynamicResource MainForegroundBrush}"
+                               FontSize="14" FontWeight="SemiBold" TextWrapping="Wrap" />
 
-                        <Button x:Name="CreateAccount_Offline"
-                           Content="Створити"
-                           Height="35"
-                           HorizontalAlignment="Stretch"
-                           HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
-                           Click="CreateAccount_Offline_Click"
-                           Background="{DynamicResource MainBackgroundButton}"
-                           Foreground="{DynamicResource MainForegroundBrush}" Cursor="Hand" />
-                    </StackPanel>
-                </Border>
-
-                <Border x:Name="GridLittleSkinMode"
-                Width="256"
-                VerticalAlignment="Center" HorizontalAlignment="Center"
-                Background="{DynamicResource MainBackgroundBrushServer}"
-                BorderThickness="1"
-                CornerRadius="14"
-                Padding="15"
-                IsVisible="False" ZIndex="10">
-
-                    <StackPanel>
-                        <TextBlock x:Name="Loc_TxtLittleSkinTitle" Text="LittleSkin акаунт"
-                           HorizontalAlignment="Center" Margin="0,0,0,15"
-                           Foreground="{DynamicResource MainForegroundBrush}"
-                           FontSize="14" FontWeight="SemiBold" />
-
-                        <TextBox x:Name="Login_LittleSkin"
-                            PlaceholderText="Пошта..."
-                            Height="35" Margin="0,0,0,10"
-                            FontSize="12" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" VerticalContentAlignment="Center">
-                            <TextBox.InnerLeftContent>
-                                <ic:SymbolIcon Symbol="ContactCard" FontSize="20" Margin="10,0,0,0" />
-                            </TextBox.InnerLeftContent>
-                        </TextBox>
-
-                        <TextBox x:Name="PasswordLittleSkin"
-                                PlaceholderText="Пароль..."
-                                PasswordChar="•"
-                                Height="35" Margin="0,0,0,5"
+                            <TextBox x:Name="NameNikManeger"
+                                Classes="cl-input"
+                                PlaceholderText="Нік..."
+                                Height="35" Margin="0,0,0,15"
                                 FontSize="12" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" VerticalContentAlignment="Center">
-                            <TextBox.InnerLeftContent>
-                                <ic:SymbolIcon Symbol="Password" FontSize="20" Margin="10,0,0,0" />
-                            </TextBox.InnerLeftContent>
-                        </TextBox>
+                                <TextBox.InnerLeftContent>
+                                    <ic:SymbolIcon Symbol="ContactCard" FontSize="20" Margin="10,0,0,0" />
+                                </TextBox.InnerLeftContent>
+                            </TextBox>
 
-                        <Button x:Name="NoAccount_"
-                                    Content="Немає акаунту?"
-                                    Classes="Hyperlink"
-                                    HorizontalAlignment="Center" Margin="0,0,0,10"
-                                    Foreground="#FF3100FF" FontWeight="Bold" />
-
-                        <Button x:Name="LoginAccountLittleSkin"
-                           Content="Увійти"
-                           Height="35"
-                           HorizontalAlignment="Stretch"
-                           HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
-                           Click="LoginAccountLittleSkin_Click"
-                           Background="{DynamicResource MainBackgroundButton}"
-                           Foreground="{DynamicResource MainForegroundBrush}" Cursor="Hand" />
-                    </StackPanel>
-                </Border>
-
-                <Border x:Name="GridOnlineMode"
-                Width="256"
-                VerticalAlignment="Center" HorizontalAlignment="Center"
-                Background="{DynamicResource MainBackgroundBrushServer}"
-                BorderThickness="1"
-                CornerRadius="14"
-                Padding="15"
-                IsVisible="False" ZIndex="10">
-
-                    <StackPanel>
-                        <TextBlock x:Name="Loc_TxtMicrosoftTitle" Text="Microsoft-онлайн акаунт"
-                           HorizontalAlignment="Center" Margin="0,0,0,15"
-                           Foreground="{DynamicResource MainForegroundBrush}"
-                           FontSize="14" FontWeight="SemiBold" />
-
-                        <Button x:Name="CreateAccount_Online"
-                           Height="35"
-                           HorizontalAlignment="Stretch"
-                           HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
-                           Click="MicrosoftLoginButton_Click"
-                           Background="{DynamicResource MainBackgroundButton}"
-                           Foreground="{DynamicResource MainForegroundBrush}" Cursor="Hand">
-                           <StackPanel Orientation="Horizontal" Spacing="5">
-                               <ic:SymbolIcon Symbol="Person" />
-                               <TextBlock Text="Увійти через Microsoft" />
-                           </StackPanel>
-                        </Button>
-                    </StackPanel>
-                </Border>
-
-                <Grid x:Name="GridSelectAccountType" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,81,0,0"
-              Width="260" IsVisible="False" ZIndex="30">
-                    <Border BorderThickness="1" Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="8">
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center"
-                            Margin="10">
-
-                            <Border CornerRadius="5" Padding="5" Cursor="Hand" PointerPressed="MicrosoftAccount_MouseDown"
-                            ToolTip.Tip="Microsoft Account" Background="Transparent">
-                                <Border.Styles>
-                                    <Style Selector="Border:pointerover">
-                                        <Setter Property="Background" Value="#33FFFFFF" />
-                                    </Style>
-                                </Border.Styles>
-                                <Image x:Name="MicrosoftAccount" Source="/Assets/microsoft logo.webp" Width="32" Height="32"
-                               RenderOptions.BitmapInterpolationMode="HighQuality" />
-                            </Border>
-
-                            <Border CornerRadius="5" Padding="5" Cursor="Hand" PointerPressed="OfflineAccount_MouseDown"
-                            Margin="20,0" ToolTip.Tip="Offline Account" Background="Transparent">
-                                <Border.Styles>
-                                    <Style Selector="Border:pointerover">
-                                        <Setter Property="Background" Value="#33FFFFFF" />
-                                    </Style>
-                                </Border.Styles>
-                                <Image x:Name="OfflineAccount" Source="/Assets/default_steve.webp" Width="32"
-                               Height="32" RenderOptions.BitmapInterpolationMode="HighQuality" />
-                            </Border>
-
-                            <Border CornerRadius="5" Padding="5" Cursor="Hand" PointerPressed="LittleSkinAccount_MouseDown"
-                            ToolTip.Tip="LittleSkin Account" Background="Transparent">
-                                <Border.Styles>
-                                    <Style Selector="Border:pointerover">
-                                        <Setter Property="Background" Value="#33FFFFFF" />
-                                    </Style>
-                                </Border.Styles>
-                                <Image x:Name="LittleSkinAccount" Source="/Assets/LittleSkinAccount.webp" Width="32" Height="32"
-                               RenderOptions.BitmapInterpolationMode="HighQuality" />
-                            </Border>
-
+                            <Button x:Name="CreateAccount_Offline"
+                               Content="Створити"
+                               Height="35"
+                               HorizontalAlignment="Stretch"
+                               HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                               Click="CreateAccount_Offline_Click"
+                               Background="{DynamicResource MainBackgroundButton}"
+                               Foreground="{DynamicResource MainForegroundBrush}" Cursor="Hand" />
                         </StackPanel>
                     </Border>
-                </Grid>
 
-        <Grid x:Name="FundraiserOverlay" ZIndex="998" PointerPressed="FundraiserOverlay_MouseDown" IsVisible="False">
-            <Grid>
-                <Border CornerRadius="12" IsVisible="{DynamicResource GlassVisibility}">
-                    <Border.Background>
-                        <VisualBrush Visual="{Binding #MainBackgroundContainer}"
-                                     Stretch="None"
-                                     AlignmentX="Center"
-                                     AlignmentY="Bottom" />
-                    </Border.Background>
-                    <Border.Effect>
-                        <BlurEffect Radius="{DynamicResource GlassBlurRadius}" />
-                    </Border.Effect>
-                </Border>
-                <Border CornerRadius="12" Background="{DynamicResource GlassTintBrush}" />
-            </Grid>
+                    <Border x:Name="GridLittleSkinMode"
+                    Width="296"
+                    HorizontalAlignment="Center"
+                    Background="{DynamicResource MainBackgroundBrushServer}"
+                    BorderBrush="{DynamicResource SubtleBorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="14"
+                    Padding="16"
+                    IsVisible="False">
+
+                        <StackPanel>
+                            <TextBlock x:Name="Loc_TxtLittleSkinTitle" Text="LittleSkin акаунт"
+                               HorizontalAlignment="Center" Margin="0,0,0,15"
+                               Foreground="{DynamicResource MainForegroundBrush}"
+                               FontSize="14" FontWeight="SemiBold" TextWrapping="Wrap" />
+
+                            <TextBox x:Name="Login_LittleSkin"
+                                Classes="cl-input"
+                                PlaceholderText="Пошта..."
+                                Height="35" Margin="0,0,0,10"
+                                FontSize="12" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" VerticalContentAlignment="Center">
+                                <TextBox.InnerLeftContent>
+                                    <ic:SymbolIcon Symbol="ContactCard" FontSize="20" Margin="10,0,0,0" />
+                                </TextBox.InnerLeftContent>
+                            </TextBox>
+
+                            <TextBox x:Name="PasswordLittleSkin"
+                                    Classes="cl-input"
+                                    PlaceholderText="Пароль..."
+                                    PasswordChar="•"
+                                    Height="35" Margin="0,0,0,5"
+                                    FontSize="12" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" VerticalContentAlignment="Center">
+                                <TextBox.InnerLeftContent>
+                                    <ic:SymbolIcon Symbol="Password" FontSize="20" Margin="10,0,0,0" />
+                                </TextBox.InnerLeftContent>
+                            </TextBox>
+
+                            <Button x:Name="NoAccount_"
+                                        Content="Немає акаунту?"
+                                        Classes="Hyperlink"
+                                        HorizontalAlignment="Center" Margin="0,0,0,10"
+                                        Foreground="{DynamicResource LinkForegroundBrush}" FontWeight="SemiBold" />
+
+                            <Button x:Name="LoginAccountLittleSkin"
+                               Content="Увійти"
+                               Height="35"
+                               HorizontalAlignment="Stretch"
+                               HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                               Click="LoginAccountLittleSkin_Click"
+                               Background="{DynamicResource MainBackgroundButton}"
+                               Foreground="{DynamicResource MainForegroundBrush}" Cursor="Hand" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border x:Name="GridOnlineMode"
+                    Width="296"
+                    HorizontalAlignment="Center"
+                    Background="{DynamicResource MainBackgroundBrushServer}"
+                    BorderBrush="{DynamicResource SubtleBorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="14"
+                    Padding="16"
+                    IsVisible="False">
+
+                        <StackPanel>
+                            <TextBlock x:Name="Loc_TxtMicrosoftTitle" Text="Microsoft-онлайн акаунт"
+                               HorizontalAlignment="Center" Margin="0,0,0,15"
+                               Foreground="{DynamicResource MainForegroundBrush}"
+                               FontSize="14" FontWeight="SemiBold" TextWrapping="Wrap" />
+
+                            <Button x:Name="CreateAccount_Online"
+                               Height="35"
+                               HorizontalAlignment="Stretch"
+                               HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                               Click="MicrosoftLoginButton_Click"
+                               Background="{DynamicResource MainBackgroundButton}"
+                               Foreground="{DynamicResource MainForegroundBrush}" Cursor="Hand">
+                               <StackPanel Orientation="Horizontal" Spacing="5">
+                                   <ic:SymbolIcon Symbol="Person" />
+                                   <TextBlock Text="Увійти через Microsoft" />
+                               </StackPanel>
+                            </Button>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+        <Grid x:Name="FundraiserOverlay" ZIndex="998" Background="{DynamicResource ModalScrimBrush}" PointerPressed="FundraiserOverlay_MouseDown" IsVisible="False">
 
             <Border Width="380" MaxHeight="550" Background="{DynamicResource MainBackgroundBrushServer}"
                     CornerRadius="16" BorderBrush="#FFB74D" BorderThickness="1" Padding="20"
@@ -739,16 +761,7 @@
             </Border>
         </Grid>
 
-        <Grid x:Name="TutorialGrid" ZIndex="999" IsVisible="False">
-            <Border IsVisible="{DynamicResource GlassVisibility}">
-                <Border.Background>
-                    <VisualBrush Visual="{Binding #MainBackgroundContainer}" Stretch="None" />
-                </Border.Background>
-                <Border.Effect>
-                    <BlurEffect Radius="{DynamicResource GlassBlurRadius}" />
-                </Border.Effect>
-            </Border>
-            <Border CornerRadius="12" Background="{DynamicResource GlassTintBrush}" />
+        <Grid x:Name="TutorialGrid" ZIndex="999" Background="{DynamicResource ModalScrimBrush}" IsVisible="False">
 
             <Grid HorizontalAlignment="Center" VerticalAlignment="Center" Width="800" Height="450">
                 <Grid.ColumnDefinitions>
@@ -830,7 +843,7 @@
                 <Path.Data>
                     <CombinedGeometry GeometryCombineMode="Exclude">
                         <CombinedGeometry.Geometry1>
-                            <RectangleGeometry Rect="0,0,2000,2000" />
+                            <RectangleGeometry Rect="0,0,10000,10000" />
                         </CombinedGeometry.Geometry1>
 
                         <CombinedGeometry.Geometry2>
@@ -921,16 +934,7 @@
             </Border>
         </Grid>
 
-        <Grid x:Name="ExportProgressOverlay" ZIndex="1000" IsVisible="False">
-            <Border IsVisible="{DynamicResource GlassVisibility}">
-                <Border.Background>
-                    <VisualBrush Visual="{Binding #MainBackgroundContainer}" Stretch="None" />
-                </Border.Background>
-                <Border.Effect>
-                    <BlurEffect Radius="{DynamicResource GlassBlurRadius}" />
-                </Border.Effect>
-            </Border>
-            <Border CornerRadius="12" Background="{DynamicResource GlassTintBrush}" />
+        <Grid x:Name="ExportProgressOverlay" ZIndex="1000" Background="{DynamicResource ModalScrimBrush}" IsVisible="False">
 
             <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
                 <progRing:ProgressRing x:Name="ExportProgressRing" IsActive="True" Width="80" Height="80"

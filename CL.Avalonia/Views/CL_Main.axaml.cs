@@ -87,6 +87,24 @@ public partial class CL_Main : Window
             ApplyModulesVisibility();
             ApplyLocalization();
             ApplyCurrentUiScale();
+            UpdateNativeTransparencyBackdrop();
+            SizeChanged += (_, _) =>
+            {
+                Dispatcher.UIThread.Post(() =>
+                {
+                    RootLayoutTransform?.InvalidateMeasure();
+                    MainRootBorder?.InvalidateArrange();
+                    PageHost?.InvalidateMeasure();
+                    PageHost?.InvalidateArrange();
+                    InvalidateVisual();
+                }, DispatcherPriority.Loaded);
+            };
+
+            if (_themeService != null)
+            {
+                _themeService.GlassEffectChanged += OnGlassEffectChanged;
+                _themeService.ThemeChanged += OnThemeConfigChanged;
+            }
 
             Dispatcher.UIThread.Post(() => MoveSlider(PlayBtnBorder, animate: false), DispatcherPriority.Loaded);
             NavigationService.NavigateToHome();
@@ -104,7 +122,11 @@ public partial class CL_Main : Window
                 TopMenuStackPanel.SizeChanged -= TopMenuStackPanel_SizeChanged;
 
             if (_themeService != null)
+            {
                 _themeService.BackgroundBitmapChanged -= OnBackgroundBitmapChanged;
+                _themeService.GlassEffectChanged -= OnGlassEffectChanged;
+                _themeService.ThemeChanged -= OnThemeConfigChanged;
+            }
 
             SettingsPageViewModel.ModulesConfigurationChanged -= OnModulesConfigurationChanged;
             SettingsPageViewModel.UiScaleConfigurationChanged -= OnUiScaleConfigurationChanged;
@@ -146,6 +168,7 @@ public partial class CL_Main : Window
             Bg.Source = newBitmap;
             Bg.IsVisible = newBitmap != null;
         }
+        UpdateNativeTransparencyBackdrop();
     }
 
     private void OnModulesConfigurationChanged()
@@ -215,13 +238,14 @@ public partial class CL_Main : Window
 
         if (AddProfile != null) AddProfile.Text = LocalizationManager.GetString("Accounts.AddProfile", "Додати профіль +");
         if (StatsTextOpen != null) StatsTextOpen.Text = LocalizationManager.GetString("Accounts.Stats", "Статистика");
+        if (Loc_StatsPanelTitle != null) Loc_StatsPanelTitle.Text = LocalizationManager.GetString("Accounts.Stats", "Статистика");
         if (TextStatsGameMinecraft != null && _boundVm != null) TextStatsGameMinecraft.Text = _boundVm.GetFormattedStats();
         if (Loc_TxtOfflineAccountTitle != null) Loc_TxtOfflineAccountTitle.Text = LocalizationManager.GetString("Accounts.OfflineTitle", "Офлайн акаунт");
-        if (NameNikManeger != null) NameNikManeger.Watermark = LocalizationManager.GetString("Accounts.PlaceholderNickname", "Нікнейм...");
+        if (NameNikManeger != null) NameNikManeger.PlaceholderText = LocalizationManager.GetString("Accounts.PlaceholderNickname", "Нікнейм...");
         if (CreateAccount_Offline != null) CreateAccount_Offline.Content = LocalizationManager.GetString("Accounts.CreateBtn", "Створити");
         if (Loc_TxtLittleSkinTitle != null) Loc_TxtLittleSkinTitle.Text = LocalizationManager.GetString("Accounts.LittleSkinTitle", "LittleSkin акаунт");
-        if (Login_LittleSkin != null) Login_LittleSkin.Watermark = LocalizationManager.GetString("Accounts.PlaceholderEmail", "Пошта...");
-        if (PasswordLittleSkin != null) PasswordLittleSkin.Watermark = LocalizationManager.GetString("Accounts.PlaceholderPassword", "Пароль...");
+        if (Login_LittleSkin != null) Login_LittleSkin.PlaceholderText = LocalizationManager.GetString("Accounts.PlaceholderEmail", "Пошта...");
+        if (PasswordLittleSkin != null) PasswordLittleSkin.PlaceholderText = LocalizationManager.GetString("Accounts.PlaceholderPassword", "Пароль...");
         if (NoAccount_ != null) NoAccount_.Content = LocalizationManager.GetString("Accounts.NoLittleSkinAccount", "Немає акаунту?");
         if (LoginAccountLittleSkin != null) LoginAccountLittleSkin.Content = LocalizationManager.GetString("Accounts.LoginBtn", "Увійти");
         if (Loc_TxtMicrosoftTitle != null) Loc_TxtMicrosoftTitle.Text = LocalizationManager.GetString("Accounts.MicrosoftTitle", "Microsoft-онлайн акаунт");
@@ -255,6 +279,68 @@ public partial class CL_Main : Window
                 Height = 542;
             }
             ApplyCurrentUiScale();
+            Dispatcher.UIThread.Post(() =>
+            {
+                UpdateNativeTransparencyBackdrop();
+                RootLayoutTransform?.InvalidateMeasure();
+                MainRootBorder?.InvalidateArrange();
+                PageHost?.InvalidateMeasure();
+                PageHost?.InvalidateArrange();
+                MoveSlider(_activeTabBorder ?? PlayBtnBorder, animate: false);
+                InvalidateVisual();
+            }, DispatcherPriority.Loaded);
+        }
+        else if (change.Property == ActualTransparencyLevelProperty)
+        {
+            Dispatcher.UIThread.Post(UpdateNativeTransparencyBackdrop, DispatcherPriority.Loaded);
+        }
+    }
+
+    private void OnGlassEffectChanged(bool _) => Dispatcher.UIThread.Post(() =>
+    {
+        UpdateNativeTransparencyBackdrop();
+        if (GridFormAccountAdd is { IsVisible: true })
+        {
+            ApplyAccountBackdropBlur(enable: true);
+        }
+    });
+    private void OnThemeConfigChanged(Models.MainThemeConfig _) => Dispatcher.UIThread.Post(UpdateNativeTransparencyBackdrop);
+
+    private void UpdateNativeTransparencyBackdrop()
+    {
+        if (MainRootBorder == null || MainBackgroundContainer == null) return;
+
+        bool glassEnabled = !SettingsManager.Default.DisableGlassEffect;
+        var level = ActualTransparencyLevel;
+        bool isFullScreen = WindowState == WindowState.FullScreen;
+        bool hasCustomNoBg = Bg?.Source == null;
+
+        bool useTranslucentRoot = glassEnabled && !isFullScreen && hasCustomNoBg && (
+            level == WindowTransparencyLevel.Mica ||
+            level == WindowTransparencyLevel.AcrylicBlur ||
+            level == WindowTransparencyLevel.Blur);
+
+        if (useTranslucentRoot)
+        {
+            MainRootBorder.Background = global::Avalonia.Media.Brushes.Transparent;
+            var baseColor = global::Avalonia.Media.Color.Parse("#FF202020");
+            if (Application.Current?.Resources.TryGetResource("MainBackgroundBrush", null, out var res) == true
+                && res is global::Avalonia.Media.SolidColorBrush scb)
+            {
+                baseColor = scb.Color;
+            }
+            MainBackgroundContainer.Background = new global::Avalonia.Media.SolidColorBrush(baseColor, 0.78);
+            if (Bg != null) Bg.Opacity = 1.0;
+        }
+        else
+        {
+            var solidBrush = Application.Current?.Resources.TryGetResource("MainBackgroundBrush", null, out var res) == true
+                && res is global::Avalonia.Media.IBrush b
+                ? b
+                : new global::Avalonia.Media.SolidColorBrush(global::Avalonia.Media.Color.Parse("#FF202020"));
+            MainRootBorder.Background = solidBrush;
+            MainBackgroundContainer.Background = solidBrush;
+            if (Bg != null) Bg.Opacity = 1.0;
         }
     }
 
@@ -309,6 +395,7 @@ public partial class CL_Main : Window
                 {
                     WindowState = _boundVm.WindowState;
                     ApplyCurrentUiScale();
+                    UpdateNativeTransparencyBackdrop();
                 });
                 break;
         }
@@ -420,6 +507,22 @@ public partial class CL_Main : Window
     private void MenuButton_MouseLeave(object? sender, PointerEventArgs e) { }
     private void BackIconServerList_MouseDown(object? sender, PointerPressedEventArgs e) { }
 
+    private void NavMenuItem_KeyDown(object? sender, global::Avalonia.Input.KeyEventArgs e)
+    {
+        if (e.Key is not (global::Avalonia.Input.Key.Enter or global::Avalonia.Input.Key.Space)) return;
+        if (sender is not Control { Tag: string tag }) return;
+
+        e.Handled = true;
+        switch (tag)
+        {
+            case "0": PlayTXTPanelSelect_MouseDown(sender, null!); break;
+            case "1": modbuilds_MouseDown(sender, null!); break;
+            case "2": ModsTXTPanelSelect_MouseDown(sender, null!); break;
+            case "3": ServerTXTPanelSelect_MouseDown(sender, null!); break;
+            case "4": PhotoMinecraftTXT_MouseDown(sender, null!); break;
+        }
+    }
+
     #endregion
 
     #region Менеджер Акаунтів та Статистика
@@ -441,6 +544,9 @@ public partial class CL_Main : Window
             await _boundVm.SelectProfileAsync(targetProfile);
         }
     }
+
+    private void AccountTriggerBtn_Click(object? sender, RoutedEventArgs e) =>
+        IconAccount_MouseDown(sender, null!);
 
     private async void IconAccount_MouseDown(object? sender, PointerPressedEventArgs e)
     {
@@ -492,12 +598,27 @@ public partial class CL_Main : Window
         }
     }
 
+    private void AddProfileBtn_Click(object? sender, RoutedEventArgs e) =>
+        AddProfile_MouseDown(sender, null!);
+
+    private void ApplyAccountBackdropBlur(bool enable)
+    {
+        if (BackdropContentLayer == null) return;
+
+        bool shouldBlur = enable && !SettingsManager.Default.DisableGlassEffect;
+        BackdropContentLayer.Effect = shouldBlur
+            ? new global::Avalonia.Media.BlurEffect { Radius = 18 }
+            : null;
+        BackdropContentLayer.IsHitTestVisible = !enable;
+    }
+
     public void AddProfile_MouseDown(object? sender, PointerPressedEventArgs e)
     {
         AvaloniaSoundService.Click();
         AvaloniaAnimationService.AnimatePageTransitionExit(PanelManegerAccount, -20, 0.2);
         AvaloniaAnimationService.AnimateRotation(CheckMarkAccount, 0);
 
+        ApplyAccountBackdropBlur(enable: true);
         AvaloniaAnimationService.AnimatePageTransition(GridFormAccountAdd);
         AvaloniaAnimationService.AnimatePageTransition(GridOfflineMode);
         AvaloniaAnimationService.AnimatePageTransition(GridSelectAccountType);
@@ -511,12 +632,23 @@ public partial class CL_Main : Window
 
     private void CloseAccountSelectionUI()
     {
+        ApplyAccountBackdropBlur(enable: false);
         AvaloniaAnimationService.AnimatePageTransitionExit(GridOfflineMode, default, 0.2);
         AvaloniaAnimationService.AnimatePageTransitionExit(GridOnlineMode, default, 0.2);
         AvaloniaAnimationService.AnimatePageTransitionExit(GridFormAccountAdd, default, 0.2);
         AvaloniaAnimationService.AnimatePageTransitionExit(GridSelectAccountType, default, 0.2);
         AvaloniaAnimationService.AnimatePageTransitionExit(GridLittleSkinMode, default, 0.2);
+        Dispatcher.UIThread.Post(UpdateNativeTransparencyBackdrop, DispatcherPriority.Loaded);
     }
+
+    private void MicrosoftAccountBtn_Click(object? sender, RoutedEventArgs e) =>
+        MicrosoftAccount_MouseDown(sender, null!);
+
+    private void OfflineAccountBtn_Click(object? sender, RoutedEventArgs e) =>
+        OfflineAccount_MouseDown(sender, null!);
+
+    private void LittleSkinAccountBtn_Click(object? sender, RoutedEventArgs e) =>
+        LittleSkinAccount_MouseDown(sender, null!);
 
     public void MicrosoftAccount_MouseDown(object? sender, PointerPressedEventArgs e)
     {
@@ -601,6 +733,19 @@ public partial class CL_Main : Window
             await RefreshProfilesUIAsync();
         }
     }
+
+    private void CloseStatsBtn_Click(object? sender, RoutedEventArgs e)
+    {
+        AvaloniaSoundService.Click();
+        var panelListStats = this.FindControl<Control>("PanelListStats");
+        if (panelListStats is { IsVisible: true })
+        {
+            AvaloniaAnimationService.AnimatePageTransitionExit(panelListStats, 20);
+        }
+    }
+
+    private void StatsBtn_Click(object? sender, RoutedEventArgs e) =>
+        StatsTextOpen_MouseDown(sender, null!);
 
     private void StatsTextOpen_MouseDown(object? sender, PointerPressedEventArgs e)
     {

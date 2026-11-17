@@ -12,7 +12,7 @@
              x:Class="CL_CLegendary_Launcher_.Avalonia.Views.Pages.NewsPage"
              x:DataType="pagesVm:NewsPageViewModel">
 
-	<Grid ZIndex="10">
+	<Grid ZIndex="10" ClipToBounds="True">
 
 		<Grid x:Name="GirdTXTNews" Background="Transparent" IsVisible="{Binding IsArticleOpen}">
 			<Border IsVisible="{DynamicResource GlassVisibility}">
@@ -24,11 +24,11 @@
 				</Border.Effect>
 			</Border>
 			<Border CornerRadius="12" Background="{DynamicResource GlassTintBrush}" />
-			<Border Background="{DynamicResource GlassTintBrush}" Opacity="0.8" />
 
 			<Button x:Name="BtnBackToNewsList"
                     HorizontalAlignment="Left" VerticalAlignment="Top"
                     Margin="50,55,0,0" Height="34" CornerRadius="8"
+                    BorderBrush="{DynamicResource SubtleBorderBrush}" BorderThickness="1"
                     Background="{DynamicResource MainBackgroundButton}"
                     Foreground="{DynamicResource MainForegroundBrush}"
                     Command="{Binding BackToListCommand}"
@@ -72,7 +72,6 @@
 				</Border.Effect>
 			</Border>
 			<Border CornerRadius="12" Background="{DynamicResource GlassTintBrush}" />
-			<Border Background="{DynamicResource GlassTintBrush}" Opacity="0.6" />
 
 			<ListBox x:Name="ListNews"
                      ItemsSource="{Binding NewsCards}"

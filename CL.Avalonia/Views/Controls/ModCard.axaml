@@ -19,11 +19,11 @@
             <Border.Styles>
                 <Style Selector="Border">
                     <Setter Property="Background" Value="{DynamicResource MainBackgroundBrushServer}"/>
-                    <Setter Property="BorderBrush" Value="Transparent"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource SubtleBorderBrush}"/>
                 </Style>
                 <Style Selector="Border:pointerover">
-                    <Setter Property="Background" Value="#15FFFFFF"/>
-                    <Setter Property="BorderBrush" Value="#33FFFFFF"/>
+                    <Setter Property="Background" Value="{DynamicResource SubtleHoverBrush}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource MainForegroundBrush}"/>
                 </Style>
             </Border.Styles>
 
@@ -38,7 +38,7 @@
                         Height="86" Width="86"
                         CornerRadius="8"
                         Background="{DynamicResource MainBackgroundBrush}"
-                        BorderBrush="#33000000" BorderThickness="1">
+                        BorderBrush="{DynamicResource SubtleBorderBrush}" BorderThickness="1">
                     <Image x:Name="ImageIcon" Stretch="UniformToFill" Margin="4" Source="{Binding Icon}"/>
                 </Border>
 
@@ -57,7 +57,7 @@
 
                     <TextBlock Grid.Row="1" x:Name="Description"
                                Text="{Binding Description, FallbackValue='Mod description goes here...'}"
-                               FontSize="11" Foreground="Gray" FontFamily="{DynamicResource AppFontFamily}"
+                               FontSize="11" Foreground="{DynamicResource MutedForegroundBrush}" FontFamily="{DynamicResource AppFontFamily}"
                                TextWrapping="Wrap" TextTrimming="CharacterEllipsis"
                                VerticalAlignment="Top" Margin="0,5,0,0"/>
                 </Grid>

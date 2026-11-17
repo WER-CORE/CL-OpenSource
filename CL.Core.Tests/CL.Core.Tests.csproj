@@ -12,10 +12,13 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CL.Core\CL.Core.csproj" />
+    <Compile Include="..\CL.Avalonia\Services\ChannelStrictGithubSource.cs" Link="Velopack\ChannelStrictGithubSource.cs" />
+    <Compile Include="..\CL.Avalonia\Services\LauncherUpdateCoordinator.cs" Link="Velopack\LauncherUpdateCoordinator.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.10.1" />
+    <PackageReference Include="Velopack" Version="1.2.161" />
     <PackageReference Include="xunit" Version="2.9.3" />
     <PackageReference Include="xunit.runner.visualstudio" Version="4.0.1">
       <PrivateAssets>all</PrivateAssets>

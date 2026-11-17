@@ -393,6 +393,7 @@ public partial class SettingsPageViewModel : ObservableObject
             PlatformPaths.BackupUserDataForPreBeta();
         }
         SettingsManager.Default.UpdateChannel = value.Key;
+        UpdateStatusText = string.Empty;
         Save();
     }
 
@@ -1369,48 +1370,20 @@ public partial class SettingsPageViewModel : ObservableObject
         UpdateStatusText = LocalizationManager.GetString("Settings.CheckingUpdates", "Перевірка оновлень...");
         try
         {
-            bool isPrerelease = string.Equals(SettingsManager.Default.UpdateChannel, "Preview", StringComparison.OrdinalIgnoreCase);
-            var source = new global::Velopack.Sources.GithubSource("https://github.com/WER-CORE/CL-Win-Edition--Update", null, isPrerelease);
-            var mgr = new global::Velopack.UpdateManager(source);
-
-            if (mgr.IsInstalled)
+            var result = await LauncherUpdateCoordinator.CheckForUpdatesAsync(respectSkippedVersion: false);
+            if (result != null)
             {
-                var info = await mgr.CheckForUpdatesAsync();
-                if (info != null && info.TargetFullRelease != null)
+                UpdateStatusText = string.Format(LocalizationManager.GetString("Settings.UpdateFound", "Доступно: v{0}"), result.TargetVersion);
+                await Dispatcher.UIThread.InvokeAsync(() =>
                 {
-                    UpdateStatusText = string.Format(LocalizationManager.GetString("Settings.UpdateFound", "Доступно: v{0}"), info.TargetFullRelease.Version);
-                    await Dispatcher.UIThread.InvokeAsync(() =>
-                    {
-                        var updater = new UpdaterWindow();
-                        updater.Show();
-                    });
-                    return;
-                }
-                else
-                {
-                    UpdateStatusText = LocalizationManager.GetString("Settings.LatestVersionInstalled", "У вас найновіша версія");
-                }
+                    var updater = new UpdaterWindow(result);
+                    updater.Show();
+                });
+                return;
             }
             else
             {
-                var updateService = new UpdateService();
-                var info = await updateService.CheckForUpdateFromGitHubAsync("WER-CORE/CL-Win-Edition--Update", isPrerelease)
-                           ?? await updateService.CheckForUpdateAsync(Secrets.updateInfoUrl);
-                string localVer = UpdateService.GetCurrentLauncherVersion();
-                if (info != null && updateService.IsUpdateAvailable(info.Version, localVer))
-                {
-                    UpdateStatusText = string.Format(LocalizationManager.GetString("Settings.UpdateFound", "Доступно: v{0}"), info.Version);
-                    await Dispatcher.UIThread.InvokeAsync(() =>
-                    {
-                        var updater = new UpdaterWindow();
-                        updater.Show();
-                    });
-                    return;
-                }
-                else
-                {
-                    UpdateStatusText = LocalizationManager.GetString("Settings.LatestVersionInstalled", "У вас найновіша версія");
-                }
+                UpdateStatusText = LocalizationManager.GetString("Settings.LatestVersionInstalled", "У вас найновіша версія");
             }
         }
         catch (Exception)

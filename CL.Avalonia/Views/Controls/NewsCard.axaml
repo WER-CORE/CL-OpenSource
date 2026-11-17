@@ -41,6 +41,7 @@
     <Button Classes="newsCardBtn" Command="{Binding OpenNewsCommand}">
         <Border x:Name="MainBorder"
                 Background="{DynamicResource MainBackgroundBrushServer}"
+                BorderBrush="{DynamicResource SubtleBorderBrush}"
                 CornerRadius="12"
                 BorderThickness="1"
                 ClipToBounds="True"
@@ -52,7 +53,7 @@
                 </Grid.RowDefinitions>
 
                 <Panel Grid.Row="0">
-                    <Border Background="#15FFFFFF" IsVisible="{Binding Image, Converter={x:Static ObjectConverters.IsNull}}"/>
+                    <Border Background="{DynamicResource SubtleHoverBrush}" IsVisible="{Binding Image, Converter={x:Static ObjectConverters.IsNull}}"/>
 
                     <progRing:ProgressRing Width="24" Height="24"
                                            IsActive="{Binding IsLoadingImage}"
