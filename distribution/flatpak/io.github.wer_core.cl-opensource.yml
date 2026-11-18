@@ -1,13 +1,14 @@
-app-id: app.clegendary.launcher
+app-id: io.github.wer_core.cl-opensource
 runtime: org.freedesktop.Platform
-runtime-version: '25.08'
+runtime-version: '26.08'
 sdk: org.freedesktop.Sdk
 command: CL.Avalonia
 
 finish-args:
   - --share=network
+  - --share=ipc
   - --socket=wayland
-  - --socket=x11
+  - --socket=fallback-x11
   - --socket=pulseaudio
   - --device=dri
   - --filesystem=xdg-data/cl-launcher:create
@@ -17,8 +18,6 @@ finish-args:
   - --filesystem=xdg-run/pipewire-0
   - --filesystem=xdg-run/discord-ipc-0
   - --talk-name=org.freedesktop.Notifications
-  - --talk-name=org.freedesktop.portal.OpenURI
-  - --talk-name=org.freedesktop.portal.Desktop
   - --talk-name=org.freedesktop.FileManager1
 
 modules:
@@ -30,33 +29,33 @@ modules:
       - install -d /app/bin /app/share/applications /app/share/metainfo /app/share/icons/hicolor/512x512/apps
       - cp -r squashfs-root/usr/bin/* /app/bin/
       - chmod +x /app/bin/CL.Avalonia
-      - install -Dm644 app.clegendary.launcher.desktop /app/share/applications/app.clegendary.launcher.desktop
-      - install -Dm644 app.clegendary.launcher.metainfo.xml /app/share/metainfo/app.clegendary.launcher.metainfo.xml
-      - install -Dm644 app.clegendary.launcher.png /app/share/icons/hicolor/512x512/apps/app.clegendary.launcher.png
+      - install -Dm644 io.github.wer_core.cl-opensource.desktop /app/share/applications/io.github.wer_core.cl-opensource.desktop
+      - install -Dm644 io.github.wer_core.cl-opensource.metainfo.xml /app/share/metainfo/io.github.wer_core.cl-opensource.metainfo.xml
+      - install -Dm644 io.github.wer_core.cl-opensource.png /app/share/icons/hicolor/512x512/apps/io.github.wer_core.cl-opensource.png
     sources:
       - type: file
         only-arches: [x86_64]
         dest-filename: CLegendaryLauncher-x64.AppImage
-        url: https://github.com/WER-CORE/CL-Win-Edition--Update/releases/download/v1.1.1-preview1/CLegendaryLauncher-x64.AppImage
-        sha256: 03e48ba873f9e6c824894a0f0d708a2878e047b4ac20292668d7cde739398ca4
+        url: https://github.com/WER-CORE/CL-Win-Edition--Update/releases/download/v1.1.1/CLegendaryLauncher-x64.AppImage
+        sha256: fea9fb996f9347ed34dd7f8c68fa2b2e632bae228070eadc044c72943dead3f4
         x-checker-data:
           type: json
           url: https://api.github.com/repos/WER-CORE/CL-Win-Edition--Update/releases
-          version-query: '[.[] | select(.prerelease == true)][0].tag_name | sub("^v"; "")'
+          version-query: '[.[] | select(.prerelease == false)][0].tag_name | sub("^v"; "")'
           url-query: '"https://github.com/WER-CORE/CL-Win-Edition--Update/releases/download/v" + $version + "/CLegendaryLauncher-x64.AppImage"'
       - type: file
         only-arches: [aarch64]
         dest-filename: CLegendaryLauncher-arm64.AppImage
-        url: https://github.com/WER-CORE/CL-Win-Edition--Update/releases/download/v1.1.1-preview1/CLegendaryLauncher-arm64.AppImage
-        sha256: 424154d0f9347bf917f5200d4b1caed70891a9d90ccb450a5954e74510d294dd
+        url: https://github.com/WER-CORE/CL-Win-Edition--Update/releases/download/v1.1.1/CLegendaryLauncher-arm64.AppImage
+        sha256: 0eed88bcc1469b8ff4f7ac197aa2f77f92c91f19aea9962337ea26b315f7b370
         x-checker-data:
           type: json
           url: https://api.github.com/repos/WER-CORE/CL-Win-Edition--Update/releases
-          version-query: '[.[] | select(.prerelease == true)][0].tag_name | sub("^v"; "")'
+          version-query: '[.[] | select(.prerelease == false)][0].tag_name | sub("^v"; "")'
           url-query: '"https://github.com/WER-CORE/CL-Win-Edition--Update/releases/download/v" + $version + "/CLegendaryLauncher-arm64.AppImage"'
       - type: file
-        path: app.clegendary.launcher.desktop
+        path: io.github.wer_core.cl-opensource.desktop
       - type: file
-        path: app.clegendary.launcher.metainfo.xml
+        path: io.github.wer_core.cl-opensource.metainfo.xml
       - type: file
-        path: app.clegendary.launcher.png
+        path: io.github.wer_core.cl-opensource.png

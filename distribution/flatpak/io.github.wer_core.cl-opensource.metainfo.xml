@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop-application">
-  <id>app.clegendary.launcher</id>
+  <id>io.github.wer_core.cl-opensource</id>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>GPL-3.0-or-later</project_license>
   <name>CLegendary Launcher</name>
@@ -96,7 +96,7 @@
     <p xml:lang="cs">Pomozte nám přeložit CLegendary Launcher do vašeho jazyka na platformě Crowdin!</p>
   </description>
 
-  <launchable type="desktop-id">app.clegendary.launcher.desktop</launchable>
+  <launchable type="desktop-id">io.github.wer_core.cl-opensource.desktop</launchable>
   <url type="homepage">https://cl-launcher.app/</url>
   <url type="bugtracker">https://github.com/WER-CORE/CL-OpenSource/issues</url>
   <url type="vcs-browser">https://github.com/WER-CORE/CL-OpenSource</url>

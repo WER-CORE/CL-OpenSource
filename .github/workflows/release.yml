@@ -399,21 +399,22 @@ jobs:
 
           mkdir -p ./flatpak_build/source_x64
           cp -r ./publish/linux-x64/* ./flatpak_build/source_x64/
-          cp ./distribution/flatpak/app.clegendary.launcher.desktop ./flatpak_build/source_x64/
-          cp ./distribution/flatpak/app.clegendary.launcher.metainfo.xml ./flatpak_build/source_x64/
-          cp ./distribution/flatpak/app.clegendary.launcher.png ./flatpak_build/source_x64/
+          cp ./distribution/flatpak/io.github.wer_core.cl-opensource.desktop ./flatpak_build/source_x64/
+          cp ./distribution/flatpak/io.github.wer_core.cl-opensource.metainfo.xml ./flatpak_build/source_x64/
+          cp ./distribution/flatpak/io.github.wer_core.cl-opensource.png ./flatpak_build/source_x64/
 
-          cat << 'EOF' > ./flatpak_build/app.clegendary.launcher.local.yml
-          app-id: app.clegendary.launcher
+          cat << 'EOF' > ./flatpak_build/io.github.wer_core.cl-opensource.local.yml
+          app-id: io.github.wer_core.cl-opensource
           runtime: org.freedesktop.Platform
-          runtime-version: '25.08'
+          runtime-version: '26.08'
           sdk: org.freedesktop.Sdk
           command: CL.Avalonia
           
           finish-args:
             - --share=network
+            - --share=ipc
             - --socket=wayland
-            - --socket=x11
+            - --socket=fallback-x11
             - --socket=pulseaudio
             - --device=dri
             - --filesystem=xdg-data/cl-launcher:create
@@ -423,8 +424,6 @@ jobs:
             - --filesystem=xdg-run/pipewire-0
             - --filesystem=xdg-run/discord-ipc-0
             - --talk-name=org.freedesktop.Notifications
-            - --talk-name=org.freedesktop.portal.OpenURI
-            - --talk-name=org.freedesktop.portal.Desktop
             - --talk-name=org.freedesktop.FileManager1
           
           modules:
@@ -434,17 +433,17 @@ jobs:
                 - install -d /app/bin /app/share/applications /app/share/metainfo /app/share/icons/hicolor/512x512/apps
                 - cp -r * /app/bin/
                 - chmod +x /app/bin/CL.Avalonia
-                - install -Dm644 app.clegendary.launcher.desktop /app/share/applications/app.clegendary.launcher.desktop
-                - install -Dm644 app.clegendary.launcher.metainfo.xml /app/share/metainfo/app.clegendary.launcher.metainfo.xml
-                - install -Dm644 app.clegendary.launcher.png /app/share/icons/hicolor/512x512/apps/app.clegendary.launcher.png
+                - install -Dm644 io.github.wer_core.cl-opensource.desktop /app/share/applications/io.github.wer_core.cl-opensource.desktop
+                - install -Dm644 io.github.wer_core.cl-opensource.metainfo.xml /app/share/metainfo/io.github.wer_core.cl-opensource.metainfo.xml
+                - install -Dm644 io.github.wer_core.cl-opensource.png /app/share/icons/hicolor/512x512/apps/io.github.wer_core.cl-opensource.png
               sources:
                 - type: dir
                   path: source_x64
           EOF
 
           cd ./flatpak_build
-          flatpak-builder --user --force-clean --repo=repo build_dir app.clegendary.launcher.local.yml
-          flatpak build-bundle repo CLegendaryLauncher-x64.flatpak app.clegendary.launcher
+          flatpak-builder --user --force-clean --repo=repo build_dir io.github.wer_core.cl-opensource.local.yml
+          flatpak build-bundle repo CLegendaryLauncher-x64.flatpak io.github.wer_core.cl-opensource
           cd ..
 
       - name: Organize Linux release artifacts
