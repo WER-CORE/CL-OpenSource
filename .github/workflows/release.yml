@@ -414,6 +414,7 @@ jobs:
             - --share=network
             - --socket=wayland
             - --socket=x11
+            - --socket=pulseaudio
             - --device=dri
             - --filesystem=xdg-data/cl-launcher:create
             - --filesystem=xdg-data/CLMinecraft:create
@@ -425,7 +426,6 @@ jobs:
             - --talk-name=org.freedesktop.portal.OpenURI
             - --talk-name=org.freedesktop.portal.Desktop
             - --talk-name=org.freedesktop.FileManager1
-            - --talk-name=org.freedesktop.Flatpak
           
           modules:
             - name: clegendary-launcher
