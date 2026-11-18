@@ -102,6 +102,7 @@
   <url type="vcs-browser">https://github.com/WER-CORE/CL-OpenSource</url>
   <url type="contribute">https://github.com/WER-CORE/CL-OpenSource</url>
   <url type="translate">https://uk.crowdin.com/project/clegendary-launcher</url>
+  <url type="donation">https://ko-fi.com/wercore</url>
 
   <developer id="io.github.wer_core">
     <name>WER-CORE</name>
