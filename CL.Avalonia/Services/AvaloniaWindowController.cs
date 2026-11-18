@@ -29,10 +29,6 @@ public class AvaloniaWindowController : IMainWindowController
             }
 
             desktop.MainWindow.WindowState = global::Avalonia.Controls.WindowState.Minimized;
-            if (OperatingSystem.IsLinux())
-            {
-                desktop.MainWindow.Hide();
-            }
 
             _ = Task.Run(async () =>
             {
