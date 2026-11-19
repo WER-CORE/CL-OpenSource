@@ -8,6 +8,10 @@ namespace CL.Core.Services
 {
     public static class PlatformPaths
     {
+        public static bool IsRunningInFlatpak() =>
+            OperatingSystem.IsLinux() &&
+            (File.Exists("/.flatpak-info") || !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("FLATPAK_ID")));
+
         public static string DefaultLauncherPath()
         {
             if (OperatingSystem.IsWindows())
@@ -15,6 +19,15 @@ namespace CL.Core.Services
 
             if (OperatingSystem.IsMacOS())
                 return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Library", "Application Support", "CLMinecraft");
+
+            if (IsRunningInFlatpak())
+            {
+                string? dataHome = Environment.GetEnvironmentVariable("XDG_DATA_HOME");
+                if (string.IsNullOrWhiteSpace(dataHome) || !Path.IsPathRooted(dataHome))
+                    dataHome = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "share");
+
+                return Path.Combine(dataHome, "CLMinecraft");
+            }
 
             return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".clminecraft");
         }
