@@ -301,7 +301,7 @@ public class VelopackChannelTests
                 velopackManagerFactory: isPreview =>
                 {
                     var source = new ChannelStrictGithubSource(RepoUrl, null, onlyPrerelease: isPreview, downloader: new FakeFileDownloader(BuildFixtureResponses(includePreview: true)));
-                    return new UpdateManager(source, null, locator);
+                    return new UpdateManager(source, new UpdateOptions { ExplicitChannel = "win" }, locator);
                 },
                 updateService: zipService);
 
@@ -319,7 +319,7 @@ public class VelopackChannelTests
                 velopackManagerFactory: isPreview =>
                 {
                     var source = new ChannelStrictGithubSource(RepoUrl, null, onlyPrerelease: isPreview, downloader: new FakeFileDownloader(BuildFixtureResponses(includePreview: false)));
-                    return new UpdateManager(source, null, locator);
+                    return new UpdateManager(source, new UpdateOptions { ExplicitChannel = "win" }, locator);
                 },
                 updateService: zipService);
 

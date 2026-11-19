@@ -187,10 +187,30 @@ public class UpdateServiceTests
     [Fact]
     public async Task ChannelSwitching_UsesRequestedChannel_AndDownloadsSelectedReleaseAsset()
     {
+        GitHubReleaseDto MakeMultiPlatformRelease(string tag, bool prerelease)
+        {
+            var rel = MakeRelease(tag, prerelease);
+            foreach (var extraAsset in new[]
+            {
+                "CLegendaryLauncher-x64.AppImage",
+                "CLegendaryLauncher-arm64.AppImage",
+                "CLegendaryLauncher-osx-arm64-Portable.zip",
+                "CLegendaryLauncher-osx-x64-Portable.zip"
+            })
+            {
+                rel.Assets.Add(new GitHubAssetDto
+                {
+                    Name = extraAsset,
+                    BrowserDownloadUrl = $"https://github.com/WER-CORE/CL-Win-Edition--Update/releases/download/{tag}/{extraAsset}"
+                });
+            }
+            return rel;
+        }
+
         var releases = new[]
         {
-            MakeRelease("v1.1.1", prerelease: false),
-            MakeRelease("v1.1.0-preview9.10", prerelease: true)
+            MakeMultiPlatformRelease("v1.1.1", prerelease: false),
+            MakeMultiPlatformRelease("v1.1.0-preview9.10", prerelease: true)
         };
         string json = JsonSerializer.Serialize(releases);
         var requestedUrls = new List<string>();
