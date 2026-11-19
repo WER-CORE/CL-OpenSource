@@ -444,8 +444,8 @@ jobs:
         env:
           FLATPAK_GPG_PRIVATE_KEY: ${{ secrets.FLATPAK_GPG_PRIVATE_KEY }}
           FLATPAK_GPG_KEY_ID: ${{ secrets.FLATPAK_GPG_KEY_ID }}
-          PUSH_TOKEN: ${{ secrets.RELEASE_PAT || secrets.GITHUB_TOKEN }}
-          TARGET_REPO: ${{ needs.prepare.outputs.target_repo }}
+          PUSH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PAGES_REPO: ${{ github.repository }}
         run: |
           set -e
           if [ -z "$FLATPAK_GPG_PRIVATE_KEY" ] || [ -z "$FLATPAK_GPG_KEY_ID" ]; then
@@ -455,8 +455,8 @@ jobs:
           echo "$FLATPAK_GPG_PRIVATE_KEY" | base64 -d | gpg --batch --import
           GPG_PUB_B64=$(gpg --export "$FLATPAK_GPG_KEY_ID" | base64 -w 0)
 
-          PAGES_URL="https://wer-core.github.io/${TARGET_REPO#*/}"
-          REPO_GIT_URL="https://x-access-token:${PUSH_TOKEN}@github.com/${TARGET_REPO}.git"
+          PAGES_URL="https://wer-core.github.io/${PAGES_REPO#*/}"
+          REPO_GIT_URL="https://x-access-token:${PUSH_TOKEN}@github.com/${PAGES_REPO}.git"
 
           rm -rf ./flatpak_pages
           if git clone --depth 1 --branch gh-pages "$REPO_GIT_URL" ./flatpak_pages 2>/dev/null; then
