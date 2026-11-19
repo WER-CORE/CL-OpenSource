@@ -282,7 +282,7 @@
                 </Grid>
 
                 <Grid Name="SelectGirdAccount" Grid.Row="0" Grid.Column="2" HorizontalAlignment="Right"
-                      VerticalAlignment="Top" Margin="0,30,25,0">
+                      VerticalAlignment="Top" Margin="0,30,16,0">
 
                     <Border Name="SelectPanelAccount"
                             BorderThickness="1"
@@ -290,11 +290,11 @@
                             BorderBrush="{DynamicResource SubtleBorderBrush}"
                             Background="Transparent"
                             Height="52"
-                            Width="192"
+                            Width="168"
                             ClipToBounds="True">
                         <Grid>
 
-                            <Border CornerRadius="26" IsVisible="{DynamicResource GlassVisibility}" Margin="-25,30,25,-30">
+                            <Border CornerRadius="26" IsVisible="{DynamicResource GlassVisibility}" Margin="-16,30,16,-30">
                                 <Border.Effect>
                                     <BlurEffect Radius="{DynamicResource GlassBlurRadius}" />
                                 </Border.Effect>
@@ -305,7 +305,7 @@
                                                  AlignmentY="Top" />
                                 </Border.Background>
                                 <Border.RenderTransform>
-                                    <TranslateTransform X="25" Y="-30" />
+                                    <TranslateTransform X="16" Y="-30" />
                                 </Border.RenderTransform>
                             </Border>
 
@@ -362,10 +362,10 @@
             <Grid Name="PanelListStats"
                   HorizontalAlignment="Right"
                   VerticalAlignment="Top"
-                  Width="236"
+                  Width="220"
                   MinHeight="130"
                   MaxHeight="280"
-                  Margin="0,84,25,0"
+                  Margin="0,84,16,0"
                   ZIndex="25"
                   IsVisible="False">
 
@@ -412,8 +412,8 @@
             <Grid Name="PanelManegerAccount"
                   HorizontalAlignment="Right"
                   VerticalAlignment="Top"
-                  Width="236"
-                  Margin="0,84,25,0"
+                  Width="220"
+                  Margin="0,84,16,0"
                   IsVisible="False" ZIndex="25">
 
                 <Border Name="OnllinePanel"

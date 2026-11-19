@@ -210,7 +210,8 @@ namespace CL.Core.Tests
             Assert.Equal(expectedPort, GameLaunchService.GetProxyPort(version));
         }
 
-        [Fact]
+        [Fact(Skip = "Live network integration test (depends on external files.betacraft.uk)")]
+        [Trait("Category", "LiveIntegration")]
         public async Task LiveIntegration_MojangAndBetaCraft_MergesHistoricalEras()
         {
             string tempCache = Path.Combine(Path.GetTempPath(), "cl_legacy_live_" + Guid.NewGuid().ToString("N"));

@@ -347,10 +347,10 @@
                                 </ComboBox>
                             </Grid>
 
-                            <Grid Margin="0,5,0,5">
+                            <Grid Margin="0,5,0,5" IsVisible="{Binding IsUpdateChannelVisible}">
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition />
-                                    <ColumnDefinition Width="Auto" MinWidth="218.2" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
 
                                 <Border Grid.ColumnSpan="2" BorderThickness="1" BorderBrush="{DynamicResource SubtleBorderBrush}" CornerRadius="15"
@@ -366,15 +366,15 @@
                                        FontFamily="{DynamicResource AppFontFamily}" Margin="0,2,0,0" TextWrapping="Wrap" />
                                 </StackPanel>
 
-                                <ComboBox Grid.Column="1" x:Name="UpdateChannelComboBox" Height="40"
-                                  VerticalAlignment="Center" Margin="2,0,16,0"
+                                <ComboBox Grid.Column="1" x:Name="UpdateChannelComboBox" Width="250" Height="40"
+                                  HorizontalAlignment="Right" VerticalAlignment="Center" Margin="2,0,16,0"
                                   ItemsSource="{Binding AvailableUpdateChannels}"
                                   SelectedItem="{Binding SelectedUpdateChannelOption}"
                                   Background="{DynamicResource MainBackgroundButton}"
                                   Foreground="{DynamicResource MainForegroundBrush}" Cursor="Hand">
                                     <ComboBox.ItemTemplate>
                                         <DataTemplate>
-                                            <TextBlock Text="{Binding Display}" VerticalAlignment="Center" />
+                                            <TextBlock Text="{Binding Display}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
                                         </DataTemplate>
                                     </ComboBox.ItemTemplate>
                                 </ComboBox>
@@ -627,22 +627,48 @@
                                         VerticalAlignment="Center" Margin="0,0,20,0" Cursor="Hand" />
                             </Grid>
                             <Border x:Name="ModulesBorder"
-                            BorderThickness="1" CornerRadius="15"
+                            BorderThickness="1" BorderBrush="{DynamicResource SubtleBorderBrush}" CornerRadius="15"
                             Background="{DynamicResource MainBackgroundBrushServer}"
                             Padding="15" Margin="0,5"
                             HorizontalAlignment="Stretch" VerticalAlignment="Top">
                                 <StackPanel>
 
-                                    <StackPanel Margin="0,0,0,15">
-                                        <TextBlock x:Name="Loc_Settings_ModulesTitle" Text="Модульність (Кастомізація)"
-                                           Foreground="{DynamicResource MainForegroundBrush}" FontSize="24"
-                                           FontWeight="Bold" FontFamily="{DynamicResource AppFontFamily}" TextWrapping="Wrap" />
-                                        <TextBlock x:Name="Loc_Settings_ModulesDesc"
-                                           Text="Оберіть готовий шаблон або вимкніть непотрібні функції власноруч:"
-                                           Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6"
-                                           FontSize="12" FontFamily="{DynamicResource AppFontFamily}" Margin="0,2,0,0" TextWrapping="Wrap" />
-                                    </StackPanel>
+                                    <Button Command="{Binding ToggleModulesExpandedCommand}"
+                                            Background="Transparent" BorderThickness="0" Padding="0"
+                                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
+                                            Cursor="Hand">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
 
+                                            <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,15,0">
+                                                <TextBlock x:Name="Loc_Settings_ModulesTitle" Text="Модульність (Кастомізація)"
+                                                   Foreground="{DynamicResource MainForegroundBrush}" FontSize="24"
+                                                   FontWeight="Bold" FontFamily="{DynamicResource AppFontFamily}" TextWrapping="Wrap" />
+                                                <TextBlock x:Name="Loc_Settings_ModulesDesc"
+                                                   Text="Оберіть готовий шаблон або вимкніть непотрібні функції власноруч:"
+                                                   Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6"
+                                                   FontSize="12" FontFamily="{DynamicResource AppFontFamily}" Margin="0,2,0,0" TextWrapping="Wrap" />
+                                            </StackPanel>
+
+                                            <Border Grid.Column="1" Width="34" Height="34" CornerRadius="8"
+                                                    Background="{DynamicResource MainBackgroundButton}"
+                                                    VerticalAlignment="Center">
+                                                <Panel>
+                                                    <ic:SymbolIcon Symbol="ChevronDown" FontSize="18"
+                                                                   Foreground="{DynamicResource MainForegroundBrush}"
+                                                                   IsVisible="{Binding !IsModulesExpanded}" />
+                                                    <ic:SymbolIcon Symbol="ChevronUp" FontSize="18"
+                                                                   Foreground="{DynamicResource MainForegroundBrush}"
+                                                                   IsVisible="{Binding IsModulesExpanded}" />
+                                                </Panel>
+                                            </Border>
+                                        </Grid>
+                                    </Button>
+
+                                    <StackPanel Margin="0,15,0,0" IsVisible="{Binding IsModulesExpanded}">
                                     <Grid Margin="0,0,0,15">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*" />
@@ -956,46 +982,74 @@
                                                  VerticalAlignment="Center" Margin="5,4" Height="36" Cursor="Hand"
                                                  IsChecked="{Binding EnableModStatistics}" />
                                     </Grid>
+                                    </StackPanel>
                                 </StackPanel>
                             </Border>
                             <Border x:Name="ThemBorder"
-                            BorderThickness="1" CornerRadius="15"
+                            BorderThickness="1" BorderBrush="{DynamicResource SubtleBorderBrush}" CornerRadius="15"
                             Background="{DynamicResource MainBackgroundBrushServer}"
                             Padding="15" Margin="0,5"
                             HorizontalAlignment="Stretch" VerticalAlignment="Top">
                                 <StackPanel>
-                                    <Grid Margin="0,0,0,15">
+                                    <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*" />
                                             <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
 
-                                        <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,15,0">
-                                            <TextBlock x:Name="Loc_Settings_ThemeTitle" Text="Тема інтерфейсу"
-                                               Foreground="{DynamicResource MainForegroundBrush}" FontSize="24"
-                                               FontWeight="Bold" FontFamily="{DynamicResource AppFontFamily}" TextWrapping="Wrap" />
-                                            <TextBlock x:Name="Loc_Settings_ThemeDesc"
-                                               Text="Оберіть готовий стиль або створіть власний та поділіться ним"
-                                               Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6"
-                                               FontSize="12" FontFamily="{DynamicResource AppFontFamily}" Margin="0,2,0,0" TextWrapping="Wrap" />
-                                        </StackPanel>
+                                        <Button Grid.Column="0" Command="{Binding ToggleThemeExpandedCommand}"
+                                                Background="Transparent" BorderThickness="0" Padding="0"
+                                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
+                                                Margin="0,0,15,0" Cursor="Hand">
+                                            <StackPanel VerticalAlignment="Center">
+                                                <TextBlock x:Name="Loc_Settings_ThemeTitle" Text="Тема інтерфейсу"
+                                                   Foreground="{DynamicResource MainForegroundBrush}" FontSize="24"
+                                                   FontWeight="Bold" FontFamily="{DynamicResource AppFontFamily}" TextWrapping="Wrap" />
+                                                <TextBlock x:Name="Loc_Settings_ThemeDesc"
+                                                   Text="Оберіть готовий стиль або створіть власний та поділіться ним"
+                                                   Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6"
+                                                   FontSize="12" FontFamily="{DynamicResource AppFontFamily}" Margin="0,2,0,0" TextWrapping="Wrap" />
+                                            </StackPanel>
+                                        </Button>
 
-                                        <ComboBox Grid.Column="1" x:Name="ThemeComboBox"
-                                          Width="140" Height="35"
-                                          VerticalAlignment="Top"
-                                          ItemsSource="{Binding AvailableThemes}"
-                                          SelectedItem="{Binding SelectedThemeOption}"
-                                          Background="{DynamicResource MainBackgroundButton}"
-                                          Foreground="{DynamicResource MainForegroundBrush}" Cursor="Hand">
-                                            <ComboBox.ItemTemplate>
-                                                <DataTemplate>
-                                                    <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center" />
-                                                </DataTemplate>
-                                            </ComboBox.ItemTemplate>
-                                        </ComboBox>
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                            <ComboBox x:Name="ThemeComboBox"
+                                              Width="140" Height="35"
+                                              VerticalAlignment="Center"
+                                              ItemsSource="{Binding AvailableThemes}"
+                                              SelectedItem="{Binding SelectedThemeOption}"
+                                              Background="{DynamicResource MainBackgroundButton}"
+                                              Foreground="{DynamicResource MainForegroundBrush}" Cursor="Hand">
+                                                <ComboBox.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center" />
+                                                    </DataTemplate>
+                                                </ComboBox.ItemTemplate>
+                                            </ComboBox>
+
+                                            <Button Command="{Binding ToggleThemeExpandedCommand}"
+                                                    Width="34" Height="34" CornerRadius="8" Padding="0"
+                                                    Background="{DynamicResource MainBackgroundButton}"
+                                                    BorderBrush="{x:Null}" VerticalAlignment="Center" Cursor="Hand">
+                                                <Panel>
+                                                    <ic:SymbolIcon Symbol="ChevronDown" FontSize="18"
+                                                                   Foreground="{DynamicResource MainForegroundBrush}"
+                                                                   IsVisible="{Binding !IsThemeExpanded}" />
+                                                    <ic:SymbolIcon Symbol="ChevronUp" FontSize="18"
+                                                                   Foreground="{DynamicResource MainForegroundBrush}"
+                                                                   IsVisible="{Binding IsThemeExpanded}" />
+                                                </Panel>
+                                            </Button>
+                                        </StackPanel>
                                     </Grid>
 
-                                    <Grid>
+                                    <StackPanel Margin="0,15,0,0" IsVisible="{Binding IsThemeExpanded}">
+                                    <Grid x:Name="CustomThemeColorsPanel" IsEnabled="{Binding IsCustomThemeSelected}">
+                                        <Grid.Styles>
+                                            <Style Selector="Grid:disabled">
+                                                <Setter Property="Opacity" Value="0.4" />
+                                            </Style>
+                                        </Grid.Styles>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*" />
                                             <ColumnDefinition Width="Auto" />
@@ -1013,54 +1067,92 @@
                                            Text="Колір секції" Foreground="{DynamicResource MainForegroundBrush}"
                                            FontSize="16" VerticalAlignment="Center" Margin="0,5" FontFamily="{DynamicResource AppFontFamily}" />
                                         <Button Grid.Row="0" Grid.Column="1" x:Name="Section_colourButton"
-                                           Command="{Binding PickSectionColorCommand}" Content="{Binding SectionColor}" Width="120" Height="32"
+                                           Command="{Binding PickSectionColorCommand}" Width="136" Height="32"
+                                           Padding="8,0" HorizontalContentAlignment="Left"
                                            Margin="5,4" Background="{DynamicResource MainBackgroundButton}"
                                            Foreground="{DynamicResource MainForegroundBrush}" BorderBrush="{x:Null}"
-                                           Cursor="Hand" />
+                                           Cursor="Hand">
+                                            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                                <Border Width="16" Height="16" CornerRadius="4"
+                                                        Background="{Binding SectionColorBrush}"
+                                                        BorderBrush="{DynamicResource SubtleBorderBrush}" BorderThickness="1" />
+                                                <TextBlock Text="{Binding SectionColor}" VerticalAlignment="Center" FontSize="12" />
+                                            </StackPanel>
+                                        </Button>
 
                                         <TextBlock Grid.Row="1" Grid.Column="0" x:Name="Loc_Settings_ThemeBg" Text="Колір фону"
                                            Foreground="{DynamicResource MainForegroundBrush}" FontSize="16"
                                            VerticalAlignment="Center" Margin="0,5" FontFamily="{DynamicResource AppFontFamily}" />
                                         <Button Grid.Row="1" Grid.Column="1" x:Name="Background_colourButton"
-                                           Command="{Binding PickBackgroundColorCommand}" Content="{Binding BackgroundColor}" Width="120" Height="32"
+                                           Command="{Binding PickBackgroundColorCommand}" Width="136" Height="32"
+                                           Padding="8,0" HorizontalContentAlignment="Left"
                                            Margin="5,4" Background="{DynamicResource MainBackgroundButton}"
                                            Foreground="{DynamicResource MainForegroundBrush}" BorderBrush="{x:Null}"
-                                           Cursor="Hand" />
+                                           Cursor="Hand">
+                                            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                                <Border Width="16" Height="16" CornerRadius="4"
+                                                        Background="{Binding BackgroundColorBrush}"
+                                                        BorderBrush="{DynamicResource SubtleBorderBrush}" BorderThickness="1" />
+                                                <TextBlock Text="{Binding BackgroundColor}" VerticalAlignment="Center" FontSize="12" />
+                                            </StackPanel>
+                                        </Button>
 
                                         <TextBlock Grid.Row="2" Grid.Column="0" x:Name="Loc_Settings_ThemeAccent"
                                            Text="Додатковий колір" Foreground="{DynamicResource MainForegroundBrush}"
                                            FontSize="16" VerticalAlignment="Center" Margin="0,5" FontFamily="{DynamicResource AppFontFamily}" />
                                         <Button Grid.Row="2" Grid.Column="1" x:Name="Additional_colourButton"
-                                           Command="{Binding PickAdditionalColorCommand}" Content="{Binding AdditionalColor}" Width="120" Height="32"
+                                           Command="{Binding PickAdditionalColorCommand}" Width="136" Height="32"
+                                           Padding="8,0" HorizontalContentAlignment="Left"
                                            Margin="5,4" Background="{DynamicResource MainBackgroundButton}"
                                            Foreground="{DynamicResource MainForegroundBrush}" BorderBrush="{x:Null}"
-                                           Cursor="Hand" />
+                                           Cursor="Hand">
+                                            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                                <Border Width="16" Height="16" CornerRadius="4"
+                                                        Background="{Binding AdditionalColorBrush}"
+                                                        BorderBrush="{DynamicResource SubtleBorderBrush}" BorderThickness="1" />
+                                                <TextBlock Text="{Binding AdditionalColor}" VerticalAlignment="Center" FontSize="12" />
+                                            </StackPanel>
+                                        </Button>
 
                                         <TextBlock Grid.Row="3" Grid.Column="0" x:Name="Loc_Settings_ThemeText"
                                            Text="Колір тексту" Foreground="{DynamicResource MainForegroundBrush}"
                                            FontSize="16" VerticalAlignment="Center" Margin="0,5" FontFamily="{DynamicResource AppFontFamily}" />
                                         <Button Grid.Row="3" Grid.Column="1" x:Name="Text_colourButton"
-                                           Command="{Binding PickTextColorCommand}" Content="{Binding TextColor}"
-                                           Width="120" Height="32" Margin="5,4"
+                                           Command="{Binding PickTextColorCommand}" Width="136" Height="32"
+                                           Padding="8,0" HorizontalContentAlignment="Left" Margin="5,4"
                                            Background="{DynamicResource MainBackgroundButton}"
                                            Foreground="{DynamicResource MainForegroundBrush}" BorderBrush="{x:Null}"
-                                           Cursor="Hand" />
+                                           Cursor="Hand">
+                                            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                                <Border Width="16" Height="16" CornerRadius="4"
+                                                        Background="{Binding TextColorBrush}"
+                                                        BorderBrush="{DynamicResource SubtleBorderBrush}" BorderThickness="1" />
+                                                <TextBlock Text="{Binding TextColor}" VerticalAlignment="Center" FontSize="12" />
+                                            </StackPanel>
+                                        </Button>
 
                                         <TextBlock Grid.Row="4" Grid.Column="0" x:Name="Loc_Settings_ThemeBtn"
                                            Text="Колір кнопки" Foreground="{DynamicResource MainForegroundBrush}"
                                            FontSize="16" VerticalAlignment="Center" Margin="0,5" FontFamily="{DynamicResource AppFontFamily}" />
                                         <Button Grid.Row="4" Grid.Column="1" x:Name="Button_colourButton"
-                                           Command="{Binding PickButtonColorCommand}" Content="{Binding ButtonColor}"
-                                           Width="120" Height="32" Margin="5,4"
+                                           Command="{Binding PickButtonColorCommand}" Width="136" Height="32"
+                                           Padding="8,0" HorizontalContentAlignment="Left" Margin="5,4"
                                            Background="{DynamicResource MainBackgroundButton}"
                                            Foreground="{DynamicResource MainForegroundBrush}" BorderBrush="{x:Null}"
-                                           Cursor="Hand" />
+                                           Cursor="Hand">
+                                            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                                <Border Width="16" Height="16" CornerRadius="4"
+                                                        Background="{Binding ButtonColorBrush}"
+                                                        BorderBrush="{DynamicResource SubtleBorderBrush}" BorderThickness="1" />
+                                                <TextBlock Text="{Binding ButtonColor}" VerticalAlignment="Center" FontSize="12" />
+                                            </StackPanel>
+                                        </Button>
 
                                         <TextBlock Grid.Row="5" Grid.Column="0" x:Name="Loc_Settings_ThemeImage"
                                            Text="Зображення фону" Foreground="{DynamicResource MainForegroundBrush}"
                                            FontSize="16" VerticalAlignment="Center" Margin="0,5" FontFamily="{DynamicResource AppFontFamily}" />
                                         <Button Grid.Row="5" Grid.Column="1" x:Name="Background_imageButton"
-                                           Command="{Binding PickBackgroundImageCommand}" Content="Файл..." Width="120"
+                                           Command="{Binding PickBackgroundImageCommand}" Content="Файл..." Width="136"
                                            Height="32" Margin="5,4" Foreground="{DynamicResource MainForegroundBrush}"
                                            Background="{DynamicResource MainBackgroundButton}" BorderBrush="{x:Null}"
                                            Cursor="Hand" />
@@ -1106,24 +1198,51 @@
                                             </StackPanel>
                                         </Grid>
                                     </Border>
+                                    </StackPanel>
                                 </StackPanel>
                             </Border>
                             <Border x:Name="LoadScreenSettingBorder"
-                            BorderThickness="1" CornerRadius="15"
+                            BorderThickness="1" BorderBrush="{DynamicResource SubtleBorderBrush}" CornerRadius="15"
                             Background="{DynamicResource MainBackgroundBrushServer}"
                             Padding="15" Margin="0,5"
                             HorizontalAlignment="Stretch" VerticalAlignment="Top">
                                 <StackPanel>
-                                    <StackPanel Margin="0,0,0,15">
-                                        <TextBlock x:Name="Loc_Settings_LoadScreenTitle" Text="Завантажувальний екран"
-                                           Foreground="{DynamicResource MainForegroundBrush}" FontSize="24"
-                                           FontWeight="Bold" FontFamily="{DynamicResource AppFontFamily}" TextWrapping="Wrap" />
-                                        <TextBlock x:Name="Loc_Settings_LoadScreenDesc"
-                                           Text="Налаштуйте вигляд вікна запуску (Splash Screen) та поділіться своїм стилем"
-                                           Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6"
-                                           FontSize="12" FontFamily="{DynamicResource AppFontFamily}" Margin="0,2,0,0" TextWrapping="Wrap" />
-                                    </StackPanel>
+                                    <Button Command="{Binding ToggleLoadScreenExpandedCommand}"
+                                            Background="Transparent" BorderThickness="0" Padding="0"
+                                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
+                                            Cursor="Hand">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
 
+                                            <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,15,0">
+                                                <TextBlock x:Name="Loc_Settings_LoadScreenTitle" Text="Завантажувальний екран"
+                                                   Foreground="{DynamicResource MainForegroundBrush}" FontSize="24"
+                                                   FontWeight="Bold" FontFamily="{DynamicResource AppFontFamily}" TextWrapping="Wrap" />
+                                                <TextBlock x:Name="Loc_Settings_LoadScreenDesc"
+                                                   Text="Налаштуйте вигляд вікна запуску (Splash Screen) та поділіться своїм стилем"
+                                                   Foreground="{DynamicResource MainForegroundBrush}" Opacity="0.6"
+                                                   FontSize="12" FontFamily="{DynamicResource AppFontFamily}" Margin="0,2,0,0" TextWrapping="Wrap" />
+                                            </StackPanel>
+
+                                            <Border Grid.Column="1" Width="34" Height="34" CornerRadius="8"
+                                                    Background="{DynamicResource MainBackgroundButton}"
+                                                    VerticalAlignment="Center">
+                                                <Panel>
+                                                    <ic:SymbolIcon Symbol="ChevronDown" FontSize="18"
+                                                                   Foreground="{DynamicResource MainForegroundBrush}"
+                                                                   IsVisible="{Binding !IsLoadScreenExpanded}" />
+                                                    <ic:SymbolIcon Symbol="ChevronUp" FontSize="18"
+                                                                   Foreground="{DynamicResource MainForegroundBrush}"
+                                                                   IsVisible="{Binding IsLoadScreenExpanded}" />
+                                                </Panel>
+                                            </Border>
+                                        </Grid>
+                                    </Button>
+
+                                    <StackPanel Margin="0,15,0,0" IsVisible="{Binding IsLoadScreenExpanded}">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition />
@@ -1142,19 +1261,26 @@
                                                Margin="0,9" FontFamily="{DynamicResource AppFontFamily}" ToolTip.Tip="Відкриває текстовий файл..." />
                                         </StackPanel>
 
-                                        <StackPanel Grid.Column="1" HorizontalAlignment="Center" Width="100">
+                                        <StackPanel Grid.Column="1" HorizontalAlignment="Right">
                                             <Button x:Name="LoadScreenBgButton" Command="{Binding PickLoadScreenBgCommand}"
-                                               Content="Файл..." Width="109" Height="30" Margin="0,5"
+                                               Content="Файл..." Width="136" Height="30" Margin="0,5"
                                                Foreground="{DynamicResource MainForegroundBrush}"
                                                Background="{DynamicResource MainBackgroundButton}"
                                                BorderBrush="{x:Null}" Cursor="Hand" />
                                             <Button x:Name="LoadScreenColorButton" Command="{Binding PickLoadScreenColorCommand}"
-                                               Content="{Binding LoadScreenColor}" Width="109" Height="30" Margin="0,5"
+                                               Width="136" Height="30" Margin="0,5" Padding="8,0" HorizontalContentAlignment="Left"
                                                Background="{DynamicResource MainBackgroundButton}"
                                                Foreground="{DynamicResource MainForegroundBrush}"
-                                               BorderBrush="{x:Null}" Cursor="Hand" />
+                                               BorderBrush="{x:Null}" Cursor="Hand">
+                                                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                                    <Border Width="16" Height="16" CornerRadius="4"
+                                                            Background="{Binding LoadScreenColorBrush}"
+                                                            BorderBrush="{DynamicResource SubtleBorderBrush}" BorderThickness="1" />
+                                                    <TextBlock Text="{Binding LoadScreenColor}" VerticalAlignment="Center" FontSize="12" />
+                                                </StackPanel>
+                                            </Button>
                                             <Button x:Name="EditPhrasesButton" Command="{Binding EditPhrasesCommand}"
-                                               Content="Текст..." Width="109" Height="30" Margin="0,5"
+                                               Content="Текст..." Width="136" Height="30" Margin="0,5"
                                                Foreground="{DynamicResource MainForegroundBrush}"
                                                Background="{DynamicResource MainBackgroundButton}"
                                                BorderBrush="{x:Null}" Cursor="Hand" />
@@ -1204,6 +1330,7 @@
                                             </StackPanel>
                                         </Grid>
                                     </Border>
+                                    </StackPanel>
                                 </StackPanel>
                             </Border>
                         </StackPanel>

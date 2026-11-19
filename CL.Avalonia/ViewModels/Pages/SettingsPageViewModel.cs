@@ -11,6 +11,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input.Platform;
+using Avalonia.Media;
 using Avalonia.Threading;
 using CL.Core.Interfaces;
 using CL.Core.Models;
@@ -128,6 +129,7 @@ public partial class SettingsPageViewModel : ObservableObject
 
     [ObservableProperty] private byte _maxAutoBackups = 3;
 
+    public bool IsUpdateChannelVisible => !PlatformPaths.IsRunningInFlatpak();
     public ObservableCollection<UpdateChannelOption> AvailableUpdateChannels { get; } = new();
     [ObservableProperty] private UpdateChannelOption? _selectedUpdateChannelOption;
     [ObservableProperty] private string _updateStatusText = string.Empty;
@@ -168,20 +170,58 @@ public partial class SettingsPageViewModel : ObservableObject
         new("Custom", "Кастомна")
     };
     [ObservableProperty] private ThemeOption? _selectedThemeOption;
-    [ObservableProperty] private string _selectedTheme = "Dark";
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsCustomThemeSelected))]
+    private string _selectedTheme = "Dark";
     private bool _suppressThemeChange;
 
-    [ObservableProperty] private string _sectionColor = "#303030";
-    [ObservableProperty] private string _backgroundColor = "#FF202020";
-    [ObservableProperty] private string _additionalColor = "#FF1863C9";
-    [ObservableProperty] private string _textColor = "#FFFFFFFF";
-    [ObservableProperty] private string _buttonColor = "#FF202020";
+    public bool IsCustomThemeSelected => string.Equals(SelectedTheme, "Custom", StringComparison.OrdinalIgnoreCase);
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(SectionColorBrush))]
+    private string _sectionColor = "#303030";
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(BackgroundColorBrush))]
+    private string _backgroundColor = "#FF202020";
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(AdditionalColorBrush))]
+    private string _additionalColor = "#FF1863C9";
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(TextColorBrush))]
+    private string _textColor = "#FFFFFFFF";
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ButtonColorBrush))]
+    private string _buttonColor = "#FF202020";
+
     [ObservableProperty] private string _backgroundImagePath = string.Empty;
     [ObservableProperty] private string _themeCode = string.Empty;
 
-    [ObservableProperty] private string _loadScreenColor = "#00BEFF";
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(LoadScreenColorBrush))]
+    private string _loadScreenColor = "#00BEFF";
     [ObservableProperty] private string _loadScreenBackground = string.Empty;
     [ObservableProperty] private string _loadScreenCode = string.Empty;
+
+    public IBrush SectionColorBrush => ParseHexBrush(SectionColor, "#303030");
+    public IBrush BackgroundColorBrush => ParseHexBrush(BackgroundColor, "#FF202020");
+    public IBrush AdditionalColorBrush => ParseHexBrush(AdditionalColor, "#FF1863C9");
+    public IBrush TextColorBrush => ParseHexBrush(TextColor, "#FFFFFFFF");
+    public IBrush ButtonColorBrush => ParseHexBrush(ButtonColor, "#FF202020");
+    public IBrush LoadScreenColorBrush => ParseHexBrush(LoadScreenColor, "#00BEFF");
+
+    private static IBrush ParseHexBrush(string? hex, string fallbackHex)
+    {
+        if (!string.IsNullOrWhiteSpace(hex) && Color.TryParse(hex.Trim(), out var parsed))
+            return new SolidColorBrush(parsed);
+
+        return Color.TryParse(fallbackHex, out var fallback)
+            ? new SolidColorBrush(fallback)
+            : Brushes.Transparent;
+    }
 
     [ObservableProperty] private bool _enableModpacks;
     [ObservableProperty] private bool _enableMods;
@@ -203,6 +243,10 @@ public partial class SettingsPageViewModel : ObservableObject
     [ObservableProperty] private bool _enableModLatestActions;
     [ObservableProperty] private bool _enableModDiscordRPC;
     [ObservableProperty] private bool _enableModStatistics;
+
+    [ObservableProperty] private bool _isModulesExpanded;
+    [ObservableProperty] private bool _isThemeExpanded;
+    [ObservableProperty] private bool _isLoadScreenExpanded;
 
     private bool _suppressModuleNotifications;
 
@@ -1035,6 +1079,27 @@ public partial class SettingsPageViewModel : ObservableObject
     #endregion
 
     #region UI Scale & Presets Commands
+
+    [RelayCommand]
+    private void ToggleModulesExpanded()
+    {
+        _soundService.PlayClick();
+        IsModulesExpanded = !IsModulesExpanded;
+    }
+
+    [RelayCommand]
+    private void ToggleThemeExpanded()
+    {
+        _soundService.PlayClick();
+        IsThemeExpanded = !IsThemeExpanded;
+    }
+
+    [RelayCommand]
+    private void ToggleLoadScreenExpanded()
+    {
+        _soundService.PlayClick();
+        IsLoadScreenExpanded = !IsLoadScreenExpanded;
+    }
 
     [RelayCommand]
     private void ResetUiScale()
