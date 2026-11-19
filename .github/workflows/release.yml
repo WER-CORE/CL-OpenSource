@@ -439,6 +439,67 @@ jobs:
           flatpak build-bundle repo CLegendaryLauncher-x64.flatpak io.github.wer_core.cl-opensource
           cd ..
 
+      - name: Publish Flatpak Repo to GitHub Pages (Stable only)
+        if: needs.prepare.outputs.is_prerelease == 'false' && secrets.FLATPAK_GPG_PRIVATE_KEY != '' && secrets.FLATPAK_GPG_KEY_ID != ''
+        env:
+          FLATPAK_GPG_PRIVATE_KEY: ${{ secrets.FLATPAK_GPG_PRIVATE_KEY }}
+          FLATPAK_GPG_KEY_ID: ${{ secrets.FLATPAK_GPG_KEY_ID }}
+          PUSH_TOKEN: ${{ secrets.RELEASE_PAT || secrets.GITHUB_TOKEN }}
+          TARGET_REPO: ${{ needs.prepare.outputs.target_repo }}
+        run: |
+          set -e
+          echo "$FLATPAK_GPG_PRIVATE_KEY" | base64 -d | gpg --batch --import
+          GPG_PUB_B64=$(gpg --export "$FLATPAK_GPG_KEY_ID" | base64 -w 0)
+
+          PAGES_URL="https://wer-core.github.io/${TARGET_REPO#*/}"
+          REPO_GIT_URL="https://x-access-token:${PUSH_TOKEN}@github.com/${TARGET_REPO}.git"
+
+          rm -rf ./flatpak_pages
+          if git clone --depth 1 --branch gh-pages "$REPO_GIT_URL" ./flatpak_pages 2>/dev/null; then
+            echo "Cloned existing gh-pages branch"
+          else
+            mkdir -p ./flatpak_pages
+            cd ./flatpak_pages
+            git init -b gh-pages
+            git remote add origin "$REPO_GIT_URL"
+            cd ..
+          fi
+
+          mkdir -p ./flatpak_pages/repo
+          flatpak build-export --gpg-sign="$FLATPAK_GPG_KEY_ID" ./flatpak_pages/repo ./flatpak_build/build_dir stable
+          flatpak build-update-repo --gpg-sign="$FLATPAK_GPG_KEY_ID" --generate-static-deltas --prune ./flatpak_pages/repo
+
+          cat << EOF > ./flatpak_pages/cl.flatpakrepo
+          [Flatpak Repo]
+          Title=CLegendary Launcher
+          Url=${PAGES_URL}/repo
+          Homepage=https://cl-launcher.app/
+          Comment=Official CLegendary Launcher Flatpak repository
+          GPGKey=${GPG_PUB_B64}
+          EOF
+
+          cat << EOF > ./flatpak_pages/cl.flatpakref
+          [Flatpak Ref]
+          Title=CLegendary Launcher
+          Name=io.github.wer_core.cl-opensource
+          Branch=stable
+          Url=${PAGES_URL}/repo
+          SuggestRemoteName=clegendary-launcher
+          IsRuntime=false
+          RuntimeRepo=https://dl.flathub.org/repo/flathub.flatpakrepo
+          GPGKey=${GPG_PUB_B64}
+          EOF
+
+          touch ./flatpak_pages/.nojekyll
+
+          cd ./flatpak_pages
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Update Flatpak repo to v${RELEASE_VERSION}" || true
+          git push -u origin gh-pages
+          cd ..
+
       - name: Organize Linux release artifacts
         run: |
           mkdir -p ./linux_artifacts
