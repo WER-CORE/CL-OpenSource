@@ -94,7 +94,7 @@ flatpak update io.github.wer_core.cl-opensource
 
 **Альтернативи для Linux:** на [сторінці релізів](https://github.com/WER-CORE/CL-Win-Edition--Update/releases/latest) також доступні **AppImage** (`x64` і `arm64`) та офлайн-пакет **`CLegendaryLauncher-x64.flatpak`** для ручного встановлення без підключення репозиторію.
 
-Якщо помітили помилку, створіть [issue](https://github.com/WER-CORE/CL-OpenSource/issues) і, за можливості, додайте версію лаунчера, ОС, кроки відтворення та лог без особистих даних.
+Якщо помітили помилку, створіть [issue](https://github.com/WER-CORE/CL-OpenSource/issues) і, за можливості, додайте версію лаунчера, ОС, кроки відтворення.
 
 ## Збірка з вихідного коду
 
@@ -131,7 +131,8 @@ Clegendary Launcher використовує сторонні бібліотек
 - **Modrinth і CurseForge** — платформи поширення модифікацій і контенту Minecraft.
 - **Forge, Fabric, Quilt, NeoForge, OptiFine і LiteLoader** — екосистема завантажувачів і модифікацій.
 - **LittleSkin** — сервіс, інтегрований у підтримувані сценарії авторизації.
-- **Google Fonts, Material Icons і Fluent System Icons** — джерела іконографіки та графічних ресурсів.
+- **Google Fonts, Material Icons і Fluent System Icons** — джерела іконографіки та графічних ресурсів.
+
 
 Ліцензійні умови окремих компонентів визначаються їхніми власними ліцензіями. Додаткові відомості дивіться у файлах [`LICENSE`](LICENSE), [`PRIVACY.md`](PRIVACY.md).
 
