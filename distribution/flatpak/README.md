@@ -1,33 +1,27 @@
-# CLegendary Launcher — Flatpak & Flathub Integration
+# CLegendary Launcher — Flatpak (документація для розробників)
 
-Ця директорія містить файли конфігурації для пакування та автоматизованої публікації **CLegendary Launcher** у каталозі [Flathub](https://flathub.org).
+Ця директорія містить маніфест, метадані та ресурси для локальної збірки, тестування й пакування **CLegendary Launcher** у форматі Flatpak.
 
-## Архітектура Flathub (Шлях 1 — Prebuilt Binaries)
+## Основні параметри пакета
 
-Flathub використовує готові та перевірені Linux-бінарники, які автоматично генеруються нашим GitHub Actions під час кожного релізу:
-- `CLegendaryLauncher-linux-x64.tar.gz` (для x86_64 систем та комп'ютерів)
-- `CLegendaryLauncher-linux-arm64.tar.gz` (для aarch64 систем, Raspberry Pi, ARM64)
-
-### Автономне оновлення (`x-checker-data`)
-У маніфесті налаштовано блок `x-checker-data`. Офіційний сервіс Flathub (`flatpak-external-data-checker` / `flathubbot`) регулярно перевіряє GitHub API репозиторію `WER-CORE/CL-Win-Edition--Update`. Коли виходить новий реліз:
-1. Бот Flathub автоматично фіксує новий тег версії.
-2. Розраховує контрольну суму SHA256 нового архіву.
-3. Створює pull request та оновлює пакет на Flathub без необхідності ручного редагування коду.
-
----
+- **Application ID:** `io.github.wer_core.cl-opensource`
+- **Команда запуску:** `CL.Avalonia`
+- **Runtime:** `org.freedesktop.Platform//26.08`
+- **SDK:** `org.freedesktop.Sdk//26.08`
+- **SDK Extension (для збірки з вихідного коду):** `org.freedesktop.Sdk.Extension.dotnet10`
+- **Права пісочниці (`finish-args`):** `--share=network`, `--share=ipc`, `--socket=x11`, `--socket=pulseaudio`, `--device=dri`, `--filesystem=~/.minecraft:create`, `--filesystem=xdg-run/discord-ipc-0`.
 
 ## Вміст директорії
 
-- `app.clegendary.launcher.yml` — маніфест Flatpak з налаштуваннями ізоляції (пісочниці), залежностями Wayland/X11, звуком, графічним прискоренням DRI та автооновленням `x-checker-data`.
-- `app.clegendary.launcher.desktop` — файл інтеграції з робочим столом Linux (меню додатків, категорії).
-- `app.clegendary.launcher.metainfo.xml` — метадані AppStream для графічних центрів додатків (GNOME Software, KDE Discover, Flathub).
-- `app.clegendary.launcher.png` — офіційна іконка лаунчера у роздільній здатності 512x512.
+- `io.github.wer_core.cl-opensource.yml` — Flatpak-маніфест для збірки з вихідного коду (`--self-contained false` з використанням `org.freedesktop.Sdk.Extension.dotnet10` та `nuget-sources.json`).
+- `io.github.wer_core.cl-opensource.desktop` — `.desktop`-файл для інтеграції з меню застосунків Linux.
+- `io.github.wer_core.cl-opensource.metainfo.xml` — AppStream-метадані для центрів застосунків (KDE Discover, GNOME Software).
+- `io.github.wer_core.cl-opensource.png` — іконка застосунку `512x512`.
 
----
+## Локальна збірка та тестування
 
-## 🛠 Локальна збірка та тестування (Linux / SteamOS)
+### 1. Встановлення залежностей
 
-### 1. Встановлення інструментів
 ```bash
 # Ubuntu / Debian
 sudo apt install flatpak flatpak-builder
@@ -39,23 +33,23 @@ sudo pacman -S flatpak flatpak-builder
 sudo dnf install flatpak flatpak-builder
 ```
 
-Встановлення базового runtime freedesktop:
+Встановіть runtime, SDK та розширення .NET 10:
+
 ```bash
-flatpak install flathub org.freedesktop.Platform//24.08 org.freedesktop.Sdk//24.08
+flatpak install org.freedesktop.Platform//26.08 org.freedesktop.Sdk//26.08 org.freedesktop.Sdk.Extension.dotnet10//26.08
 ```
 
-### 2. Складання та тестування
+### 2. Збірка та перевірка локально
+
 ```bash
-flatpak-builder --user --install --force-clean build-dir app.clegendary.launcher.yml
-flatpak run app.clegendary.launcher
+flatpak-builder --user --install --force-clean build-dir distribution/flatpak/io.github.wer_core.cl-opensource.yml
+flatpak run io.github.wer_core.cl-opensource
 ```
 
----
+## Власний OSTree-репозиторій (GitHub Pages)
 
-## 🚀 Первинна публікація у Flathub
+Офіційне розповсюдження Flatpak відбувається через власний OSTree-репозиторій на гілці `gh-pages` репозиторію `WER-CORE/CL-OpenSource`:
 
-1. Зробіть Fork репозиторію [flathub/flathub](https://github.com/flathub/flathub).
-2. Створіть гілку `new-pr/app.clegendary.launcher`.
-3. Додайте 4 файли з цієї директорії (`app.clegendary.launcher.yml`, `.desktop`, `.metainfo.xml`, `.png`).
-4. Відкрийте Pull Request.
-5. Після перевірки ботом та модераторами лаунчер стане доступним на Flathub та в магазині Discover на Steam Deck.
+- **OSTree URL:** `https://wer-core.github.io/CL-OpenSource/repo` (гілка `stable`, `archive-z2`, `indexed-deltas=true`)
+- **Файли підключення:** `cl.flatpakrepo` та `cl.flatpakref` (розміщуються у корені `gh-pages`)
+- **Публікація:** під час стабільного релізу CI-пайплайн `.github/workflows/release.yml` пакує вже зібраний self-contained бінарник (`./publish/linux-x64`), експортує його в OSTree-репозиторій, підписує GPG-ключем (`flatpak build-update-repo --gpg-sign ... --generate-static-deltas --prune`) та оновлює `gh-pages`, а також додає до GitHub Release автономний бандл `CLegendaryLauncher-x64.flatpak`.

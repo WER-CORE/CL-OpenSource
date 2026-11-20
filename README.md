@@ -9,7 +9,7 @@
 ![Platforms](https://img.shields.io/badge/Platforms-Windows%20%7C%20Linux%20%7C%20macOS-555)
 ![Made in Ukraine](https://img.shields.io/badge/Made%20in-Ukraine-0057b7)
 
-[**Завантажити**](https://github.com/WER-CORE/CL-Win-Edition--Update/releases/latest) · [Повідомити про проблему](https://github.com/WER-CORE/CL-OpenSource/issues) · [Discord](https://discord.gg/RhyZjACs2U) · [Допомогти з перекладом](https://uk.crowdin.com/project/clegendary-launcher)
+[**Офіційний сайт**](https://cl-launcher.app/) · [**Документація (Wiki)**](https://wiki.cl-launcher.app/) · [**Завантажити**](https://github.com/WER-CORE/CL-Win-Edition--Update/releases/latest) · [Повідомити про проблему](https://github.com/WER-CORE/CL-OpenSource/issues) · [Discord](https://discord.gg/RhyZjACs2U) · [Допомогти з перекладом](https://uk.crowdin.com/project/clegendary-launcher)
 
 **Мова:** Українська · [English, Polski, Беларуская, Čeština, Français — долучитися до перекладу](https://uk.crowdin.com/project/clegendary-launcher)
 
@@ -66,13 +66,39 @@
 
 ## Завантаження
 
-Готові випуски та інформацію про їхню доступність шукайте на [сторінці релізів](https://github.com/WER-CORE/CL-Win-Edition--Update/releases/latest).
+Готові випуски для **Windows**, **Linux** та **macOS** доступні на [офіційному сайті](https://cl-launcher.app/) або на [сторінці релізів](https://github.com/WER-CORE/CL-Win-Edition--Update/releases/latest). Усі офіційні збірки публікуються як self-contained — кінцевим користувачам не потрібно окремо встановлювати .NET Runtime.
 
-Якщо помітили помилку, створіть [issue](https://github.com/WER-CORE/CL-OpenSource/issues) і, за можливості, додайте версію лаунчера, ОС, кроки відтворення та лог без особистих даних.
+### Встановлення на Linux (Flatpak-репозиторій)
+
+Рекомендований спосіб для Linux (`x64`) — підключення власного GPG-підписаного Flatpak-репозиторію CL:
+
+```bash
+flatpak install --user -y https://wer-core.github.io/CL-OpenSource/cl.flatpakref
+```
+
+Або додайте репозиторій вручну та встановіть пакет:
+
+```bash
+flatpak remote-add --if-not-exists clegendary-launcher https://wer-core.github.io/CL-OpenSource/cl.flatpakrepo
+flatpak install clegendary-launcher io.github.wer_core.cl-opensource
+```
+
+Запуск та оновлення:
+
+```bash
+flatpak run io.github.wer_core.cl-opensource
+flatpak update io.github.wer_core.cl-opensource
+```
+
+> Оновлення через підключений репозиторій доступні командою `flatpak update` (автоматичне встановлення оновлень залежить від налаштувань вашої системи та центру застосунків).
+
+**Альтернативи для Linux:** на [сторінці релізів](https://github.com/WER-CORE/CL-Win-Edition--Update/releases/latest) також доступні **AppImage** (`x64` і `arm64`) та офлайн-пакет **`CLegendaryLauncher-x64.flatpak`** для ручного встановлення без підключення репозиторію.
+
+Якщо помітили помилку, створіть [issue](https://github.com/WER-CORE/CL-OpenSource/issues) і, за можливості, додайте версію лаунчера, ОС, кроки відтворення.
 
 ## Збірка з вихідного коду
 
-**Вимоги:** Git, сумісний .NET SDK (8 і/або 10 — відповідно до цільового проєкту), IDE на вибір: Visual Studio, JetBrains Rider або інший редактор з підтримкою .NET.
+**Вимоги:** Git, **.NET SDK 10.0** (для актуального `CL.Avalonia`; `.NET SDK 8.0` потрібен лише для історичного Windows-проєкту WPF), IDE на вибір: Visual Studio, JetBrains Rider або інший редактор з підтримкою .NET.
 
 ```bash
 git clone https://github.com/WER-CORE/CL-OpenSource.git
@@ -105,7 +131,8 @@ Clegendary Launcher використовує сторонні бібліотек
 - **Modrinth і CurseForge** — платформи поширення модифікацій і контенту Minecraft.
 - **Forge, Fabric, Quilt, NeoForge, OptiFine і LiteLoader** — екосистема завантажувачів і модифікацій.
 - **LittleSkin** — сервіс, інтегрований у підтримувані сценарії авторизації.
-- **Google Fonts, Material Icons і Fluent System Icons** — джерела іконографіки та графічних ресурсів.
+- **Google Fonts, Material Icons і Fluent System Icons** — джерела іконографіки та графічних ресурсів.
+
 
 Ліцензійні умови окремих компонентів визначаються їхніми власними ліцензіями. Додаткові відомості дивіться у файлах [`LICENSE`](LICENSE), [`PRIVACY.md`](PRIVACY.md).
 
