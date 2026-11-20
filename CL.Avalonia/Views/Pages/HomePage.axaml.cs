@@ -334,10 +334,12 @@ public partial class HomePage : UserControl
         var dialogService = AvaloniaDialogService.Current;
         if (dialogService == null) return;
 
-        var selectedFolder = await dialogService.OpenFolderDialogAsync(
-            LocalizationManager.GetString("Settings.ImportLegacyDialogTitle", "Виберіть папку зі старою версією лаунчера (WPF 1.0.0.6)"));
+        try
+        {
+            var selectedFolder = await dialogService.OpenFolderDialogAsync(
+                LocalizationManager.GetString("Settings.ImportLegacyDialogTitle", "Виберіть папку зі старою версією лаунчера (WPF 1.0.0.6)"));
 
-        if (string.IsNullOrWhiteSpace(selectedFolder)) return;
+            if (string.IsNullOrWhiteSpace(selectedFolder)) return;
 
         var result = LegacyMigrationService.ImportFromFolder(selectedFolder);
         if (result.Success)
@@ -400,11 +402,19 @@ public partial class HomePage : UserControl
             }
             catch { }
         }
-        else
+            else
+            {
+                dialogService.ShowMessage(
+                    result.ErrorMessage ?? LocalizationManager.GetString("Settings.ImportLegacyNotFound", "У вибраній папці не знайдено даних старої версії."),
+                    LocalizationManager.GetString("Settings.ImportLegacyTitle", "Імпорт даних"),
+                    MascotEmotion.Sad);
+            }
+        }
+        catch (Exception ex)
         {
             dialogService.ShowMessage(
-                result.ErrorMessage ?? LocalizationManager.GetString("Settings.ImportLegacyNotFound", "У вибраній папці не знайдено даних старої версії."), 
-                LocalizationManager.GetString("Settings.ImportLegacyTitle", "Імпорт даних"), 
+                string.Format(LocalizationManager.GetString("Settings.ImportWpfBrowseError", "Не вдалося вибрати папку: {0}"), ex.Message),
+                LocalizationManager.GetString("Dialogs.Error", "Помилка"),
                 MascotEmotion.Sad);
         }
     }

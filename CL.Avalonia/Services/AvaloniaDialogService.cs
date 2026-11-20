@@ -85,7 +85,7 @@ public class AvaloniaDialogService : IDialogService
         {
             var storage = desktop.MainWindow.StorageProvider;
             var result = await storage.OpenFilePickerAsync(new FilePickerOpenOptions { Title = title, AllowMultiple = false });
-            return result?.FirstOrDefault()?.Path.LocalPath;
+            return StorageItemHelper.TryGetSafeLocalPath(result?.FirstOrDefault());
         }
         return null;
     }
@@ -96,7 +96,7 @@ public class AvaloniaDialogService : IDialogService
         {
             var storage = desktop.MainWindow.StorageProvider;
             var result = await storage.OpenFolderPickerAsync(new FolderPickerOpenOptions { Title = title, AllowMultiple = false });
-            return result?.FirstOrDefault()?.Path.LocalPath;
+            return StorageItemHelper.TryGetSafeLocalPath(result?.FirstOrDefault());
         }
         return null;
     }
@@ -112,7 +112,7 @@ public class AvaloniaDialogService : IDialogService
                 SuggestedFileName = defaultFileName,
                 DefaultExtension = extension
             });
-            return result?.Path.LocalPath;
+            return StorageItemHelper.TryGetSafeLocalPath(result);
         }
         return null;
     }

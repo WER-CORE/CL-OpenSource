@@ -17,10 +17,10 @@
 		<AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
 		<DebugSymbols>false</DebugSymbols>
 		<DebugType>none</DebugType>
-		<Version>1.1.2</Version>
-		<AssemblyVersion>1.1.2.0</AssemblyVersion>
-		<FileVersion>1.1.2.0</FileVersion>
-		<InformationalVersion>1.1.2</InformationalVersion>
+		<Version>1.1.4</Version>
+		<AssemblyVersion>1.1.4.0</AssemblyVersion>
+		<FileVersion>1.1.4.0</FileVersion>
+		<InformationalVersion>1.1.4</InformationalVersion>
 		<UserSecretsId>CLegendary-Launcher-Secrets-5f3a9e2d</UserSecretsId>
 		<ApplicationIcon>Icon\IconCL(Common).ico</ApplicationIcon>
 		<ServerGarbageCollection>false</ServerGarbageCollection>

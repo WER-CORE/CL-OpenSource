@@ -648,7 +648,15 @@ public partial class DownloadModpackDialogViewModel : ObservableObject, IDisposa
         var result = await mainWindow.StorageProvider.OpenFilePickerAsync(options);
         if (result == null || result.Count == 0) return;
 
-        string archivePath = result[0].Path.LocalPath;
+        string? archivePath = StorageItemHelper.TryGetSafeLocalPath(result[0]);
+        if (string.IsNullOrWhiteSpace(archivePath) || !File.Exists(archivePath))
+        {
+            AvaloniaDialogService.Show(
+                LocalizationManager.GetString("Dialogs.InvalidLocalPath", "Не вдалося отримати локальний шлях до вибраного файлу."),
+                LocalizationManager.GetString("Dialogs.Error", "Помилка"),
+                MascotEmotion.Sad);
+            return;
+        }
 
         IsImporting = true;
         IsDownloading = true;
