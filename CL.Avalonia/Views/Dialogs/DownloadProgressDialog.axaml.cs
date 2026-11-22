@@ -11,6 +11,13 @@ public partial class DownloadProgressDialog : Window
     {
         InitializeComponent();
         this.EnableAutoMemoryCleanup();
+        this.Closed += (_, _) =>
+        {
+            if (DataContext is DownloadProgressViewModel vm)
+            {
+                vm.HandleSystemWindowClosed();
+            }
+        };
     }
 
     public void SetViewModel(DownloadProgressViewModel vm)

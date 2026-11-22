@@ -1,13 +1,13 @@
 using CL.Core.Interfaces;
 using CL.Core.Platform;
 using CL.Core.Models;
-using CL.Core.Models;
 using CmlLib.Core.Auth;
 using CmlLib.Core.Auth.Microsoft;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -20,6 +20,7 @@ namespace CL.Core.Services
     public class ProfileManagerService
     {
         private readonly string _profilesManegerPath;
+        private readonly object _profileLock = new object();
 
         public ProfileManagerService(string? directoryPath = null)
         {
@@ -41,45 +42,75 @@ namespace CL.Core.Services
 
         public void SaveProfiles(List<ProfileItem> profiles)
         {
-            try
+            var sw = Stopwatch.StartNew();
+            lock (_profileLock)
             {
-                NormalizeProfiles(profiles);
-                var jsonToWrite = JsonConvert.SerializeObject(profiles, Formatting.Indented);
-                byte[] plainBytes = Encoding.UTF8.GetBytes(jsonToWrite);
-                byte[] encryptedData = EncryptData(plainBytes);
+                try
+                {
+                    NormalizeProfiles(profiles);
+                    var jsonToWrite = JsonConvert.SerializeObject(profiles, Formatting.Indented);
+                    byte[] plainBytes = Encoding.UTF8.GetBytes(jsonToWrite);
+                    byte[] encryptedData = EncryptData(plainBytes);
 
-                File.WriteAllBytes(_profilesManegerPath, encryptedData);
-            }
-            catch (Exception ex)
-            {
-                ServiceLocator.Current.GetService<IDialogService>().ShowMessage(
-                    string.Format(LocalizationManager.GetString("Accounts.ProfileSaveErrorDesc", "Не вдалося зберегти профіль: {0}"), ex.Message),
-                    LocalizationManager.GetString("Accounts.ProfileSaveErrorTitle", "Помилка запису"),
-                    MascotEmotion.Sad);
+                    string? dir = Path.GetDirectoryName(_profilesManegerPath);
+                    if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
+                    {
+                        Directory.CreateDirectory(dir);
+                    }
+
+                    string tempPath = $"{_profilesManegerPath}.{Guid.NewGuid():N}.tmp";
+                    try
+                    {
+                        File.WriteAllBytes(tempPath, encryptedData);
+                        File.Move(tempPath, _profilesManegerPath, overwrite: true);
+                    }
+                    finally
+                    {
+                        if (File.Exists(tempPath))
+                        {
+                            try { File.Delete(tempPath); } catch { }
+                        }
+                    }
+
+                    Trace.WriteLine($"[ProfileManager] SaveProfiles count={profiles.Count} elapsedMs={sw.ElapsedMilliseconds}");
+                }
+                catch (Exception ex)
+                {
+                    Trace.WriteLine($"[ProfileManager] SaveProfiles failed elapsedMs={sw.ElapsedMilliseconds}: {ex.GetType().Name}");
+                    ServiceLocator.Current.GetService<IDialogService>().ShowMessage(
+                        string.Format(LocalizationManager.GetString("Accounts.ProfileSaveErrorDesc", "Не вдалося зберегти профіль: {0}"), ex.Message),
+                        LocalizationManager.GetString("Accounts.ProfileSaveErrorTitle", "Помилка запису"),
+                        MascotEmotion.Sad);
+                }
             }
         }
 
         public bool SaveProfile(ProfileItem profileItem)
         {
-            var profiles = LoadProfiles();
-
-            if (profiles.Any(p => p.NameAccount == profileItem.NameAccount && p.TypeAccount == profileItem.TypeAccount))
+            lock (_profileLock)
             {
-                ServiceLocator.Current.GetService<IDialogService>().ShowMessage(
-                    string.Format(LocalizationManager.GetString("Accounts.ProfileExistsDesc", "Цей акаунт ({0}) вже є в списку.\nНемає сенсу додавати його двічі."), profileItem.NameAccount),
-                    LocalizationManager.GetString("Accounts.ProfileExistsTitle", "Вже існує"),
-                    MascotEmotion.Alert);
-                return false;
-            }
+                var profiles = LoadProfiles();
 
-            profiles.Add(profileItem);
-            SaveProfiles(profiles);
-            return true;
+                if (profiles.Any(p => p.NameAccount == profileItem.NameAccount && p.TypeAccount == profileItem.TypeAccount))
+                {
+                    ServiceLocator.Current.GetService<IDialogService>().ShowMessage(
+                        string.Format(LocalizationManager.GetString("Accounts.ProfileExistsDesc", "Цей акаунт ({0}) вже є в списку.\nНемає сенсу додавати його двічі."), profileItem.NameAccount),
+                        LocalizationManager.GetString("Accounts.ProfileExistsTitle", "Вже існує"),
+                        MascotEmotion.Alert);
+                    return false;
+                }
+
+                profiles.Add(profileItem);
+                SaveProfiles(profiles);
+                return true;
+            }
         }
 
         public List<ProfileItem> LoadProfiles()
         {
-            if (!File.Exists(_profilesManegerPath)) return new List<ProfileItem>();
+            lock (_profileLock)
+            {
+                if (!File.Exists(_profilesManegerPath)) return new List<ProfileItem>();
 
             byte[] fileContent;
             try
@@ -167,20 +198,24 @@ namespace CL.Core.Services
             }
             catch { }
 
-            return new List<ProfileItem>();
+                return new List<ProfileItem>();
+            }
         }
 
         public void UpdateProfile(ProfileItem updatedProfile)
         {
-            var profiles = LoadProfiles();
-            var target = profiles.FirstOrDefault(p => p.NameAccount == updatedProfile.NameAccount && p.TypeAccount == updatedProfile.TypeAccount);
-
-            if (target != null)
+            lock (_profileLock)
             {
-                target.AccessToken = updatedProfile.AccessToken;
-                target.LastAuthTime = updatedProfile.LastAuthTime;
+                var profiles = LoadProfiles();
+                var target = profiles.FirstOrDefault(p => p.NameAccount == updatedProfile.NameAccount && p.TypeAccount == updatedProfile.TypeAccount);
 
-                SaveProfiles(profiles);
+                if (target != null)
+                {
+                    target.AccessToken = updatedProfile.AccessToken;
+                    target.LastAuthTime = updatedProfile.LastAuthTime;
+
+                    SaveProfiles(profiles);
+                }
             }
         }
 

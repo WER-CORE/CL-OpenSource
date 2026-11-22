@@ -101,6 +101,8 @@ public class AvaloniaProgressService : ITaskProgressService
             if (_viewModel != null)
             {
                 _viewModel.CTS = null;
+                _viewModel.ActiveDownloads.Clear();
+                _viewModel.IsParallelDownloadsVisible = false;
             }
             _window.Close();
             _window = null;

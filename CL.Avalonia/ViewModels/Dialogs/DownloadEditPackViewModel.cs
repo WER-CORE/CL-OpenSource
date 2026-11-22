@@ -652,12 +652,15 @@ public partial class DownloadEditPackViewModel : ObservableObject, IDisposable
 
         var progressDialog = new Views.Dialogs.DownloadProgressDialog();
         var progressVm = Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<DownloadProgressViewModel>(app.ServiceProvider!);
+        using var cts = new System.Threading.CancellationTokenSource();
+        var token = cts.Token;
+        progressVm.CTS = cts;
         progressDialog.SetViewModel(progressVm);
         _ = progressDialog.ShowDialog(desktop.MainWindow!);
 
         try
         {
-            string json = await File.ReadAllTextAsync(jsonPath);
+            string json = await File.ReadAllTextAsync(jsonPath, token);
             var mods = JsonConvert.DeserializeObject<List<ModInfo>>(json) ?? new List<ModInfo>();
 
             int total = mods.Count;
@@ -665,6 +668,7 @@ public partial class DownloadEditPackViewModel : ObservableObject, IDisposable
 
             foreach (var mod in mods)
             {
+                token.ThrowIfCancellationRequested();
                 string subFolder = mod.Type switch
                 {
                     "mod" => "mods",
@@ -692,14 +696,14 @@ public partial class DownloadEditPackViewModel : ObservableObject, IDisposable
 
                 if (!File.Exists(filePath))
                 {
-                    bool success = await DownloadFileWithProgressAsync(mod.Url ?? "", filePath, progressVm);
+                    bool success = await DownloadFileWithProgressAsync(mod.Url ?? "", filePath, progressVm, token);
+                    token.ThrowIfCancellationRequested();
                     if (success && mod.Type == "map" && filePath.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
                     {
                         CL.Core.Helpers.ZipHelper.ExtractMap(filePath, targetDir);
                     }
-                    if (!success && !string.IsNullOrEmpty(mod.Url))
+                    if (!success && !token.IsCancellationRequested && !string.IsNullOrEmpty(mod.Url))
                     {
-
                         UrlOpener.Open(mod.Url);
                     }
                 }
@@ -707,6 +711,7 @@ public partial class DownloadEditPackViewModel : ObservableObject, IDisposable
             }
 
             File.Delete(jsonPath);
+            progressVm.CTS = null;
             progressVm.CloseAction?.Invoke();
 
             var dialog = Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<CL.Core.Interfaces.IDialogService>(app.ServiceProvider!);
@@ -714,39 +719,61 @@ public partial class DownloadEditPackViewModel : ObservableObject, IDisposable
 
             CloseAction?.Invoke();
         }
+        catch (OperationCanceledException)
+        {
+            progressVm.CTS = null;
+            progressVm.CloseAction?.Invoke();
+        }
         catch (Exception ex)
         {
+            progressVm.CTS = null;
             progressVm.CloseAction?.Invoke();
             var dialog = Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<CL.Core.Interfaces.IDialogService>(app.ServiceProvider!);
             dialog.ShowMessage($"{LocalizationManager.GetString("Dialogs.Error", "Помилка")}: {ex.Message}", LocalizationManager.GetString("Dialogs.Oops", "Збій"));
         }
     }
 
-    private async Task<bool> DownloadFileWithProgressAsync(string url, string savePath, DownloadProgressViewModel progressVm)
+    private async Task<bool> DownloadFileWithProgressAsync(string url, string savePath, DownloadProgressViewModel progressVm, System.Threading.CancellationToken token)
     {
+        string tempPath = savePath + ".tmp";
         try
         {
-            using var response = await WebHelper.Client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
+            token.ThrowIfCancellationRequested();
+            using var response = await WebHelper.Client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, token);
             response.EnsureSuccessStatusCode();
             long totalBytes = response.Content.Headers.ContentLength ?? -1;
-            using var stream = await response.Content.ReadAsStreamAsync();
-            using var fileStream = new FileStream(savePath, FileMode.Create, FileAccess.Write, FileShare.None);
-            byte[] buffer = new byte[8192];
-            int bytesRead;
-            long totalRead = 0;
-            while ((bytesRead = await stream.ReadAsync(buffer)) > 0)
+            using (var stream = await response.Content.ReadAsStreamAsync(token))
+            using (var fileStream = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None))
             {
-                totalRead += bytesRead;
-                await fileStream.WriteAsync(buffer, 0, bytesRead);
-                if (totalBytes > 0)
+                byte[] buffer = new byte[8192];
+                int bytesRead;
+                long totalRead = 0;
+                while ((bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length, token)) > 0)
                 {
-                    int percent = (int)(totalRead * 100 / totalBytes);
-                    Dispatcher.UIThread.Post(() => progressVm.DowloadProgressBarFile(percent));
+                    totalRead += bytesRead;
+                    await fileStream.WriteAsync(buffer, 0, bytesRead, token);
+                    if (totalBytes > 0)
+                    {
+                        int percent = (int)(totalRead * 100 / totalBytes);
+                        Dispatcher.UIThread.Post(() => progressVm.DowloadProgressBarFile(percent));
+                    }
                 }
             }
+            token.ThrowIfCancellationRequested();
+            File.Move(tempPath, savePath, true);
             return true;
         }
-        catch { return false; }
+        catch (OperationCanceledException) when (token.IsCancellationRequested)
+        {
+            if (File.Exists(tempPath)) { try { File.Delete(tempPath); } catch { } }
+            throw;
+        }
+        catch
+        {
+            if (File.Exists(tempPath)) { try { File.Delete(tempPath); } catch { } }
+            if (token.IsCancellationRequested) throw new OperationCanceledException(token);
+            return false;
+        }
     }
 
     public void Dispose()

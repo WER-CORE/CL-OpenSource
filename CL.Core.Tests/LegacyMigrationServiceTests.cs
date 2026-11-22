@@ -5,6 +5,7 @@ using Xunit;
 
 namespace CL.Core.Tests
 {
+    [Collection("ServiceLocatorAndSettings")]
     public class LegacyMigrationServiceTests
     {
         [Fact]

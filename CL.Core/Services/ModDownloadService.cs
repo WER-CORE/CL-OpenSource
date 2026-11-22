@@ -200,10 +200,12 @@ namespace CL.Core.Services
             }
         }
 
-        private async Task DownloadFileHelperAsync(string url, string path, CancellationToken token, Action<int> onProgress)
+        internal async Task DownloadFileHelperAsync(string url, string path, CancellationToken token, Action<int>? onProgress, HttpClient? httpClient = null)
         {
             int maxRetries = 3;
             byte[] buffer = ArrayPool<byte>.Shared.Rent(8192);
+            var client = httpClient ?? WebHelper.Client;
+            string tempPath = path + ".tmp";
 
             try
             {
@@ -211,7 +213,7 @@ namespace CL.Core.Services
                 {
                     try
                     {
-                        using var response = await WebHelper.Client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, token);
+                        using var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, token);
 
                         if (response.StatusCode == System.Net.HttpStatusCode.ServiceUnavailable ||
                             response.StatusCode == (System.Net.HttpStatusCode)429)
@@ -224,13 +226,10 @@ namespace CL.Core.Services
                         response.EnsureSuccessStatusCode();
 
                         long? totalBytes = response.Content.Headers.ContentLength;
-                        using var contentStream = await response.Content.ReadAsStreamAsync(token);
-
-                        string tempPath = path + ".tmp";
-
+                        long totalRead = 0;
+                        using (var contentStream = await response.Content.ReadAsStreamAsync(token))
                         using (var fileStream = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true))
                         {
-                            long totalRead = 0;
                             int bytesRead;
                             long lastReportedBytes = 0;
 
@@ -239,9 +238,9 @@ namespace CL.Core.Services
                                 await fileStream.WriteAsync(buffer, 0, bytesRead, token);
                                 totalRead += bytesRead;
 
-                                if (totalBytes.HasValue)
+                                if (totalBytes.HasValue && totalBytes.Value > 0)
                                 {
-                                    if (totalRead - lastReportedBytes > 102400 || totalRead == totalBytes)
+                                    if (totalRead - lastReportedBytes > 102400 || totalRead == totalBytes.Value)
                                     {
                                         lastReportedBytes = totalRead;
                                         int percent = (int)((double)totalRead / totalBytes.Value * 100);
@@ -251,19 +250,30 @@ namespace CL.Core.Services
                             }
                         }
 
-                        if (System.IO.File.Exists(path)) System.IO.File.Delete(path);
-                        System.IO.File.Move(tempPath, path);
+                        if (totalBytes.HasValue && totalBytes.Value > 0 && totalRead < totalBytes.Value)
+                        {
+                            throw new IOException($"Incomplete download: received {totalRead} of {totalBytes.Value} bytes.");
+                        }
+
+                        System.IO.File.Move(tempPath, path, overwrite: true);
                         return;
                     }
-                    catch (HttpRequestException)
+                    catch (Exception ex) when (ex is HttpRequestException || ex is IOException)
                     {
+                        if (System.IO.File.Exists(tempPath))
+                        {
+                            try { System.IO.File.Delete(tempPath); } catch { }
+                        }
+
                         if (i == maxRetries - 1) throw;
                         await Task.Delay(1000, token);
                     }
                     catch (Exception)
                     {
-                        if (System.IO.File.Exists(path + ".tmp"))
-                            System.IO.File.Delete(path + ".tmp");
+                        if (System.IO.File.Exists(tempPath))
+                        {
+                            try { System.IO.File.Delete(tempPath); } catch { }
+                        }
                         throw;
                     }
                 }

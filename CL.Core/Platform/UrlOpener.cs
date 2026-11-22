@@ -20,7 +20,18 @@ namespace CL.Core.Services
                 }
                 else if (OperatingSystem.IsLinux())
                 {
-                    OpenLinux(url);
+                    _ = System.Threading.Tasks.Task.Run(() =>
+                    {
+                        try
+                        {
+                            OpenLinux(url);
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.WriteLine($"[UrlOpener] Error opening '{url}': {ex.Message}");
+                            ErrorHandler?.Invoke(ex, url);
+                        }
+                    });
                 }
                 else if (OperatingSystem.IsMacOS())
                 {

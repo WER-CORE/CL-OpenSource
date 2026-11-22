@@ -1,3 +1,4 @@
+using CL.Core.Helpers;
 using CL.Core.Models;
 
 using CmlLib.Core;
@@ -44,8 +45,9 @@ namespace CL.Core.Services
 
     public static class ModpackPaths
     {
+        internal static string? CustomInstalledModpacksJsonPath { get; set; }
         public static string DataDirectory => PlatformPaths.DataFolder();
-        public static string InstalledModpacksJson => Path.Combine(DataDirectory, "installed_modpacks.json");
+        public static string InstalledModpacksJson => CustomInstalledModpacksJsonPath ?? Path.Combine(DataDirectory, "installed_modpacks.json");
     }
     public class ModpackService
     {
@@ -55,6 +57,8 @@ namespace CL.Core.Services
         private readonly ModDownloadService _modDownloadService;
 
         private readonly SemaphoreSlim _downloadSemaphore = new SemaphoreSlim(20);
+        private readonly SemaphoreSlim _manualPromptLock = new SemaphoreSlim(1, 1);
+        private static readonly object _modpacksJsonLock = new object();
         private static ApiClient _cfApiClientInstance;
 
         public ModpackService(GameSessionManager gameSessionManager, GameLaunchService gameLaunchService, ModDownloadService modDownloadService)
@@ -67,28 +71,34 @@ namespace CL.Core.Services
         private async Task<ApiClient> GetCfClientAsync() => await CurseForgeClientProvider.GetClientAsync();
         public List<InstalledModpack> LoadInstalledModpacks()
         {
-            string jsonPath = ModpackPaths.InstalledModpacksJson;
-            if (!File.Exists(jsonPath)) return new List<InstalledModpack>();
+            lock (_modpacksJsonLock)
+            {
+                string jsonPath = ModpackPaths.InstalledModpacksJson;
+                if (!File.Exists(jsonPath)) return new List<InstalledModpack>();
 
-            string json = File.ReadAllText(jsonPath);
-            return JsonConvert.DeserializeObject<List<InstalledModpack>>(json) ?? new List<InstalledModpack>();
+                string json = File.ReadAllText(jsonPath);
+                return JsonConvert.DeserializeObject<List<InstalledModpack>>(json) ?? new List<InstalledModpack>();
+            }
         }
 
         public void DeleteModpack(string modpackName)
         {
-            string pathToJson = ModpackPaths.InstalledModpacksJson;
-            if (!File.Exists(pathToJson)) return;
-
-            var jsonText = File.ReadAllText(pathToJson);
-            var modpacks = JsonConvert.DeserializeObject<List<InstalledModpack>>(jsonText);
-            if (modpacks == null) return;
-
-            var modpackToDelete = modpacks.Find(mp => mp.Name == modpackName);
-            if (modpackToDelete != null)
+            lock (_modpacksJsonLock)
             {
-                modpacks.Remove(modpackToDelete);
-                var newJson = JsonConvert.SerializeObject(modpacks, Formatting.Indented);
-                File.WriteAllText(pathToJson, newJson);
+                string pathToJson = ModpackPaths.InstalledModpacksJson;
+                if (!File.Exists(pathToJson)) return;
+
+                var jsonText = File.ReadAllText(pathToJson);
+                var modpacks = JsonConvert.DeserializeObject<List<InstalledModpack>>(jsonText);
+                if (modpacks == null) return;
+
+                var modpackToDelete = modpacks.Find(mp => mp.Name == modpackName);
+                if (modpackToDelete != null)
+                {
+                    modpacks.Remove(modpackToDelete);
+                    var newJson = JsonConvert.SerializeObject(modpacks, Formatting.Indented);
+                    AtomicFileWriter.WriteAllTextAtomic(pathToJson, newJson);
+                }
             }
         }
         public void DeleteModpackFolder(InstalledModpack value)
@@ -550,6 +560,7 @@ namespace CL.Core.Services
 
                 int total = files.Count;
                 int completed = 0;
+                int failedCount = 0;
                 var downloadTasks = new List<Task>();
 
                 var cfApi = await GetCfClientAsync();
@@ -560,6 +571,7 @@ namespace CL.Core.Services
 
                 for (int i = 0; i < fileIds.Count; i += 50)
                 {
+                    token.ThrowIfCancellationRequested();
                     var chunk = fileIds.Skip(i).Take(50).ToList();
                     try
                     {
@@ -624,7 +636,7 @@ namespace CL.Core.Services
                                 string fullPath = Path.Combine(targetDir, fileName);
 
                                 bool needsDownload = !File.Exists(fullPath) && !File.Exists(fullPath + ".disabled") && !File.Exists(fullPath + ".installed");
-                                if (!needsDownload)
+                                if (!needsDownload && File.Exists(fullPath))
                                 {
                                     long actualLength = new FileInfo(fullPath).Length;
                                     if (actualLength == 0 || (fileLength > 0 && actualLength != fileLength))
@@ -642,12 +654,20 @@ namespace CL.Core.Services
                                     bool success = await DownloadFileWithProgress(downloadUrl, fullPath, progress, token, activeItem);
 
                                     progress.RemoveActiveDownload(activeItem);
-                                    if (!success) await HandleManualDownloadPrompt(downloadUrl, fullPath, fileName);
+                                    token.ThrowIfCancellationRequested();
+                                    if (!success)
+                                    {
+                                        await HandleManualDownloadPrompt(downloadUrl, fullPath, fileName, token: token);
+                                        if (!File.Exists(fullPath))
+                                        {
+                                            Interlocked.Increment(ref failedCount);
+                                        }
+                                    }
                                 }
                             }
                         }
                         catch (OperationCanceledException) { throw; }
-                        catch { }
+                        catch { Interlocked.Increment(ref failedCount); }
                         finally
                         {
                             _downloadSemaphore.Release();
@@ -658,13 +678,13 @@ namespace CL.Core.Services
                 }
                 try { await Task.WhenAll(downloadTasks); }
                 catch (OperationCanceledException) { return false; }
-                return true;
+                return failedCount == 0 && !token.IsCancellationRequested;
             }
             catch (OperationCanceledException) { return false; }
             catch { return false; }
         }
 
-        private async Task<bool> DownloadModsFromIndexJsonAsync(string pathJson, string packFolder, ITaskProgressService progress, CancellationToken token)
+        internal async Task<bool> DownloadModsFromIndexJsonAsync(string pathJson, string packFolder, ITaskProgressService progress, CancellationToken token, HttpClient? httpClient = null)
         {
             if (!File.Exists(pathJson) || SettingsManager.Default.OfflineModLauncher) return false;
             try
@@ -676,6 +696,7 @@ namespace CL.Core.Services
 
                 int total = files.Count;
                 int completed = 0;
+                int failedCount = 0;
                 var downloadTasks = new List<Task>();
 
                 foreach (var file in files)
@@ -701,7 +722,7 @@ namespace CL.Core.Services
                                 Directory.CreateDirectory(targetDir);
                                 string fullPath = Path.Combine(targetDir, fileName);
                                 bool needsDownload = !File.Exists(fullPath) && !File.Exists(fullPath + ".disabled") && !File.Exists(fullPath + ".installed");
-                                if (!needsDownload && !string.IsNullOrEmpty(expectedSha1))
+                                if (!needsDownload && File.Exists(fullPath) && !string.IsNullOrEmpty(expectedSha1))
                                 {
                                     string actualSha1 = await ComputeSha1Async(fullPath);
                                     if (!string.Equals(actualSha1, expectedSha1, StringComparison.OrdinalIgnoreCase))
@@ -717,15 +738,23 @@ namespace CL.Core.Services
                                     progress.AddActiveDownload(activeItem);
 
                                     progress.UpdateFileTaskProgress(total, completed, "");
-                                    bool success = await DownloadFileWithProgress(downloadUrl, fullPath, progress, token, activeItem);
+                                    bool success = await DownloadFileWithProgress(downloadUrl, fullPath, progress, token, activeItem, httpClient);
 
                                     progress.RemoveActiveDownload(activeItem);
-                                    if (!success) await HandleManualDownloadPrompt(downloadUrl, fullPath, fileName);
+                                    token.ThrowIfCancellationRequested();
+                                    if (!success)
+                                    {
+                                        await HandleManualDownloadPrompt(downloadUrl, fullPath, fileName, token: token);
+                                        if (!File.Exists(fullPath))
+                                        {
+                                            Interlocked.Increment(ref failedCount);
+                                        }
+                                    }
                                 }
                             }
                         }
                         catch (OperationCanceledException) { throw; }
-                        catch { }
+                        catch { Interlocked.Increment(ref failedCount); }
                         finally
                         {
                             _downloadSemaphore.Release();
@@ -736,7 +765,7 @@ namespace CL.Core.Services
                 }
                 try { await Task.WhenAll(downloadTasks); }
                 catch (OperationCanceledException) { return false; }
-                return true;
+                return failedCount == 0 && !token.IsCancellationRequested;
             }
             catch (OperationCanceledException) { return false; }
             catch { return false; }
@@ -776,14 +805,18 @@ namespace CL.Core.Services
 
                 int totalTasks = mods.Count;
                 int completed = 0;
+                int failedCount = 0;
 
                 while (queue.Count > 0)
                 {
                     var currentMod = queue.Dequeue();
 
                     string uniqueKey = !string.IsNullOrEmpty(currentMod.FileId) ? currentMod.FileId : currentMod.Url;
-                    if (processedIds.Contains(uniqueKey)) continue;
-                    processedIds.Add(uniqueKey);
+                    lock (processedIds)
+                    {
+                        if (processedIds.Contains(uniqueKey)) continue;
+                        processedIds.Add(uniqueKey);
+                    }
 
                     downloadTasks.Add(Task.Run(async () =>
                     {
@@ -858,7 +891,15 @@ namespace CL.Core.Services
                                     progress.RemoveActiveDownload(activeItem);
                                 }
 
-                                if (!success) await HandleManualDownloadPrompt(actualDownloadUrl ?? "Порожнє посилання", filePath, fileName);
+                                token.ThrowIfCancellationRequested();
+                                if (!success)
+                                {
+                                    await HandleManualDownloadPrompt(actualDownloadUrl ?? "Порожнє посилання", filePath, fileName, token: token);
+                                    if (!File.Exists(filePath))
+                                    {
+                                        Interlocked.Increment(ref failedCount);
+                                    }
+                                }
                             }
 
                             if (SettingsManager.Default.ModDep && currentMod.Type == "mod" && !string.IsNullOrEmpty(currentMod.FileId))
@@ -871,7 +912,12 @@ namespace CL.Core.Services
                                     foreach (var dep in dependencies)
                                     {
                                         string depKey = !string.IsNullOrEmpty(dep.FileId) ? dep.FileId : dep.Url;
-                                        if (!processedIds.Contains(depKey))
+                                        bool alreadyProcessed;
+                                        lock (processedIds)
+                                        {
+                                            alreadyProcessed = processedIds.Contains(depKey);
+                                        }
+                                        if (!alreadyProcessed)
                                         {
                                             await DownloadDependencyRecursive(dep, packFolder, progress, token, processedIds);
                                         }
@@ -925,7 +971,8 @@ namespace CL.Core.Services
                                 }
                             }
                         }
-                        catch { }
+                        catch (OperationCanceledException) { throw; }
+                        catch { Interlocked.Increment(ref failedCount); }
                         finally
                         {
                             _downloadSemaphore.Release();
@@ -935,9 +982,11 @@ namespace CL.Core.Services
                     }, token));
                 }
 
-                await Task.WhenAll(downloadTasks);
-                return true;
+                try { await Task.WhenAll(downloadTasks); }
+                catch (OperationCanceledException) { return false; }
+                return failedCount == 0 && !token.IsCancellationRequested;
             }
+            catch (OperationCanceledException) { return false; }
             catch { return false; }
         }
         private async Task DownloadDependencyRecursive(ModInfo mod, string packFolder, ITaskProgressService progress, CancellationToken token, HashSet<string> processedIds)
@@ -987,57 +1036,81 @@ namespace CL.Core.Services
                 Loaders = new List<string> { mod.Loader }
             };
         }
-        private async Task<bool> DownloadFileWithProgress(string url, string savePath, ITaskProgressService progress, CancellationToken token, ConcurrentDownloadItem activeItem = null)
+        internal async Task<bool> DownloadFileWithProgress(string url, string savePath, ITaskProgressService progress, CancellationToken token, ConcurrentDownloadItem activeItem = null, HttpClient? httpClient = null)
         {
+            string tempPath = savePath + ".tmp";
+            var client = httpClient ?? WebHelper.Client;
             try
             {
-                using var response = await WebHelper.Client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, token);
+                token.ThrowIfCancellationRequested();
+                using var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, token);
                 response.EnsureSuccessStatusCode();
 
                 long totalBytes = response.Content.Headers.ContentLength ?? -1;
                 bool canReport = totalBytes > 0;
                 long totalRead = 0;
 
-                string tempPath = savePath + ".tmp";
-
-                using var fileStream = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None, 81920, true);
-                using var contentStream = await response.Content.ReadAsStreamAsync(token);
-
-                byte[] buffer = new byte[81920];
-                int bytesRead;
-                long lastReportedBytes = 0;
-
-                while ((bytesRead = await contentStream.ReadAsync(buffer, 0, buffer.Length, token)) > 0)
+                using (var fileStream = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None, 81920, true))
+                using (var contentStream = await response.Content.ReadAsStreamAsync(token))
                 {
-                    await fileStream.WriteAsync(buffer, 0, bytesRead, token);
-                    totalRead += bytesRead;
+                    byte[] buffer = new byte[81920];
+                    int bytesRead;
+                    long lastReportedBytes = 0;
 
-                    if (canReport)
+                    while ((bytesRead = await contentStream.ReadAsync(buffer, 0, buffer.Length, token)) > 0)
                     {
-                        if (totalRead - lastReportedBytes > 102400 || totalRead == totalBytes)
+                        await fileStream.WriteAsync(buffer, 0, bytesRead, token);
+                        totalRead += bytesRead;
+
+                        if (canReport)
                         {
-                            lastReportedBytes = totalRead;
-                            int percent = (int)(totalRead * 100 / totalBytes);
-                            if (activeItem != null)
+                            if (totalRead - lastReportedBytes > 102400 || totalRead == totalBytes)
                             {
-                                activeItem.Progress = percent;
-                            }
-                            else
-                            {
-                                progress.UpdateFileProgress(percent);
+                                lastReportedBytes = totalRead;
+                                int percent = (int)(totalRead * 100 / totalBytes);
+                                if (activeItem != null)
+                                {
+                                    activeItem.Progress = percent;
+                                }
+                                else
+                                {
+                                    progress.UpdateFileProgress(percent);
+                                }
                             }
                         }
                     }
                 }
 
-                await fileStream.DisposeAsync();
+                token.ThrowIfCancellationRequested();
+                if (totalBytes > 0 && totalRead < totalBytes)
+                {
+                    TryDeleteTempFile(tempPath);
+                    return false;
+                }
+
                 File.Move(tempPath, savePath, true);
                 return true;
             }
+            catch (OperationCanceledException) when (token.IsCancellationRequested)
+            {
+                TryDeleteTempFile(tempPath);
+                throw;
+            }
             catch
             {
+                TryDeleteTempFile(tempPath);
+                if (token.IsCancellationRequested)
+                {
+                    throw new OperationCanceledException(token);
+                }
                 return false;
             }
+        }
+
+        private static void TryDeleteTempFile(string tempPath)
+        {
+            if (!File.Exists(tempPath)) return;
+            try { File.Delete(tempPath); } catch { }
         }
 
         private static async Task<string> ComputeSha1Async(string filePath)
@@ -1070,62 +1143,89 @@ namespace CL.Core.Services
             return "mods";
         }
 
-        private async Task HandleManualDownloadPrompt(string url, string fullPath, string filename, string errorMessage = "")
+        internal async Task HandleManualDownloadPrompt(string url, string fullPath, string filename, string errorMessage = "", CancellationToken token = default)
         {
-            bool result = ServiceLocator.Current.GetService<IDialogService>().AskQuestion(
-                            string.Format(LocalizationManager.GetString("DownloadManager.ManualDownloadPromptDesc", "Ой, я не змогла завантажити цей файл:\n{0}\n\nСпробуєш скачати його вручну?"), filename),
-                            LocalizationManager.GetString("DownloadManager.ManualDownloadPromptTitle", "Помилка завантаження"),
-                            MascotEmotion.Sad);
-
-            if (result == true)
+            if (token.IsCancellationRequested)
             {
-                try
-                {
-                    UrlOpener.Open(url);
+                return;
+            }
 
-                    ServiceLocator.Current.GetService<IDialogService>().ShowMessage(
-                                    string.Format(LocalizationManager.GetString("DownloadManager.ManualDownloadInstructionDesc", "Я відкрила посилання. Будь ласка, збережи файл ось сюди:\n{0}"), fullPath),
-                                    LocalizationManager.GetString("DownloadManager.ManualDownloadInstructionTitle", "Інструкція"),
-                                    MascotEmotion.Alert);
-                }
-                catch (Exception ex)
+            await _manualPromptLock.WaitAsync(token);
+            try
+            {
+                if (token.IsCancellationRequested)
                 {
-                    ServiceLocator.Current.GetService<IDialogService>().ShowMessage(
-                                    string.Format(LocalizationManager.GetString("DownloadManager.ManualDownloadBrowserErrorDesc", "Не вдалося відкрити посилання у браузері.\n{0}"), ex.Message),
-                                    LocalizationManager.GetString("DownloadManager.ManualDownloadBrowserErrorTitle", "Збій"),
-                                    MascotEmotion.Sad);
+                    return;
                 }
+
+                var dialogService = ServiceLocator.Current.GetService<IDialogService>();
+                if (dialogService == null)
+                {
+                    return;
+                }
+
+                bool result = await dialogService.AskQuestionAsync(
+                    string.Format(LocalizationManager.GetString("DownloadManager.ManualDownloadPromptDesc", "Ой, я не змогла завантажити цей файл:\n{0}\n\nСпробуєш скачати його вручну?"), filename),
+                    LocalizationManager.GetString("DownloadManager.ManualDownloadPromptTitle", "Помилка завантаження"),
+                    MascotEmotion.Sad);
+
+                if (result && !token.IsCancellationRequested)
+                {
+                    try
+                    {
+                        UrlOpener.Open(url);
+
+                        dialogService.ShowMessage(
+                            string.Format(LocalizationManager.GetString("DownloadManager.ManualDownloadInstructionDesc", "Я відкрила посилання. Будь ласка, збережи файл ось сюди:\n{0}"), fullPath),
+                            LocalizationManager.GetString("DownloadManager.ManualDownloadInstructionTitle", "Інструкція"),
+                            MascotEmotion.Alert);
+                    }
+                    catch (Exception ex)
+                    {
+                        dialogService.ShowMessage(
+                            string.Format(LocalizationManager.GetString("DownloadManager.ManualDownloadBrowserErrorDesc", "Не вдалося відкрити посилання у браузері.\n{0}"), ex.Message),
+                            LocalizationManager.GetString("DownloadManager.ManualDownloadBrowserErrorTitle", "Збій"),
+                            MascotEmotion.Sad);
+                    }
+                }
+            }
+            finally
+            {
+                _manualPromptLock.Release();
             }
         }
 
         public void AddModpack(InstalledModpack modpack)
         {
-            string jsonPath = ModpackPaths.InstalledModpacksJson;
-
-            List<InstalledModpack> modpacks = new();
-
-            if (File.Exists(jsonPath))
+            lock (_modpacksJsonLock)
             {
-                try
-                {
-                    string existingJson = File.ReadAllText(jsonPath);
-                    modpacks = JsonConvert.DeserializeObject<List<InstalledModpack>>(existingJson) ?? new();
-                }
-                catch (Exception ex)
-                {
-                    ServiceLocator.Current.GetService<IDialogService>().ShowMessage(
-                        string.Format(LocalizationManager.GetString("Modpacks.ConfigCorruptedDesc", "Ой! Файл конфігурації збірок пошкоджено.\n{0}"), ex.Message),
-                        LocalizationManager.GetString("Modpacks.ConfigCorruptedTitle", "Помилка"),
-                        MascotEmotion.Sad);
-                }
-            }
+                string jsonPath = ModpackPaths.InstalledModpacksJson;
 
-            if (!modpacks.Any(m => m.Name.Equals(modpack.Name, StringComparison.OrdinalIgnoreCase)))
-            {
-                modpacks.Add(modpack);
+                List<InstalledModpack> modpacks = new();
 
-                string newJson = JsonConvert.SerializeObject(modpacks, Formatting.Indented);
-                File.WriteAllText(jsonPath, newJson);
+                if (File.Exists(jsonPath))
+                {
+                    try
+                    {
+                        string existingJson = File.ReadAllText(jsonPath);
+                        modpacks = JsonConvert.DeserializeObject<List<InstalledModpack>>(existingJson) ?? new();
+                    }
+                    catch (Exception ex)
+                    {
+                        ServiceLocator.Current.GetService<IDialogService>().ShowMessage(
+                            string.Format(LocalizationManager.GetString("Modpacks.ConfigCorruptedDesc", "Ой! Файл конфігурації збірок пошкоджено.\n{0}"), ex.Message),
+                            LocalizationManager.GetString("Modpacks.ConfigCorruptedTitle", "Помилка"),
+                            MascotEmotion.Sad);
+                    }
+                }
+
+                if (!modpacks.Any(m => m.Name.Equals(modpack.Name, StringComparison.OrdinalIgnoreCase)))
+                {
+                    modpacks.Add(modpack);
+
+                    string newJson = JsonConvert.SerializeObject(modpacks, Formatting.Indented);
+                    AtomicFileWriter.WriteAllTextAtomic(jsonPath, newJson);
+                }
             }
         }
         private string FindIconInFolder(string rootFolder)
@@ -1210,7 +1310,9 @@ namespace CL.Core.Services
                 }
             }
 
-            Directory.CreateDirectory(extractPath);
+            try
+            {
+                Directory.CreateDirectory(extractPath);
 
             await Task.Run(() => ZipFile.ExtractToDirectory(zipFilePath, extractPath));
 
@@ -1394,8 +1496,19 @@ namespace CL.Core.Services
                 };
             }
 
-            AddModpack(newPack);
-            return newPack;
+                AddModpack(newPack);
+                return newPack;
+            }
+            catch
+            {
+                try
+                {
+                    if (Directory.Exists(extractPath))
+                        Directory.Delete(extractPath, true);
+                }
+                catch { }
+                throw;
+            }
         }
 
         public async Task<InstalledModpack?> AutoDownloadAndInstallModpackAsync(

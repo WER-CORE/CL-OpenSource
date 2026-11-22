@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using CL.Core.Helpers;
 using CL.Core.Models;
 using CL.Core.Platform;
 using Newtonsoft.Json;
@@ -112,11 +113,11 @@ namespace CL.Core.Services
 
             try
             {
-                using var req = new HttpRequestMessage(HttpMethod.Get, url);
-                req.Headers.TryAddWithoutValidation("User-Agent", "ClegendaryLauncher/1.0");
-                using var resp = await _httpClient.SendAsync(req, token).ConfigureAwait(false);
-                resp.EnsureSuccessStatusCode();
-                string json = await resp.Content.ReadAsStringAsync(token).ConfigureAwait(false);
+                string json = await HttpRetryHelper.GetStringAsync(
+                    _httpClient,
+                    url,
+                    "ClegendaryLauncher/1.0",
+                    token).ConfigureAwait(false);
 
                 var parsed = parser(json);
                 setMemoryCache(parsed, DateTimeOffset.UtcNow);
@@ -147,12 +148,7 @@ namespace CL.Core.Services
         {
             try
             {
-                string? dir = Path.GetDirectoryName(path);
-                if (!string.IsNullOrEmpty(dir))
-                {
-                    Directory.CreateDirectory(dir);
-                }
-                File.WriteAllText(path, content);
+                AtomicFileWriter.WriteAllTextAtomic(path, content);
             }
             catch
             {

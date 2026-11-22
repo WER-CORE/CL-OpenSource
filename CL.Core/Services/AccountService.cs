@@ -294,24 +294,26 @@ namespace CL.Core.Services
             }
         }
 
-        public async Task<ProfileItem> AddOfflineAccountAsync(string nickname)
+        public async Task<ProfileItem?> AddOfflineAccountAsync(string nickname)
         {
-            string uuid = CreateOfflineUUID(nickname);
-
-            var profile = new ProfileItem
+            var sw = Stopwatch.StartNew();
+            return await Task.Run(() =>
             {
-                NameAccount = nickname,
-                UUID = uuid,
-                AccessToken = "-",
-                ImageUrl = $"{CL.Core.Platform.UIConfig.AssetScheme}/Assets/default_steve.webp",
-                TypeAccount = AccountType.Offline
-            };
+                string uuid = CreateOfflineUUID(nickname);
 
-            _profileManager.SaveProfile(profile);
+                var profile = new ProfileItem
+                {
+                    NameAccount = nickname,
+                    UUID = uuid,
+                    AccessToken = "-",
+                    ImageUrl = $"{CL.Core.Platform.UIConfig.AssetScheme}/Assets/default_steve.webp",
+                    TypeAccount = AccountType.Offline
+                };
 
-            await Task.CompletedTask;
-
-            return profile;
+                bool saved = _profileManager.SaveProfile(profile);
+                Trace.WriteLine($"[AccountService] AddOfflineAccountAsync saved={saved} elapsedMs={sw.ElapsedMilliseconds}");
+                return saved ? profile : null;
+            }).ConfigureAwait(false);
         }
 
         private string CreateOfflineUUID(string username)
