@@ -199,32 +199,5 @@
                         </Grid>
                     </Grid>
                 </Grid>
-
-        <Grid x:Name="ExportProgressOverlay" ZIndex="1000" IsVisible="{Binding IsExporting}">
-            <Border IsVisible="{DynamicResource GlassVisibility}">
-                <Border.Background>
-                    <VisualBrush Visual="{Binding BackgroundVisual, RelativeSource={RelativeSource AncestorType=pages:ModPacksPage}}" Stretch="None" />
-                </Border.Background>
-                <Border.Effect>
-                    <BlurEffect Radius="{DynamicResource GlassBlurRadius}" />
-                </Border.Effect>
-            </Border>
-            <Border CornerRadius="12" Background="{DynamicResource GlassTintBrush}" />
-
-            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                <progRing:ProgressRing IsActive="True" Width="80" Height="80"
-                                       Foreground="{DynamicResource MainBackgroundProgressBar}" />
-
-                <TextBlock Text="{Binding ExportProgressText}"
-                           Margin="0,20,0,0" FontSize="18" FontFamily="{DynamicResource AppFontFamily}"
-                           FontWeight="SemiBold" Foreground="{DynamicResource MainForegroundBrush}"
-                           HorizontalAlignment="Center" TextAlignment="Center" />
-
-                <ProgressBar Minimum="0" Maximum="100" Value="{Binding ExportProgressValue}"
-                             Width="260" Height="6" CornerRadius="3" Margin="0,15,0,0"
-                             Foreground="{DynamicResource MainBackgroundProgressBar}"
-                             Background="#33FFFFFF" HorizontalAlignment="Center" />
-            </StackPanel>
-        </Grid>
     </Grid>
 </UserControl>

@@ -58,6 +58,7 @@ public partial class ModpacksPageViewModel : ObservableObject, ITrimmablePage
 
     public static event Action<bool, string, double>? ExportProgressChanged;
     private static CancellationTokenSource? _exportCts;
+    private static int _isExportActive;
 
     public static void CancelActiveExport()
     {
@@ -291,11 +292,11 @@ public partial class ModpacksPageViewModel : ObservableObject, ITrimmablePage
     public async Task<bool> ExecuteExportToPathAsync(InstalledModpack pack, string saveFilePath)
     {
         if (!Directory.Exists(pack.Path)) return false;
+        if (Interlocked.CompareExchange(ref _isExportActive, 1, 0) != 0) return false;
 
-        _exportCts?.Cancel();
-        _exportCts?.Dispose();
-        _exportCts = new CancellationTokenSource();
-        var token = _exportCts.Token;
+        var exportCts = new CancellationTokenSource();
+        _exportCts = exportCts;
+        var token = exportCts.Token;
 
         IsExporting = true;
         string prepText = LocalizationManager.GetString("Modpacks.ExportPreparing", "Підготовка файлів...");
@@ -303,13 +304,13 @@ public partial class ModpacksPageViewModel : ObservableObject, ITrimmablePage
         ExportProgressValue = 0;
         Dispatcher.UIThread.Post(() => ExportProgressChanged?.Invoke(true, prepText, 0));
 
+        string tempZipPath = $"{saveFilePath}.{Guid.NewGuid():N}.tmp";
         bool success = false;
         try
         {
             await Task.Run(() =>
             {
                 token.ThrowIfCancellationRequested();
-                if (File.Exists(saveFilePath)) File.Delete(saveFilePath);
 
                 var manifest = new CustomModpackManifest
                 {
@@ -398,7 +399,7 @@ public partial class ModpacksPageViewModel : ObservableObject, ITrimmablePage
                 int processedFiles = 0;
                 int lastReportedPct = -1;
 
-                using (var archive = ZipFile.Open(saveFilePath, ZipArchiveMode.Create))
+                using (var archive = ZipFile.Open(tempZipPath, ZipArchiveMode.Create))
                 {
                     foreach (var file in filesToArchive)
                     {
@@ -428,6 +429,8 @@ public partial class ModpacksPageViewModel : ObservableObject, ITrimmablePage
                     }
                 }
 
+                token.ThrowIfCancellationRequested();
+                File.Move(tempZipPath, saveFilePath, overwrite: true);
                 success = true;
             }, token).ConfigureAwait(false);
         }
@@ -435,9 +438,9 @@ public partial class ModpacksPageViewModel : ObservableObject, ITrimmablePage
         {
             try
             {
-                if (File.Exists(saveFilePath))
+                if (File.Exists(tempZipPath))
                 {
-                    File.Delete(saveFilePath);
+                    File.Delete(tempZipPath);
                 }
             }
             catch (Exception delEx)
@@ -455,9 +458,9 @@ public partial class ModpacksPageViewModel : ObservableObject, ITrimmablePage
             Debug.WriteLine($"Export error: {ex.Message}");
             try
             {
-                if (File.Exists(saveFilePath))
+                if (File.Exists(tempZipPath))
                 {
-                    File.Delete(saveFilePath);
+                    File.Delete(tempZipPath);
                 }
             }
             catch
@@ -466,9 +469,14 @@ public partial class ModpacksPageViewModel : ObservableObject, ITrimmablePage
         }
         finally
         {
+            Interlocked.CompareExchange(ref _exportCts, null, exportCts);
+            exportCts.Dispose();
+            Interlocked.Exchange(ref _isExportActive, 0);
+
             await Dispatcher.UIThread.InvokeAsync(() =>
             {
                 IsExporting = false;
+                ExportProgressText = string.Empty;
                 ExportProgressValue = 0;
                 ExportProgressChanged?.Invoke(false, string.Empty, 0);
             });

@@ -10,6 +10,7 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
+using CL.Core.Helpers;
 using CL.Core.Models;
 using CmlLib.Core;
 using Newtonsoft.Json;
@@ -114,12 +115,11 @@ namespace CL.Core.Services
             if (!IsTrustedMetadataUrl(entry.MetadataUrl))
                 throw new InvalidOperationException($"Недозволений або некоректний URL метаданих для версії '{entry.Id}'.");
 
-            using var req = new HttpRequestMessage(HttpMethod.Get, entry.MetadataUrl);
-            req.Headers.TryAddWithoutValidation("User-Agent", "ClegendaryLauncher/1.0");
-            using var resp = await _httpClient.SendAsync(req, token).ConfigureAwait(false);
-            resp.EnsureSuccessStatusCode();
-
-            string json = await resp.Content.ReadAsStringAsync(token).ConfigureAwait(false);
+            string json = await HttpRetryHelper.GetStringAsync(
+                _httpClient,
+                entry.MetadataUrl!,
+                "ClegendaryLauncher/1.0",
+                token).ConfigureAwait(false);
             if (string.IsNullOrWhiteSpace(json))
                 throw new InvalidDataException($"Сервер повернув порожній JSON метаданих для версії '{entry.Id}'.");
 
@@ -156,20 +156,7 @@ namespace CL.Core.Services
                 throw new InvalidDataException($"У метаданих версії '{entry.Id}' відсутній URL клієнтського JAR.");
             }
 
-            Directory.CreateDirectory(versionDir);
-            string tempPath = Path.Combine(versionDir, $"{entry.Id}.{Guid.NewGuid():N}.json.tmp");
-            try
-            {
-                await File.WriteAllTextAsync(tempPath, json, token).ConfigureAwait(false);
-                File.Move(tempPath, jsonPath, overwrite: true);
-            }
-            finally
-            {
-                if (File.Exists(tempPath))
-                {
-                    try { File.Delete(tempPath); } catch { }
-                }
-            }
+            await AtomicFileWriter.WriteAllTextAtomicAsync(jsonPath, json, token).ConfigureAwait(false);
 
             return jsonPath;
         }
@@ -486,9 +473,15 @@ namespace CL.Core.Services
                     return 0;
 
                 LogDiagnostic($"Downloading asset index '{assetIndexId}' from {indexUrl}");
-                using var idxReq = new HttpRequestMessage(HttpMethod.Get, indexUrl);
-                idxReq.Headers.TryAddWithoutValidation("User-Agent", "ClegendaryLauncher/1.0");
-                using var idxResp = await _httpClient.SendAsync(idxReq, token).ConfigureAwait(false);
+                using var idxResp = await HttpRetryHelper.SendAsync(
+                    _httpClient,
+                    () =>
+                    {
+                        var idxReq = new HttpRequestMessage(HttpMethod.Get, indexUrl);
+                        idxReq.Headers.TryAddWithoutValidation("User-Agent", "ClegendaryLauncher/1.0");
+                        return idxReq;
+                    },
+                    token).ConfigureAwait(false);
                 LogDiagnostic($"Asset index GET {indexUrl} -> HTTP {(int)idxResp.StatusCode}");
                 idxResp.EnsureSuccessStatusCode();
 
@@ -501,8 +494,7 @@ namespace CL.Core.Services
                         throw new InvalidDataException($"SHA1 індексу ресурсів '{assetIndexId}' не збігається.");
                 }
 
-                Directory.CreateDirectory(Path.GetDirectoryName(indexPath)!);
-                await File.WriteAllTextAsync(indexPath, idxJson, token).ConfigureAwait(false);
+                await AtomicFileWriter.WriteAllTextAtomicAsync(indexPath, idxJson, token).ConfigureAwait(false);
             }
 
             var indexObj = JObject.Parse(await File.ReadAllTextAsync(indexPath, token).ConfigureAwait(false));
@@ -544,20 +536,7 @@ namespace CL.Core.Services
 
                 if (data != null)
                 {
-                    Directory.CreateDirectory(objDir);
-                    string tmpPath = Path.Combine(objDir, $"{hash}.{Guid.NewGuid():N}.tmp");
-                    try
-                    {
-                        await File.WriteAllBytesAsync(tmpPath, data, token).ConfigureAwait(false);
-                        File.Move(tmpPath, objPath, overwrite: true);
-                    }
-                    finally
-                    {
-                        if (File.Exists(tmpPath))
-                        {
-                            try { File.Delete(tmpPath); } catch { }
-                        }
-                    }
+                    await AtomicFileWriter.WriteAllBytesAtomicAsync(objPath, data, token).ConfigureAwait(false);
                 }
             }
 
@@ -571,9 +550,15 @@ namespace CL.Core.Services
             bool allow404,
             CancellationToken token)
         {
-            using var req = new HttpRequestMessage(HttpMethod.Get, url);
-            req.Headers.TryAddWithoutValidation("User-Agent", "ClegendaryLauncher/1.0");
-            using var resp = await _httpClient.SendAsync(req, token).ConfigureAwait(false);
+            using var resp = await HttpRetryHelper.SendAsync(
+                _httpClient,
+                () =>
+                {
+                    var req = new HttpRequestMessage(HttpMethod.Get, url);
+                    req.Headers.TryAddWithoutValidation("User-Agent", "ClegendaryLauncher/1.0");
+                    return req;
+                },
+                token).ConfigureAwait(false);
 
             LogDiagnostic($"Asset GET {url} -> HTTP {(int)resp.StatusCode}");
 

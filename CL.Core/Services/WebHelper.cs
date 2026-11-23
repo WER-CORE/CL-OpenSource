@@ -1,10 +1,20 @@
 using System;
+using System.Net.Http;
 
 namespace CL.Core.Services
 {
     public static class WebHelper
     {
-        public static readonly System.Net.Http.HttpClient Client = new System.Net.Http.HttpClient { Timeout = TimeSpan.FromMinutes(10) };
+        private static readonly SocketsHttpHandler Handler = new SocketsHttpHandler
+        {
+            ConnectTimeout = TimeSpan.FromSeconds(20),
+            PooledConnectionLifetime = TimeSpan.FromMinutes(10)
+        };
+
+        public static readonly HttpClient Client = new HttpClient(Handler, disposeHandler: false)
+        {
+            Timeout = TimeSpan.FromMinutes(10)
+        };
 
         static WebHelper()
         {

@@ -52,7 +52,23 @@ namespace CL.Core.Services
         private readonly HistoricalVersionCatalogService _historicalCatalogService = new();
         private readonly HistoricalVersionInstallerService _historicalInstallerService = new();
 
-        private CancellationTokenSource _cts;
+        private CancellationTokenSource? _cts;
+        private int _isPreparingLaunch;
+
+        internal bool IsPreparingLaunch => Volatile.Read(ref _isPreparingLaunch) == 1;
+        internal CancellationTokenSource? CurrentLaunchCts => Volatile.Read(ref _cts);
+
+        internal bool TryAcquireLaunchPreparationGate() =>
+            Interlocked.CompareExchange(ref _isPreparingLaunch, 1, 0) == 0;
+
+        internal void ReleaseLaunchPreparationGate(CancellationTokenSource? ownerCts = null)
+        {
+            if (ownerCts != null)
+            {
+                Interlocked.CompareExchange(ref _cts, null, ownerCts);
+            }
+            Interlocked.Exchange(ref _isPreparingLaunch, 0);
+        }
 
         public GameLaunchService(GameSessionManager sessionManager, LastActionService lastActionService)
         {
@@ -166,9 +182,25 @@ namespace CL.Core.Services
 
         public async Task LaunchGameAsync(LoaderType loaderType, string minecraftVersion, string? loaderVersion, LaunchConfiguration config)
         {
-            _cts = new CancellationTokenSource();
-            var launchCts = _cts;
+            if (!TryAcquireLaunchPreparationGate())
+            {
+                return;
+            }
+
+            bool preparationReleased = false;
+            var launchCts = new CancellationTokenSource();
+            _cts = launchCts;
             var token = launchCts.Token;
+
+            void ReleasePreparationOnce()
+            {
+                if (!preparationReleased)
+                {
+                    preparationReleased = true;
+                    ReleaseLaunchPreparationGate(launchCts);
+                }
+            }
+
             Process? launchedProcess = null;
             config.IsOffline = IsOfflineMode();
             ActiveMinecraftVersion = minecraftVersion;
@@ -193,38 +225,44 @@ namespace CL.Core.Services
                 var path = new MinecraftPath(SettingsManager.Default.PathLacunher);
                 var httpClient = WebHelper.Client;
                 int safeThreads = Math.Clamp(Environment.ProcessorCount * 2, 4, 16);
+                string versionLabel = string.IsNullOrEmpty(loaderVersion) ? minecraftVersion : $"{minecraftVersion} ({loaderVersion})";
 
-                var parallelInstaller = new ParallelGameInstaller(
-                    maxChecker: 32,
-                    maxDownloader: safeThreads,
-                    boundedCapacity: 2048,
-                    httpClient
-                );
-
-                var parameters = MinecraftLauncherParameters.CreateDefault(path);
-                parameters.GameInstaller = parallelInstaller;
-
-                if (config.IsOffline)
+                MinecraftLauncher CreateConfiguredLauncher()
                 {
-                    parameters.VersionLoader = new CmlLib.Core.VersionLoader.LocalJsonVersionLoader(path);
+                    var parallelInstaller = new ParallelGameInstaller(
+                        maxChecker: 32,
+                        maxDownloader: safeThreads,
+                        boundedCapacity: 2048,
+                        httpClient
+                    );
+
+                    var parameters = MinecraftLauncherParameters.CreateDefault(path);
+                    parameters.GameInstaller = parallelInstaller;
+
+                    if (config.IsOffline)
+                    {
+                        parameters.VersionLoader = new CmlLib.Core.VersionLoader.LocalJsonVersionLoader(path);
+                    }
+
+                    var instLauncher = new MinecraftLauncher(parameters);
+
+                    instLauncher.FileProgressChanged += (sender, args) =>
+                    {
+                        int fileProgress = args.TotalTasks > 0 ? (int)((double)args.ProgressedTasks / args.TotalTasks * 100) : 0;
+                        dowloadProgress.UpdateFileTaskProgress(args.TotalTasks, args.ProgressedTasks, args.Name);
+                        dowloadProgress.UpdateVersionProgress(fileProgress, versionLabel);
+                    };
+
+                    instLauncher.ByteProgressChanged += (sender, args) =>
+                    {
+                        int byteProgress = args.TotalBytes > 0 ? (int)((double)args.ProgressedBytes / args.TotalBytes * 100) : 0;
+                        dowloadProgress.UpdateFileProgress(byteProgress);
+                    };
+
+                    return instLauncher;
                 }
 
-                var launcher = new MinecraftLauncher(parameters);
-
-                string versionLabel = string.IsNullOrEmpty(loaderVersion) ? minecraftVersion : $"{minecraftVersion} ({loaderVersion})";
-                launcher.FileProgressChanged += (sender, args) =>
-                {
-                    int fileProgress = args.TotalTasks > 0 ? (int)((double)args.ProgressedTasks / args.TotalTasks * 100) : 0;
-                    dowloadProgress.UpdateFileTaskProgress(args.TotalTasks, args.ProgressedTasks, args.Name);
-                    dowloadProgress.UpdateVersionProgress(fileProgress, versionLabel);
-                };
-
-                launcher.ByteProgressChanged += (sender, args) =>
-                {
-                    int byteProgress = args.TotalBytes > 0 ? (int)((double)args.ProgressedBytes / args.TotalBytes * 100) : 0;
-                    dowloadProgress.UpdateFileProgress(byteProgress);
-                };
-
+                MinecraftLauncher launcher = CreateConfiguredLauncher();
                 string versionName = "";
 
                 if (config.IsOffline)
@@ -241,9 +279,15 @@ namespace CL.Core.Services
                 }
                 else
                 {
-                    versionName = await InstallVersionAsync(loaderType, minecraftVersion, loaderVersion, launcher, token);
+                    versionName = await Task.Run(
+                        () => InstallVersionAsync(loaderType, minecraftVersion, loaderVersion, launcher, token),
+                        token);
                     if (string.IsNullOrEmpty(versionName))
                     {
+                        ServiceLocator.Current.GetService<IDispatcherService>().Invoke(() =>
+                        {
+                            if (dowloadProgress.IsLoaded) dowloadProgress.CloseProgressWindow(launchCts);
+                        });
                         ServiceLocator.Current.GetService<IDialogService>().ShowMessage(
                             LocalizationManager.GetString("GameLaunch.LaunchInstallFailedDesc", "Ой леле! Я намагалася встановити цю версію, але нічого не вийшло.\nСпробуй ще раз пізніше."),
                             LocalizationManager.GetString("GameLaunch.LaunchInstallFailedTitle", "Помилка встановлення"),
@@ -414,6 +458,8 @@ namespace CL.Core.Services
 
                 await DiscordController.UpdatePresence(string.Format(LocalizationManager.GetString("DiscordRPC.PlayingVersion", "Грає версію {0}"), versionName), resetTimer: true);
 
+                token.ThrowIfCancellationRequested();
+
                 if (SettingsManager.Default.EnableLog)
                 {
                     ServiceLocator.Current.GetService<IMainWindowController>().ShowGameLog(process);
@@ -426,6 +472,7 @@ namespace CL.Core.Services
                 }
                 ActiveProcess = process;
                 launchedProcess = process;
+                ReleasePreparationOnce();
 
                 string loaderName = loaderType.ToString();
                 var action = new Dictionary<string, string>();
@@ -503,10 +550,11 @@ namespace CL.Core.Services
                 }
             }
 
-            catch (OperationCanceledException)
+            catch (OperationCanceledException) when (token.IsCancellationRequested)
             {
                 ServiceLocator.Current.GetService<IDispatcherService>().Invoke(() =>
                 {
+                    if (dowloadProgress.IsLoaded) dowloadProgress.CloseProgressWindow(launchCts);
                     ServiceLocator.Current.GetService<IMainWindowController>().Restore();
                 });
                 ServiceLocator.Current.GetService<IDialogService>().ShowMessage(
@@ -519,6 +567,7 @@ namespace CL.Core.Services
             {
                 ServiceLocator.Current.GetService<IDispatcherService>().Invoke(() =>
                 {
+                    if (dowloadProgress.IsLoaded) dowloadProgress.CloseProgressWindow(launchCts);
                     ServiceLocator.Current.GetService<IMainWindowController>().Restore();
                 });
                 ServiceLocator.Current.GetService<IDialogService>().ShowMessage(
@@ -550,6 +599,7 @@ namespace CL.Core.Services
                     }
                     if (dowloadProgress.IsLoaded) dowloadProgress.CloseProgressWindow(launchCts);
                 });
+                ReleasePreparationOnce();
                 launchCts.Dispose();
             }
         }
@@ -620,7 +670,7 @@ namespace CL.Core.Services
 
             try
             {
-                string json = await WebHelper.Client.GetStringAsync(metadataUrl, token);
+                string json = await HttpRetryHelper.GetStringAsync(WebHelper.Client, metadataUrl, "ClegendaryLauncher/1.0", token);
                 var arr = Newtonsoft.Json.Linq.JArray.Parse(json);
                 var firstVer = arr.FirstOrDefault()?["loader"]?["version"]?.ToString();
                 if (!string.IsNullOrEmpty(firstVer))

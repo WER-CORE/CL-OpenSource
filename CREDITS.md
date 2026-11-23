@@ -7,7 +7,7 @@ This project uses assets and libraries from various sources. We are grateful to 
 * **Google Fonts & Material Icons** Licensed under the [Apache License Version 2.0](https://www.apache.org/licenses/LICENSE-2.0).  
     Copyright © Google.
 
-* **WPF UI & Fluent System Icons** Used under the [MIT License](https://opensource.org/licenses/MIT).  
+* **Fluent System Icons (історично також WPF UI)** Used under the [MIT License](https://opensource.org/licenses/MIT).  
     Copyright © Microsoft Corporation.
 
 ## Game Assets / Ігрові Асети

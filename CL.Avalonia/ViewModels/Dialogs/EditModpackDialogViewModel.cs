@@ -625,8 +625,18 @@ public partial class EditModpackDialogViewModel : ObservableObject, IDisposable
 
             if (files.Count > 0)
             {
+                string? sourcePath = StorageItemHelper.TryGetSafeLocalPath(files[0]);
+                if (string.IsNullOrWhiteSpace(sourcePath) || !File.Exists(sourcePath))
+                {
+                    _dialogService.ShowMessage(
+                        LocalizationManager.GetString("Dialogs.InvalidLocalPath", "Не вдалося отримати локальний шлях до вибраного файлу."),
+                        LocalizationManager.GetString("Dialogs.Error", "Помилка"),
+                        MascotEmotion.Sad);
+                    return;
+                }
+
                 string targetPath = Path.Combine(_modpack.Path, "icon.png");
-                File.Copy(files[0].Path.LocalPath, targetPath, true);
+                File.Copy(sourcePath, targetPath, true);
                 SaveProperty("UrlImage", targetPath);
 
                 AvaloniaImageHelper.ClearCache();
@@ -655,7 +665,16 @@ public partial class EditModpackDialogViewModel : ObservableObject, IDisposable
 
             if (files.Count > 0)
             {
-                var path = files[0].Path.LocalPath;
+                string? path = StorageItemHelper.TryGetSafeLocalPath(files[0]);
+                if (string.IsNullOrWhiteSpace(path))
+                {
+                    _dialogService.ShowMessage(
+                        LocalizationManager.GetString("Dialogs.InvalidLocalPath", "Не вдалося отримати локальний шлях до вибраного файлу."),
+                        LocalizationManager.GetString("Dialogs.Error", "Помилка"),
+                        MascotEmotion.Sad);
+                    return;
+                }
+
                 if (!AvailableJavaPaths.Contains(path))
                 {
                     AvailableJavaPaths.Add(path);
@@ -686,8 +705,12 @@ public partial class EditModpackDialogViewModel : ObservableObject, IDisposable
 
                 foreach (var file in files)
                 {
+                    string? sourcePath = StorageItemHelper.TryGetSafeLocalPath(file);
+                    if (string.IsNullOrWhiteSpace(sourcePath) || !File.Exists(sourcePath))
+                        continue;
+
                     string targetFile = Path.Combine(targetDir, file.Name);
-                    File.Copy(file.Path.LocalPath, targetFile, true);
+                    File.Copy(sourcePath, targetFile, true);
                     if (SelectedTabIndex == 3 && file.Name.EndsWith(".zip"))
                         CL.Core.Helpers.ZipHelper.ExtractMap(targetFile, targetDir);
                 }

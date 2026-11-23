@@ -7,7 +7,8 @@
 | `CL.Core` | `net8.0;net10.0` | ✅ | ✅ |
 | `CL.Core.Tests` | `net8.0;net10.0` | ✅ | ✅ |
 | `CL.Avalonia` | `net10.0` | ✅ | ✅ |
-| `CL(CLegendary Launcher)` | `net8.0-windows` | ✅ | ❌ WPF |
+
+> Історичний Windows-проєкт `CL(CLegendary Launcher)` на WPF (`net8.0-windows`) видалено на користь кросплатформеного `CL.Avalonia`.
 
 `CL.Core` - спільне ядро (моделі, сервіси, робота з мережею та файлами),[CL.Core.Tests.csproj](CL.Core.Tests/CL.Core.Tests.csproj) адаптоване під мультитаргетинг. Обидва UI підключають його як `ProjectReference`, тому логіка не дублюється, а ядро автоматично підлаштовується під потрібну версію фреймворку кінцевого клієнта.
 
@@ -70,11 +71,6 @@ DOTNET_ROLL_FORWARD=Major dotnet run --project CL.Avalonia
 * macOS: `/Library/Java/JavaVirtualMachines` (разом з `Contents/Home`)
 * Windows: `Program Files/Java`, `Eclipse Adoptium`, `Microsoft`, `AdoptOpenJDK`, `BellSoft`
 
-## Що ще залишилось для повної підтримки Linux
+## Історична довідка щодо міграції з WPF
 
-Перенести на `CL.Core` або на абстракцію те, що зараз прив'язане до Windows:
-
-* **Файлові діалоги** - `Microsoft.Win32.OpenFileDialog` та `System.Windows.Forms.FolderBrowserDialog` (потрібен спільний інтерфейс, реалізації WPF і Avalonia `IStorageProvider`).
-* **Запуск гри:** базовий (ваніль, офлайн-акаунт) уже працює через `MinecraftLaunchService` у ядрі. Модлоадери, акаунти Microsoft/LittleSkin, прогрес завантаження та модпаки лишились у `GameLaunchService` і `ModpackService`, які тягнуть WPF.
-* **Звук** - `SoundManager` на `System.Media.SoundPlayer` (лише Windows).
-* **Екрани** - 37 `.xaml` та 56 code-behind ще на WPF (у процесі рефакторингу за MVVM-патерном на SukiUI).
+Застарілий WPF-інтерфейс повністю видалено з репозиторію; актуальний кросплатформений UI працює на `CL.Avalonia` + `CL.Core` (включаючи `IStorageProvider`, кросплатформений запуск і міграцію старих налаштувань).

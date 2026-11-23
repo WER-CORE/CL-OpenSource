@@ -13,6 +13,7 @@ public partial class DownloadProgressViewModel : ObservableObject
 {
     public CancellationTokenSource? CTS { get; set; }
     public Action? CloseAction { get; set; }
+    private int _cancelOrCloseHandled;
 
     [ObservableProperty]
     private string _titleText = string.Empty;
@@ -119,19 +120,41 @@ public partial class DownloadProgressViewModel : ObservableObject
     private void CancelDownload()
     {
         AvaloniaSoundService.Click();
-        try
-        {
-            CTS?.Cancel();
-        }
-        catch (ObjectDisposedException)
-        {
-        }
-        CloseAction?.Invoke();
+        CancelAndCloseInternal();
     }
 
     [RelayCommand]
     private void ExitLauncher()
     {
+        CancelAndCloseInternal();
+    }
+
+    public void HandleSystemWindowClosed()
+    {
+        CancelAndCloseInternal();
+    }
+
+    private void CancelAndCloseInternal()
+    {
+        if (Interlocked.Exchange(ref _cancelOrCloseHandled, 1) != 0)
+            return;
+
+        var cts = CTS;
+        CTS = null;
+        if (cts != null)
+        {
+            try
+            {
+                if (!cts.IsCancellationRequested)
+                {
+                    cts.Cancel();
+                }
+            }
+            catch (ObjectDisposedException)
+            {
+            }
+        }
+
         CloseAction?.Invoke();
     }
 }

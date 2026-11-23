@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
@@ -605,12 +606,11 @@ public partial class CL_Main : Window
     {
         if (BackdropContentLayer == null) return;
 
-        bool shouldBlur = enable && !SettingsManager.Default.DisableGlassEffect;
-        BackdropContentLayer.Effect = shouldBlur
-            ? new global::Avalonia.Media.BlurEffect { Radius = 18 }
-            : null;
+        BackdropContentLayer.Effect = null;
         BackdropContentLayer.IsHitTestVisible = !enable;
     }
+
+    private int _isCreatingProfile;
 
     public void AddProfile_MouseDown(object? sender, PointerPressedEventArgs e)
     {
@@ -619,6 +619,9 @@ public partial class CL_Main : Window
         AvaloniaAnimationService.AnimateRotation(CheckMarkAccount, 0);
 
         ApplyAccountBackdropBlur(enable: true);
+        GridFormAccountAdd.IsHitTestVisible = true;
+        GridOfflineMode.IsHitTestVisible = true;
+        GridSelectAccountType.IsHitTestVisible = true;
         AvaloniaAnimationService.AnimatePageTransition(GridFormAccountAdd);
         AvaloniaAnimationService.AnimatePageTransition(GridOfflineMode);
         AvaloniaAnimationService.AnimatePageTransition(GridSelectAccountType);
@@ -632,13 +635,18 @@ public partial class CL_Main : Window
 
     private void CloseAccountSelectionUI()
     {
+        GridFormAccountAdd.IsHitTestVisible = false;
+        GridOfflineMode.IsHitTestVisible = false;
+        GridOnlineMode.IsHitTestVisible = false;
+        GridSelectAccountType.IsHitTestVisible = false;
+        GridLittleSkinMode.IsHitTestVisible = false;
         ApplyAccountBackdropBlur(enable: false);
-        AvaloniaAnimationService.AnimatePageTransitionExit(GridOfflineMode, default, 0.2);
-        AvaloniaAnimationService.AnimatePageTransitionExit(GridOnlineMode, default, 0.2);
-        AvaloniaAnimationService.AnimatePageTransitionExit(GridFormAccountAdd, default, 0.2);
-        AvaloniaAnimationService.AnimatePageTransitionExit(GridSelectAccountType, default, 0.2);
-        AvaloniaAnimationService.AnimatePageTransitionExit(GridLittleSkinMode, default, 0.2);
-        Dispatcher.UIThread.Post(UpdateNativeTransparencyBackdrop, DispatcherPriority.Loaded);
+
+        GridOfflineMode.IsVisible = false;
+        GridOnlineMode.IsVisible = false;
+        GridFormAccountAdd.IsVisible = false;
+        GridSelectAccountType.IsVisible = false;
+        GridLittleSkinMode.IsVisible = false;
     }
 
     private void MicrosoftAccountBtn_Click(object? sender, RoutedEventArgs e) =>
@@ -675,6 +683,7 @@ public partial class CL_Main : Window
         AvaloniaAnimationService.AnimatePageTransitionExit(GridOnlineMode, default, 0.2);
 
         await Task.Delay(250);
+        targetGrid.IsHitTestVisible = true;
         AvaloniaAnimationService.AnimatePageTransition(targetGrid);
     }
 
@@ -682,14 +691,26 @@ public partial class CL_Main : Window
     {
         AvaloniaSoundService.Click();
         if (_boundVm == null || string.IsNullOrWhiteSpace(NameNikManeger.Text)) return;
+        if (System.Threading.Interlocked.CompareExchange(ref _isCreatingProfile, 1, 0) != 0) return;
 
-        var newProfile = await _boundVm.AddOfflineAccountAsync(NameNikManeger.Text);
-        if (newProfile != null)
+        try
         {
-            NameNikManeger.Text = null;
-            CloseAccountSelectionUI();
-            await _boundVm.SelectProfileAsync(newProfile);
-            await RefreshProfilesUIAsync();
+            var newProfile = await _boundVm.AddOfflineAccountAsync(NameNikManeger.Text);
+            if (newProfile != null)
+            {
+                NameNikManeger.Text = null;
+                CloseAccountSelectionUI();
+                await RefreshProfilesUIAsync(selectSavedProfile: false);
+                await _boundVm.SelectProfileAsync(newProfile);
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"[ProfileCreate] Offline error: {ex.Message}");
+        }
+        finally
+        {
+            System.Threading.Interlocked.Exchange(ref _isCreatingProfile, 0);
         }
     }
 
@@ -701,7 +722,9 @@ public partial class CL_Main : Window
         var loginSkin = this.FindControl<TextBox>("Login_LittleSkin");
         var passwordSkin = this.FindControl<TextBox>("PasswordLittleSkin");
         if (loginSkin == null || passwordSkin == null) return;
+        if (System.Threading.Interlocked.CompareExchange(ref _isCreatingProfile, 1, 0) != 0) return;
 
+        var sw = Stopwatch.StartNew();
         try
         {
             var newProfile = await _boundVm.AddLittleSkinAccountAsync(loginSkin.Text, passwordSkin.Text);
@@ -710,13 +733,18 @@ public partial class CL_Main : Window
                 loginSkin.Text = null;
                 passwordSkin.Text = null;
                 CloseAccountSelectionUI();
+                await RefreshProfilesUIAsync(selectSavedProfile: false);
                 await _boundVm.SelectProfileAsync(newProfile);
-                await RefreshProfilesUIAsync();
             }
+            Trace.WriteLine($"[ProfileCreate] LittleSkin total elapsedMs={sw.ElapsedMilliseconds}");
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[LoginAccountLittleSkin_Click] Error: {ex.Message}");
+            Debug.WriteLine($"[LoginAccountLittleSkin_Click] Error: {ex.Message}");
+        }
+        finally
+        {
+            System.Threading.Interlocked.Exchange(ref _isCreatingProfile, 0);
         }
     }
 
@@ -724,13 +752,43 @@ public partial class CL_Main : Window
     {
         AvaloniaSoundService.Click();
         if (_boundVm == null) return;
+        if (System.Threading.Interlocked.CompareExchange(ref _isCreatingProfile, 1, 0) != 0) return;
 
-        var newProfile = await _boundVm.AddMicrosoftAccountAsync();
-        if (newProfile != null)
+        if (CreateAccount_Online != null) CreateAccount_Online.IsEnabled = false;
+        try
+        {
+            var loginTask = _boundVm.AddMicrosoftAccountAsync();
+            var completed = await Task.WhenAny(loginTask, Task.Delay(TimeSpan.FromMinutes(2)));
+            if (completed != loginTask)
+            {
+                CloseAccountSelectionUI();
+                AvaloniaDialogService.Show(
+                    "Не вдалося дочекатися входу через Microsoft. Перевірте, чи відкрився браузер (у Flatpak/WSL2 без порталу відкриття браузера може бути недоступним).",
+                    "Час очікування вичерпано",
+                    CL.Core.Models.MascotEmotion.Alert);
+                return;
+            }
+
+            var newProfile = await loginTask;
+            if (newProfile != null)
+            {
+                CloseAccountSelectionUI();
+                await RefreshProfilesUIAsync(selectSavedProfile: false);
+                await _boundVm.SelectProfileAsync(newProfile);
+            }
+        }
+        catch (Exception ex)
         {
             CloseAccountSelectionUI();
-            await _boundVm.SelectProfileAsync(newProfile);
-            await RefreshProfilesUIAsync();
+            AvaloniaDialogService.Show(
+                $"Не вдалося увійти через Microsoft:\n{ex.Message}",
+                "Помилка авторизації",
+                CL.Core.Models.MascotEmotion.Alert);
+        }
+        finally
+        {
+            if (CreateAccount_Online != null) CreateAccount_Online.IsEnabled = true;
+            System.Threading.Interlocked.Exchange(ref _isCreatingProfile, 0);
         }
     }
 

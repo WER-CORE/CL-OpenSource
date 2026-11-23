@@ -33,6 +33,7 @@ public partial class App : Application
 
         PlatformPaths.MigrateLegacyAppData();
         SettingsManager.Load();
+        CrashReportManager.ApplySettings(SettingsManager.Default.IsCrashReportingEnabled);
         CheckAndCreateDefaultPath();
 
         string initialLang = string.IsNullOrWhiteSpace(SettingsManager.Default.LanguageCode) ? "uk_UA" : SettingsManager.Default.LanguageCode;

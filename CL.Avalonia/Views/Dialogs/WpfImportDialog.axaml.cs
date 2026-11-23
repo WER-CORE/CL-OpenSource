@@ -53,12 +53,22 @@ public partial class WpfImportDialog : Window
         var dialogService = AvaloniaDialogService.Current;
         if (dialogService == null) return;
 
-        string? picked = await dialogService.OpenFolderDialogAsync(
-            LocalizationManager.GetString("Settings.ImportLegacyDialogTitle", "Виберіть папку Data або папку зі старим Clegendary Launcher"));
-
-        if (!string.IsNullOrWhiteSpace(picked))
+        try
         {
-            InspectFolder(picked);
+            string? picked = await dialogService.OpenFolderDialogAsync(
+                LocalizationManager.GetString("Settings.ImportLegacyDialogTitle", "Виберіть папку Data або папку зі старим Clegendary Launcher"));
+
+            if (!string.IsNullOrWhiteSpace(picked))
+            {
+                InspectFolder(picked);
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorText.Text = string.Format(
+                LocalizationManager.GetString("Settings.ImportWpfBrowseError", "Не вдалося вибрати папку: {0}"),
+                ex.Message);
+            ErrorText.IsVisible = true;
         }
     }
 

@@ -1,3 +1,4 @@
+using CL.Core.Helpers;
 using CL.Core.Models;
 using Newtonsoft.Json;
 using System;
@@ -7,6 +8,7 @@ namespace CL.Core.Services
 {
     public static class SettingsManager
     {
+        private static readonly object _fileLock = new object();
         public static event Action? SettingsReloaded;
 
         private static string? _customFolderPath;
@@ -26,45 +28,52 @@ namespace CL.Core.Services
 
         public static void Load()
         {
-            if (File.Exists(FilePath))
+            AppSettings? loadedSettings = null;
+            lock (_fileLock)
             {
-                try
+                if (File.Exists(FilePath))
                 {
-                    string json = File.ReadAllText(FilePath);
-                    var loadedSettings = JsonConvert.DeserializeObject<AppSettings>(json);
+                    try
+                    {
+                        string json = File.ReadAllText(FilePath);
+                        loadedSettings = JsonConvert.DeserializeObject<AppSettings>(json);
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Помилка читання налаштувань: {ex.Message}");
+                        if (Default == null)
+                        {
+                            Default = new AppSettings();
+                        }
+                    }
+                }
+            }
 
-                    if (loadedSettings != null)
-                    {
-                        Default = loadedSettings;
-                        SettingsReloaded?.Invoke();
-                    }
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Помилка читання налаштувань: {ex.Message}");
-                    if (Default == null)
-                    {
-                        Default = new AppSettings();
-                    }
-                }
+            if (loadedSettings != null)
+            {
+                Default = loadedSettings;
+                SettingsReloaded?.Invoke();
             }
         }
 
         public static void Save()
         {
-            try
+            lock (_fileLock)
             {
-                if (!Directory.Exists(FolderPath))
+                try
                 {
-                    Directory.CreateDirectory(FolderPath);
-                }
+                    if (!Directory.Exists(FolderPath))
+                    {
+                        Directory.CreateDirectory(FolderPath);
+                    }
 
-                string json = JsonConvert.SerializeObject(Default, Formatting.Indented);
-                File.WriteAllText(FilePath, json);
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Помилка збереження налаштувань: {ex.Message}");
+                    string json = JsonConvert.SerializeObject(Default, Formatting.Indented);
+                    AtomicFileWriter.WriteAllTextAtomic(FilePath, json);
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Помилка збереження налаштувань: {ex.Message}");
+                }
             }
         }
     }
