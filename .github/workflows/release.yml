@@ -469,7 +469,7 @@ jobs:
             cd ..
           fi
 
-          mkdir -p ./flatpak_pages/repo
+          mkdir -p ./flatpak_pages/repo/refs/remotes
           flatpak build-export --gpg-sign="$FLATPAK_GPG_KEY_ID" ./flatpak_pages/repo ./flatpak_build/build_dir stable
           flatpak build-update-repo --gpg-sign="$FLATPAK_GPG_KEY_ID" --generate-static-deltas --prune ./flatpak_pages/repo
 
