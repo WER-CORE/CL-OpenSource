@@ -287,7 +287,7 @@ jobs:
           }
 
       - name: Upload Windows Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: windows-assets
           path: ./windows_artifacts/*
@@ -527,7 +527,7 @@ jobs:
           ls -la ./linux_artifacts
 
       - name: Upload Linux Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: linux-assets
           path: ./linux_artifacts/*
@@ -668,7 +668,7 @@ jobs:
           ls -la ./macos_artifacts
 
       - name: Upload macOS Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: macos-assets
           path: ./macos_artifacts/*
