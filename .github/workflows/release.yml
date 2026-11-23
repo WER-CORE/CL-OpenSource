@@ -72,7 +72,7 @@ jobs:
       SIGNPATH_PROJECT_SLUG: ${{ vars.SIGNPATH_PROJECT_SLUG || secrets.SIGNPATH_PROJECT_SLUG || 'CL-Launcher' }}
       SIGNPATH_SIGNING_POLICY_SLUG: ${{ vars.SIGNPATH_SIGNING_POLICY_SLUG || secrets.SIGNPATH_SIGNING_POLICY_SLUG || 'test-signing' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           submodules: recursive
 
@@ -299,7 +299,7 @@ jobs:
       RELEASE_VERSION: ${{ needs.prepare.outputs.version }}
       NUMERIC_VERSION: ${{ needs.prepare.outputs.numeric_version }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           submodules: recursive
 
@@ -539,7 +539,7 @@ jobs:
       RELEASE_VERSION: ${{ needs.prepare.outputs.version }}
       NUMERIC_VERSION: ${{ needs.prepare.outputs.numeric_version }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           submodules: recursive
 
