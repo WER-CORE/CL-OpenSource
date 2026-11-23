@@ -48,5 +48,5 @@ modules:
     sources:
       - type: git
         url: https://github.com/WER-CORE/CL-OpenSource.git
-        commit: c677571bb12888a2f566bed62dd960049d98a322
+        commit: 7c9f985d8e2e460ebdba5ab9f12248a52323f569
       - nuget-sources.json
