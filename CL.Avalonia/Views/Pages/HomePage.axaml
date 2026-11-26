@@ -30,6 +30,13 @@
 		<Style Selector="Grid.footer-scale-btn:focus-visible, Border.footer-scale-btn:focus-visible">
 			<Setter Property="RenderTransform" Value="scale(1.03)" />
 		</Style>
+		<Style Selector="Grid.footer-scale-btn:focus-visible > Border">
+			<Setter Property="BorderThickness" Value="1.5" />
+			<Setter Property="BorderBrush" Value="{DynamicResource MainBackgroundProgressBar}" />
+		</Style>
+		<Style Selector="Border.footer-scale-btn:focus-visible">
+			<Setter Property="BorderBrush" Value="{DynamicResource MainBackgroundProgressBar}" />
+		</Style>
 		<Style Selector="Border.play-hitbox">
 			<Setter Property="Background" Value="Transparent" />
 			<Setter Property="BorderThickness" Value="1.5" />
@@ -537,6 +544,7 @@
                                 BorderThickness="1" BorderBrush="{DynamicResource SubtleBorderBrush}" CornerRadius="9"
                                 Background="{DynamicResource MainBackgroundBrushServer}"
                                 Width="145" Height="40" Margin="0,0,0,6"
+                                Focusable="True" Tag="Vanilla" KeyDown="VersionTypeItem_KeyDown"
                                 Cursor="Hand"
                                 PointerPressed="SelectVersionVanila_PointerPressed">
 							<Grid Margin="0,0,0,1">
@@ -562,6 +570,7 @@
                                 BorderThickness="1" BorderBrush="{DynamicResource SubtleBorderBrush}" CornerRadius="9"
                                 Background="{DynamicResource MainBackgroundBrushServer}"
                                 Width="145" Height="40" Margin="0,0,0,6"
+                                Focusable="True" Tag="Optifine" KeyDown="VersionTypeItem_KeyDown"
                                 Cursor="Hand"
                                 PointerPressed="SelectVersionOptifine_PointerPressed">
 							<Grid>
@@ -587,6 +596,7 @@
                                 BorderThickness="1" BorderBrush="{DynamicResource SubtleBorderBrush}" CornerRadius="9"
                                 Background="{DynamicResource MainBackgroundBrushServer}"
                                 Width="145" Height="40"
+                                Focusable="True" Tag="Redirect" KeyDown="VersionTypeItem_KeyDown"
                                 Cursor="Hand"
                                 PointerPressed="SelectVersionRedirect_PointerPressed">
 							<Grid>
@@ -629,7 +639,7 @@
 								<ColumnDefinition Width="114" />
 							</Grid.ColumnDefinitions>
 
-							<ListBox x:Name="VersionList" Tapped="VersionList_Tapped"
+							<ListBox x:Name="VersionList" Tapped="VersionList_Tapped" KeyDown="VersionList_KeyDown"
                                      Grid.Column="0" Margin="0,0,5,0"
                                      FontSize="16" FontFamily="Arial"
                                      Background="{x:Null}" BorderBrush="Transparent"
@@ -723,7 +733,7 @@
 									</ListBox.ItemsPanel>
 								</ListBox>
 
-								<ListBox x:Name="VersionListMod" Tapped="VersionListMod_Tapped" Grid.Column="1" Margin="2,10,0,0"
+								<ListBox x:Name="VersionListMod" Tapped="VersionListMod_Tapped" KeyDown="VersionListMod_KeyDown" Grid.Column="1" Margin="2,10,0,0"
                                          Background="{x:Null}" Foreground="{DynamicResource MainForegroundBrush}"
                                          FontSize="10" ItemsSource="{Binding OptifineModVersions}"
                                          SelectedItem="{Binding SelectedOptifineModVersion}">

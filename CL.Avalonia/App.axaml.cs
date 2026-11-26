@@ -9,6 +9,7 @@ using Avalonia.Markup.Xaml;
 using CL.Core.Interfaces;
 using CL.Core.Platform;
 using CL.Core.Services;
+using CL_CLegendary_Launcher_.Avalonia.Input.Gamepad;
 using CL_CLegendary_Launcher_.Avalonia.Services;
 using CL_CLegendary_Launcher_.Avalonia.ViewModels;
 using CL_CLegendary_Launcher_.Avalonia.ViewModels.Dialogs;
@@ -71,6 +72,8 @@ public partial class App : Application
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             desktop.ShutdownMode = ShutdownMode.OnMainWindowClose;
+            desktop.ShutdownRequested += (_, _) => ShutdownGamepadService();
+            desktop.Exit += (_, _) => ShutdownGamepadService();
 
             desktop.MainWindow = new LoadScreenWindow
             {
@@ -79,6 +82,17 @@ public partial class App : Application
         }
 
         base.OnFrameworkInitializationCompleted();
+    }
+
+    public void ShutdownGamepadService()
+    {
+        try
+        {
+            ServiceProvider?.GetService<GamepadInputService>()?.Dispose();
+        }
+        catch
+        {
+        }
     }
 
     private void RegisterGlobalSoundHandlers()
@@ -132,6 +146,11 @@ public partial class App : Application
         services.AddSingleton<IMainWindowController, AvaloniaWindowController>();
         services.AddSingleton<ITaskProgressService, AvaloniaProgressService>();
         services.AddSingleton<ISoundService, AvaloniaSoundService>();
+        services.AddSingleton<IGamepadBackend, Sdl3GamepadBackend>();
+        services.AddSingleton<FocusScopeTrap>();
+        services.AddSingleton<ControlActivator>();
+        services.AddSingleton<GamepadNavigationRouter>();
+        services.AddSingleton<GamepadInputService>();
         services.AddSingleton<AvaloniaThemeService>();
         services.AddSingleton<ScreenshotService>();
 

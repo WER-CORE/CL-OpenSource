@@ -11,6 +11,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using CL.Core.Models;
 using CL.Core.Services;
+using CL_CLegendary_Launcher_.Avalonia.Input.Gamepad;
 using CL_CLegendary_Launcher_.Avalonia.Services;
 using CL_CLegendary_Launcher_.Avalonia.ViewModels;
 using CL_CLegendary_Launcher_.Avalonia.ViewModels.Pages;
@@ -31,6 +32,8 @@ public partial class CL_Main : Window
     private bool _isProfilesLoaded;
     private DateTime _lastAccountToggleTime = DateTime.MinValue;
     private bool _isAccountMenuAnimating;
+    private GamepadNavigationRouter? _gamepadRouter;
+    private FocusScopeTrap? _focusScopeTrap;
 
     public CL_Main()
     {
@@ -38,6 +41,8 @@ public partial class CL_Main : Window
 
         var sp = (Application.Current as App)?.ServiceProvider;
         _themeService = sp?.GetService(typeof(AvaloniaThemeService)) as AvaloniaThemeService;
+        _gamepadRouter = sp?.GetService(typeof(GamepadNavigationRouter)) as GamepadNavigationRouter;
+        _focusScopeTrap = sp?.GetService(typeof(FocusScopeTrap)) as FocusScopeTrap;
 
         if (DataContext is not CL_MainViewModel)
         {
@@ -57,7 +62,13 @@ public partial class CL_Main : Window
             TutorialNextBtn,
             TutorialFinishBtn,
             TutorialSkipBtn,
-            Loc_BtnUnderstood
+            Loc_BtnUnderstood,
+            onShown: () =>
+            {
+                _focusScopeTrap?.PushScope(TutorialOverlay, onBack: () => CloseTutorial_Click(null, new RoutedEventArgs()));
+                Dispatcher.UIThread.Post(() => _gamepadRouter?.FocusFirstInScope(TutorialOverlay, this), DispatcherPriority.Loaded);
+            },
+            onClosed: () => _focusScopeTrap?.PopScope(TutorialOverlay)
         );
         _tourManager = new TutorialTourManager(this, _tutorialService);
 
@@ -115,10 +126,25 @@ public partial class CL_Main : Window
             }
 
             _ = _firstRunCoordinator.RunAsync(this);
+            if (_gamepadRouter != null)
+            {
+                _gamepadRouter.TabNavigationRequested -= OnGamepadTabNavigationRequested;
+                _gamepadRouter.TabNavigationRequested += OnGamepadTabNavigationRequested;
+            }
+            if ((Application.Current as App)?.ServiceProvider?.GetService(typeof(GamepadInputService)) is GamepadInputService gamepadService)
+            {
+                gamepadService.Start();
+            }
         };
 
         Closed += (_, _) =>
         {
+            if (_gamepadRouter != null)
+            {
+                _gamepadRouter.TabNavigationRequested -= OnGamepadTabNavigationRequested;
+            }
+            _focusScopeTrap?.Clear();
+            (Application.Current as App)?.ShutdownGamepadService();
             if (TopMenuStackPanel != null)
                 TopMenuStackPanel.SizeChanged -= TopMenuStackPanel_SizeChanged;
 
@@ -524,6 +550,36 @@ public partial class CL_Main : Window
         }
     }
 
+    private void OnGamepadTabNavigationRequested(UiNavAction action)
+    {
+        Control?[] allTabs = [PlayBtnBorder, ModpacksBtnBorder, ModsBtnBorder, ServersBtnBorder, GalleryBtnBorder];
+        var visibleTabs = new System.Collections.Generic.List<Control>(5);
+        foreach (Control? tab in allTabs)
+        {
+            if (tab is { IsVisible: true })
+            {
+                visibleTabs.Add(tab);
+            }
+        }
+        if (visibleTabs.Count == 0) return;
+
+        int currentIndex = _activeTabBorder != null ? visibleTabs.IndexOf(_activeTabBorder) : 0;
+        if (currentIndex < 0) currentIndex = 0;
+
+        int nextIndex = action == UiNavAction.TabPrev
+            ? (currentIndex - 1 + visibleTabs.Count) % visibleTabs.Count
+            : (currentIndex + 1) % visibleTabs.Count;
+
+        Control targetTab = visibleTabs[nextIndex];
+        if (ReferenceEquals(targetTab, PlayBtnBorder)) PlayTXTPanelSelect_MouseDown(targetTab, null!);
+        else if (ReferenceEquals(targetTab, ModpacksBtnBorder)) modbuilds_MouseDown(targetTab, null!);
+        else if (ReferenceEquals(targetTab, ModsBtnBorder)) ModsTXTPanelSelect_MouseDown(targetTab, null!);
+        else if (ReferenceEquals(targetTab, ServersBtnBorder)) ServerTXTPanelSelect_MouseDown(targetTab, null!);
+        else if (ReferenceEquals(targetTab, GalleryBtnBorder)) PhotoMinecraftTXT_MouseDown(targetTab, null!);
+
+        TopLevel.GetTopLevel(this)?.FocusManager?.Focus(targetTab, NavigationMethod.Directional, KeyModifiers.None);
+    }
+
     #endregion
 
     #region Менеджер Акаунтів та Статистика
@@ -565,11 +621,13 @@ public partial class CL_Main : Window
 
             if (PanelManegerAccount.IsVisible)
             {
+                _focusScopeTrap?.PopScope(PanelManegerAccount);
                 AvaloniaAnimationService.AnimateRotation(CheckMarkAccount, 0);
                 AvaloniaAnimationService.AnimatePageTransitionExit(PanelManegerAccount, -20);
             }
             else
             {
+                _focusScopeTrap?.PushScope(PanelManegerAccount, onBack: CloseAccountMenuFromGamepad);
                 AvaloniaAnimationService.AnimateRotation(CheckMarkAccount, 180);
                 AvaloniaAnimationService.AnimatePageTransition(PanelManegerAccount, -20);
 
@@ -580,6 +638,7 @@ public partial class CL_Main : Window
                 }
 
                 await RefreshProfilesUIAsync(selectSavedProfile: false);
+                Dispatcher.UIThread.Post(() => _gamepadRouter?.FocusFirstInScope(PanelManegerAccount, this), DispatcherPriority.Loaded);
             }
         }
         catch (Exception ex)
@@ -599,6 +658,15 @@ public partial class CL_Main : Window
         }
     }
 
+    private void CloseAccountMenuFromGamepad()
+    {
+        if (!PanelManegerAccount.IsVisible) return;
+        AvaloniaSoundService.Click();
+        _focusScopeTrap?.PopScope(PanelManegerAccount);
+        AvaloniaAnimationService.AnimateRotation(CheckMarkAccount, 0);
+        AvaloniaAnimationService.AnimatePageTransitionExit(PanelManegerAccount, -20);
+    }
+
     private void AddProfileBtn_Click(object? sender, RoutedEventArgs e) =>
         AddProfile_MouseDown(sender, null!);
 
@@ -615,6 +683,7 @@ public partial class CL_Main : Window
     public void AddProfile_MouseDown(object? sender, PointerPressedEventArgs e)
     {
         AvaloniaSoundService.Click();
+        _focusScopeTrap?.PopScope(PanelManegerAccount);
         AvaloniaAnimationService.AnimatePageTransitionExit(PanelManegerAccount, -20, 0.2);
         AvaloniaAnimationService.AnimateRotation(CheckMarkAccount, 0);
 
@@ -625,6 +694,8 @@ public partial class CL_Main : Window
         AvaloniaAnimationService.AnimatePageTransition(GridFormAccountAdd);
         AvaloniaAnimationService.AnimatePageTransition(GridOfflineMode);
         AvaloniaAnimationService.AnimatePageTransition(GridSelectAccountType);
+        _focusScopeTrap?.PushScope(AccountAddOverlayPanel, onBack: CloseAccountSelectionUI);
+        Dispatcher.UIThread.Post(() => _gamepadRouter?.FocusFirstInScope(AccountAddOverlayPanel, this), DispatcherPriority.Loaded);
     }
 
     public void GirdFormAccountAdd_MouseDown(object? sender, PointerPressedEventArgs e)
@@ -635,6 +706,7 @@ public partial class CL_Main : Window
 
     private void CloseAccountSelectionUI()
     {
+        _focusScopeTrap?.PopScope(AccountAddOverlayPanel);
         GridFormAccountAdd.IsHitTestVisible = false;
         GridOfflineMode.IsHitTestVisible = false;
         GridOnlineMode.IsHitTestVisible = false;

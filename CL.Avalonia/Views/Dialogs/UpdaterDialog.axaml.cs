@@ -235,6 +235,7 @@ namespace CL_CLegendary_Launcher_.Avalonia.Views.Windows
             if (File.Exists(expectedPath))
             {
                 Process.Start(new ProcessStartInfo { FileName = expectedPath, WorkingDirectory = Path.GetDirectoryName(expectedPath), UseShellExecute = true });
+                try { (global::Avalonia.Application.Current as App)?.ShutdownGamepadService(); } catch { }
                 Environment.Exit(0);
             }
             else

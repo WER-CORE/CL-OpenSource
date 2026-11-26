@@ -169,6 +169,7 @@ namespace CL_CLegendary_Launcher_.Avalonia.Views.Controls
                 if (!eulaAccepted)
                 {
                     DiscordController.Deinitialize();
+                    try { (Application.Current as App)?.ShutdownGamepadService(); } catch { }
                     Environment.Exit(0);
                     return;
                 }
@@ -182,6 +183,7 @@ namespace CL_CLegendary_Launcher_.Avalonia.Views.Controls
                 string logPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs", "crash-report.txt");
                 try { Directory.CreateDirectory(Path.GetDirectoryName(logPath)!); File.WriteAllText(logPath, errorDetails); } catch { }
 
+                try { (Application.Current as App)?.ShutdownGamepadService(); } catch { }
                 Environment.Exit(1);
             }
         }

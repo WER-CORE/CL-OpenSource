@@ -31,6 +31,8 @@ public class TutorialOverlayService
     private readonly Button? _finishBtn;
     private readonly Button? _skipBtn;
     private readonly Button? _understoodBtn;
+    private readonly Action? _onShown;
+    private readonly Action? _onClosed;
 
     public TutorialOverlayService(
         Grid overlayGrid,
@@ -44,7 +46,9 @@ public class TutorialOverlayService
         Button? nextBtn = null,
         Button? finishBtn = null,
         Button? skipBtn = null,
-        Button? understoodBtn = null)
+        Button? understoodBtn = null,
+        Action? onShown = null,
+        Action? onClosed = null)
     {
         _overlayGrid = overlayGrid;
         _overlayPath = overlayPath;
@@ -58,6 +62,8 @@ public class TutorialOverlayService
         _finishBtn = finishBtn;
         _skipBtn = skipBtn;
         _understoodBtn = understoodBtn;
+        _onShown = onShown;
+        _onClosed = onClosed;
     }
 
     public void SetButtonsEnabled(bool isEnabled)
@@ -224,11 +230,13 @@ public class TutorialOverlayService
 
         _messageContainer.Margin = new Thickness(finalX, finalY, 0, 0);
         _overlayGrid.IsVisible = true;
+        _onShown?.Invoke();
     }
 
     public void CloseTutorial(Action? onClosed = null)
     {
         _overlayGrid.IsVisible = false;
         onClosed?.Invoke();
+        _onClosed?.Invoke();
     }
 }

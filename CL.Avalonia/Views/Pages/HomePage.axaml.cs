@@ -628,6 +628,14 @@ public partial class HomePage : UserControl
         {
             vm.ToggleVersionSelectorCommand.Execute(null);
         }
+
+        GetService<Input.Gamepad.FocusScopeTrap>()?.PushScope(
+            VersionSelectorPopupArea,
+            returnFocusTo: HitboxSelect,
+            onBack: () => _ = CloseVersionMenuAsync());
+        Dispatcher.UIThread.Post(
+            () => GetService<Input.Gamepad.GamepadNavigationRouter>()?.FocusFirstInScope(SelectVersionTypeGird, TopLevel.GetTopLevel(this)),
+            DispatcherPriority.Loaded);
     }
 
     private async Task CloseVersionMenuAsync()
@@ -636,6 +644,8 @@ public partial class HomePage : UserControl
         _isClosingVersionMenu = true;
         try
         {
+            GetService<Input.Gamepad.FocusScopeTrap>()?.PopScope(VersionSelectorPopupArea);
+
             if (CheckMarkVersionSelect != null)
             {
                 AvaloniaAnimationService.AnimateRotation(CheckMarkVersionSelect, 0);
@@ -682,6 +692,10 @@ public partial class HomePage : UserControl
         {
             IconSelectVersion.Source = IconSelectVersion_Copy.Source;
         }
+
+        Dispatcher.UIThread.Post(
+            () => GetService<Input.Gamepad.GamepadNavigationRouter>()?.FocusFirstInScope(SelectVersion, TopLevel.GetTopLevel(this)),
+            DispatcherPriority.Loaded);
     }
 
     public void SelectVersionOptifine_PointerPressed(object? sender, PointerPressedEventArgs? e)
@@ -703,13 +717,48 @@ public partial class HomePage : UserControl
         {
             IconSelectVersion.Source = IconSelectVersion_Copy2.Source;
         }
+
+        Dispatcher.UIThread.Post(
+            () => GetService<Input.Gamepad.GamepadNavigationRouter>()?.FocusFirstInScope(SelectVersionMod, TopLevel.GetTopLevel(this)),
+            DispatcherPriority.Loaded);
     }
 
-    public void SelectVersionRedirect_PointerPressed(object? sender, PointerPressedEventArgs e)
+    public void SelectVersionRedirect_PointerPressed(object? sender, PointerPressedEventArgs? e)
     {
         AvaloniaSoundService.Click();
+        GetService<Input.Gamepad.FocusScopeTrap>()?.PopScope(VersionSelectorPopupArea);
         SelectVersionTypeGird.IsVisible = false;
         ModPacksRequested?.Invoke(this, true);
+    }
+
+    private void VersionTypeItem_KeyDown(object? sender, KeyEventArgs e)
+    {
+        if (e.Key is not (Key.Enter or Key.Space)) return;
+        if (sender is not Control { Tag: string tag }) return;
+
+        e.Handled = true;
+        switch (tag)
+        {
+            case "Vanilla": SelectVersionVanila_PointerPressed(sender, null); break;
+            case "Optifine": SelectVersionOptifine_PointerPressed(sender, null); break;
+            case "Redirect": SelectVersionRedirect_PointerPressed(sender, null); break;
+        }
+    }
+
+    private async void VersionList_KeyDown(object? sender, KeyEventArgs e)
+    {
+        if (e.Key is not (Key.Enter or Key.Space)) return;
+        e.Handled = true;
+        AvaloniaSoundService.Click();
+        await CloseVersionMenuAsync();
+    }
+
+    private async void VersionListMod_KeyDown(object? sender, KeyEventArgs e)
+    {
+        if (e.Key is not (Key.Enter or Key.Space)) return;
+        e.Handled = true;
+        AvaloniaSoundService.Click();
+        await CloseVersionMenuAsync();
     }
 
     public async void VersionList_Tapped(object? sender, TappedEventArgs e)

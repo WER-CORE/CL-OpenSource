@@ -523,7 +523,7 @@
               ToolTip.Tip="Натисніть щоб повернутись"
               PointerPressed="GirdFormAccountAdd_MouseDown" IsVisible="False" ZIndex="9" />
 
-                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="12" ZIndex="10" Margin="16">
+                <StackPanel x:Name="AccountAddOverlayPanel" VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="12" ZIndex="10" Margin="16">
                     <Grid x:Name="GridSelectAccountType" HorizontalAlignment="Center"
                           MinWidth="296" MaxWidth="360" IsVisible="False">
                         <Border BorderThickness="1" BorderBrush="{DynamicResource SubtleBorderBrush}" Background="{DynamicResource MainBackgroundBrushServer}" CornerRadius="12" Padding="8">

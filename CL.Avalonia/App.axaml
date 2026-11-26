@@ -145,6 +145,20 @@
         <Style Selector="Button.primary-cta:disabled">
             <Setter Property="Opacity" Value="0.45" />
         </Style>
+
+        <Style Selector="Button:focus-visible">
+            <Setter Property="BorderBrush" Value="{DynamicResource MainBackgroundProgressBar}" />
+        </Style>
+        <Style Selector="ToggleSwitch:focus-visible, CheckBox:focus-visible">
+            <Setter Property="BorderBrush" Value="{DynamicResource MainBackgroundProgressBar}" />
+        </Style>
+        <Style Selector="ListBoxItem:focus-visible">
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="BorderBrush" Value="{DynamicResource MainBackgroundProgressBar}" />
+        </Style>
+        <Style Selector="Border:focus-visible">
+            <Setter Property="BorderBrush" Value="{DynamicResource MainBackgroundProgressBar}" />
+        </Style>
     </Application.Styles>
 
     <Application.Resources>

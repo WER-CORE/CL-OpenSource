@@ -14,6 +14,12 @@
     <ProjectReference Include="..\CL.Core\CL.Core.csproj" />
     <Compile Include="..\CL.Avalonia\Services\ChannelStrictGithubSource.cs" Link="Velopack\ChannelStrictGithubSource.cs" />
     <Compile Include="..\CL.Avalonia\Services\LauncherUpdateCoordinator.cs" Link="Velopack\LauncherUpdateCoordinator.cs" />
+    <Compile Include="..\CL.Avalonia\Input\Gamepad\UiNavAction.cs" Link="Gamepad\UiNavAction.cs" />
+    <Compile Include="..\CL.Avalonia\Input\Gamepad\GamepadSnapshot.cs" Link="Gamepad\GamepadSnapshot.cs" />
+    <Compile Include="..\CL.Avalonia\Input\Gamepad\IGamepadBackend.cs" Link="Gamepad\IGamepadBackend.cs" />
+    <Compile Include="..\CL.Avalonia\Input\Gamepad\GamepadRepeatState.cs" Link="Gamepad\GamepadRepeatState.cs" />
+    <Compile Include="..\CL.Avalonia\Input\Gamepad\FocusScopeStack.cs" Link="Gamepad\FocusScopeStack.cs" />
+    <Compile Include="..\CL.Avalonia\Input\Gamepad\GamepadInputGate.cs" Link="Gamepad\GamepadInputGate.cs" />
   </ItemGroup>
 
   <ItemGroup>
